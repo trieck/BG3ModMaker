@@ -1,8 +1,5 @@
 #pragma once
 
-#include <cstdint>
-#include <string>
-
 #include "Compress.h"
 
 struct PackagedFileInfoCommon;

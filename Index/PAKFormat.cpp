@@ -1,6 +1,5 @@
-
+#include "stdafx.h"
 #include "PAKFormat.h"
-#include <xmemory>
 
 PAKHeader LSPKHeader16::commonHeader() const
 {
@@ -13,8 +12,6 @@ PAKHeader LSPKHeader16::commonHeader() const
     header.numParts = 1;
     header.flags = static_cast<PackageFlags>(flags);
     header.priority = priority;
-
-    memset(header.md5, 0, sizeof(header.md5));
 
     return header;
 }

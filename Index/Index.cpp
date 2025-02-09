@@ -1,14 +1,13 @@
-#include <iostream>
 
+#include "stdafx.h"
 #include "PAKReader.h"
 
 int main()
 {
-    PAKReader reader;
-
     try {
-        reader.read(R"(C:\Program Files (x86)\Steam\steamapps\common\Baldurs Gate 3\Data\Gustav.pak)");
-        reader.explode("C:/Users/triec/Desktop/BG3ModMaker");
+        PAKReader reader;
+        reader.read(R"(C:\Users\triec\Desktop\Tom.pak)");
+        reader.explode(R"(C:\Users\triec\Desktop\Tom_Unpacked_By_BG3ModMaker)");
         
 
     } catch (const std::exception& e) {

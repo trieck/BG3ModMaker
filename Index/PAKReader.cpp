@@ -1,14 +1,9 @@
-#include <cstdint>
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <iomanip>
-#include <vector>
+#include "stdafx.h"
 
 #include "Compress.h"
+#include "Exception.h"
 #include "PAKFormat.h"
 #include "PAKReader.h"
-#include <filesystem>
 
 // anonymous namespace
 namespace {
@@ -26,10 +21,8 @@ namespace {
 
         for (uint32_t i = 0; i < numFiles; ++i) {
             stream.read(reinterpret_cast<char*>(&entries[i]), sizeof(TFile));
-
             if (!stream) {
-                std::cerr << "Error: Failed to read struct entry " << i << std::endl;
-                return false;
+                throw Exception(GetLastError());
             }
         }
 
@@ -53,25 +46,24 @@ namespace {
     }
 
     template <typename TFileEntry>
-    void readCompressedFileList(PAKReader& reader, const std::streampos offset)
+    void readCompressedFileList(PAKReader& reader, int64_t offset)
     {
         auto& package = reader.package();
 
-        package.seek(offset, std::ios::beg);
+        package.seek(offset, SeekMode::Begin);
         auto numFiles = package.read<uint32_t>();
 
         std::unique_ptr<uint8_t[]> compressed;
         uint32_t compressedSize;
 
         if (reader.package().m_header.version > 13) {
-            package.seek(offset + static_cast<std::streampos>(4), std::ios::beg);
+            package.seek(offset + 4, SeekMode::Begin);
             compressedSize = package.read<uint32_t>();
 
             compressed = std::make_unique<uint8_t[]>(compressedSize);
 
             package.read(compressed.get(), compressedSize);
-        }
-        else {
+        } else {
             compressedSize = reader.package().m_header.fileListSize - 4;
             compressed = std::make_unique<uint8_t[]>(compressedSize);
 
@@ -103,12 +95,12 @@ namespace {
     }
 
     template <typename THeader, typename TFileEntry>
-    bool readHeader(PAKReader& pakReader, const std::streampos offset)
+    bool readHeader(PAKReader& pakReader, int64_t offset)
     {
         auto& package = pakReader.package();
 
         // Seek to the header
-        package.seek(offset, std::ios::beg);
+        package.seek(offset, SeekMode::Begin);
 
         // Read the header
         THeader header = package.read<THeader>();
@@ -120,8 +112,7 @@ namespace {
         if (header.version > 10) {
             package.m_header.dataOffset = static_cast<uint32_t>(offset) + sizeof(THeader);
             readCompressedFileList<TFileEntry>(pakReader, package.m_header.fileListOffset);
-        }
-        else {
+        } else {
             return false;
         }
 
@@ -135,7 +126,7 @@ PAKReader::PAKReader()
 bool PAKReader::read(const char* filename)
 {
     m_package.load(filename);
-    m_package.seek(-4, std::ios::end);
+    m_package.seek(-4, SeekMode::End);
 
     auto signature = m_package.read<uint32_t>();
 
@@ -145,7 +136,7 @@ bool PAKReader::read(const char* filename)
     }
 
     // Check for v10 PAK file
-    m_package.seek(0, std::ios::beg);
+    m_package.seek(0, SeekMode::Begin);
     signature = m_package.read<uint32_t>();
 
     if (signature == PAK_MAGIC) {
@@ -166,36 +157,11 @@ bool PAKReader::read(const char* filename)
 
 bool PAKReader::explode(const char* path)
 {
-    auto& files = m_package.m_files;
-
-    const auto& fileInfo = files.front();
-
-    m_package.seek(static_cast<int64_t>(fileInfo.offsetInFile), std::ios::beg);
-
-    uint32_t fileSize = fileInfo.size();
-
-    std::vector<uint8_t> fileData(fileSize);
-    m_package.read(fileData.data(), fileSize);
-
-    if (fileInfo.method() != CompressionMethod::NONE) {
-        std::unique_ptr<uint8_t[]> decompressed;
-        if (auto result = decompressData(fileInfo.method(), fileData.data(), fileInfo.sizeOnDisk, decompressed, fileInfo.uncompressedSize); !result) {
-            throw std::ios_base::failure("Failed to decompress file.");
+    for (auto& files = m_package.m_files; const auto& fileInfo : files) {
+        if (!extractFile(fileInfo, path)) {
+            return false;
         }
-        fileData = std::vector<uint8_t>(decompressed.get(), decompressed.get() + fileSize);
     }
-
-    std::filesystem::path outputPath = std::filesystem::path(path) / fileInfo.name;
-    create_directories(outputPath.parent_path()); // Ensure parent directories exist
-
-    // Write the extracted data to a file
-    std::ofstream outFile(outputPath, std::ios::binary);
-    if (!outFile) {
-        std::cerr << "Error: Could not create output file: " << outputPath << std::endl;
-        return false ;
-    }
-
-    outFile.write(reinterpret_cast<const char*>(fileData.data()), fileSize);
 
     return true;
 }
@@ -214,44 +180,57 @@ Package& PAKReader::package()
     return m_package;
 }
 
+bool PAKReader::extractFile(const PackagedFileInfo& fileInfo, const char* path)
+{
+    m_package.seek(static_cast<int64_t>(fileInfo.offsetInFile), SeekMode::Begin);
+
+    std::vector<uint8_t> fileData(fileInfo.sizeOnDisk);
+    m_package.read(fileData.data(), fileInfo.sizeOnDisk);
+
+    if (fileInfo.method() != CompressionMethod::NONE) {
+        std::unique_ptr<uint8_t[]> decompressed;
+        if (auto result = decompressData(fileInfo.method(), fileData.data(), fileInfo.sizeOnDisk, decompressed,
+                                         fileInfo.uncompressedSize); !result) {
+            throw std::ios_base::failure("Failed to decompress file.");
+        }
+        fileData = std::vector(decompressed.get(), decompressed.get() + fileInfo.uncompressedSize);
+    }
+
+    std::filesystem::path outputPath = std::filesystem::path(path) / fileInfo.name;
+    create_directories(outputPath.parent_path()); // Ensure parent directories exist
+
+    FileStream outFile;
+    outFile.Open(outputPath.string().c_str(), "wb");
+    outFile.Write(fileData.data(), fileInfo.size());
+
+    return true;
+}
+
 inline bool Package::load(const char* filename)
 {
     reset();
 
     m_filename = filename;
-    m_file.open(m_filename, std::ios::binary);
-
-    try {
-        m_file.exceptions(std::ios::failbit | std::ios::badbit);
-    }
-    catch (const std::ios_base::failure& /*e*/) {
-        throw std::ios_base::failure("Failed to open file: " + m_filename);
-    }
+    m_file.Open(m_filename.c_str(), "rb");
 
     return true;
 }
 
-void Package::seek(const int64_t offset, const std::ios_base::seekdir dir)
+void Package::seek(int64_t offset, SeekMode mode) const
 {
-    if (!m_file) {
-        throw std::ios_base::failure("File not open.");
-    }
-
-    m_file.seekg(offset, dir);
+    m_file.Seek(offset, mode);
 }
 
 void Package::reset()
 {
-    m_file.exceptions(std::ios::goodbit);
-
-    m_file.close();
+    m_file.Close();
 
     m_files.clear();
 }
 
-void Package::read(void* buffer, std::streamsize size)
+void Package::read(void* buffer, std::size_t size) const
 {
-    m_file.read(static_cast<char*>(buffer), size);
+    m_file.Read(buffer, size);
 }
 
 Package::Package()

@@ -1,9 +1,7 @@
 #pragma once
 
-#include <vector>
-#include <fstream>
-
 #include "PAKFormat.h"
+#include "FileStream.h"
 
 struct Package
 {
@@ -11,25 +9,25 @@ struct Package
 
     void addFile(const PackagedFileInfo& file);
     bool load(const char* filename);
-    void seek(int64_t offset, std::ios_base::seekdir dir);
+    void seek(int64_t offset, SeekMode mode) const;
     void reset();
 
     template<typename T>
     T read();
 
-    void read(void* buffer, std::streamsize size);
+    void read(void* buffer, std::size_t size) const;
 
     PAKHeader m_header{};
     std::vector<PackagedFileInfo> m_files{};
     std::string m_filename{};
-    std::ifstream m_file{};
+    FileStream m_file{};
 };
 
 template <typename T>
 T Package::read()
 {
     T value;
-    m_file.read(reinterpret_cast<char*>(&value), sizeof(T));
+    m_file.Read(reinterpret_cast<char*>(&value), sizeof(T));
     return value;
 }
 
@@ -49,5 +47,7 @@ public:
     
 
 private:
+    bool extractFile(const PackagedFileInfo& value, const char* path);
+
     Package m_package{};
 };
