@@ -14,4 +14,4 @@ enum class CompressionMethod : uint8_t
 
 
 bool decompressData(CompressionMethod method, const uint8_t* compressedData, uint32_t compressedSize,
-    std::unique_ptr<uint8_t[]>& decompressedData, uint32_t decompressedSize);
+    uint8Ptr& decompressedData, uint32_t decompressedSize);

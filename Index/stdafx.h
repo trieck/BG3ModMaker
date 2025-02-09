@@ -17,3 +17,6 @@ enum class SeekMode : DWORD {
     Current = FILE_CURRENT,
     End = FILE_END
 };
+
+using uint8Ptr = std::unique_ptr<uint8_t[]>;
+using ByteBuffer = std::pair<uint8Ptr, size_t>;

@@ -3,9 +3,10 @@
 #include "PAKFormat.h"
 #include "FileStream.h"
 
-struct Package
+struct Package final
 {
     Package();
+    virtual ~Package();
 
     void addFile(const PackagedFileInfo& file);
     bool load(const char* filename);
@@ -31,23 +32,28 @@ T Package::read()
     return value;
 }
 
-class PAKReader
+class PAKReader final
 {
 public:
     PAKReader();
-    virtual ~PAKReader() = default;
+    ~PAKReader() = default;
 
     bool read(const char* filename);
-    bool explode(const char* path);
+    void close();
 
+    bool explode(const char* path) const;
     void openStreams(uint32_t numParts);
 
-    void addFile(PackagedFileInfo file);
     Package& package();
-    
+
+    const std::vector<PackagedFileInfo>& files() const;
+
+    const PackagedFileInfo& operator[](const std::string& name) const;
+
+    ByteBuffer readFile(const std::string& name) const;
 
 private:
-    bool extractFile(const PackagedFileInfo& value, const char* path);
+    bool extractFile(const PackagedFileInfo& file, const char* path) const;
 
     Package m_package{};
 };

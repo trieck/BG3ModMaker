@@ -9,7 +9,7 @@
 namespace {
     constexpr uint32_t PAK_MAGIC = 0x4B50534C;
 
-    std::unique_ptr<std::istream> createMemoryStream(const std::unique_ptr<uint8_t[]>& data, const size_t size)
+    std::unique_ptr<std::istream> createMemoryStream(const uint8Ptr& data, const size_t size)
     {
         return std::make_unique<std::istringstream>(std::string(reinterpret_cast<char*>(data.get()), size));
     }
@@ -53,7 +53,7 @@ namespace {
         package.seek(offset, SeekMode::Begin);
         auto numFiles = package.read<uint32_t>();
 
-        std::unique_ptr<uint8_t[]> compressed;
+        uint8Ptr compressed;
         uint32_t compressedSize;
 
         if (reader.package().m_header.version > 13) {
@@ -72,7 +72,7 @@ namespace {
 
         const uint32_t fileBufferSize = sizeof(TFileEntry) * numFiles;
 
-        std::unique_ptr<uint8_t[]> decompressed;
+        uint8Ptr decompressed;
         auto result = decompressData(CompressionMethod::LZ4, compressed.get(), compressedSize, decompressed,
                                      fileBufferSize);
         if (!result) {
@@ -155,7 +155,12 @@ bool PAKReader::read(const char* filename)
     return false;
 }
 
-bool PAKReader::explode(const char* path)
+void PAKReader::close()
+{
+    m_package.reset();
+}
+
+bool PAKReader::explode(const char* path) const
 {
     for (auto& files = m_package.m_files; const auto& fileInfo : files) {
         if (!extractFile(fileInfo, path)) {
@@ -171,37 +176,58 @@ void PAKReader::openStreams(uint32_t numParts)
     // TODO: implement
 }
 
-void PAKReader::addFile(PackagedFileInfo file)
-{
-}
-
 Package& PAKReader::package()
 {
     return m_package;
 }
 
-bool PAKReader::extractFile(const PackagedFileInfo& fileInfo, const char* path)
+const std::vector<PackagedFileInfo>& PAKReader::files() const
 {
-    m_package.seek(static_cast<int64_t>(fileInfo.offsetInFile), SeekMode::Begin);
+    return m_package.m_files;
+}
 
-    std::vector<uint8_t> fileData(fileInfo.sizeOnDisk);
-    m_package.read(fileData.data(), fileInfo.sizeOnDisk);
+const PackagedFileInfo& PAKReader::operator[](const std::string& name) const
+{
+    for (const auto& file : m_package.m_files) {
+        if (file.name == name) {
+            return file;
+        }
+    }
+    throw std::out_of_range("File not found.");
+}
 
-    if (fileInfo.method() != CompressionMethod::NONE) {
-        std::unique_ptr<uint8_t[]> decompressed;
-        if (auto result = decompressData(fileInfo.method(), fileData.data(), fileInfo.sizeOnDisk, decompressed,
-                                         fileInfo.uncompressedSize); !result) {
+ByteBuffer PAKReader::readFile(const std::string& name) const
+{
+    const auto& file = (*this)[name];
+
+    m_package.seek(static_cast<int64_t>(file.offsetInFile), SeekMode::Begin);
+
+    auto fileData = std::make_unique<uint8_t[]>(file.sizeOnDisk);
+    m_package.read(fileData.get(), file.sizeOnDisk);
+
+    if (file.method() != CompressionMethod::NONE) {
+        uint8Ptr decompressed;
+        if (auto result = decompressData(file.method(), fileData.get(),
+                                         file.sizeOnDisk, decompressed, file.uncompressedSize); !result) {
             throw std::ios_base::failure("Failed to decompress file.");
         }
-        fileData = std::vector(decompressed.get(), decompressed.get() + fileInfo.uncompressedSize);
+
+        fileData = std::move(decompressed);
     }
 
-    std::filesystem::path outputPath = std::filesystem::path(path) / fileInfo.name;
+    return { std::move(fileData), file.size() };
+}
+
+bool PAKReader::extractFile(const PackagedFileInfo& file, const char* path) const
+{
+    auto [fileData, fileSize] = readFile(file.name);
+
+    std::filesystem::path outputPath = std::filesystem::path(path) / file.name;
     create_directories(outputPath.parent_path()); // Ensure parent directories exist
 
     FileStream outFile;
     outFile.Open(outputPath.string().c_str(), "wb");
-    outFile.Write(fileData.data(), fileInfo.size());
+    outFile.Write(fileData.get(), fileSize);
 
     return true;
 }
@@ -235,6 +261,11 @@ void Package::read(void* buffer, std::size_t size) const
 
 Package::Package()
 = default;
+
+Package::~Package()
+{
+    reset();
+}
 
 void Package::addFile(const PackagedFileInfo& file)
 {

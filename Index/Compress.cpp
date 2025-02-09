@@ -5,7 +5,7 @@
 #include <lz4.h>
 
 bool decompressData(CompressionMethod method, const uint8_t* compressedData, uint32_t compressedSize,
-                    std::unique_ptr<uint8_t[]>& decompressedData, uint32_t decompressedSize)
+    uint8Ptr& decompressedData, uint32_t decompressedSize)
 {
     if (method != CompressionMethod::LZ4) {
         return false; // Future expansion for other compression methods
