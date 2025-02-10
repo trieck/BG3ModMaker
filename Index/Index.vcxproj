@@ -94,7 +94,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);Rpcrt4.lib;
-Shlwapi.lib</AdditionalDependencies>
+Shlwapi.lib;Ws2_32.lib;Rpcrt4.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -113,7 +113,7 @@ Shlwapi.lib</AdditionalDependencies>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);Rpcrt4.lib;
-Shlwapi.lib</AdditionalDependencies>
+Shlwapi.lib;Ws2_32.lib;Rpcrt4.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -131,8 +131,7 @@ Shlwapi.lib</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(VcpkgManifestRoot)\vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>lz4.lib;%(AdditionalDependencies);Rpcrt4.lib;
-Shlwapi.lib</AdditionalDependencies>
+      <AdditionalDependencies>lz4.lib;%(AdditionalDependencies);Ws2_32.lib;Rpcrt4.lib</AdditionalDependencies>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
@@ -157,8 +156,7 @@ Shlwapi.lib</AdditionalDependencies>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(VcpkgManifestRoot)\vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>lz4.lib;%(AdditionalDependencies);Rpcrt4.lib;
-Shlwapi.lib</AdditionalDependencies>
+      <AdditionalDependencies>lz4.lib;%(AdditionalDependencies);Ws2_32.lib;Rpcrt4.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

@@ -9,7 +9,9 @@
 #include <vector>
 #include <xmemory>
 
+#define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
+
 #include <Windows.h>
 
 enum class SeekMode : DWORD {

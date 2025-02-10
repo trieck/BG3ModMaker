@@ -2,8 +2,9 @@
   "builtin-baseline": "2960d7d80e8d09c84ae8abf15c12196c2ca7d39a",
   "dependencies": [
     "lz4",
-    "rocksdb",
-    "pugixml"
+    "nlohmann-json",
+    "pugixml",
+    "xapian"
   ],
   "name": "bg3modmaker",
   "version": "0.1.0"
