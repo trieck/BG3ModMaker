@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "FileStream.h"
 #include "Exception.h"
 
@@ -40,7 +40,7 @@ void FileStream::Close()
     }
 }
 
-void FileStream::Write(const void* data, size_t size)
+void FileStream::Write(const void* data, size_t size) const
 {
     const auto* buffer = static_cast<const char*>(data);
 
@@ -89,7 +89,7 @@ void FileStream::Seek(int64_t offset, SeekMode mode) const
     }
 }
 
-size_t FileStream::Tell()
+size_t FileStream::Tell() const
 {
     LARGE_INTEGER pos = {};
     if (!SetFilePointerEx(m_file, {}, &pos, FILE_CURRENT)) {
@@ -99,7 +99,7 @@ size_t FileStream::Tell()
     return static_cast<size_t>(pos.QuadPart);
 }
 
-size_t FileStream::Size()
+size_t FileStream::Size() const
 {
     LARGE_INTEGER size;
     if (!GetFileSizeEx(m_file, &size)) {

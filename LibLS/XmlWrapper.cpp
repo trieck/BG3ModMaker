@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "XmlWrapper.h"
 
 XmlWrapper::XmlWrapper(const ByteBuffer& buffer)

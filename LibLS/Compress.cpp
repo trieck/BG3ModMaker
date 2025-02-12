@@ -1,5 +1,5 @@
 
-#include "stdafx.h"
+#include "pch.h"
 
 #include "Compress.h"
 #include <lz4.h>

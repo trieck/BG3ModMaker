@@ -6,7 +6,7 @@
 struct Package final
 {
     Package();
-    virtual ~Package();
+    ~Package();
 
     void addFile(const PackagedFileInfo& file);
     bool load(const char* filename);

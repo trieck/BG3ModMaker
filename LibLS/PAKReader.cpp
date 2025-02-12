@@ -1,29 +1,21 @@
-#include "stdafx.h"
-
+#include "pch.h"
 #include "Compress.h"
 #include "Exception.h"
 #include "PAKFormat.h"
 #include "PAKReader.h"
+#include "Stream.h"
 
 // anonymous namespace
 namespace {
     constexpr uint32_t PAK_MAGIC = 0x4B50534C;
 
-    std::unique_ptr<std::istream> createMemoryStream(const uint8Ptr& data, const size_t size)
-    {
-        return std::make_unique<std::istringstream>(std::string(reinterpret_cast<char*>(data.get()), size));
-    }
-
     template <typename TFile>
-    bool readStructs(std::istream& stream, std::vector<TFile>& entries, uint32_t numFiles)
+    bool readStructs(Stream& stream, std::vector<TFile>& entries, uint32_t numFiles)
     {
         entries.resize(numFiles);
 
         for (uint32_t i = 0; i < numFiles; ++i) {
-            stream.read(reinterpret_cast<char*>(&entries[i]), sizeof(TFile));
-            if (!stream) {
-                throw Exception(GetLastError());
-            }
+            entries[i] = stream.read<TFile>();
         }
 
         return true;
@@ -80,9 +72,9 @@ namespace {
         }
 
         std::vector<TFileEntry> entries(numFiles);
-        const auto stream = createMemoryStream(decompressed, fileBufferSize);
+        Stream stream(reinterpret_cast<char*>(decompressed.get()), fileBufferSize);
 
-        result = readStructs<TFileEntry>(*stream, entries, numFiles);
+        result = readStructs<TFileEntry>(stream, entries, numFiles);
         if (!result) {
             throw std::ios_base::failure("Failed to read file list.");
         }

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "Exception.h"
 
 Exception::Exception(DWORD errCode): m_errorCode(errCode)
@@ -15,6 +15,11 @@ Exception::Exception(DWORD errCode): m_errorCode(errCode)
     if (errMsg) {
         LocalFree(errMsg);
     }
+}
+
+Exception::Exception(const std::string& message) : m_errorCode(ERROR_SUCCESS)
+{
+    m_message = message;
 }
 
 const char* Exception::what() const noexcept

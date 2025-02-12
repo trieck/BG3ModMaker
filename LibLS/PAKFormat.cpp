@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "PAKFormat.h"
 
 PAKHeader LSPKHeader16::commonHeader() const
