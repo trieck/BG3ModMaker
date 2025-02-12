@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "Compress.h"
-#include "Exception.h"
 #include "PAKFormat.h"
 #include "PAKReader.h"
 #include "Stream.h"

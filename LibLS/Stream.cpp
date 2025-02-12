@@ -85,3 +85,8 @@ std::string Stream::str() const
 {
     return dynamic_cast<std::istringstream*>(m_stream.get())->str();
 }
+
+std::istream& Stream::stream() const
+{
+    return *m_stream;
+}

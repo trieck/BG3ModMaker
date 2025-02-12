@@ -33,6 +33,7 @@ public:
     Ptr read(uint32_t bytes) const;
 
     std::string str() const;
+    std::istream& stream() const;
 
 private:
     IStreamPtr m_stream;

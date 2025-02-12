@@ -185,6 +185,20 @@ void LSFReader::readAttributesV2(const Stream::Ptr& stream)
 
 void LSFReader::readAttributesV3(const Stream::Ptr& stream)
 {
+    auto size = stream->size();
+    while (stream->tell() < size) {
+        auto attribute = stream->read<LSFAttributeEntryV3>();
+
+        LSFAttributeInfo resolved;
+        resolved.nameIndex = attribute.nameIndex();
+        resolved.nameOffset = attribute.nameOffset();
+        resolved.typeId = attribute.type();
+        resolved.length = attribute.length();
+        resolved.dataOffset = attribute.offset;
+        resolved.nextAttributeIndex = attribute.nextAttributeIndex;
+
+        m_attributes.emplace_back(resolved);
+    }
 }
 
 void LSFReader::readKeys(const Stream::Ptr& stream)
@@ -244,6 +258,20 @@ NodeAttribute LSFReader::readAttribute(AttributeType type, const Stream::Ptr& re
     return attr;
 }
 
+static std::string readUUID(const Stream::Ptr& ptr)
+{
+    std::string uuid;
+
+    for (auto i = 0; i < 16; ++i) {
+        if (i == 4 || i == 6 || i == 8 || i == 10) {
+            uuid += "-";
+        }
+        uuid += std::format("{:02x}", ptr->read<uint8_t>());
+    }
+
+    return uuid;
+}
+
 NodeAttribute LSFReader::readAttribute(AttributeType type, const Stream::Ptr& reader)
 {
     NodeAttribute attr(type);
@@ -288,11 +316,10 @@ NodeAttribute LSFReader::readAttribute(AttributeType type, const Stream::Ptr& re
         attr.setValue(reader->read<uint8_t>() != 0 ? "true" : "false");
         break;
     case UUID:
-        attr.setValue(reader->read(16)->str());
+        attr.setValue(readUUID(reader));
         break;
     default:
-        throw std::ios_base::failure("Unsupported attribute type.");
-
+        attr.setValue("Unsupported attribute type.");
     }
 
     return attr;

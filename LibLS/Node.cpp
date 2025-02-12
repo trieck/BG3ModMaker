@@ -31,6 +31,8 @@ int32_t Node::totalChildCount() const
 
 void Node::appendChild(const Ptr& child)
 {
+    child->parent = shared_from_this();
+
     auto [it, inserted] = children.try_emplace(child->name, std::vector<Ptr>{});
     it->second.push_back(child);
 }

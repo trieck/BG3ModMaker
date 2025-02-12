@@ -93,7 +93,31 @@ struct LSFAttributeEntryV2
     {
         return typeAndLength >> 6;
     }
+};
 
+struct LSFAttributeEntryV3
+{
+    uint32_t nameHashTableIndex;    // name of this attribute (16-bit MSB: hash table index, 16-bit LSB: offset in hash chain)
+    uint32_t typeAndLength;         // 6-bit LSB: type of this attribute, 26-bit MSB: length of this attribute
+    int32_t nextAttributeIndex;     // index of the next attribute of the node, -1 if last
+    uint32_t offset;                // absolute position of the attribute data in the value stream
+
+    int32_t nameIndex() const
+    {
+        return static_cast<int32_t>(nameHashTableIndex >> 16);
+    }
+    int32_t nameOffset() const
+    {
+        return static_cast<int32_t>(nameHashTableIndex & 0xFFFF);
+    }
+    uint32_t type() const
+    {
+        return typeAndLength & 0x3F;
+    }
+    uint32_t length() const
+    {
+        return typeAndLength >> 6;
+    }
 };
 
 struct LSFKeyEntry

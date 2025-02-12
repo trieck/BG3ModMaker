@@ -166,10 +166,45 @@ void Indexer::indexLSXFile(const PackagedFileInfo& file) const
     }
 }
 
+void printAttributes(const Node& node, int level)
+{
+    std::string indent(level, ' ');
+    for (const auto& [key, value] : node.attributes) {
+        std::cout << indent << std::format("  Attribute: {}: {}\n", key, value.value());
+    }
+}
+
+void printNodes(const std::unordered_map<std::string, std::vector<Node::Ptr>>& children, int level)
+{
+    std::string indent(level, ' ');
+
+    for (const auto& [key, nodes] : children) {
+        std::cout << indent << "Name: " << key << std::endl;
+        for (const auto& node : nodes) {
+            indent = std::string(level + 2, ' ');
+            std::cout << indent << "  Node: " << node->name << std::endl;
+            printAttributes(*node, level + 2);
+            printNodes(node->children, level + 4);
+        }
+    }
+}
+
+void printRegion(const Region& region)
+{
+    std::cout << "Region: " << region.regionName << std::endl;
+
+    printAttributes(region, 0);
+    printNodes(region.children, 2);
+    
+}
 void Indexer::indexLSFFile(const PackagedFileInfo& file) const
 {
     auto buffer = m_reader.readFile(file.name);
 
     LSFReader reader;
-    reader.read(buffer);
+    auto resource = reader.read(buffer);
+
+    for (const auto& region : resource->regions | std::views::values) {
+        printRegion(*region);
+    }
 }
