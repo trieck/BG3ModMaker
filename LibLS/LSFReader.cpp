@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "LSFReader.h"
 
+#include "Compress.h"
 #include "LSCommon.h"
 
 LSFReader::LSFReader()
@@ -65,12 +66,12 @@ void LSFReader::readHeader()
 {
     auto magic = m_stream->read<LSFMagic>();
     if (std::memcmp(magic.magic, LSF_MAGIC, sizeof(LSF_MAGIC)) != 0) {
-        throw std::ios_base::failure("Invalid LSF file.");
+        throw Exception("Invalid LSF file.");
     }
 
     if (magic.version < static_cast<uint32_t>(LSFVersion::INITIAL) || magic.version > static_cast<uint32_t>(
         LSFVersion::MAX_READ)) {
-        throw std::ios_base::failure("Unsupported LSF version.");
+        throw Exception("Unsupported LSF version.");
     }
 
     if (magic.version >= static_cast<uint32_t>(LSFVersion::BG3_EXTENDED_HEADER)) {
@@ -82,11 +83,11 @@ void LSFReader::readHeader()
             m_gameVersion = {.major = 4, .minor = 0, .revision = 9, .build = 0};
         }
     } else {
-        throw std::ios_base::failure("Unsupported LSF version.");
+        throw Exception("Unsupported LSF version.");
     }
 
     if (magic.version < static_cast<uint32_t>(LSFVersion::BG3_NODE_KEYS)) {
-        throw std::ios_base::failure("Unsupported LSF version.");
+        throw Exception("Unsupported LSF version.");
     }
 
     m_version = static_cast<LSFVersion>(magic.version);
@@ -319,7 +320,7 @@ NodeAttribute LSFReader::readAttribute(AttributeType type, const Stream::Ptr& re
         attr.setValue(readUUID(reader));
         break;
     default:
-        attr.setValue("Unsupported attribute type.");
+        throw Exception("Unsupported attribute type.");
     }
 
     return attr;
@@ -376,14 +377,18 @@ Stream::Ptr LSFReader::decompress(uint32_t sizeOnDisk, uint32_t uncompressedSize
 {
     if (sizeOnDisk == 0 && uncompressedSize != 0) {
         auto stream = m_stream->read(uncompressedSize);
-
         return stream;
     }
-    throw std::ios_base::failure("Unsupported stream");
 
     if (sizeOnDisk == 0 || uncompressedSize == 0) {
-        return std::make_unique<Stream>(); // empty stream
+        return std::make_unique<Stream>(); // no data
     }
 
-    return nullptr;
+    auto chunked = m_version >= LSFVersion::CHUNKED_COMPRESS && allowChunked;
+    auto isCompressed = m_metadata.compressionMethod() != CompressionMethod::NONE;
+    auto compressedSize = isCompressed ? sizeOnDisk : uncompressedSize;
+    auto compressedStream = m_stream->read(compressedSize);
+    auto uncompressedStream = decompressStream(m_metadata.compressionMethod(), compressedStream, uncompressedSize, chunked);
+
+    return uncompressedStream;
 }

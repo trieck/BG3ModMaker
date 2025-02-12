@@ -1,6 +1,7 @@
 #pragma once
 #include <unordered_map>
 
+#include "Compress.h"
 #include "LSCommon.h"
 #include "Node.h"
 
@@ -28,6 +29,11 @@ struct LSFMetadataV6
     int8_t unknown2;
     uint16_t unknown3;
     LSFMetadataFormat metadataFormat;
+
+    CompressionMethod compressionMethod() const
+    {
+        return static_cast<CompressionMethod>(compressionFlags & 0x0F);
+    }
 };
 
 struct LSFMagic

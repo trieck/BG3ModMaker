@@ -44,7 +44,10 @@ Indexer::Indexer()
 
 void Indexer::index(const char* pakFile, const char* dbName)
 {
+    std::cout << std::format("Indexing {} into {}\n", pakFile, dbName);
+    std::cout << "   Reading PAK file...";
     m_reader.read(pakFile);
+    std::cout << "done" << std::endl;
 
     m_db = std::make_unique<Xapian::WritableDatabase>(dbName, Xapian::DB_CREATE_OR_OVERWRITE);
 
@@ -174,17 +177,17 @@ void printAttributes(const Node& node, int level)
     }
 }
 
-void printNodes(const std::unordered_map<std::string, std::vector<Node::Ptr>>& children, int level)
+void printChildren(const std::unordered_map<std::string, std::vector<Node::Ptr>>& children, int level)
 {
     std::string indent(level, ' ');
 
     for (const auto& [key, nodes] : children) {
-        std::cout << indent << "Name: " << key << std::endl;
+        std::cout << indent << "Node: " << key << std::endl;  // TODO: what is the write name for this?
         for (const auto& node : nodes) {
             indent = std::string(level + 2, ' ');
             std::cout << indent << "  Node: " << node->name << std::endl;
-            printAttributes(*node, level + 2);
-            printNodes(node->children, level + 4);
+            printAttributes(*node, level + 4);
+            printChildren(node->children, level + 4);
         }
     }
 }
@@ -194,9 +197,10 @@ void printRegion(const Region& region)
     std::cout << "Region: " << region.regionName << std::endl;
 
     printAttributes(region, 0);
-    printNodes(region.children, 2);
+    printChildren(region.children, 2);
     
 }
+
 void Indexer::indexLSFFile(const PackagedFileInfo& file) const
 {
     auto buffer = m_reader.readFile(file.name);

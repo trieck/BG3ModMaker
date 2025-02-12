@@ -1,5 +1,7 @@
 #pragma once
 
+#include <unordered_map>
+
 #include "PAKFormat.h"
 #include "FileStream.h"
 
@@ -20,6 +22,7 @@ struct Package final
 
     PAKHeader m_header{};
     std::vector<PackagedFileInfo> m_files{};
+    std::unordered_map <std::string, size_t> m_filemap{};
     std::string m_filename{};
     FileStream m_file{};
 };

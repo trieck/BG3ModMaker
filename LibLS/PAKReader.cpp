@@ -67,7 +67,7 @@ namespace {
         auto result = decompressData(CompressionMethod::LZ4, compressed.get(), compressedSize, decompressed,
                                      fileBufferSize);
         if (!result) {
-            throw std::ios_base::failure("Failed to decompress file list.");
+            throw Exception("Failed to decompress file list.");
         }
 
         std::vector<TFileEntry> entries(numFiles);
@@ -75,9 +75,10 @@ namespace {
 
         result = readStructs<TFileEntry>(stream, entries, numFiles);
         if (!result) {
-            throw std::ios_base::failure("Failed to read file list.");
+            throw Exception("Failed to read file list.");
         }
 
+        // TODO: can we initialize this in a lazy way?
         for (const auto& entry : entries) {
             // TODO: handle archive parts, whatever they are
             auto info = createFromEntry<TFileEntry>(package, entry);
@@ -123,7 +124,7 @@ bool PAKReader::read(const char* filename)
 
     if (signature == PAK_MAGIC) {
         // Read v13 PAK file
-        throw std::ios_base::failure("Unsupported PAK version.");
+        throw Exception("Unsupported PAK version.");
     }
 
     // Check for v10 PAK file
@@ -135,7 +136,7 @@ bool PAKReader::read(const char* filename)
         auto version = m_package.read<int32_t>();
 
         if (version != 18) {
-            throw std::ios_base::failure("Unsupported PAK version.");
+            throw Exception("Unsupported PAK version.");
         }
 
         readHeader<LSPKHeader16, FileEntry18>(*this, 4);
@@ -179,11 +180,11 @@ const std::vector<PackagedFileInfo>& PAKReader::files() const
 
 const PackagedFileInfo& PAKReader::operator[](const std::string& name) const
 {
-    for (const auto& file : m_package.m_files) {
-        if (file.name == name) {
-            return file;
-        }
+    auto it = m_package.m_filemap.find(name);
+    if (it != m_package.m_filemap.end()) {
+        return m_package.m_files[it->second];
     }
+
     throw std::out_of_range("File not found.");
 }
 
@@ -200,7 +201,7 @@ ByteBuffer PAKReader::readFile(const std::string& name) const
         uint8Ptr decompressed;
         if (auto result = decompressData(file.method(), fileData.get(),
                                          file.sizeOnDisk, decompressed, file.uncompressedSize); !result) {
-            throw std::ios_base::failure("Failed to decompress file.");
+            throw Exception("Failed to decompress file.");
         }
 
         fileData = std::move(decompressed);
@@ -243,6 +244,7 @@ void Package::reset()
     m_file.Close();
 
     m_files.clear();
+    m_filemap.clear();
 }
 
 void Package::read(void* buffer, std::size_t size) const
@@ -260,5 +262,6 @@ Package::~Package()
 
 void Package::addFile(const PackagedFileInfo& file)
 {
-    m_files.emplace_back(file);
+    const auto it = m_files.emplace_back(file);
+    m_filemap[file.name] = m_files.size() - 1;
 }

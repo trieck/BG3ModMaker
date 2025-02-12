@@ -8,7 +8,7 @@ bool decompressData(CompressionMethod method, const uint8_t* compressedData, uin
     uint8Ptr& decompressedData, uint32_t decompressedSize)
 {
     if (method != CompressionMethod::LZ4) {
-        return false; // Future expansion for other compression methods
+        throw Exception("Unsupported compression method");
     }
 
     // Allocate buffer for decompressed data
@@ -21,4 +21,14 @@ bool decompressData(CompressionMethod method, const uint8_t* compressedData, uin
         static_cast<int>(decompressedSize));
 
     return result >= 0; // Return true if decompression was successful
+}
+
+Stream::Ptr decompressStream(CompressionMethod method, const Stream::Ptr& stream, uint32_t decompressedSize, bool chunked)
+{
+    if (method != CompressionMethod::LZ4) {
+        throw Exception("Unsupported compression method");
+    }
+
+    // TODO: implement LZ4 frame decompression
+    throw Exception("Not implemented");
 }

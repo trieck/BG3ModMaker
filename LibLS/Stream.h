@@ -45,7 +45,7 @@ T Stream::read()
     T value;
     m_stream->read(reinterpret_cast<char*>(&value), sizeof(T));
     if (m_stream->fail()) {
-        throw Exception(GetLastError());
+        throw Exception(std::format("Failed to read {} bytes from stream", sizeof(T)));
     }
 
     return value;
