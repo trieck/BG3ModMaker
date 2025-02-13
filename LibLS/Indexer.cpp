@@ -51,14 +51,16 @@ void Indexer::index(const char* pakFile, const char* dbName)
 
     m_db = std::make_unique<Xapian::WritableDatabase>(dbName, Xapian::DB_CREATE_OR_OVERWRITE);
 
+    auto i = 0;
     for (const auto& file : m_reader.files()) {
         if (file.name.ends_with("lsx")) {
-            std::cout << "Indexing " << file.name << std::endl;
+            std::cout << std::format("Indexing {} ({}/{})\n", file.name, i, m_reader.files().size());
             indexLSXFile(file);
         } else if (file.name.ends_with("lsf")) {
-            std::cout << "Indexing " << file.name << std::endl;
+            std::cout << std::format("Indexing {} ({}/{})\n", file.name, i, m_reader.files().size());
             indexLSFFile(file);
         }
+        ++i;
     }
 
     std::cout << "   Committing changes to database...";
@@ -169,46 +171,10 @@ void Indexer::indexLSXFile(const PackagedFileInfo& file) const
     }
 }
 
-void printAttributes(const Node& node, int level)
-{
-    std::string indent(level, ' ');
-    for (const auto& [key, value] : node.attributes) {
-        std::cout << indent << std::format("  Attribute: {}: {}\n", key, value.value());
-    }
-}
-
-void printChildren(const std::unordered_map<std::string, std::vector<Node::Ptr>>& children, int level)
-{
-    std::string indent(level, ' ');
-
-    for (const auto& [key, nodes] : children) {
-        std::cout << indent << "Node: " << key << std::endl;  // TODO: what is the write name for this?
-        for (const auto& node : nodes) {
-            indent = std::string(level + 2, ' ');
-            std::cout << indent << "  Node: " << node->name << std::endl;
-            printAttributes(*node, level + 4);
-            printChildren(node->children, level + 4);
-        }
-    }
-}
-
-void printRegion(const Region& region)
-{
-    std::cout << "Region: " << region.regionName << std::endl;
-
-    printAttributes(region, 0);
-    printChildren(region.children, 2);
-    
-}
-
 void Indexer::indexLSFFile(const PackagedFileInfo& file) const
 {
     auto buffer = m_reader.readFile(file.name);
 
     LSFReader reader;
     auto resource = reader.read(buffer);
-
-    for (const auto& region : resource->regions | std::views::values) {
-        printRegion(*region);
-    }
 }

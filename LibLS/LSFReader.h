@@ -18,8 +18,11 @@ private:
     void readAttributesV2(const Stream::Ptr& stream);
     void readAttributesV3(const Stream::Ptr& stream);
     void readKeys(const Stream::Ptr& stream);
-    NodeAttribute readAttribute(AttributeType type, const Stream::Ptr& reader, uint32_t length);
-    NodeAttribute readAttribute(AttributeType type, const Stream::Ptr& reader);
+    static std::string readVector(const NodeAttribute& attr, const Stream::Ptr& stream);
+    std::string readTranslatedFSString(const Stream::Ptr& stream) const;
+    static std::string readMatrix(const NodeAttribute& attr, const Stream::Ptr& stream);
+    NodeAttribute readAttribute(AttributeType type, const Stream::Ptr& reader, uint32_t length) const;
+    static NodeAttribute readAttribute(AttributeType type, const Stream::Ptr& reader);
     void readNode(const LSFNodeInfo& defn, Node& node, const Stream::Ptr& attributeReader);
     void readRegions(const Resource::Ptr& resource);
 

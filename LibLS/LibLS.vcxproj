@@ -171,6 +171,8 @@
     <ClInclude Include="LSCommon.h" />
     <ClInclude Include="LSFCommon.h" />
     <ClInclude Include="LSFReader.h" />
+    <ClInclude Include="LZ4Codec.h" />
+    <ClInclude Include="LZ4FrameCompressor.h" />
     <ClInclude Include="Node.h" />
     <ClInclude Include="NodeAttribute.h" />
     <ClInclude Include="PAKFormat.h" />
@@ -204,6 +206,8 @@
     </ClCompile>
     <ClCompile Include="Indexer.cpp" />
     <ClCompile Include="LSFReader.cpp" />
+    <ClCompile Include="LZ4Codec.cpp" />
+    <ClCompile Include="LZ4FrameCompressor.cpp" />
     <ClCompile Include="Node.cpp" />
     <ClCompile Include="NodeAttribute.cpp" />
     <ClCompile Include="PAKFormat.cpp">

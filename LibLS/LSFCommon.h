@@ -13,6 +13,23 @@ enum LSFMetadataFormat : uint32_t {
 };
 
 #pragma pack(push, 1)
+
+struct LSFMetadataV5
+{
+    uint32_t stringsUncompressedSize;
+    uint32_t stringsSizeOnDisk;
+    uint32_t nodesUncompressedSize;
+    uint32_t nodesSizeOnDisk;
+    uint32_t attributesUncompressedSize;
+    uint32_t attributesSizeOnDisk;
+    uint32_t valuesUncompressedSize;
+    uint32_t valuesSizeOnDisk;
+    CompressionFlags compressionFlags;
+    int8_t unknown2;
+    uint16_t unknown3;
+    LSFMetadataFormat metadataFormat;
+};
+
 struct LSFMetadataV6
 {
     uint32_t stringsUncompressedSize;
@@ -40,6 +57,11 @@ struct LSFMagic
 {
     uint8_t magic[4];
     uint32_t version;
+};
+
+struct LSFHeader
+{
+    int32_t engineVersion;
 };
 
 struct LSFExtendedHeader
@@ -192,4 +214,29 @@ struct Resource
     {
         metadata.majorVersion = 3;
     }
+};
+
+struct TranslatedFSStringArgument {
+    std::string key;
+    std::string value;
+    std::string string;
+};
+
+struct TranslatedString {
+    uint16_t version = 0;
+    std::string value;
+    std::string handle;
+
+    std::string str() const
+    {
+        if (!value.empty()) {
+            return value;
+        }
+
+        return std::format("{};{}", handle, version);
+    }
+};
+
+struct TranslatedFSStringT : TranslatedString {
+    std::vector<TranslatedFSStringArgument> arguments;
 };

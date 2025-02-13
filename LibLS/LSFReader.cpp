@@ -64,17 +64,17 @@ Resource::Ptr LSFReader::read(const ByteBuffer& info)
 
 void LSFReader::readHeader()
 {
-    auto magic = m_stream->read<LSFMagic>();
-    if (std::memcmp(magic.magic, LSF_MAGIC, sizeof(LSF_MAGIC)) != 0) {
+    auto [magic, version] = m_stream->read<LSFMagic>();
+    if (std::memcmp(magic, LSF_MAGIC, sizeof(LSF_MAGIC)) != 0) {
         throw Exception("Invalid LSF file.");
     }
 
-    if (magic.version < static_cast<uint32_t>(LSFVersion::INITIAL) || magic.version > static_cast<uint32_t>(
+    if (version < static_cast<uint32_t>(LSFVersion::INITIAL) || version > static_cast<uint32_t>(
         LSFVersion::MAX_READ)) {
-        throw Exception("Unsupported LSF version.");
+        throw Exception(std::format("Unsupported LSF version: {}", version));
     }
 
-    if (magic.version >= static_cast<uint32_t>(LSFVersion::BG3_EXTENDED_HEADER)) {
+    if (version >= static_cast<uint32_t>(LSFVersion::BG3_EXTENDED_HEADER)) {
         auto [engineVersion] = m_stream->read<LSFExtendedHeader>();
         m_gameVersion = PackedVersion::fromInt64(engineVersion);
 
@@ -83,16 +83,32 @@ void LSFReader::readHeader()
             m_gameVersion = {.major = 4, .minor = 0, .revision = 9, .build = 0};
         }
     } else {
-        throw Exception("Unsupported LSF version.");
+        auto [engineVersion] = m_stream->read<LSFHeader>();
+        m_gameVersion = PackedVersion::fromInt64(engineVersion);
+
+        // Workaround for merged LSF files with missing engine version number
+        if (m_gameVersion.major == 0) {
+            m_gameVersion = { .major = 4, .minor = 0, .revision = 9, .build = 0 };
+        }
     }
 
-    if (magic.version < static_cast<uint32_t>(LSFVersion::BG3_NODE_KEYS)) {
-        throw Exception("Unsupported LSF version.");
+    if (version < static_cast<uint32_t>(LSFVersion::BG3_NODE_KEYS)) {
+        auto meta = m_stream->read<LSFMetadataV5>();
+        m_metadata.stringsUncompressedSize = meta.stringsUncompressedSize;
+        m_metadata.stringsSizeOnDisk = meta.stringsSizeOnDisk;
+        m_metadata.nodesUncompressedSize = meta.nodesUncompressedSize;
+        m_metadata.nodesSizeOnDisk = meta.nodesSizeOnDisk;
+        m_metadata.attributesUncompressedSize = meta.attributesUncompressedSize;
+        m_metadata.attributesSizeOnDisk = meta.attributesSizeOnDisk;
+        m_metadata.valuesUncompressedSize = meta.valuesUncompressedSize;
+        m_metadata.valuesSizeOnDisk = meta.valuesSizeOnDisk;
+        m_metadata.compressionFlags = meta.compressionFlags;
+        m_metadata.metadataFormat = meta.metadataFormat;
+    } else {
+        m_metadata = m_stream->read<LSFMetadataV6>();
     }
 
-    m_version = static_cast<LSFVersion>(magic.version);
-
-    m_metadata = m_stream->read<LSFMetadataV6>();
+    m_version = static_cast<LSFVersion>(version);
 }
 
 void LSFReader::readNames(const Stream::Ptr& stream)
@@ -216,7 +232,141 @@ void LSFReader::readKeys(const Stream::Ptr& stream)
     }
 }
 
-NodeAttribute LSFReader::readAttribute(AttributeType type, const Stream::Ptr& reader, uint32_t length)
+std::string LSFReader::readVector(const NodeAttribute& attr, const Stream::Ptr& stream)
+{
+    std::string value;
+
+    switch (attr.type()) {
+    case IVec2:
+        value = std::format("[{}, {}]", stream->read<int32_t>(), stream->read<int32_t>());
+        break;
+    case IVec3:
+        value = std::format("[{}, {}, {}]", stream->read<int32_t>(), stream->read<int32_t>(),
+                                  stream->read<int32_t>());
+        break;
+    case IVec4:
+        value = std::format("[{}, {}, {}, {}]", stream->read<int32_t>(), stream->read<int32_t>(),
+            stream->read<int32_t>(), stream->read<int32_t>());
+        break;
+    case Vec2:
+        value = std::format("[{}, {}]", stream->read<float>(), stream->read<float>());
+        break;
+    case Vec3:
+        value = std::format("[{}, {}, {}]", stream->read<float>(), stream->read<float>(),
+            stream->read<float>());
+        break;
+    case Vec4:
+        value = std::format("[{}, {}, {}, {}]", stream->read<float>(), stream->read<float>(),
+            stream->read<float>(), stream->read<float>());
+        break;
+    default:
+        throw Exception("Unsupported vector type.");
+    }
+
+    return value;
+}
+
+
+
+std::string LSFReader::readTranslatedFSString(const Stream::Ptr& stream) const
+{
+    TranslatedFSStringT str;
+
+    if (m_version >= LSFVersion::BG3) {
+        str.version = stream->read<uint16_t>();
+    } else {
+        str.version = 0;
+        auto valueLength = stream->read<int32_t>();
+        str.value = stream->read(valueLength)->str();
+    }
+
+    auto handleLength = stream->read<int32_t>();
+    str.handle = stream->read(handleLength)->str();
+
+    auto numArgs = stream->read<int32_t>();
+    str.arguments.reserve(numArgs);
+
+    for (auto i = 0; i < numArgs; ++i) {
+        TranslatedFSStringArgument arg;
+        auto keyLength = stream->read<int32_t>();
+        arg.key = stream->read(keyLength)->str();
+        arg.string = readTranslatedFSString(stream);
+
+        auto valueLength = stream->read<int32_t>();
+        arg.value = stream->read(valueLength)->str();
+        str.arguments[i] = arg;
+    }
+
+    return str.str();
+}
+
+static uint32_t columns(AttributeType type)
+{
+    switch (type) {
+    case IVec2:
+    case Vec2:
+    case Mat2:
+        return 2;
+    case IVec3:
+    case Vec3:
+    case Mat3:
+    case Mat4x3:
+        return 3;
+    case IVec4:
+    case Vec4:
+    case Mat3x4:
+    case Mat4:
+        return 4;
+    default:
+        throw Exception("Unsupported attribute type.");
+    }
+}
+
+static uint32_t rows(AttributeType type)
+{
+    switch (type) {
+    case IVec2:
+    case Vec2:
+    case IVec3:
+    case Vec3:
+    case IVec4:
+    case Vec4:
+        return 1;
+    case Mat2:
+        return 2;
+    case Mat3:
+    case Mat3x4:
+        return 3;
+    case Mat4:
+    case Mat4x3:
+        return 4;
+    default:
+        throw Exception("Unsupported attribute type.");
+    }
+}
+
+std::string LSFReader::readMatrix(const NodeAttribute& attr, const Stream::Ptr& stream)
+{
+    auto columns = ::columns(attr.type());
+    auto rows = ::rows(attr.type());
+
+    std::ostringstream oss;
+    for (auto row = 0u; row < rows; ++row) {
+        for (auto col = 0u; col < columns; ++col) {
+            if (col > 0) {
+                oss << ", ";
+            } else if (row > 0) {
+                oss << "; ";
+            }
+
+            oss << stream->read<float>();
+        }
+    }
+
+    return oss.str();
+}
+
+NodeAttribute LSFReader::readAttribute(AttributeType type, const Stream::Ptr& reader, uint32_t length) const
 {
     NodeAttribute attr(type);
     TranslatedString_T str;
@@ -235,7 +385,7 @@ NodeAttribute LSFReader::readAttribute(AttributeType type, const Stream::Ptr& re
         break;
     case TranslatedString:
         if (m_version >= LSFVersion::BG3 || (m_gameVersion.major > 4 ||
-            (m_gameVersion.major == 4 && m_gameVersion.revision > 0) || 
+            (m_gameVersion.major == 4 && m_gameVersion.revision > 0) ||
             (m_gameVersion.major == 4 && m_gameVersion.revision == 0 && m_gameVersion.build >= 0x1a))) {
             str.version = reader->read<uint16_t>();
         } else {
@@ -249,7 +399,22 @@ NodeAttribute LSFReader::readAttribute(AttributeType type, const Stream::Ptr& re
         attr.setValue(str.str());
         break;
     case TranslatedFSString:
-        // TODO: Implement
+        attr.setValue(readTranslatedFSString(reader));
+        break;
+    case IVec2:
+    case IVec3:
+    case IVec4:
+    case Vec2:
+    case Vec3:
+    case Vec4:
+        attr.setValue(readVector(attr, reader));
+        break;
+    case Mat2:
+    case Mat3:
+    case Mat3x4:
+    case Mat4x3:
+    case Mat4:
+        attr.setValue(readMatrix(attr, reader));
         break;
     default:
         attr = readAttribute(type, reader);
@@ -388,7 +553,8 @@ Stream::Ptr LSFReader::decompress(uint32_t sizeOnDisk, uint32_t uncompressedSize
     auto isCompressed = m_metadata.compressionMethod() != CompressionMethod::NONE;
     auto compressedSize = isCompressed ? sizeOnDisk : uncompressedSize;
     auto compressedStream = m_stream->read(compressedSize);
-    auto uncompressedStream = decompressStream(m_metadata.compressionMethod(), compressedStream, uncompressedSize, chunked);
+    auto uncompressedStream = decompressStream(m_metadata.compressionMethod(), compressedStream, uncompressedSize,
+                                               chunked);
 
     return uncompressedStream;
 }

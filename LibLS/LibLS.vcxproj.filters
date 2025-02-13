@@ -69,6 +69,12 @@
     <ClInclude Include="NodeAttribute.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LZ4FrameCompressor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LZ4Codec.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -114,6 +120,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="NodeAttribute.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LZ4FrameCompressor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LZ4Codec.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

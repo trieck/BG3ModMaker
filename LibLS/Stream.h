@@ -30,10 +30,9 @@ public:
     static Ptr makeStream(const ByteBuffer& buf);
     static Ptr makeStream(const std::string& str);
 
-    Ptr read(uint32_t bytes) const;
-
+    Ptr read(size_t bytes) const;
     std::string str() const;
-    std::istream& stream() const;
+    ByteBuffer bytes() const;
 
 private:
     IStreamPtr m_stream;

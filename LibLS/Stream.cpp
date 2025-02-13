@@ -72,7 +72,7 @@ Stream::Ptr Stream::makeStream(const std::string& str)
     return std::make_unique<Stream>(str);
 }
 
-Stream::Ptr Stream::read(uint32_t bytes) const
+Stream::Ptr Stream::read(size_t bytes) const
 {
     auto buf = std::make_unique<char[]>(bytes);
 
@@ -86,7 +86,12 @@ std::string Stream::str() const
     return dynamic_cast<std::istringstream*>(m_stream.get())->str();
 }
 
-std::istream& Stream::stream() const
+ByteBuffer Stream::bytes() const
 {
-    return *m_stream;
+    auto sz = size();
+    auto p = std::make_unique<uint8_t[]>(sz);
+
+    read(reinterpret_cast<char*>(p.get()), sz);
+
+    return { std::move(p), sz };
 }
