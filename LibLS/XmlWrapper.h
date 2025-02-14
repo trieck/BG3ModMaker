@@ -5,9 +5,13 @@
 class XmlWrapper
 {
 public:
+    XmlWrapper();
     explicit XmlWrapper(const ByteBuffer& buffer);
+    XmlWrapper(const XmlWrapper& rhs);
+    XmlWrapper(const pugi::xml_document& doc);
     ~XmlWrapper();
 
+    XmlWrapper& operator=(const XmlWrapper& rhs);
     const pugi::xml_document& doc() const;
 
     std::string asString() const;

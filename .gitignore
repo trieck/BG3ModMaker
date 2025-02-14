@@ -2,3 +2,4 @@
 /vcpkg_installed
 /x64
 x64
+*.vcxproj.user

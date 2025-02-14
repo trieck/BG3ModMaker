@@ -20,7 +20,8 @@ namespace {
 
     std::string normalizeText(std::string text)
     {
-        std::ranges::replace(text, '_', ' ');
+        text = std::regex_replace(text, std::regex("[^a-zA-Z0-9-]"), " ");
+
         std::ranges::transform(text, text.begin(), ::tolower);
 
         std::istringstream stream(text);
@@ -31,8 +32,24 @@ namespace {
                 filtered << word << " ";
             }
         }
+
         return filtered.str();
     }
+
+    void addTerms(std::unordered_set<std::string>& terms, const std::string& value)
+    {
+        auto normalized = normalizeText(value);
+
+        std::istringstream stream(normalized);
+
+        std::string word;
+        while (stream >> word) {
+            if (word.size() > 1) {
+                terms.insert(word);
+            }
+        }
+    }
+
 } // anonymous namespace
 
 Indexer::Indexer()
@@ -40,6 +57,9 @@ Indexer::Indexer()
     for (const auto& stopWord : STOP_WORDS) {
         m_stopper.add(stopWord);
     }
+
+    m_termgen.set_stopper(&m_stopper);
+    m_termgen.set_stopper_strategy(Xapian::TermGenerator::STOP_ALL);
 }
 
 void Indexer::index(const char* pakFile, const char* dbName)
@@ -59,8 +79,13 @@ void Indexer::index(const char* pakFile, const char* dbName)
         } else if (file.name.ends_with("lsf")) {
             std::cout << std::format("Indexing {} ({}/{})\n", file.name, i, m_reader.files().size());
             indexLSFFile(file);
+        } else {
+            std::cout << std::format("Skipping {} ({}/{})\n", file.name, i, m_reader.files().size());
         }
-        ++i;
+
+        if (++i % 10000 == 0) {
+            m_db->commit();
+        }
     }
 
     std::cout << "   Committing changes to database...";
@@ -77,34 +102,30 @@ void Indexer::compact() const
     }
 }
 
-void Indexer::indexLSXFile(const PackagedFileInfo& file) const
-{
+void Indexer::indexLSXFile(const PackagedFileInfo& file)
+ {
     auto buffer = m_reader.readFile(file.name);
     XmlWrapper xmlDoc(buffer);
 
-    auto nodes = xmlDoc.selectNodes("//region//node//children//node");
+    auto nodes = xmlDoc.selectNodes("//*[self::node]");
+
     for (const auto& xpathNode : nodes) {
+        std::unordered_set<std::string> terms;
+
         auto node = xpathNode.node();
 
         json doc;
         doc["source_file"] = file.name;
         doc["type"] = node.attribute("id").value();
 
-        // TODO: we need to store region-node path like:
-        //  <region id="Config">
-        //    <node id="root">
-        //     <children>
-        //      <node id="ModuleInfo">
-
         if (node.attributes().empty()) {
             continue;
         }
 
-        std::string uuid;
         json attributes = json::array();
-
         for (const auto& attribute : node.children("attribute")) {
             std::string id = attribute.attribute("id").as_string();
+            std::string type = attribute.attribute("type").as_string();
             std::string value = attribute.attribute("value").as_string();
 
             if (id.empty() || value.empty()) {
@@ -112,69 +133,103 @@ void Indexer::indexLSXFile(const PackagedFileInfo& file) const
             }
 
             json attr;
-            attr[id] = value;
-
-            // FIXME: This is a hack to find the UUID of the document
-            if (id == "MapKey" || id == "UUID") {
-                uuid = value;
-            }
+            attr["id"] = id;
+            attr["value"] = value;
+            attr["type"] = type;
 
             if (id == "Script") {
                 continue; // Skip script content
             }
 
+            addTerms(terms, value);
+
             attributes.push_back(attr);
         }
 
-        if (attributes.empty() || uuid.empty()) {
+        if (terms.empty()) {
             continue;
+        }
+
+        std::ostringstream values;
+        for (const auto& term : terms) {
+            values << term << " ";
         }
 
         doc["attributes"] = attributes;
 
-        std::unordered_set<std::string> unique_terms;
-
-        std::ostringstream values;
-        for (auto& [key, value] : doc.items()) {
-            if (key == "attributes") {
-                for (auto& attribute : value) {
-                    for (auto& [attrKey, attrValue] : attribute.items()) {
-                        auto raw = attrValue.get<std::string>();
-                        auto normalized = normalizeText(raw);
-
-                        normalized = std::regex_replace(normalized, std::regex("[^a-zA-Z0-9-]"), " ");
-
-                        std::istringstream iss(normalized);
-                        std::string token;
-                        while (iss >> token) { // Split into individual words
-                            unique_terms.insert(token);
-                            values << token << " ";
-                        }
-                    }
-                }
-            }
-        }
-
-        if (unique_terms.empty()) {
-            continue;
-        }
-
-        Xapian::TermGenerator termgen;
-        termgen.set_stopper(&m_stopper);
-        termgen.set_stopper_strategy(Xapian::TermGenerator::STOP_ALL);
-
         Xapian::Document xdoc;
-        termgen.set_document(xdoc);
-        termgen.index_text(values.str());
+        m_termgen.set_document(xdoc);
+        m_termgen.index_text(values.str());
         xdoc.set_data(doc.dump());
         m_db->add_document(xdoc);
     }
 }
 
-void Indexer::indexLSFFile(const PackagedFileInfo& file) const
+void Indexer::indexNode(const std::string& filename, const Node::Ptr& node)
+{
+    std::unordered_set<std::string> terms;
+
+    json doc;
+    doc["source_file"] = filename;
+    doc["type"] = node->name;
+
+    json attributes = json::array();
+    for (const auto& [key, val] : node->attributes) {
+        json attr;
+
+        attr["id"] = key;
+        attr["value"] = val.value();
+        attr["type"] = val.typeStr();
+
+        if (key == "Script") {
+            continue; // Skip script content
+        }
+
+        addTerms(terms, val.value());
+
+        attributes.push_back(attr);
+    }
+
+    doc["attributes"] = attributes;
+
+    if (terms.empty()) {
+        return;
+    }
+
+    std::ostringstream values;
+    for (const auto& term : terms) {
+        values << term << " ";
+    }
+
+    Xapian::Document xdoc;
+    m_termgen.set_document(xdoc);
+    m_termgen.index_text(values.str());
+    xdoc.set_data(doc.dump());
+    m_db->add_document(xdoc);
+}
+
+void Indexer::indexNodes(const std::string& filename, const std::vector<Node::Ptr>& nodes)
+{
+    for (const auto& node : nodes) {
+        indexNode(filename, node);
+    }
+}
+
+void Indexer::indexRegion(const std::string& fileName, const Region::Ptr& region)
+{
+    for (const auto& val : region->children | std::views::values) {
+        indexNodes(fileName, val);
+    }
+}
+
+void Indexer::indexLSFFile(const PackagedFileInfo& file)
 {
     auto buffer = m_reader.readFile(file.name);
 
     LSFReader reader;
     auto resource = reader.read(buffer);
+
+    for (const auto& val : resource->regions | std::views::values) {
+        indexRegion(file.name, val);
+    }
 }

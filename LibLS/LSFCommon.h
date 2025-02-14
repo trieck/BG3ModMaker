@@ -4,6 +4,7 @@
 #include "Compress.h"
 #include "LSCommon.h"
 #include "Node.h"
+#include "XmlWrapper.h"
 
 enum LSFMetadataFormat : uint32_t {
 
@@ -214,6 +215,9 @@ struct Resource
     {
         metadata.majorVersion = 3;
     }
+
+
+    XmlWrapper toXml() const;
 };
 
 struct TranslatedFSStringArgument {

@@ -1,13 +1,34 @@
 #include "pch.h"
 #include "XmlWrapper.h"
 
+XmlWrapper::XmlWrapper()
+= default;
+
 XmlWrapper::XmlWrapper(const ByteBuffer& buffer)
 {
     load(buffer);
 }
 
+XmlWrapper::XmlWrapper(const XmlWrapper& rhs)
+{
+    *this = rhs;
+}
+
+XmlWrapper::XmlWrapper(const pugi::xml_document& doc)
+{
+    m_doc.reset(doc);
+}
+
 XmlWrapper::~XmlWrapper()
 = default;
+
+XmlWrapper& XmlWrapper::operator=(const XmlWrapper& rhs)
+{
+    if (this != &rhs) {
+        m_doc.reset(rhs.m_doc);
+    }
+    return *this;
+}
 
 const pugi::xml_document& XmlWrapper::doc() const
 {

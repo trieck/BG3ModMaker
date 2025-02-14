@@ -46,6 +46,7 @@ public:
     explicit NodeAttribute(AttributeType type);
 
     AttributeType type() const;
+    std::string typeStr() const;
 
     std::string value() const { return m_value; }
     void setValue(const std::string& value) { m_value = value; }

@@ -128,5 +128,8 @@
     <ClCompile Include="LZ4Codec.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LSFCommon.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

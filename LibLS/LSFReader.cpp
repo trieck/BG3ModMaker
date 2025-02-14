@@ -234,39 +234,36 @@ void LSFReader::readKeys(const Stream::Ptr& stream)
 
 std::string LSFReader::readVector(const NodeAttribute& attr, const Stream::Ptr& stream)
 {
-    std::string value;
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(2);
 
     switch (attr.type()) {
     case IVec2:
-        value = std::format("[{}, {}]", stream->read<int32_t>(), stream->read<int32_t>());
+        oss << stream->read<int32_t>() << " " << stream->read<int32_t>();
         break;
     case IVec3:
-        value = std::format("[{}, {}, {}]", stream->read<int32_t>(), stream->read<int32_t>(),
-                                  stream->read<int32_t>());
+        oss << stream->read<int32_t>() << " " << stream->read<int32_t>() << " " << stream->read<int32_t>();
         break;
     case IVec4:
-        value = std::format("[{}, {}, {}, {}]", stream->read<int32_t>(), stream->read<int32_t>(),
-            stream->read<int32_t>(), stream->read<int32_t>());
+        oss << stream->read<int32_t>() << " " << stream->read<int32_t>() << " "
+            << stream->read<int32_t>() << " " << stream->read<int32_t>();
         break;
     case Vec2:
-        value = std::format("[{}, {}]", stream->read<float>(), stream->read<float>());
+        oss << std::setw(5) << stream->read<float>() << " " << stream->read<float>();
         break;
     case Vec3:
-        value = std::format("[{}, {}, {}]", stream->read<float>(), stream->read<float>(),
-            stream->read<float>());
+        oss << std::setw(5) << stream->read<float>() << " " << stream->read<float>() << " " << stream->read<float>();
         break;
     case Vec4:
-        value = std::format("[{}, {}, {}, {}]", stream->read<float>(), stream->read<float>(),
-            stream->read<float>(), stream->read<float>());
+        oss << std::setw(5) << stream->read<float>() << " " << stream->read<float>() << " "
+            << stream->read<float>() << " " << stream->read<float>();
         break;
     default:
         throw Exception("Unsupported vector type.");
     }
 
-    return value;
+    return oss.str();
 }
-
-
 
 std::string LSFReader::readTranslatedFSString(const Stream::Ptr& stream) const
 {
@@ -351,15 +348,12 @@ std::string LSFReader::readMatrix(const NodeAttribute& attr, const Stream::Ptr& 
     auto rows = ::rows(attr.type());
 
     std::ostringstream oss;
+    oss << std::fixed << std::setprecision(2);
+
     for (auto row = 0u; row < rows; ++row) {
         for (auto col = 0u; col < columns; ++col) {
-            if (col > 0) {
-                oss << ", ";
-            } else if (row > 0) {
-                oss << "; ";
-            }
-
-            oss << stream->read<float>();
+            if (row > 0 || col > 0) oss << " ";
+            oss << std::setw(5) << stream->read<float>();
         }
     }
 
@@ -491,7 +485,7 @@ NodeAttribute LSFReader::readAttribute(AttributeType type, const Stream::Ptr& re
     return attr;
 }
 
-void LSFReader::readNode(const LSFNodeInfo& defn, Node& node, const Stream::Ptr& attributeReader)
+void LSFReader::readNode(const LSFNodeInfo& defn, Node& node, const Stream::Ptr& attributeReader) const
 {
     node.name = m_names[defn.nameIndex][defn.nameOffset];
 

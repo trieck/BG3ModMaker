@@ -23,7 +23,7 @@ private:
     static std::string readMatrix(const NodeAttribute& attr, const Stream::Ptr& stream);
     NodeAttribute readAttribute(AttributeType type, const Stream::Ptr& reader, uint32_t length) const;
     static NodeAttribute readAttribute(AttributeType type, const Stream::Ptr& reader);
-    void readNode(const LSFNodeInfo& defn, Node& node, const Stream::Ptr& attributeReader);
+    void readNode(const LSFNodeInfo& defn, Node& node, const Stream::Ptr& attributeReader) const;
     void readRegions(const Resource::Ptr& resource);
 
     Stream::Ptr decompress(uint32_t sizeOnDisk, uint32_t uncompressedSize, std::string debugDumpTo, bool allowChunked) const;
