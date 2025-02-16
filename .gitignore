@@ -3,3 +3,7 @@
 /x64
 x64
 *.vcxproj.user
+/BG3ModStudio/*.aps
+/BG3ModStudio/resources/*.aps
+/BG3ModStudio/resources/*.bin
+/BG3ModStudio/resources/*.rc2

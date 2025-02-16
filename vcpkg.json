@@ -1,10 +1,11 @@
 {
-  "builtin-baseline": "2960d7d80e8d09c84ae8abf15c12196c2ca7d39a",
+  "builtin-baseline": "6f29f12e82a8293156836ad81cc9bf5af41fe836",
   "dependencies": [
     "lz4",
     "nlohmann-json",
     "pugixml",
-    "xapian"
+    "xapian",
+    "wtl"
   ],
   "name": "bg3modmaker",
   "version": "0.1.0"
