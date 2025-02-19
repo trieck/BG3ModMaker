@@ -4,7 +4,9 @@
 #include <filesystem>
 #include <iostream>
 #include <memory>
+#include <ranges>
 #include <sstream>
+#include <string_view>
 #include <string>
 #include <vector>
 #include <xmemory>
@@ -14,11 +16,6 @@
 
 #include <Windows.h>
 
-enum class SeekMode : DWORD {
-    Begin = FILE_BEGIN,
-    Current = FILE_CURRENT,
-    End = FILE_END
-};
 
 using uint8Ptr = std::unique_ptr<uint8_t[]>;
 using ByteBuffer = std::pair<uint8Ptr, size_t>;

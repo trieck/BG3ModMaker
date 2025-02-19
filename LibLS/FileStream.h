@@ -1,19 +1,24 @@
 #pragma once
 
-class FileStream
+#include "IStreamBase.h"
+
+class FileStream : public IStreamBase
 {
 public:
     FileStream();
-    ~FileStream();
-    void Open(const char* path, const char* mode);
-    void Close();
-    void Write(const void* data, size_t size) const;
-    void Read(void* data, size_t size) const;
-    void Seek(int64_t offset, SeekMode mode) const;
-    size_t Tell() const;
-    size_t Size() const;
-    bool IsOpen() const;
+    ~FileStream() override;
 
+    void open(const char* path, const char* mode);
+    void close();
+
+    // IStream
+    size_t read(char* buf, size_t size) const override;
+    void seek(int64_t offset, SeekMode mode) const override;
+    size_t tell() const override;
+    size_t size() const override;
+
+    void write(const void* data, size_t size) const;
+    bool isOpen() const;
 private:
     HANDLE m_file;
 };

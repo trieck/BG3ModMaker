@@ -8,12 +8,12 @@ FileStream::FileStream() : m_file(INVALID_HANDLE_VALUE)
 
 FileStream::~FileStream()
 {
-    Close();
+    close();
 }
 
-void FileStream::Open(const char* path, const char* mode)
+void FileStream::open(const char* path, const char* mode)
 {
-    Close();
+    close();
 
     DWORD access = 0;
     DWORD creation = 0;
@@ -32,7 +32,7 @@ void FileStream::Open(const char* path, const char* mode)
     }
 }
 
-void FileStream::Close()
+void FileStream::close()
 {
     if (m_file != INVALID_HANDLE_VALUE) {
         CloseHandle(m_file);
@@ -40,7 +40,7 @@ void FileStream::Close()
     }
 }
 
-void FileStream::Write(const void* data, size_t size) const
+void FileStream::write(const void* data, size_t size) const
 {
     const auto* buffer = static_cast<const char*>(data);
 
@@ -57,28 +57,30 @@ void FileStream::Write(const void* data, size_t size) const
     }
 }
 
-void FileStream::Read(void* data, size_t size) const
+size_t FileStream::read(char* buf, size_t size) const
 {
-    auto* buffer = static_cast<char*>(data);
+    size_t totalRead = 0;
 
     while (size > 0) {
-        auto chunk = (size > MAXDWORD) ? MAXDWORD : static_cast<DWORD>(size);
+        auto chunk = static_cast<DWORD>(std::min<size_t>(size, MAXDWORD));
         DWORD read = 0;
-        if (!ReadFile(m_file, buffer, chunk, &read, nullptr)) {
+        if (!ReadFile(m_file, buf, chunk, &read, nullptr)) {
             throw Exception(GetLastError());
         }
 
         if (read == 0) {
-            throw Exception(ERROR_HANDLE_EOF);
+            return totalRead; // EOF
         }
 
-        buffer += read;
+        buf += read;
         size -= read;
+        totalRead += read;
     }
+
+    return totalRead;
 }
 
-
-void FileStream::Seek(int64_t offset, SeekMode mode) const
+void FileStream::seek(int64_t offset, SeekMode mode) const
 {
     LARGE_INTEGER li;
     li.QuadPart = offset;
@@ -89,7 +91,7 @@ void FileStream::Seek(int64_t offset, SeekMode mode) const
     }
 }
 
-size_t FileStream::Tell() const
+size_t FileStream::tell() const
 {
     LARGE_INTEGER pos = {};
     if (!SetFilePointerEx(m_file, {}, &pos, FILE_CURRENT)) {
@@ -99,7 +101,7 @@ size_t FileStream::Tell() const
     return static_cast<size_t>(pos.QuadPart);
 }
 
-size_t FileStream::Size() const
+size_t FileStream::size() const
 {
     LARGE_INTEGER size;
     if (!GetFileSizeEx(m_file, &size)) {
@@ -109,7 +111,7 @@ size_t FileStream::Size() const
     return static_cast<size_t>(size.QuadPart);
 }
 
-bool FileStream::IsOpen() const
+bool FileStream::isOpen() const
 {
     return m_file != INVALID_HANDLE_VALUE;
 }

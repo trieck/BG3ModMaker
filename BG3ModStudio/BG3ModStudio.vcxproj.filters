@@ -38,6 +38,18 @@
     <ClInclude Include="FileView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FileDialogEx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="COMError.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="textstream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RTFStreamFormatter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BG3ModStudio.cpp">
@@ -58,11 +70,20 @@
     <ClCompile Include="FileView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FileDialogEx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="COMError.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="textstream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RTFStreamFormatter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="resources\MainWindow.ui">
-      <Filter>Resources</Filter>
-    </CustomBuild>
     <CustomBuild Include="ribbon.xml">
       <Filter>Resources</Filter>
     </CustomBuild>
@@ -71,6 +92,14 @@
     <Image Include="resources\app.ico">
       <Filter>Resources</Filter>
     </Image>
+    <Image Include="resources\folder.ico">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="resources\file.ico">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="resources\open.bmp" />
+    <Image Include="resources\exit.bmp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\BG3ModStudio.rc">

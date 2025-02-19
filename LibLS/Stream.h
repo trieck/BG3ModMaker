@@ -2,15 +2,16 @@
 
 #include "Exception.h"
 #include "framework.h"
+#include "IStreamBase.h"
 
-class Stream
+class Stream : public IStreamBase
 {
 public:
     Stream();
     Stream(const char* buf, size_t size);
     explicit Stream(const ByteBuffer& buf);
     explicit Stream(const std::string& str);
-    virtual ~Stream();
+    ~Stream() override;
 
     Stream(const Stream&) = delete;
     Stream& operator=(const Stream&) = delete;
@@ -19,11 +20,11 @@ public:
     template <typename T>
     T read();
 
-    void read(char* buf, size_t size) const;
-
-    void seek(int64_t offset, SeekMode mode) const;
-    size_t tell() const;
-    size_t size() const;
+    // IStreamBase
+    size_t read(char* buf, size_t size) const override;
+    void seek(int64_t offset, SeekMode mode) const override;
+    size_t tell() const override;
+    size_t size() const override;
 
     using Ptr = std::unique_ptr<Stream>;
     static Ptr makeStream(const char* buf, size_t size);

@@ -81,6 +81,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)\LibLS;</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -100,6 +101,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)\LibLS;</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -119,6 +121,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)\LibLS;</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -139,6 +142,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)\LibLS;</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -153,26 +157,34 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="BG3ModStudio.h" />
+    <ClInclude Include="COMError.h" />
+    <ClInclude Include="FileDialogEx.h" />
     <ClInclude Include="FileView.h" />
     <ClInclude Include="FolderView.h" />
     <ClInclude Include="MainFrame.h" />
     <ClInclude Include="MessageLoopEx.h" />
     <ClInclude Include="resources\resource.h" />
+    <ClInclude Include="RTFStreamFormatter.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="textstream.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BG3ModStudio.cpp" />
+    <ClCompile Include="COMError.cpp" />
+    <ClCompile Include="FileDialogEx.cpp" />
     <ClCompile Include="FileView.cpp" />
     <ClCompile Include="FolderView.cpp" />
     <ClCompile Include="MainFrame.cpp" />
     <ClCompile Include="MessageLoopEx.cpp" />
+    <ClCompile Include="RTFStreamFormatter.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="textstream.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\LibLS\LibLS.vcxproj">
@@ -180,28 +192,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="resources\MainWindow.ui">
-      <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(VcpkgManifestRoot)\vcpkg_installed\vcpkg\pkgs\qt5-base_$(VcpkgTriplet)\tools\qt5\bin\uic.exe" "$(ProjectDir)%(Identity)" -o "$(ProjectDir)ui_%(Filename).h"  </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(VcpkgManifestRoot)\vcpkg_installed\vcpkg\pkgs\qt5-base_$(VcpkgTriplet)\tools\qt5\bin\uic.exe" "$(ProjectDir)%(Identity)" -o "$(ProjectDir)ui_%(Filename).h"  </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(VcpkgManifestRoot)\vcpkg_installed\vcpkg\pkgs\qt5-base_$(VcpkgTriplet)\tools\qt5\bin\uic.exe" "$(ProjectDir)%(Identity)" -o "$(ProjectDir)ui_%(Filename).h"  </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(VcpkgManifestRoot)\vcpkg_installed\vcpkg\pkgs\qt5-base_$(VcpkgTriplet)\tools\qt5\bin\uic.exe" "$(ProjectDir)%(Identity)" -o "$(ProjectDir)ui_%(Filename).h"  </Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compiling Qt UI file...</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)ui_%(Filename).h</Outputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)%(Identity)</AdditionalInputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compiling Qt UI file...</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)ui_%(Filename).h</Outputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)%(Identity)</AdditionalInputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling Qt UI file...</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)ui_%(Filename).h</Outputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)%(Identity)</AdditionalInputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compiling Qt UI file...</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)ui_%(Filename).h</Outputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)%(Identity)</AdditionalInputs>
-    </CustomBuild>
-  </ItemGroup>
-  <ItemGroup>
     <Image Include="resources\app.ico" />
+    <Image Include="resources\exit.bmp" />
+    <Image Include="resources\file.ico" />
+    <Image Include="resources\folder.ico" />
+    <Image Include="resources\open.bmp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\BG3ModStudio.rc" />

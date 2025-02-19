@@ -1,4 +1,3 @@
-
 #include "stdafx.h"
 #include "MainFrame.h"
 #include "BG3ModStudio.h"
@@ -17,7 +16,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return 1;
     }
 
-    return BG3ModStudio::run(hInstance, lpCmdLine, nShowCmd);
+    try {
+        BG3ModStudio::run(hInstance, lpCmdLine, nShowCmd);
+    } catch (const std::exception& e) {
+        ATLTRACE("Exception: %s\n", e.what());
+        return 1;
+    }
+
+    return 0;
 }
 
 BG3ModStudio::~BG3ModStudio()

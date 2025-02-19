@@ -25,13 +25,13 @@ BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE
+2 TEXTINCLUDE 
 BEGIN
     "#include ""atlres.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE
+3 TEXTINCLUDE 
 BEGIN
     "\r\n"
     "#include ""ribbon.rc2""\r\n"
@@ -49,6 +49,11 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDR_MAINFRAME           ICON                    "app.ico"
+
+IDI_FOLDER              ICON                    "folder.ico"
+
+IDI_FILE                ICON                    "file.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -93,11 +98,26 @@ END
 //
 // Menu
 //
+
 IDR_MAINFRAME MENU
 BEGIN
     POPUP "&File"
     BEGIN
-        MENUITEM "E&xit", ID_APP_EXIT
+        MENUITEM "E&xit",                       ID_APP_EXIT
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
+    END
+END
+
+IDR_TAB_CONTEXT MENU
+BEGIN
+    POPUP "TAB_CONTEXT"
+    BEGIN
+        MENUITEM "Close Tab",                   ID_TAB_CLOSE
+        MENUITEM "Close All Tabs",              ID_TAB_CLOSE_ALL
+        MENUITEM "Close Other Tabs",            ID_TAB_CLOSE_OTHERS
     END
 END
 
@@ -106,11 +126,23 @@ END
 //
 // Accelerator
 //
+
 IDR_MAINFRAME ACCELERATORS
 BEGIN
-    "O", ID_FILE_OPEN, VIRTKEY, CONTROL, NOINVERT
-    "S", ID_FILE_SAVE, VIRTKEY, CONTROL, NOINVERT
+    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
+    "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
 END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+ID_FILE_OPEN            BITMAP                  "open.bmp"
+
+ID_APP_EXIT             BITMAP                  "exit.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -120,20 +152,21 @@ END
 STRINGTABLE
 BEGIN
     IDR_MAINFRAME           "BG3 Mod Studio"
+END
+
+STRINGTABLE
+BEGIN
     ID_VIEW_STATUS_BAR      "Show or hide the status bar\nToggle StatusBar"
+END
+
+STRINGTABLE
+BEGIN
     ID_APP_EXIT             "Quit the application; prompts to save documents\nExit"
 END
 
 #endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
-/////////////////////////////////////////////////////////////////////////////
-//
-// Bitmap
-//
-
-ID_FILE_OPEN            BITMAP                  "open.bmp"
-ID_APP_EXIT             BITMAP                  "exit.bmp"
 
 
 #ifndef APSTUDIO_INVOKED
@@ -141,6 +174,7 @@ ID_APP_EXIT             BITMAP                  "exit.bmp"
 //
 // Generated from the TEXTINCLUDE 3 resource.
 //
+
 #include "ribbon.rc2"
 
 /////////////////////////////////////////////////////////////////////////////

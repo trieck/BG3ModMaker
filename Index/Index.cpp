@@ -13,6 +13,7 @@ int main(int argc, char* argv[])
         std::cerr << "usage: " << argv[0] << " {package-path} {db-path}\n";
         return 1;
     }
+
     std::string pakPath = argv[1];
     std::string dbPath = argv[2];
 

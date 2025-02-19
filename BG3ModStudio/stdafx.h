@@ -40,6 +40,9 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <string>
+#include <ranges>
+#include <bit>
+#include <memory>
 
 #ifdef _UNICODE
 using tstring = std::wstring;

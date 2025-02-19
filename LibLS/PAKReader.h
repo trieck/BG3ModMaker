@@ -31,7 +31,7 @@ template <typename T>
 T Package::read()
 {
     T value;
-    m_file.Read(reinterpret_cast<char*>(&value), sizeof(T));
+    m_file.read(reinterpret_cast<char*>(&value), sizeof(T));
     return value;
 }
 

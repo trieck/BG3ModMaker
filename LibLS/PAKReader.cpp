@@ -218,8 +218,8 @@ bool PAKReader::extractFile(const PackagedFileInfo& file, const char* path) cons
     create_directories(outputPath.parent_path()); // Ensure parent directories exist
 
     FileStream outFile;
-    outFile.Open(outputPath.string().c_str(), "wb");
-    outFile.Write(fileData.get(), fileSize);
+    outFile.open(outputPath.string().c_str(), "wb");
+    outFile.write(fileData.get(), fileSize);
 
     return true;
 }
@@ -229,19 +229,19 @@ inline bool Package::load(const char* filename)
     reset();
 
     m_filename = filename;
-    m_file.Open(m_filename.c_str(), "rb");
+    m_file.open(m_filename.c_str(), "rb");
 
     return true;
 }
 
 void Package::seek(int64_t offset, SeekMode mode) const
 {
-    m_file.Seek(offset, mode);
+    m_file.seek(offset, mode);
 }
 
 void Package::reset()
 {
-    m_file.Close();
+    m_file.close();
 
     m_files.clear();
     m_filemap.clear();
@@ -249,7 +249,7 @@ void Package::reset()
 
 void Package::read(void* buffer, std::size_t size) const
 {
-    m_file.Read(buffer, size);
+    m_file.read(static_cast<char*>(buffer), size);
 }
 
 Package::Package()

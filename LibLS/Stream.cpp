@@ -27,12 +27,14 @@ Stream::Stream(const std::string& str)
 Stream::~Stream()
 = default;
 
-void Stream::read(char* buf, size_t size) const
+size_t Stream::read(char* buf, size_t size) const
 {
     m_stream->read(buf, static_cast<std::streamsize>(size));
     if (m_stream->fail()) {
         throw Exception(std::format("Unable to read bytes of size {} from stream.", size));
     }
+
+    return size;
 }
 
 void Stream::seek(int64_t offset, SeekMode mode) const

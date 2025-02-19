@@ -1,15 +1,130 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by app.rc
+// Used by BG3ModStudio.rc
 //
+#define ID_SEPARATOR                    0
+#define ID_DEFAULT_PANE                 0
+#define VS_VERSION_INFO                 1
 #define IDR_MAINFRAME                   101
+#define IDI_FOLDER                      102
+#define IDI_FILE                        103
+#define IDR_TAB_CONTEXT                 106
+#define ATL_IDC_TAB_CONTROL             0x3020
+#define ID_APPLY_NOW                    0x3021
+#define ID_WIZBACK                      0x3023
+#define ID_WIZNEXT                      0x3024
+#define ID_WIZFINISH                    0x3025
+#define ID_TAB_CLOSE                    40007
+#define ID_TAB_CLOSE_ALL                40008
+#define ID_TAB_CLOSE_OTHERS             40009
+
+#define ATL_IDS_IDLEMESSAGE             0xE001
+#define ID_FILE_NEW                     0xE100
+#define ID_FILE_OPEN                    0xE101
+#define ID_FILE_CLOSE                   0xE102
+#define ID_FILE_SAVE                    0xE103
+#define ID_FILE_SAVE_AS                 0xE104
+#define ID_FILE_PAGE_SETUP              0xE105
+#define ID_FILE_PRINT_SETUP             0xE106
+#define ID_FILE_PRINT                   0xE107
+#define ID_FILE_PRINT_DIRECT            0xE108
+#define ID_FILE_PRINT_PREVIEW           0xE109
+#define ID_FILE_UPDATE                  0xE10A
+#define ID_FILE_SAVE_COPY_AS            0xE10B
+#define ID_FILE_SEND_MAIL               0xE10C
+#define ID_FILE_MRU_FIRST               0xE110
+#define ID_FILE_MRU_FILE1               0xE110
+#define ID_FILE_MRU_FILE2               0xE111
+#define ID_FILE_MRU_FILE3               0xE112
+#define ID_FILE_MRU_FILE4               0xE113
+#define ID_FILE_MRU_FILE5               0xE114
+#define ID_FILE_MRU_FILE6               0xE115
+#define ID_FILE_MRU_FILE7               0xE116
+#define ID_FILE_MRU_FILE8               0xE117
+#define ID_FILE_MRU_FILE9               0xE118
+#define ID_FILE_MRU_FILE10              0xE119
+#define ID_FILE_MRU_FILE11              0xE11A
+#define ID_FILE_MRU_FILE12              0xE11B
+#define ID_FILE_MRU_FILE13              0xE11C
+#define ID_FILE_MRU_FILE14              0xE11D
+#define ID_FILE_MRU_FILE15              0xE11E
+#define ID_FILE_MRU_FILE16              0xE11F
+#define ID_FILE_MRU_LAST                0xE11F
+#define ID_EDIT_CLEAR                   0xE120
+#define ID_EDIT_CLEAR_ALL               0xE121
+#define ID_EDIT_COPY                    0xE122
+#define ID_EDIT_CUT                     0xE123
+#define ID_EDIT_FIND                    0xE124
+#define ID_EDIT_PASTE                   0xE125
+#define ID_EDIT_PASTE_LINK              0xE126
+#define ID_EDIT_PASTE_SPECIAL           0xE127
+#define ID_EDIT_REPEAT                  0xE128
+#define ID_EDIT_REPLACE                 0xE129
+#define ID_EDIT_SELECT_ALL              0xE12A
+#define ID_EDIT_UNDO                    0xE12B
+#define ID_EDIT_REDO                    0xE12C
+#define ID_EDIT_FIND_PREVIOUS           0xE12D
+#define ID_WINDOW_NEW                   0xE130
+#define ID_WINDOW_ARRANGE               0xE131
+#define ID_WINDOW_CASCADE               0xE132
+#define ID_WINDOW_TILE_HORZ             0xE133
+#define ID_WINDOW_TILE_VERT             0xE134
+#define ID_WINDOW_SPLIT                 0xE135
+#define ID_APP_ABOUT                    0xE140
+#define ID_APP_EXIT                     0xE141
+#define ID_HELP_INDEX                   0xE142
+#define ID_HELP_FINDER                  0xE143
+#define ID_HELP_USING                   0xE144
+#define ID_CONTEXT_HELP                 0xE145
+#define ID_HELP                         0xE146
+#define ID_DEFAULT_HELP                 0xE147
+#define ID_NEXT_PANE                    0xE150
+#define ID_PREV_PANE                    0xE151
+#define ID_PANE_CLOSE                   0xE152
+#define ID_FORMAT_FONT                  0xE160
+#define ID_SCROLL_UP                    0xE170
+#define ID_SCROLL_DOWN                  0xE171
+#define ID_SCROLL_PAGE_UP               0xE172
+#define ID_SCROLL_PAGE_DOWN             0xE173
+#define ID_SCROLL_TOP                   0xE174
+#define ID_SCROLL_BOTTOM                0xE175
+#define ID_SCROLL_LEFT                  0xE176
+#define ID_SCROLL_RIGHT                 0xE177
+#define ID_SCROLL_PAGE_LEFT             0xE178
+#define ID_SCROLL_PAGE_RIGHT            0xE179
+#define ID_SCROLL_ALL_LEFT              0xE17A
+#define ID_SCROLL_ALL_RIGHT             0xE17B
+#define ID_OLE_INSERT_NEW               0xE200
+#define ID_OLE_EDIT_LINKS               0xE201
+#define ID_OLE_EDIT_CONVERT             0xE202
+#define ID_OLE_EDIT_CHANGE_ICON         0xE203
+#define ID_OLE_EDIT_PROPERTIES          0xE204
+#define ID_OLE_VERB_FIRST               0xE210
+#define ID_VIEW_TOOLBAR                 0xE800
+#define ID_VIEW_STATUS_BAR              0xE801
+#define ID_VIEW_REFRESH                 0xE803
+#define ID_VIEW_RIBBON                  0xE804
+#define ATL_IDS_SCSIZE                  0xEF00
+#define ATL_IDS_SCMOVE                  0xEF01
+#define ATL_IDS_SCMINIMIZE              0xEF02
+#define ATL_IDS_SCMAXIMIZE              0xEF03
+#define ATL_IDS_SCNEXTWINDOW            0xEF04
+#define ATL_IDS_SCPREVWINDOW            0xEF05
+#define ATL_IDS_SCCLOSE                 0xEF06
+#define ATL_IDS_SCRESTORE               0xEF12
+#define ATL_IDS_SCTASKLIST              0xEF13
+#define ATL_IDS_MDICHILD                0xEF1F
+#define ATL_IDS_MRU_FILE                0xEFDA
+#define ID_WINDOW_TABFIRST              0xFF00
+#define ID_WINDOW_TABLAST               0xFFFD
+#define ID_WINDOW_SHOWTABLIST           0xFFFE
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        106
-#define _APS_NEXT_COMMAND_VALUE         40003
+#define _APS_NEXT_RESOURCE_VALUE        107
+#define _APS_NEXT_COMMAND_VALUE         40013
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
