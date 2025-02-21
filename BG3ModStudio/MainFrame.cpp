@@ -2,6 +2,7 @@
 #include "FileDialogEx.h"
 #include "MainFrame.h"
 
+
 BOOL MainFrame::DefCreate()
 {
     RECT rect = {0, 0, 1024, 600};
@@ -82,6 +83,12 @@ LRESULT MainFrame::OnFileOpen()
         m_folderView.SetFolder(paths[0]);
     }
 
+    return 0;
+}
+
+LRESULT MainFrame::OnFileSave()
+{
+    
     return 0;
 }
 
@@ -183,6 +190,8 @@ LRESULT MainFrame::OnViewStatusBar()
 
 BOOL MainFrame::OnIdle()
 {
+    UIEnable(ID_FILE_SAVE, TRUE);
+    UIEnable(ID_FILE_SAVE_ALL, FALSE);
     UIUpdateMenuBar();
 
     return FALSE;

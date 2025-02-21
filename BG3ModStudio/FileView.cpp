@@ -2,26 +2,27 @@
 #include "FileView.h"
 #include "Exception.h"
 #include "FileStream.h"
-#include "RTFStreamFormatter.h"
+#include "RTFFormatterRegistry.h"
+#include "StringHelper.h"
 
 namespace { // anonymous
 
 DWORD CALLBACK StreamCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG* pcb)
 {
-    auto** ptext = reinterpret_cast<LPCSTR*>(dwCookie);
+    auto** pptext = reinterpret_cast<LPCWSTR*>(dwCookie);
 
-    auto len = strlen(*ptext);
+    auto strSize = wcslen(*pptext) * sizeof(WCHAR);
 
-    if (len == 0) {
+    if (strSize == 0) {
         *pcb = 0;
         return 0;
     }
 
-    auto sz = std::min<LONG>(static_cast<LONG>(len), cb);
+    auto sz = std::min<LONG>(static_cast<LONG>(strSize), cb);
 
-    memcpy(pbBuff, *ptext, sz);
+    memcpy(pbBuff, *pptext, sz);
 
-    *ptext += sz;
+    *pptext += (sz / sizeof(WCHAR));
 
     *pcb = sz;
 
@@ -47,8 +48,10 @@ void FileView::LoadFile(const CString& path)
 
     FileStream file;
 
+    CStringA strPath(path);
+
     try {
-        file.open(CT2CA(path), "rb");
+        file.open(strPath, "rb");
     } catch (const Exception& e) {
         ATLTRACE("Failed to open file: %s\n", e.what());
         return;
@@ -93,31 +96,49 @@ LPCTSTR FileView::GetPath() const
     return m_path.GetString();
 }
 
-BOOL FileView::Write(LPCTSTR text) const
+BOOL FileView::Write(LPCWSTR text) const
 {
     auto hr = m_stream.Write(text);
 
     return SUCCEEDED(hr);
 }
 
+BOOL FileView::Write(LPCWSTR text, size_t length) const
+{
+    CStringW str(text, static_cast<int>(length));
+
+    return Write(str);
+}
+
+BOOL FileView::Write(LPCSTR text) const
+{
+    CStringW wString = StringHelper::fromUTF8(text);
+
+    auto hr = m_stream.Write(wString);
+    return SUCCEEDED(hr);
+}
+
 BOOL FileView::Write(LPCSTR text, size_t length) const
 {
-    CString str(text, static_cast<int>(length));
+    CStringW str = StringHelper::fromUTF8(text, length);
 
     return Write(str);
 }
 
 BOOL FileView::Flush()
 {
-    auto str = RTFStreamFormatter::Format(m_stream);
-    LPCSTR pstr = str.GetString();
+    auto formatter = RTFFormatterRegistry::GetInstance().GetFormatter(m_path);
+
+    auto str = formatter->Format(m_stream);
+    
+    CStringA aStr = StringHelper::toUTF8(str);
+    LPCSTR pStr = aStr.GetString();
 
     EDITSTREAM es{};
-    es.dwCookie = reinterpret_cast<DWORD_PTR>(&pstr);
+    es.dwCookie = reinterpret_cast<DWORD_PTR>(&pStr);
     es.pfnCallback = StreamCallback;
 
-    StreamIn(SF_RTF, es);
-
+    StreamIn((CP_UTF8 << 16) | SF_USECODEPAGE | SF_RTF, es);
     if (es.dwError != NOERROR) {
         ATLTRACE("Failed to stream in text.\n");
         return FALSE;
@@ -256,11 +277,13 @@ LRESULT FilesView::OnDrawItem(int /*nID*/, LPDRAWITEMSTRUCT pdis) const
     SetTextColor(hdc, GetSysColor(COLOR_3DSHADOW));
     RECT rcShadow = rc;
     OffsetRect(&rcShadow, 1, 1);
-    DrawText(hdc, szText, -1, &rcShadow, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
-    SetTextColor(hdc, isActive ? GetSysColor(COLOR_BTNTEXT) : GetSysColor(COLOR_GRAYTEXT));
+    auto dtFlags = DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX;
+    DrawText(hdc, szText, -1, &rcShadow, dtFlags);
 
-    DrawText(hdc, szText, -1, &rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+    SetTextColor(hdc, isActive ? GetSysColor(COLOR_BTNTEXT) : GetSysColor(COLOR_INACTIVECAPTION));
+
+    DrawText(hdc, szText, -1, &rc, dtFlags);
 
     return 1;
 }
@@ -346,6 +369,8 @@ PVOID FilesView::CloseFile(int index)
     m_views.erase(vit);
 
     RemovePage(index);
+
+    // Update tooltips
 
     TOOLINFO ti{};
     ti.cbSize = sizeof(TOOLINFO);

@@ -11,25 +11,18 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 
-#define WM_SELCHANGED (WM_APP + 1)
-#define WM_PROGRESS (WM_SELCHANGED + 1)
-#define WM_COMPLETE (WM_PROGRESS + 1)
-#define WM_SETRANGE (WM_COMPLETE + 1)
-
 #include <atlbase.h>
 #include <atlapp.h>
 #include <atlcrack.h>
 #include <atlctrls.h>
-#include <atlctrls.h>
 #include <atlctrlw.h>
 #include <atlctrlx.h>
 #include <atldlgs.h>
-#include <atldlgs.h>
 #include <atlframe.h>
+#include <atlpath.h>
 #include <atlribbon.h>
 #include <atlscrl.h>
 #include <atlsplit.h>
-#include <atlstr.h>
 #include <atlstr.h>
 #include <atltrace.h>
 #include <atltypes.h>

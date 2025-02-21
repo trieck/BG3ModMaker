@@ -2,6 +2,11 @@
 //
 #include "resource.h"
 
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
 #include "atlres.h"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -103,6 +108,9 @@ IDR_MAINFRAME MENU
 BEGIN
     POPUP "&File"
     BEGIN
+        MENUITEM "&Open...",                    ID_FILE_OPEN
+        MENUITEM "&Save",                       ID_FILE_SAVE
+        MENUITEM "Save &All",                   ID_FILE_SAVE_ALL
         MENUITEM "E&xit",                       ID_APP_EXIT
     END
     POPUP "&View"
@@ -140,9 +148,9 @@ END
 //
 
 ID_FILE_OPEN            BITMAP                  "open.bmp"
-
+ID_FILE_SAVE            BITMAP                  "save.bmp"
 ID_APP_EXIT             BITMAP                  "exit.bmp"
-
+ID_FILE_SAVE_ALL        BITMAP                  "saveall.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //

@@ -158,33 +158,43 @@
   <ItemGroup>
     <ClInclude Include="BG3ModStudio.h" />
     <ClInclude Include="COMError.h" />
+    <ClInclude Include="DefaultRTFFormatter.h" />
     <ClInclude Include="FileDialogEx.h" />
     <ClInclude Include="FileView.h" />
     <ClInclude Include="FolderView.h" />
     <ClInclude Include="MainFrame.h" />
     <ClInclude Include="MessageLoopEx.h" />
     <ClInclude Include="resources\resource.h" />
-    <ClInclude Include="RTFStreamFormatter.h" />
+    <ClInclude Include="RTFFormatterRegistry.h" />
+    <ClInclude Include="IRTFStreamFormatter.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="StringHelper.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="textstream.h" />
+    <ClInclude Include="TextStream.h" />
+    <ClInclude Include="XmlRTFFormatter.h" />
+    <ClInclude Include="XmlTokenizer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BG3ModStudio.cpp" />
     <ClCompile Include="COMError.cpp" />
+    <ClCompile Include="DefaultRTFFormatter.cpp" />
     <ClCompile Include="FileDialogEx.cpp" />
     <ClCompile Include="FileView.cpp" />
     <ClCompile Include="FolderView.cpp" />
     <ClCompile Include="MainFrame.cpp" />
     <ClCompile Include="MessageLoopEx.cpp" />
-    <ClCompile Include="RTFStreamFormatter.cpp" />
+    <ClCompile Include="RTFFormatterRegistry.cpp" />
+    <ClCompile Include="IRTFStreamFormatter.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="textstream.cpp" />
+    <ClCompile Include="StringHelper.cpp" />
+    <ClCompile Include="TextStream.cpp" />
+    <ClCompile Include="XmlRTFFormatter.cpp" />
+    <ClCompile Include="XmlTokenizer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\LibLS\LibLS.vcxproj">
@@ -197,6 +207,9 @@
     <Image Include="resources\file.ico" />
     <Image Include="resources\folder.ico" />
     <Image Include="resources\open.bmp" />
+    <Image Include="resources\save.bmp" />
+    <Image Include="resources\saveall.bmp" />
+    <Image Include="saveall.bmp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\BG3ModStudio.rc" />

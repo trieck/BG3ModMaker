@@ -44,10 +44,25 @@
     <ClInclude Include="COMError.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="textstream.h">
+    <ClInclude Include="TextStream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RTFStreamFormatter.h">
+    <ClInclude Include="IRTFStreamFormatter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="XmlTokenizer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StringHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="XmlRTFFormatter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RTFFormatterRegistry.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DefaultRTFFormatter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -76,10 +91,25 @@
     <ClCompile Include="COMError.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="textstream.cpp">
+    <ClCompile Include="TextStream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RTFStreamFormatter.cpp">
+    <ClCompile Include="IRTFStreamFormatter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="XmlTokenizer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StringHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="XmlRTFFormatter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RTFFormatterRegistry.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DefaultRTFFormatter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -98,8 +128,19 @@
     <Image Include="resources\file.ico">
       <Filter>Resources</Filter>
     </Image>
-    <Image Include="resources\open.bmp" />
-    <Image Include="resources\exit.bmp" />
+    <Image Include="resources\exit.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="resources\open.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="resources\save.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="resources\saveall.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="saveall.bmp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\BG3ModStudio.rc">

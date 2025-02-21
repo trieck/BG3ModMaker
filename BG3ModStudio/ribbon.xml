@@ -8,6 +8,18 @@
             <Command.TooltipDescription>Open a Folder</Command.TooltipDescription>
         </Command>
 
+        <Command Name="FILE_SAVE" Symbol="ID_FILE_SAVE" Id="0xE103" Keytip="O">
+            <Command.LabelTitle>Save Current File...</Command.LabelTitle>
+            <Command.TooltipTitle>Save Current File(Ctrl+S)</Command.TooltipTitle>
+            <Command.TooltipDescription>Save Current File</Command.TooltipDescription>
+        </Command>
+
+        <Command Name="FILE_SAVE_ALL" Symbol="ID_FILE_SAVE_ALL" Id="0x6C" Keytip="O">
+            <Command.LabelTitle>Save All Files...</Command.LabelTitle>
+            <Command.TooltipTitle>Save All File(Ctrl+A)</Command.TooltipTitle>
+            <Command.TooltipDescription>Save All File</Command.TooltipDescription>
+        </Command>
+
         <Command Name="VIEW_STATUS_BAR" Symbol="ID_VIEW_STATUS_BAR" Id="0xE801"/>
         <Command Name="APP_EXIT" Symbol="ID_APP_EXIT" Id="0xE141"/>
 
@@ -34,6 +46,8 @@
                     </MenuGroup>
                     <MenuGroup>
                         <Button CommandName="FILE_OPEN"/>
+                        <Button CommandName="FILE_SAVE"/>
+                        <Button CommandName="FILE_SAVE_ALL"/>
                     </MenuGroup>
                     <MenuGroup>
                         <Button CommandName="APP_EXIT"/>
@@ -62,9 +76,17 @@
                         <SizeDefinition>
                             <ControlNameMap>
                                 <ControlNameDefinition Name="FILE_OPEN"/>
+                                <ControlNameDefinition Name="FILE_SAVE"/>
+                                <ControlNameDefinition Name="FILE_SAVE_ALL"/>
                             </ControlNameMap>
                             <GroupSizeDefinition Size="Large">
                                 <ControlSizeDefinition ControlName="FILE_OPEN"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true"/>
+                                <ControlSizeDefinition ControlName="FILE_SAVE"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true"/>
+                                <ControlSizeDefinition ControlName="FILE_SAVE_ALL"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true"/>
                             </GroupSizeDefinition>
@@ -72,14 +94,28 @@
                                 <ControlSizeDefinition ControlName="FILE_OPEN"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true"/>
+                                <ControlSizeDefinition ControlName="FILE_SAVE"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true"/>
+                                <ControlSizeDefinition ControlName="FILE_SAVE_ALL"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true"/>
                             </GroupSizeDefinition>
                             <GroupSizeDefinition Size="Small">
                                 <ControlSizeDefinition ControlName="FILE_OPEN"
                                                        ImageSize="Small"
                                                        IsLabelVisible="true"/>
+                                <ControlSizeDefinition ControlName="FILE_SAVE"
+                                                       ImageSize="Small"
+                                                       IsLabelVisible="true"/>
+                                <ControlSizeDefinition ControlName="FILE_SAVE_ALL"
+                                                       ImageSize="Small"
+                                                       IsLabelVisible="true"/>
                             </GroupSizeDefinition>
                         </SizeDefinition>
                         <Button CommandName="FILE_OPEN"/>
+                        <Button CommandName="FILE_SAVE"/>
+                        <Button CommandName="FILE_SAVE_ALL"/>
                     </Group>
                 </Tab>
 

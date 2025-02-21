@@ -21,61 +21,63 @@ HRESULT TextStream::Reset() const
     return S_OK;
 }
 
-CString TextStream::ReadString()
+CStringW TextStream::ReadString()
 {
     ATLASSERT(m_pImpl != nullptr);
 
     STATSTG statstg;
     auto hr = Stat(&statstg, STATFLAG_NONAME);
     if (FAILED(hr)) {
-        return _T("");
+        return L"";
     }
 
     auto size = statstg.cbSize.QuadPart;
 
-    CString strText;
-    auto* buffer = strText.GetBuffer(static_cast<int>(size + 1));
+    CStringW strText;
+
+    auto bufferLength = static_cast<int>(size / sizeof(WCHAR)) + 1;
+    auto* buffer = strText.GetBuffer(bufferLength);
 
     LARGE_INTEGER li{};
     hr = Seek(li, STREAM_SEEK_SET, nullptr);
     if (FAILED(hr)) {
-        return _T("");
+        return L"";
     }
 
     ULONG uRead;
     hr = Read(buffer, static_cast<ULONG>(size), &uRead);
     if (FAILED(hr)) {
-        return _T("");
+        return L"";
     }
 
     if (size != uRead) {
-        return _T("");
+        return L"";
     }
 
-    buffer[uRead / sizeof(TCHAR)] = _T('\0');
+    buffer[uRead / sizeof(WCHAR)] = L'\0';
     strText.ReleaseBuffer();
 
     return strText;
 }
 
-HRESULT TextStream::WriteV(LPCTSTR format, va_list args) const
+HRESULT TextStream::WriteV(LPCWSTR format, va_list args) const
 {
     ATLASSERT(m_pImpl != nullptr && format != nullptr);
 
-    CString strValue;
+    CStringW strValue;
     strValue.FormatV(format, args);
 
-    ULONG cb = strValue.GetLength() * sizeof(TCHAR);
-    ULONG written;
+    ULONG cb = strValue.GetLength() * sizeof(WCHAR);
 
+    ULONG written;
     auto hr = m_pImpl->Write(strValue, cb, &written);
 
     return hr;
 }
 
-HRESULT TextStream::Write(LPCTSTR text) const
+HRESULT TextStream::Write(LPCWSTR text) const
 {
-    ULONG cb = static_cast<ULONG>(_tcslen(text) * sizeof(TCHAR));
+    ULONG cb = static_cast<ULONG>(wcslen(text) * sizeof(WCHAR));
     ULONG written;
 
     auto hr = m_pImpl->Write(text, cb, &written);

@@ -6,7 +6,7 @@ class ATL_NO_VTABLE TextStream :
     public IStream
 {
 public:
-BEGIN_COM_MAP(TextStream)
+    BEGIN_COM_MAP(TextStream)
         COM_INTERFACE_ENTRY(IStream)
     END_COM_MAP()
     virtual ~TextStream();
@@ -14,10 +14,10 @@ BEGIN_COM_MAP(TextStream)
     HRESULT FinalConstruct();
     void FinalRelease();
 
-    HRESULT Write(LPCTSTR text) const;
-    HRESULT WriteV(LPCTSTR format, va_list args) const;
+    HRESULT Write(LPCWSTR text) const;
+    HRESULT WriteV(LPCWSTR format, va_list args) const;
     HRESULT Reset() const;
-    CString ReadString();
+    CStringW ReadString();
 
     // IStream members
     STDMETHODIMP Read(void* pv, ULONG cb, ULONG* pcbRead) override;

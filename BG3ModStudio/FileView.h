@@ -17,8 +17,11 @@ public:
     LPCTSTR GetPath() const;
 
 private:
-    BOOL Write(LPCTSTR text) const;
+    BOOL Write(LPCWSTR text) const;
+    BOOL Write(LPCWSTR text, size_t length) const;
+    BOOL Write(LPCSTR text) const;
     BOOL Write(LPCSTR text, size_t length) const;
+
     BOOL Flush();
 
     CString m_path;
