@@ -1,6 +1,6 @@
 #pragma once
 
-#include "IRTFStreamFormatter.h"
+#include "RTFStreamFormatter.h"
 
 class RTFFormatterRegistry
 {
@@ -10,10 +10,10 @@ public:
 
     static RTFFormatterRegistry& GetInstance();
 
-    IRTFStreamFormatter::Ptr GetFormatter(const CString& path) const;
+    RTFStreamFormatter::Ptr GetFormatter(const CString& path) const;
 
 private:
-    std::unordered_map<std::string, IRTFStreamFormatter::Ptr> m_formatters;
-    IRTFStreamFormatter::Ptr m_defaultFormatter;
+    std::unordered_map<std::string, RTFStreamFormatter::Ptr> m_formatters;
+    RTFStreamFormatter::Ptr m_defaultFormatter;
 };
 

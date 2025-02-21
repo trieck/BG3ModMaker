@@ -1,7 +1,7 @@
 #pragma once
-#include "IRTFStreamFormatter.h"
+#include "RTFStreamFormatter.h"
 
-class DefaultRTFFormatter : public IRTFStreamFormatter
+class DefaultRTFFormatter : public RTFStreamFormatter
 {
 public:
     CStringW Format(TextStream& stream) override;

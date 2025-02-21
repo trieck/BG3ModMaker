@@ -55,12 +55,13 @@ CString XmlToken::GetTypeAsString() const
     }
 }
 
-XmlTokenizer::XmlTokenizer() : m_input(nullptr), m_current(nullptr), m_isEnd(false), m_inTag(false), m_inQuote(false)
+XmlTokenizer::XmlTokenizer() : m_input(nullptr), m_current(nullptr), m_isEnd(false), m_inTag(false),
+                               m_inDoubleQuotes(false), m_inSingleQuotes(false)
 {
 }
 
 XmlTokenizer::XmlTokenizer(LPCTSTR input) : m_input(input), m_current(input), m_isEnd(false), m_inTag(false),
-                                            m_inQuote(false)
+                                            m_inDoubleQuotes(false), m_inSingleQuotes(false)
 {
 }
 
@@ -70,7 +71,8 @@ void XmlTokenizer::SetInput(LPCTSTR input)
     m_current = input;
     m_isEnd = false;
     m_inTag = false;
-    m_inQuote = false;
+    m_inSingleQuotes = false;
+    m_inDoubleQuotes = false;
 }
 
 XmlToken::Ptr XmlTokenizer::GetNextToken()
@@ -208,12 +210,36 @@ XmlToken XmlTokenizer::GetToken(LPCTSTR* ppin)
                 tok.type = XmlTokenType::TT_WHITESPACE;
                 return tok;
             }
-            if (**ppin == _T('"') || **ppin == _T('\'')) {
-                m_inQuote = !m_inQuote;
-                tok.type = XmlTokenType::TT_QUOTE;
+            if (**ppin == _T('"')) {
+                if (m_inDoubleQuotes) {
+                    m_inDoubleQuotes = false;
+                    tok.type = XmlTokenType::TT_QUOTE;
+                } else if (m_inTag && !m_inSingleQuotes) {
+                    m_inDoubleQuotes = true;
+                    tok.type = XmlTokenType::TT_QUOTE;
+                } else {
+                    tok.type = XmlTokenType::TT_TEXT;
+                }
+
                 tok.value = *(*ppin)++;
                 return tok;
             }
+
+            if (**ppin == _T('\'')) {
+                if (m_inSingleQuotes) {
+                    m_inSingleQuotes = false;
+                    tok.type = XmlTokenType::TT_QUOTE;
+                } else if (m_inTag && !m_inDoubleQuotes) {
+                    m_inSingleQuotes = true;
+                    tok.type = XmlTokenType::TT_QUOTE;
+                } else {
+                    tok.type = XmlTokenType::TT_TEXT;
+                }
+
+                tok.value = *(*ppin)++;
+                return tok;
+            }
+
             if (**ppin == _T('\n') || **ppin == _T('\r')) {
                 tok.type = XmlTokenType::TT_NEWLINE;
                 tok.value = *(*ppin)++;
@@ -227,7 +253,7 @@ XmlToken XmlTokenizer::GetToken(LPCTSTR* ppin)
 
                 if (**ppin == _T('=')) {
                     tok.type = XmlTokenType::TT_ATTRIBUTE_NAME;
-                } else if (m_inQuote) {
+                } else if (m_inSingleQuotes || m_inDoubleQuotes) {
                     tok.type = XmlTokenType::TT_ATTRIBUTE_VALUE;
                 } else if (m_inTag) {
                     tok.type = XmlTokenType::TT_TAG_NAME;

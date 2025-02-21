@@ -47,7 +47,7 @@
     <ClInclude Include="TextStream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="IRTFStreamFormatter.h">
+    <ClInclude Include="RTFStreamFormatter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="XmlTokenizer.h">
@@ -94,7 +94,7 @@
     <ClCompile Include="TextStream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="IRTFStreamFormatter.cpp">
+    <ClCompile Include="RTFStreamFormatter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="XmlTokenizer.cpp">

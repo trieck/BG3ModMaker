@@ -18,8 +18,9 @@ namespace { // anonymous
         case XmlTokenType::TT_TAG_NAME:
             return COLOR_KEYWORD;
         case XmlTokenType::TT_ATTRIBUTE_NAME:
-        case XmlTokenType::TT_ATTRIBUTE_VALUE:
             return COLOR_PROPERTY;
+        case XmlTokenType::TT_ATTRIBUTE_VALUE:
+            return COLOR_LITERAL;
         case XmlTokenType::TT_COMMENT:
             return COLOR_COMMENT;
         case XmlTokenType::TT_CDATA:

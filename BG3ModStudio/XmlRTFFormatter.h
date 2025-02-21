@@ -1,9 +1,9 @@
 #pragma once
 
-#include "IRTFStreamFormatter.h"
+#include "RTFStreamFormatter.h"
 #include "XmlTokenizer.h"
 
-class XmlRTFFormatter : public IRTFStreamFormatter
+class XmlRTFFormatter : public RTFStreamFormatter
 {
 public:
     CStringW Format(TextStream& stream) override;

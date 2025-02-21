@@ -8,6 +8,8 @@ RTFFormatterRegistry::RTFFormatterRegistry()
 {
     m_formatters[".xml"] = std::make_unique<XmlRTFFormatter>();
     m_formatters[".lsx"] = m_formatters[".xml"];
+    m_formatters[".xsl"] = m_formatters[".xml"];
+    m_formatters[".xslt"] = m_formatters[".xml"];
 }
 
 RTFFormatterRegistry& RTFFormatterRegistry::GetInstance()
@@ -16,7 +18,7 @@ RTFFormatterRegistry& RTFFormatterRegistry::GetInstance()
     return instance;
 }
 
-IRTFStreamFormatter::Ptr RTFFormatterRegistry::GetFormatter(const CString& path) const
+RTFStreamFormatter::Ptr RTFFormatterRegistry::GetFormatter(const CString& path) const
 {
     auto extension = ATLPath::FindExtension(path);
 

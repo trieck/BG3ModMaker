@@ -56,7 +56,7 @@ private:
 
     LPCTSTR m_input;
     LPCTSTR m_current;
-    bool m_isEnd, m_inTag, m_inQuote;
+    bool m_isEnd, m_inTag, m_inDoubleQuotes, m_inSingleQuotes;
 };
 
 
