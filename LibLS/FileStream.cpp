@@ -80,6 +80,24 @@ size_t FileStream::read(char* buf, size_t size) const
     return totalRead;
 }
 
+size_t FileStream::write(const char* buf, size_t size) const
+{
+    size_t totalWritten = 0;
+
+    while (size > 0) {
+        auto chunk = static_cast<DWORD>(std::min<size_t>(size, MAXDWORD));
+        DWORD written = 0;
+        if (!WriteFile(m_file, buf, chunk, &written, nullptr)) {
+            throw Exception(GetLastError());
+        }
+        buf += written;
+        size -= written;
+        totalWritten += written;
+    }
+
+    return totalWritten;
+}
+
 void FileStream::seek(int64_t offset, SeekMode mode) const
 {
     LARGE_INTEGER li;

@@ -1,7 +1,9 @@
 #include "stdafx.h"
-#include "textstream.h"
+#include "UTF8Stream.h"
 
-HRESULT TextStream::Reset() const
+#include "StringHelper.h"
+
+HRESULT UTF8Stream::Reset() const
 {
     ATLASSERT(m_pImpl != nullptr);
 
@@ -21,63 +23,71 @@ HRESULT TextStream::Reset() const
     return S_OK;
 }
 
-CStringW TextStream::ReadString()
+CStringA UTF8Stream::ReadString()
 {
     ATLASSERT(m_pImpl != nullptr);
 
     STATSTG statstg;
     auto hr = Stat(&statstg, STATFLAG_NONAME);
     if (FAILED(hr)) {
-        return L"";
+        return "";
     }
 
     auto size = statstg.cbSize.QuadPart;
 
-    CStringW strText;
+    CStringA strText;
 
-    auto bufferLength = static_cast<int>(size / sizeof(WCHAR)) + 1;
+    auto bufferLength = static_cast<int>(size) + 1;
     auto* buffer = strText.GetBuffer(bufferLength);
 
     LARGE_INTEGER li{};
     hr = Seek(li, STREAM_SEEK_SET, nullptr);
     if (FAILED(hr)) {
-        return L"";
+        return "";
     }
-
+    
     ULONG uRead;
     hr = Read(buffer, static_cast<ULONG>(size), &uRead);
     if (FAILED(hr)) {
-        return L"";
+        return "";
     }
 
     if (size != uRead) {
-        return L"";
+        return "";
     }
 
-    buffer[uRead / sizeof(WCHAR)] = L'\0';
+    buffer[uRead] = '\0';
     strText.ReleaseBuffer();
 
     return strText;
 }
 
-HRESULT TextStream::WriteV(LPCWSTR format, va_list args) const
+CStringW UTF8Stream::ReadUTF16String()
 {
-    ATLASSERT(m_pImpl != nullptr && format != nullptr);
+    auto utf8String = ReadString();
+    return StringHelper::fromUTF8(utf8String);
+}
 
-    CStringW strValue;
-    strValue.FormatV(format, args);
+HRESULT UTF8Stream::Write(LPCWSTR text) const
+{
+    CStringA utf8Text = StringHelper::toUTF8(text);
 
-    ULONG cb = strValue.GetLength() * sizeof(WCHAR);
-
+    ULONG cb = static_cast<ULONG>(strlen(utf8Text));
     ULONG written;
-    auto hr = m_pImpl->Write(strValue, cb, &written);
+
+    auto hr = m_pImpl->Write(utf8Text, cb, &written);
 
     return hr;
 }
 
-HRESULT TextStream::Write(LPCWSTR text) const
+HRESULT UTF8Stream::Write(LPCSTR text) const
 {
-    ULONG cb = static_cast<ULONG>(wcslen(text) * sizeof(WCHAR));
+    return Write(text, strlen(text));
+}
+
+HRESULT UTF8Stream::Write(LPCSTR text, size_t length) const
+{
+    ULONG cb = static_cast<ULONG>(length);
     ULONG written;
 
     auto hr = m_pImpl->Write(text, cb, &written);
@@ -85,10 +95,11 @@ HRESULT TextStream::Write(LPCWSTR text) const
     return hr;
 }
 
-TextStream::~TextStream()
+
+UTF8Stream::~UTF8Stream()
 = default;
 
-HRESULT TextStream::FinalConstruct()
+HRESULT UTF8Stream::FinalConstruct()
 {
     m_pImpl = SHCreateMemStream(nullptr, 0);
     if (!m_pImpl) {
@@ -98,74 +109,74 @@ HRESULT TextStream::FinalConstruct()
     return S_OK;
 }
 
-void TextStream::FinalRelease()
+void UTF8Stream::FinalRelease()
 {
     if (m_pImpl) {
         m_pImpl.Release();
     }
 }
 
-HRESULT TextStream::Read(void* pv, ULONG cb, ULONG* pcbRead)
+HRESULT UTF8Stream::Read(void* pv, ULONG cb, ULONG* pcbRead)
 {
     ATLASSERT(m_pImpl);
     return m_pImpl->Read(pv, cb, pcbRead);
 }
 
-HRESULT TextStream::Write(const void* pv, ULONG cb, ULONG* pcbWritten)
+HRESULT UTF8Stream::Write(const void* pv, ULONG cb, ULONG* pcbWritten)
 {
     ATLASSERT(m_pImpl);
     return m_pImpl->Write(pv, cb, pcbWritten);
 }
 
-HRESULT TextStream::Seek(LARGE_INTEGER dlibMove, DWORD dwOrigin, ULARGE_INTEGER* plibNewPosition)
+HRESULT UTF8Stream::Seek(LARGE_INTEGER dlibMove, DWORD dwOrigin, ULARGE_INTEGER* plibNewPosition)
 {
     ATLASSERT(m_pImpl);
     return m_pImpl->Seek(dlibMove, dwOrigin, plibNewPosition);
 }
 
-HRESULT TextStream::SetSize(ULARGE_INTEGER libNewSize)
+HRESULT UTF8Stream::SetSize(ULARGE_INTEGER libNewSize)
 {
     ATLASSERT(m_pImpl);
     return m_pImpl->SetSize(libNewSize);
 }
 
-HRESULT TextStream::CopyTo(IStream* pstm, ULARGE_INTEGER cb, ULARGE_INTEGER* pcbRead, ULARGE_INTEGER* pcbWritten)
+HRESULT UTF8Stream::CopyTo(IStream* pstm, ULARGE_INTEGER cb, ULARGE_INTEGER* pcbRead, ULARGE_INTEGER* pcbWritten)
 {
     ATLASSERT(m_pImpl);
     return m_pImpl->CopyTo(pstm, cb, pcbRead, pcbWritten);
 }
 
-HRESULT TextStream::Commit(DWORD grfCommitFlags)
+HRESULT UTF8Stream::Commit(DWORD grfCommitFlags)
 {
     ATLASSERT(m_pImpl);
     return m_pImpl->Commit(grfCommitFlags);
 }
 
-HRESULT TextStream::Revert()
+HRESULT UTF8Stream::Revert()
 {
     ATLASSERT(m_pImpl);
     return m_pImpl->Revert();
 }
 
-HRESULT TextStream::LockRegion(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType)
+HRESULT UTF8Stream::LockRegion(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType)
 {
     ATLASSERT(m_pImpl);
     return m_pImpl->LockRegion(libOffset, cb, dwLockType);
 }
 
-HRESULT TextStream::UnlockRegion(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType)
+HRESULT UTF8Stream::UnlockRegion(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType)
 {
     ATLASSERT(m_pImpl);
     return m_pImpl->UnlockRegion(libOffset, cb, dwLockType);
 }
 
-HRESULT TextStream::Stat(STATSTG* pstatstg, DWORD grfStatFlag)
+HRESULT UTF8Stream::Stat(STATSTG* pstatstg, DWORD grfStatFlag)
 {
     ATLASSERT(m_pImpl);
     return m_pImpl->Stat(pstatstg, grfStatFlag);
 }
 
-HRESULT TextStream::Clone(IStream** ppstm)
+HRESULT UTF8Stream::Clone(IStream** ppstm)
 {
     ATLASSERT(m_pImpl);
     return m_pImpl->Clone(ppstm);

@@ -1,23 +1,23 @@
 #pragma once
 
 /////////////////////////////////////////////////////////////////////////////
-class ATL_NO_VTABLE TextStream :
-    public CComObjectRoot,
-    public IStream
+class ATL_NO_VTABLE UTF8Stream : public CComObjectRoot, public IStream
 {
 public:
-    BEGIN_COM_MAP(TextStream)
+    BEGIN_COM_MAP(UTF8Stream)
         COM_INTERFACE_ENTRY(IStream)
     END_COM_MAP()
-    virtual ~TextStream();
+    virtual ~UTF8Stream();
 
     HRESULT FinalConstruct();
     void FinalRelease();
 
     HRESULT Write(LPCWSTR text) const;
-    HRESULT WriteV(LPCWSTR format, va_list args) const;
+    HRESULT Write(LPCSTR text) const;
+    HRESULT Write(LPCSTR text, size_t length) const;
     HRESULT Reset() const;
-    CStringW ReadString();
+    CStringA ReadString();
+    CStringW ReadUTF16String();
 
     // IStream members
     STDMETHODIMP Read(void* pv, ULONG cb, ULONG* pcbRead) override;

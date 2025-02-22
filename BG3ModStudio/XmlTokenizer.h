@@ -30,32 +30,32 @@ struct XmlToken
 
     using Ptr = std::unique_ptr<XmlToken>;
 
-    CString GetValue() const;
+    CStringA GetValue() const;
     XmlTokenType GetType() const;
-    CString GetTypeAsString() const;
+    CStringA GetTypeAsString() const;
 
     XmlTokenType type;
-    CString value;
+    CStringA value;
 };
 
 class XmlTokenizer
 {
 public:
     XmlTokenizer();
-    explicit XmlTokenizer(LPCTSTR input);
+    explicit XmlTokenizer(LPCSTR input);
     ~XmlTokenizer() = default;
 
-    void SetInput(LPCTSTR input);
+    void SetInput(LPCSTR input);
 
     XmlToken::Ptr GetNextToken();
     void Reset() ;
     bool IsEnd() const;
 
 private:
-    XmlToken GetToken(LPCTSTR* ppin);
+    XmlToken GetToken(LPCSTR* ppin);
 
-    LPCTSTR m_input;
-    LPCTSTR m_current;
+    LPCSTR m_input;
+    LPCSTR m_current;
     bool m_isEnd, m_inTag, m_inDoubleQuotes, m_inSingleQuotes;
 };
 

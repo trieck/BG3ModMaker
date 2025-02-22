@@ -44,7 +44,7 @@
     <ClInclude Include="COMError.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TextStream.h">
+    <ClInclude Include="UTF8Stream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RTFStreamFormatter.h">
@@ -91,7 +91,7 @@
     <ClCompile Include="COMError.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TextStream.cpp">
+    <ClCompile Include="UTF8Stream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RTFStreamFormatter.cpp">
@@ -140,7 +140,12 @@
     <Image Include="resources\saveall.bmp">
       <Filter>Resources</Filter>
     </Image>
-    <Image Include="saveall.bmp" />
+    <Image Include="resources\nobom.ico">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="resources\bom.ico">
+      <Filter>Resources</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\BG3ModStudio.rc">

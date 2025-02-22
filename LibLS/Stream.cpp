@@ -6,7 +6,7 @@
 
 Stream::Stream()
 {
-    m_stream = std::make_unique<std::istringstream>();
+    m_stream = std::make_unique<std::stringstream>();
 }
 
 Stream::Stream(const char* buf, size_t size)
@@ -32,6 +32,16 @@ size_t Stream::read(char* buf, size_t size) const
     m_stream->read(buf, static_cast<std::streamsize>(size));
     if (m_stream->fail()) {
         throw Exception(std::format("Unable to read bytes of size {} from stream.", size));
+    }
+
+    return size;
+}
+
+size_t Stream::write(const char* buf, size_t size) const
+{
+    m_stream->write(buf, static_cast<std::streamsize>(size));
+    if (m_stream->fail()) {
+        throw Exception(std::format("Unable to write bytes of size {} to stream.", size));
     }
 
     return size;

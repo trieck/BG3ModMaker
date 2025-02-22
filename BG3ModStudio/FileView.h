@@ -1,10 +1,11 @@
 #pragma once
-#include "textstream.h"
+#include "FileStream.h"
+#include "UTF8Stream.h"
 
 class FileView : public CWindowImpl<FileView, CRichEditCtrl>
 {
 public:
-    using Ptr = std::unique_ptr<FileView>;
+    using Ptr = std::shared_ptr<FileView>;
 
     BEGIN_MSG_MAP(FileView)
         MSG_WM_CREATE(OnCreate)
@@ -14,18 +15,33 @@ public:
 
     LRESULT OnCreate(LPCREATESTRUCT pcs);
     void LoadFile(const CString& path);
+    void SaveFile(const CString& path);
     LPCTSTR GetPath() const;
 
+    enum FileEncoding {
+        UNKNOWN = -1,
+        ANSI,
+        UTF8,
+        UTF8BOM,
+        UTF16LE,
+        UTF16BE,
+        UTF32LE,
+        UTF32BE
+    };
+
+    FileEncoding GetEncoding() const;
 private:
     BOOL Write(LPCWSTR text) const;
     BOOL Write(LPCWSTR text, size_t length) const;
     BOOL Write(LPCSTR text) const;
     BOOL Write(LPCSTR text, size_t length) const;
-
+    static BOOL SkipBOM(LPSTR& str, size_t size);
+    BOOL WriteBOM(const IStreamBase& stream) const;
     BOOL Flush();
 
     CString m_path;
-    CComObjectStack<TextStream> m_stream;
+    FileEncoding m_encoding{ UNKNOWN };
+    CComObjectStack<UTF8Stream> m_stream;
 };
 
 class FilesView : public CTabViewImpl<FilesView>
@@ -44,12 +60,15 @@ public:
     void UpdateLayout();
     LRESULT OnDrawItem(int nID, LPDRAWITEMSTRUCT pdis) const;
 
-    void ActivateFile(const CString& path, void* data);
+    BOOL ActivateFile(const CString& path, void* data);    
+    FileView::Ptr ActiveFile() const;
+
     PVOID GetData(int index) const;
     PVOID CloseFile(int index);
     PVOID CloseOtherFiles(int index);
     void CloseAllFiles();    
     PVOID CloseActiveFile();
+    FileView::FileEncoding FileEncoding(int index) const;
 
 private:
     std::unordered_map<PVOID, INT> m_data;  // map file data to page indexes

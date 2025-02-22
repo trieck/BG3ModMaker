@@ -19,7 +19,7 @@ public:
     LRESULT OnCreate(LPCREATESTRUCT pcs);
     LRESULT OnViewStatusBar();
     LRESULT OnFileOpen();
-    LRESULT OnFileSave();
+    LRESULT OnFileSave() const;
     LRESULT OnFileExit();
 
     LRESULT OnTVSelChanged(LPNMHDR pnmhdr);
@@ -50,9 +50,13 @@ public:
     END_MSG_MAP()
 
 private:
+    void UpdateEncodingStatus(FileView::FileEncoding encoding);
+
     CSplitterWindow m_splitter;
     CCommandBarCtrl m_cmdBar;
+    CStatusBarCtrl m_statusBar;
     FolderView m_folderView{};
     FilesView m_filesView;
+    CIcon m_bom, m_nobom;
 };
 

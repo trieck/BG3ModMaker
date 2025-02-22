@@ -3,15 +3,19 @@
 #include "Exception.h"
 #include "FileStream.h"
 #include "RTFFormatterRegistry.h"
-#include "StringHelper.h"
+#include "UTF8Stream.h"
 
 namespace { // anonymous
 
-DWORD CALLBACK StreamCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG* pcb)
+DWORD CALLBACK StreamInCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG* pcb)
 {
-    auto** pptext = reinterpret_cast<LPCWSTR*>(dwCookie);
+    auto** pptext = reinterpret_cast<LPCSTR*>(dwCookie);
 
-    auto strSize = wcslen(*pptext) * sizeof(WCHAR);
+    if (pptext == nullptr || *pptext == nullptr) {
+        return E_POINTER;
+    }
+
+    auto strSize = strlen(*pptext);
 
     if (strSize == 0) {
         *pcb = 0;
@@ -22,12 +26,39 @@ DWORD CALLBACK StreamCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG* 
 
     memcpy(pbBuff, *pptext, sz);
 
-    *pptext += (sz / sizeof(WCHAR));
+    *pptext += sz;
 
     *pcb = sz;
 
     return 0;
 }
+
+DWORD CALLBACK StreamOutCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG* pcb)
+{
+    auto** ppStream = reinterpret_cast<IStream**>(dwCookie);
+
+    if (ppStream == nullptr || *ppStream == nullptr) {
+        return E_POINTER;
+    }
+
+    if (cb == 0) {
+        *pcb = 0;
+        return 0;
+    }
+
+    auto hr = (*ppStream)->Write(pbBuff, cb, reinterpret_cast<ULONG*>(pcb));
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    if (*pcb == 0) {
+        return E_FAIL;
+    }
+
+    return 0;
+}
+
+auto constexpr BUFFER_SIZE = 4096;
 
 }
 
@@ -45,6 +76,7 @@ void FileView::LoadFile(const CString& path)
     m_stream.Reset();
 
     m_path = path;
+    m_encoding = UNKNOWN;
 
     FileStream file;
 
@@ -57,7 +89,7 @@ void FileView::LoadFile(const CString& path)
         return;
     }
 
-    char buf[1024];
+    char buf[BUFFER_SIZE];
     auto read = file.read(buf, sizeof(buf));
     if (read == 0) {
         return;
@@ -72,12 +104,20 @@ void FileView::LoadFile(const CString& path)
     }
 
     if (!isText) {
-        Write(_T("*** Binary file ***"));
+        Write("*** Binary file ***");
         Flush();
         return;
     }
 
-    Write(buf, read);
+    LPSTR pb = buf;
+    if (SkipBOM(pb, read)) {
+        read -= 3;
+        m_encoding = UTF8BOM;
+    } else {
+        m_encoding = UTF8;    // nothing else supported for now
+    }
+
+    Write(pb, read);
 
     for (;;) {
         read = file.read(buf, sizeof(buf));
@@ -91,9 +131,64 @@ void FileView::LoadFile(const CString& path)
     Flush();
 }
 
+void FileView::SaveFile(const CString& path)
+{
+    CComObjectStack<UTF8Stream> stream;
+    IStream* pStream = &stream;
+
+    EDITSTREAM es{};
+    es.dwCookie = reinterpret_cast<DWORD_PTR>(&pStream);
+    es.pfnCallback = StreamOutCallback;
+
+    StreamOut((CP_UTF8 << 16) | SF_USECODEPAGE | SF_TEXT, es);
+
+    if (es.dwError != NOERROR) {
+        ATLTRACE("Failed to stream in text.\n");
+        return;
+    }
+
+    LARGE_INTEGER li{};
+    auto hr = pStream->Seek(li, STREAM_SEEK_SET, nullptr);
+    if (FAILED(hr)) {
+        ATLTRACE("Failed to seek stream.\n");
+        return;
+    }
+
+    CStringA strPath(path);
+
+    FileStream file;
+    file.open(strPath, "wb");
+
+    WriteBOM(file);
+
+    for (;;) {
+        char buf[BUFFER_SIZE];
+        ULONG read;
+
+        hr = pStream->Read(buf, sizeof(buf), &read);
+        if (FAILED(hr)) {
+            ATLTRACE("Failed to read stream.\n");
+            return;
+        }
+
+        if (read == 0) {
+            break;
+        }
+
+        file.write(buf, read);
+    }
+
+    file.close();
+}
+
 LPCTSTR FileView::GetPath() const
 {
     return m_path.GetString();
+}
+
+FileView::FileEncoding FileView::GetEncoding() const
+{
+    return m_encoding;
 }
 
 BOOL FileView::Write(LPCWSTR text) const
@@ -112,17 +207,41 @@ BOOL FileView::Write(LPCWSTR text, size_t length) const
 
 BOOL FileView::Write(LPCSTR text) const
 {
-    CStringW wString = StringHelper::fromUTF8(text);
-
-    auto hr = m_stream.Write(wString);
+    auto hr = m_stream.Write(text);
     return SUCCEEDED(hr);
 }
 
 BOOL FileView::Write(LPCSTR text, size_t length) const
 {
-    CStringW str = StringHelper::fromUTF8(text, length);
+    auto hr = m_stream.Write(text, length);
+    return SUCCEEDED(hr);
+}
 
-    return Write(str);
+BOOL FileView::SkipBOM(LPSTR& str, size_t size)
+{
+    if (size < 3) {
+        return FALSE;
+    }
+
+    if (str[0] == '\xEF' && str[1] == '\xBB' && str[2] == '\xBF') {
+        str += 3;
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+BOOL FileView::WriteBOM(const IStreamBase& stream) const
+{
+    switch (m_encoding) {
+    case UTF8BOM:
+        stream.write("\xEF\xBB\xBF", 3);
+        return TRUE;
+    default:
+        break;
+    }
+
+    return FALSE;
 }
 
 BOOL FileView::Flush()
@@ -130,13 +249,12 @@ BOOL FileView::Flush()
     auto formatter = RTFFormatterRegistry::GetInstance().GetFormatter(m_path);
 
     auto str = formatter->Format(m_stream);
-    
-    CStringA aStr = StringHelper::toUTF8(str);
-    LPCSTR pStr = aStr.GetString();
+
+    LPCSTR pStr = str.GetString();
 
     EDITSTREAM es{};
     es.dwCookie = reinterpret_cast<DWORD_PTR>(&pStr);
-    es.pfnCallback = StreamCallback;
+    es.pfnCallback = StreamInCallback;
 
     StreamIn((CP_UTF8 << 16) | SF_USECODEPAGE | SF_RTF, es);
     if (es.dwError != NOERROR) {
@@ -281,30 +399,31 @@ LRESULT FilesView::OnDrawItem(int /*nID*/, LPDRAWITEMSTRUCT pdis) const
     auto dtFlags = DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX;
     DrawText(hdc, szText, -1, &rcShadow, dtFlags);
 
-    SetTextColor(hdc, isActive ? GetSysColor(COLOR_BTNTEXT) : GetSysColor(COLOR_INACTIVECAPTION));
+    SetTextColor(hdc, isActive ? GetSysColor(COLOR_BTNTEXT) : GetSysColor(COLOR_GRAYTEXT));
 
     DrawText(hdc, szText, -1, &rc, dtFlags);
 
     return 1;
 }
 
-void FilesView::ActivateFile(const CString& path, void* data)
+BOOL FilesView::ActivateFile(const CString& path, void* data)
 {
     auto it = m_data.find(data);
     if (it != m_data.end()) {
         SetActivePage(it->second);
+        OnPageActivated(it->second);
         UpdateLayout();
-        return;
+        return TRUE;
     }
 
     auto style = WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_HSCROLL |
         ES_AUTOHSCROLL | ES_AUTOVSCROLL | ES_MULTILINE
         | ES_NOOLEDRAGDROP | ES_READONLY;
 
-    auto fileView = std::make_unique<FileView>();
+    auto fileView = std::make_shared<FileView>();
     if (!fileView->Create(m_hWnd, rcDefault, nullptr, style)) {
         ATLTRACE("Failed to create file view.\n");
-        return;
+        return FALSE;
     }
 
     fileView->LoadFile(path);
@@ -313,6 +432,8 @@ void FilesView::ActivateFile(const CString& path, void* data)
     m_data[data] = nPages;
 
     CString title = PathFindFileName(path);
+
+    m_views.emplace_back(fileView);
 
     AddPage(*fileView, title , 0, data);
 
@@ -325,9 +446,18 @@ void FilesView::ActivateFile(const CString& path, void* data)
 
     m_tab.GetToolTips().UpdateTipText(&ti);
 
-    m_views.push_back(std::move(fileView));
-
     SetActivePage(nPages);
+
+    return TRUE;
+}
+
+FileView::Ptr FilesView::ActiveFile() const
+{
+    if (m_nActivePage < 0) {
+        return nullptr;
+    }
+
+    return m_views[m_nActivePage];
 }
 
 PVOID FilesView::GetData(int index) const
@@ -371,7 +501,6 @@ PVOID FilesView::CloseFile(int index)
     RemovePage(index);
 
     // Update tooltips
-
     TOOLINFO ti{};
     ti.cbSize = sizeof(TOOLINFO);
     ti.hwnd = m_tab;
@@ -421,4 +550,15 @@ void FilesView::CloseAllFiles()
 PVOID FilesView::CloseActiveFile()
 {
     return CloseFile(GetActivePage());
+}
+
+FileView::FileEncoding FilesView::FileEncoding(int index) const
+{
+    if (index < 0 || index >= GetPageCount()) {
+        return FileView::UNKNOWN;
+    }
+
+    ATLASSERT(index < static_cast<int>(m_views.size()));
+
+    return m_views[index]->GetEncoding();
 }

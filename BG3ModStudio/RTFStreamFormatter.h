@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TextStream.h"
+#include "UTF8Stream.h"
 
 class RTFStreamFormatter
 {
@@ -10,6 +10,6 @@ public:
 
     using Ptr = std::shared_ptr<RTFStreamFormatter>;
 
-    virtual CStringW Format(TextStream& stream) = 0;
-    static CStringW EscapeRTF(const CStringW& input);
+    virtual CStringA Format(UTF8Stream& stream) = 0;
+    static CStringA EscapeRTF(const CStringA& input);
 };

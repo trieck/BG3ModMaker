@@ -34,9 +34,9 @@ namespace { // anonymous
 
 }  // anonymous
 
-CStringW XmlRTFFormatter::Format(TextStream& stream)
+CStringA XmlRTFFormatter::Format(UTF8Stream& stream)
 {
-    CString output(_T("{\\rtf\\ansi\\deff0{\\fonttbl{\\f0 Cascadia Mono;\\f1 Courier New;}}"
+    CStringA output("{\\rtf\\ansi\\deff0{\\fonttbl{\\f0 Cascadia Mono;\\f1 Courier New;}}"
         "{\\colortbl;"
         "\\red0\\green0\\blue0;" // COLOR_TEXT
         "\\red0\\green0\\blue200;" // COLOR_KEYWORD
@@ -44,8 +44,8 @@ CStringW XmlRTFFormatter::Format(TextStream& stream)
         "\\red0\\green128\\blue0;" // COLOR_COMMENT
         "\\red200\\green0\\blue200;" // COLOR_LITERAL
         "\\red128\\green0\\blue0;" // COLOR_TYPE
-        ";}\n"
-        "\\cf1\n"));
+        ";}\r\n"
+        "\\cf1\r\n");
 
     auto strText = stream.ReadString();
 
@@ -58,7 +58,7 @@ CStringW XmlRTFFormatter::Format(TextStream& stream)
 
         if (lastColor != color) {
             CStringW strColor;
-            strColor.Format(L"\\cf%d\n", color);
+            strColor.Format(L"\\cf%d\r\n", color);
             output += strColor;
         }
 
@@ -67,7 +67,7 @@ CStringW XmlRTFFormatter::Format(TextStream& stream)
         lastColor = color;
     }
 
-    output += L'}';
+    output += "\\par}";
 
     return output;
 }

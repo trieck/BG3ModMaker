@@ -1,15 +1,15 @@
 #include "stdafx.h"
 #include "RTFStreamFormatter.h"
 
-CStringW RTFStreamFormatter::EscapeRTF(const CStringW& input)
+CStringA RTFStreamFormatter::EscapeRTF(const CStringA& input)
 {
-    CStringW output(input);
+    CStringA output(input);
 
-    output.Replace(L"\\", L"\\\\");
-    output.Replace(L"\n", L"\\line\n");
-    output.Replace(L"\t", L"\\tab");
-    output.Replace(L"{", L"\\{");
-    output.Replace(L"}", L"\\}");
+    output.Replace("\\", "\\\\");
+    output.Replace("\n", "\\line\n");
+    output.Replace("\t", "\\tab");
+    output.Replace("{", "\\{");
+    output.Replace("}", "\\}");
 
     return output;
 }

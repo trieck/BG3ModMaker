@@ -170,7 +170,7 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StringHelper.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="TextStream.h" />
+    <ClInclude Include="UTF8Stream.h" />
     <ClInclude Include="XmlRTFFormatter.h" />
     <ClInclude Include="XmlTokenizer.h" />
   </ItemGroup>
@@ -192,7 +192,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="StringHelper.cpp" />
-    <ClCompile Include="TextStream.cpp" />
+    <ClCompile Include="UTF8Stream.cpp" />
     <ClCompile Include="XmlRTFFormatter.cpp" />
     <ClCompile Include="XmlTokenizer.cpp" />
   </ItemGroup>
@@ -203,13 +203,14 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="resources\app.ico" />
+    <Image Include="resources\bom.ico" />
     <Image Include="resources\exit.bmp" />
     <Image Include="resources\file.ico" />
     <Image Include="resources\folder.ico" />
+    <Image Include="resources\nobom.ico" />
     <Image Include="resources\open.bmp" />
     <Image Include="resources\save.bmp" />
     <Image Include="resources\saveall.bmp" />
-    <Image Include="saveall.bmp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\BG3ModStudio.rc" />

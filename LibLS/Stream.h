@@ -22,6 +22,7 @@ public:
 
     // IStreamBase
     size_t read(char* buf, size_t size) const override;
+    size_t write(const char* buf, size_t size) const override;
     void seek(int64_t offset, SeekMode mode) const override;
     size_t tell() const override;
     size_t size() const override;

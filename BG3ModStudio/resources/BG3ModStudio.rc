@@ -59,6 +59,10 @@ IDI_FOLDER              ICON                    "folder.ico"
 
 IDI_FILE                ICON                    "file.ico"
 
+IDI_NOBOM               ICON                    "nobom.ico"
+
+IDI_BOM                 ICON                    "bom.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -148,9 +152,13 @@ END
 //
 
 ID_FILE_OPEN            BITMAP                  "open.bmp"
+
 ID_FILE_SAVE            BITMAP                  "save.bmp"
+
 ID_APP_EXIT             BITMAP                  "exit.bmp"
+
 ID_FILE_SAVE_ALL        BITMAP                  "saveall.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -165,6 +173,11 @@ END
 STRINGTABLE
 BEGIN
     ID_VIEW_STATUS_BAR      "Show or hide the status bar\nToggle StatusBar"
+END
+
+STRINGTABLE
+BEGIN
+    ATL_IDS_IDLEMESSAGE     "Ready"
 END
 
 STRINGTABLE

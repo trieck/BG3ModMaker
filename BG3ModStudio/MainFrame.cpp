@@ -32,10 +32,31 @@ LRESULT MainFrame::OnCreate(LPCREATESTRUCT pcs)
         UIRemoveUpdateElement(ID_FILE_MRU_FIRST);
     }
 
-    CreateSimpleReBar(ATL_SIMPLE_REBAR_NOBORDER_STYLE);
-    AddSimpleReBarBand(hWndCmdBar);
-    CreateSimpleStatusBar();
+    if (!CreateSimpleReBar(ATL_SIMPLE_REBAR_NOBORDER_STYLE)) {
+        ATLTRACE("Unable to create rebar.\n");
+        return -1;
+    }
 
+    if (!AddSimpleReBarBand(hWndCmdBar)) {
+        ATLTRACE("Unable to add rebar band.\n");
+        return -1;
+    }
+
+    if (!CreateSimpleStatusBar()) {
+        ATLTRACE("Unable to create status bar.\n");
+        return -1;
+    }
+
+    ATLASSERT(::IsWindow(m_hWndStatusBar));
+    m_statusBar.Attach(m_hWndStatusBar);
+
+    int parts[] = { 200, -1 };
+    m_statusBar.SetParts(2, parts);
+    m_statusBar.SetSimple(FALSE);
+
+    m_bom.LoadIcon(IDI_BOM, 12, 12);
+    m_nobom.LoadIcon(IDI_NOBOM, 12, 12);
+    
     m_hWndClient = m_splitter.Create(*this, rcDefault, nullptr,
                                      WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
     if (m_hWndClient == nullptr) {
@@ -86,9 +107,13 @@ LRESULT MainFrame::OnFileOpen()
     return 0;
 }
 
-LRESULT MainFrame::OnFileSave()
+LRESULT MainFrame::OnFileSave() const
 {
-    
+    auto activeFile = m_filesView.ActiveFile();
+    ATLASSERT(activeFile != nullptr);
+
+    activeFile->SaveFile(R"(C:\Users\triec\Desktop\test.xml)");
+
     return 0;
 }
 
@@ -117,8 +142,12 @@ LRESULT MainFrame::OnTabActivated(LPNMHDR pnmhdr)
 {
     auto page = static_cast<int>(pnmhdr->idFrom);
     if (page < 0) {
+        UpdateEncodingStatus(FileView::UNKNOWN);
         return 0;
     }
+
+    auto encoding = m_filesView.FileEncoding(page);
+    UpdateEncodingStatus(encoding);
 
     auto hTreeItem = static_cast<HTREEITEM>(m_filesView.GetData(page));
     if (hTreeItem == nullptr) {
@@ -179,6 +208,29 @@ LRESULT MainFrame::OnTabContextMenu(LPNMHDR pnmh)
     return 0;
 }
 
+void MainFrame::UpdateEncodingStatus(FileView::FileEncoding encoding)
+{
+    CString status;
+    HICON hIcon = nullptr;
+
+    switch (encoding) {
+    case FileView::FileEncoding::UTF8:
+        status = L"UTF-8";
+        hIcon = m_nobom;
+        break;
+    case FileView::FileEncoding::UTF8BOM:
+        status = L"UTF-8 with BOM";
+        hIcon = m_bom;
+        break;
+    default:
+        status = L"";   // Unknown
+        break;
+    }
+
+    m_statusBar.SetIcon(1, hIcon);
+    m_statusBar.SetText(1, status);
+}
+
 LRESULT MainFrame::OnViewStatusBar()
 {
     BOOL bVisible = !::IsWindowVisible(m_hWndStatusBar);
@@ -190,7 +242,7 @@ LRESULT MainFrame::OnViewStatusBar()
 
 BOOL MainFrame::OnIdle()
 {
-    UIEnable(ID_FILE_SAVE, TRUE);
+    UIEnable(ID_FILE_SAVE, m_filesView.ActiveFile() != nullptr);
     UIEnable(ID_FILE_SAVE_ALL, FALSE);
     UIUpdateMenuBar();
 

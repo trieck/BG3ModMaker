@@ -4,6 +4,6 @@
 class DefaultRTFFormatter : public RTFStreamFormatter
 {
 public:
-    CStringW Format(TextStream& stream) override;
+    CStringA Format(UTF8Stream& stream) override;
 };
 
