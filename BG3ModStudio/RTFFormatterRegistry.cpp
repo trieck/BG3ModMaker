@@ -1,15 +1,19 @@
 #include "stdafx.h"
 
 #include "DefaultRTFFormatter.h"
+#include "JSONRTFFormatter.h"
 #include "RTFFormatterRegistry.h"
+#include "TextRTFFormatter.h"
 #include "XmlRTFFormatter.h"
 
 RTFFormatterRegistry::RTFFormatterRegistry()
 {
     m_formatters[".xml"] = std::make_unique<XmlRTFFormatter>();
     m_formatters[".lsx"] = m_formatters[".xml"];
-    m_formatters[".xsl"] = m_formatters[".xml"];
-    m_formatters[".xslt"] = m_formatters[".xml"];
+    m_formatters[".json"] = std::make_unique<JSONRTFFormatter>();
+    m_formatters[".lsj"] = m_formatters[".json"];
+    m_formatters[".txt"] = std::make_unique<TextRTFFormatter>();
+    m_defaultFormatter = std::make_unique<DefaultRTFFormatter>();
 }
 
 RTFFormatterRegistry& RTFFormatterRegistry::GetInstance()
@@ -29,6 +33,6 @@ RTFStreamFormatter::Ptr RTFFormatterRegistry::GetFormatter(const CString& path) 
         return it->second;
     }
 
-    return m_defaultFormatter ? m_defaultFormatter : std::make_shared<DefaultRTFFormatter>();
+    return m_defaultFormatter;
 }
 

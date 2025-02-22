@@ -68,6 +68,45 @@ CStringW UTF8Stream::ReadUTF16String()
     return StringHelper::fromUTF8(utf8String);
 }
 
+ByteBuffer UTF8Stream::ReadBytes(size_t size)
+{
+    ATLASSERT(m_pImpl != nullptr);
+
+    STATSTG statstg;
+    auto hr = Stat(&statstg, STATFLAG_NONAME);
+    if (FAILED(hr)) {
+        return {};
+    }
+
+    auto cbSize = statstg.cbSize.QuadPart;
+    if (size == static_cast<size_t>(-1)) {
+        size = cbSize;
+    }
+
+    if (size > cbSize) {
+        return {};
+    }
+
+    auto buffer = std::make_unique<uint8_t[]>(size);
+    LARGE_INTEGER li{};
+    hr = Seek(li, STREAM_SEEK_SET, nullptr);
+    if (FAILED(hr)) {
+        return {};
+    }
+
+    ULONG uRead;
+    hr = Read(buffer.get(), static_cast<ULONG>(size), &uRead);
+    if (FAILED(hr)) {
+        return {};
+    }
+
+    if (size != uRead) {
+        return {};
+    }
+
+    return { std::move(buffer), size };
+}
+
 HRESULT UTF8Stream::Write(LPCWSTR text) const
 {
     CStringA utf8Text = StringHelper::toUTF8(text);

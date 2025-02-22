@@ -1,274 +1,7 @@
 #include "stdafx.h"
-#include "FileView.h"
-#include "Exception.h"
-#include "FileStream.h"
-#include "RTFFormatterRegistry.h"
-#include "UTF8Stream.h"
+#include "FileViews.h"
 
-namespace { // anonymous
-
-DWORD CALLBACK StreamInCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG* pcb)
-{
-    auto** pptext = reinterpret_cast<LPCSTR*>(dwCookie);
-
-    if (pptext == nullptr || *pptext == nullptr) {
-        return E_POINTER;
-    }
-
-    auto strSize = strlen(*pptext);
-
-    if (strSize == 0) {
-        *pcb = 0;
-        return 0;
-    }
-
-    auto sz = std::min<LONG>(static_cast<LONG>(strSize), cb);
-
-    memcpy(pbBuff, *pptext, sz);
-
-    *pptext += sz;
-
-    *pcb = sz;
-
-    return 0;
-}
-
-DWORD CALLBACK StreamOutCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG* pcb)
-{
-    auto** ppStream = reinterpret_cast<IStream**>(dwCookie);
-
-    if (ppStream == nullptr || *ppStream == nullptr) {
-        return E_POINTER;
-    }
-
-    if (cb == 0) {
-        *pcb = 0;
-        return 0;
-    }
-
-    auto hr = (*ppStream)->Write(pbBuff, cb, reinterpret_cast<ULONG*>(pcb));
-    if (FAILED(hr)) {
-        return hr;
-    }
-
-    if (*pcb == 0) {
-        return E_FAIL;
-    }
-
-    return 0;
-}
-
-auto constexpr BUFFER_SIZE = 4096;
-
-}
-
-LRESULT FileView::OnCreate(LPCREATESTRUCT pcs)
-{
-    auto lRet = DefWindowProc();
-
-    SetModify(FALSE);
-
-    return lRet;
-}
-
-void FileView::LoadFile(const CString& path)
-{
-    m_stream.Reset();
-
-    m_path = path;
-    m_encoding = UNKNOWN;
-
-    FileStream file;
-
-    CStringA strPath(path);
-
-    try {
-        file.open(strPath, "rb");
-    } catch (const Exception& e) {
-        ATLTRACE("Failed to open file: %s\n", e.what());
-        return;
-    }
-
-    char buf[BUFFER_SIZE];
-    auto read = file.read(buf, sizeof(buf));
-    if (read == 0) {
-        return;
-    }
-
-    auto isText = true;
-    for (auto i = 0u; i < read; ++i) {
-        if (buf[i] == '\0') {
-            isText = false;
-            break;
-        }
-    }
-
-    if (!isText) {
-        Write("*** Binary file ***");
-        Flush();
-        return;
-    }
-
-    LPSTR pb = buf;
-    if (SkipBOM(pb, read)) {
-        read -= 3;
-        m_encoding = UTF8BOM;
-    } else {
-        m_encoding = UTF8;    // nothing else supported for now
-    }
-
-    Write(pb, read);
-
-    for (;;) {
-        read = file.read(buf, sizeof(buf));
-        if (read == 0) {
-            break;
-        }
-
-        Write(buf, read);
-    }
-
-    Flush();
-}
-
-void FileView::SaveFile(const CString& path)
-{
-    CComObjectStack<UTF8Stream> stream;
-    IStream* pStream = &stream;
-
-    EDITSTREAM es{};
-    es.dwCookie = reinterpret_cast<DWORD_PTR>(&pStream);
-    es.pfnCallback = StreamOutCallback;
-
-    StreamOut((CP_UTF8 << 16) | SF_USECODEPAGE | SF_TEXT, es);
-
-    if (es.dwError != NOERROR) {
-        ATLTRACE("Failed to stream in text.\n");
-        return;
-    }
-
-    LARGE_INTEGER li{};
-    auto hr = pStream->Seek(li, STREAM_SEEK_SET, nullptr);
-    if (FAILED(hr)) {
-        ATLTRACE("Failed to seek stream.\n");
-        return;
-    }
-
-    CStringA strPath(path);
-
-    FileStream file;
-    file.open(strPath, "wb");
-
-    WriteBOM(file);
-
-    for (;;) {
-        char buf[BUFFER_SIZE];
-        ULONG read;
-
-        hr = pStream->Read(buf, sizeof(buf), &read);
-        if (FAILED(hr)) {
-            ATLTRACE("Failed to read stream.\n");
-            return;
-        }
-
-        if (read == 0) {
-            break;
-        }
-
-        file.write(buf, read);
-    }
-
-    file.close();
-}
-
-LPCTSTR FileView::GetPath() const
-{
-    return m_path.GetString();
-}
-
-FileView::FileEncoding FileView::GetEncoding() const
-{
-    return m_encoding;
-}
-
-BOOL FileView::Write(LPCWSTR text) const
-{
-    auto hr = m_stream.Write(text);
-
-    return SUCCEEDED(hr);
-}
-
-BOOL FileView::Write(LPCWSTR text, size_t length) const
-{
-    CStringW str(text, static_cast<int>(length));
-
-    return Write(str);
-}
-
-BOOL FileView::Write(LPCSTR text) const
-{
-    auto hr = m_stream.Write(text);
-    return SUCCEEDED(hr);
-}
-
-BOOL FileView::Write(LPCSTR text, size_t length) const
-{
-    auto hr = m_stream.Write(text, length);
-    return SUCCEEDED(hr);
-}
-
-BOOL FileView::SkipBOM(LPSTR& str, size_t size)
-{
-    if (size < 3) {
-        return FALSE;
-    }
-
-    if (str[0] == '\xEF' && str[1] == '\xBB' && str[2] == '\xBF') {
-        str += 3;
-        return TRUE;
-    }
-
-    return FALSE;
-}
-
-BOOL FileView::WriteBOM(const IStreamBase& stream) const
-{
-    switch (m_encoding) {
-    case UTF8BOM:
-        stream.write("\xEF\xBB\xBF", 3);
-        return TRUE;
-    default:
-        break;
-    }
-
-    return FALSE;
-}
-
-BOOL FileView::Flush()
-{
-    auto formatter = RTFFormatterRegistry::GetInstance().GetFormatter(m_path);
-
-    auto str = formatter->Format(m_stream);
-
-    LPCSTR pStr = str.GetString();
-
-    EDITSTREAM es{};
-    es.dwCookie = reinterpret_cast<DWORD_PTR>(&pStr);
-    es.pfnCallback = StreamInCallback;
-
-    StreamIn((CP_UTF8 << 16) | SF_USECODEPAGE | SF_RTF, es);
-    if (es.dwError != NOERROR) {
-        ATLTRACE("Failed to stream in text.\n");
-        return FALSE;
-    }
-
-    CPoint origin;
-    SetScrollPos(&origin);
-
-    auto hr = m_stream.Reset();
-
-    return SUCCEEDED(hr);
-}
+#include "FileViewFactory.h"
 
 bool FilesView::CreateTabControl()
 {
@@ -416,17 +149,20 @@ BOOL FilesView::ActivateFile(const CString& path, void* data)
         return TRUE;
     }
 
-    auto style = WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_HSCROLL |
-        ES_AUTOHSCROLL | ES_AUTOVSCROLL | ES_MULTILINE
-        | ES_NOOLEDRAGDROP | ES_READONLY;
-
-    auto fileView = std::make_shared<FileView>();
-    if (!fileView->Create(m_hWnd, rcDefault, nullptr, style)) {
-        ATLTRACE("Failed to create file view.\n");
+    auto fileView = FileViewFactory::CreateFileView(path, *this, rcDefault);
+    if (fileView == nullptr) {
+        CString message;
+        message.Format(L"Unable to create a file view for \"%s\".\nThis file type may be unsupported.", path.GetString());
+        AtlMessageBox(*this, static_cast<LPCWSTR>(message), nullptr, MB_ICONERROR);
         return FALSE;
     }
 
-    fileView->LoadFile(path);
+    if (!fileView->LoadFile(path)) {
+        CString message;
+        message.Format(L"Unable to load file \"%s\".", path.GetString());
+        AtlMessageBox(*this, static_cast<LPCWSTR>(message), nullptr, MB_ICONERROR);
+        return FALSE;
+    }
 
     auto nPages = GetPageCount();
     m_data[data] = nPages;
@@ -451,7 +187,7 @@ BOOL FilesView::ActivateFile(const CString& path, void* data)
     return TRUE;
 }
 
-FileView::Ptr FilesView::ActiveFile() const
+IFileView::Ptr FilesView::ActiveFile() const
 {
     if (m_nActivePage < 0) {
         return nullptr;
@@ -494,7 +230,7 @@ PVOID FilesView::CloseFile(int index)
     const auto& vit = m_views.begin() + index;
 
     auto& fileView = *vit;
-    fileView->DestroyWindow();
+    fileView->Destroy();
 
     m_views.erase(vit);
 
@@ -552,10 +288,10 @@ PVOID FilesView::CloseActiveFile()
     return CloseFile(GetActivePage());
 }
 
-FileView::FileEncoding FilesView::FileEncoding(int index) const
+FileEncoding FilesView::FileEncoding(int index) const
 {
     if (index < 0 || index >= GetPageCount()) {
-        return FileView::UNKNOWN;
+        return UNKNOWN;
     }
 
     ATLASSERT(index < static_cast<int>(m_views.size()));

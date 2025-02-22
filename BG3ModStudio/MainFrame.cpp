@@ -53,7 +53,7 @@ LRESULT MainFrame::OnCreate(LPCREATESTRUCT pcs)
     int parts[] = { 200, -1 };
     m_statusBar.SetParts(2, parts);
     m_statusBar.SetSimple(FALSE);
-
+    
     m_bom.LoadIcon(IDI_BOM, 12, 12);
     m_nobom.LoadIcon(IDI_NOBOM, 12, 12);
     
@@ -79,6 +79,7 @@ LRESULT MainFrame::OnCreate(LPCREATESTRUCT pcs)
     m_splitter.SetSplitterPosPct(30);
 
     UISetCheck(ID_VIEW_STATUS_BAR, 1);
+
     ShowRibbonUI(TRUE);
 
     UpdateLayout();
@@ -101,6 +102,8 @@ LRESULT MainFrame::OnFileOpen()
         const auto& paths = dlg.paths();
         ATLASSERT(!paths.empty());
 
+        m_filesView.CloseAllFiles();
+
         m_folderView.SetFolder(paths[0]);
     }
 
@@ -112,7 +115,11 @@ LRESULT MainFrame::OnFileSave() const
     auto activeFile = m_filesView.ActiveFile();
     ATLASSERT(activeFile != nullptr);
 
-    activeFile->SaveFile(R"(C:\Users\triec\Desktop\test.xml)");
+    if (!activeFile->SaveFile(R"(C:\Users\triec\Desktop\test.txt)")) {
+        CString message;
+        message.Format(L"Unable to save file \"%s\".", activeFile->GetPath());
+        AtlMessageBox(*this, static_cast<LPCWSTR>(message), nullptr, MB_ICONERROR);
+    }
 
     return 0;
 }
@@ -130,9 +137,14 @@ LRESULT MainFrame::OnTVSelChanged(LPNMHDR /*pnmhdr*/)
         return 0;
     }
 
+    CWaitCursor wait;
+
     auto data = std::bit_cast<TreeItemData*>(item.GetData());
     if (data && data->type == TIT_FILE) {
-        m_filesView.ActivateFile(data->path, item.m_hTreeItem);
+        if (!m_filesView.ActivateFile(data->path, item.m_hTreeItem)) {
+            // Select the item's parent if unable to be activated (guaranteed).
+            m_folderView.SelectItem(m_folderView.GetParentItem(item.m_hTreeItem));
+        }
     }
 
     return 0;
@@ -142,7 +154,7 @@ LRESULT MainFrame::OnTabActivated(LPNMHDR pnmhdr)
 {
     auto page = static_cast<int>(pnmhdr->idFrom);
     if (page < 0) {
-        UpdateEncodingStatus(FileView::UNKNOWN);
+        UpdateEncodingStatus(UNKNOWN);
         return 0;
     }
 
@@ -208,17 +220,17 @@ LRESULT MainFrame::OnTabContextMenu(LPNMHDR pnmh)
     return 0;
 }
 
-void MainFrame::UpdateEncodingStatus(FileView::FileEncoding encoding)
+void MainFrame::UpdateEncodingStatus(FileEncoding encoding)
 {
     CString status;
     HICON hIcon = nullptr;
 
     switch (encoding) {
-    case FileView::FileEncoding::UTF8:
+    case UTF8:
         status = L"UTF-8";
         hIcon = m_nobom;
         break;
-    case FileView::FileEncoding::UTF8BOM:
+    case UTF8BOM:
         status = L"UTF-8 with BOM";
         hIcon = m_bom;
         break;
@@ -226,6 +238,8 @@ void MainFrame::UpdateEncodingStatus(FileView::FileEncoding encoding)
         status = L"";   // Unknown
         break;
     }
+
+    // TODO: we want these to be right-aligned
 
     m_statusBar.SetIcon(1, hIcon);
     m_statusBar.SetText(1, status);

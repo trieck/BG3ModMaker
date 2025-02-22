@@ -17,7 +17,6 @@ enum class XmlTokenType
     TT_INSTRUCTION_START,
     TT_INSTRUCTION_END,
     TT_WHITESPACE,
-    TT_NEWLINE,
     TT_QUOTE,
     TT_EQUAL,
     TT_ERROR
@@ -34,7 +33,7 @@ struct XmlToken
     XmlTokenType GetType() const;
     CStringA GetTypeAsString() const;
 
-    XmlTokenType type;
+    XmlTokenType type{ XmlTokenType::TT_EMPTY };
     CStringA value;
 };
 

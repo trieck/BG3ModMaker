@@ -3,30 +3,32 @@
 
 namespace { // anonymous
 
-    enum Color {
-        COLOR_TEXT = 1,
-        COLOR_KEYWORD,
-        COLOR_PROPERTY,
-        COLOR_COMMENT,
-        COLOR_LITERAL,
-        COLOR_TYPE,
+    enum XmlColor {
+        COLOR_TEXT = 1,       // Default text
+        COLOR_TAG,            // <tag>
+        COLOR_ATTRIBUTE,      // attribute_name=
+        COLOR_VALUE,          // "attribute_value"
+        COLOR_COMMENT,        // <!-- comment -->
+        COLOR_CDATA,          // <![CDATA[...]]>
+        COLOR_DOCTYPE         // <!DOCTYPE ...>
     };
 
-    Color GetColor(XmlTokenType type)
+
+    XmlColor GetColor(XmlTokenType type)
     {
         switch (type) {
         case XmlTokenType::TT_TAG_NAME:
-            return COLOR_KEYWORD;
+            return COLOR_TAG;
         case XmlTokenType::TT_ATTRIBUTE_NAME:
-            return COLOR_PROPERTY;
+            return COLOR_ATTRIBUTE;
         case XmlTokenType::TT_ATTRIBUTE_VALUE:
-            return COLOR_LITERAL;
+            return COLOR_VALUE;
         case XmlTokenType::TT_COMMENT:
             return COLOR_COMMENT;
         case XmlTokenType::TT_CDATA:
-            return COLOR_LITERAL;
+            return COLOR_CDATA;
         case XmlTokenType::TT_DOCTYPE:
-            return COLOR_TYPE;
+            return COLOR_DOCTYPE;
         default:
             return COLOR_TEXT;
         }
@@ -38,12 +40,13 @@ CStringA XmlRTFFormatter::Format(UTF8Stream& stream)
 {
     CStringA output("{\\rtf\\ansi\\deff0{\\fonttbl{\\f0 Cascadia Mono;\\f1 Courier New;}}"
         "{\\colortbl;"
-        "\\red0\\green0\\blue0;" // COLOR_TEXT
-        "\\red0\\green0\\blue200;" // COLOR_KEYWORD
-        "\\red200\\green0\\blue0;" // COLOR_PROPERTY
-        "\\red0\\green128\\blue0;" // COLOR_COMMENT
-        "\\red200\\green0\\blue200;" // COLOR_LITERAL
-        "\\red128\\green0\\blue0;" // COLOR_TYPE
+        "\\red0\\green0\\blue0;"      // COLOR_TEXT (black)
+        "\\red0\\green0\\blue200;"    // COLOR_TAG (blue)
+        "\\red200\\green0\\blue0;"    // COLOR_ATTRIBUTE (red)
+        "\\red0\\green128\\blue0;"    // COLOR_VALUE (green)
+        "\\red128\\green128\\blue128;"// COLOR_COMMENT (gray)
+        "\\red200\\green0\\blue200;"  // COLOR_CDATA (purple)
+        "\\red128\\green0\\blue0;"    // COLOR_DOCTYPE (dark red)
         ";}\r\n"
         "\\cf1\r\n");
 

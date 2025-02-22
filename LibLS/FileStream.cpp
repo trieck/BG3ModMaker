@@ -15,8 +15,8 @@ void FileStream::open(const char* path, const char* mode)
 {
     close();
 
-    DWORD access = 0;
-    DWORD creation = 0;
+    DWORD access;
+    DWORD creation;
 
     if (strcmp(mode, "rb") == 0) {
         access = GENERIC_READ;
@@ -24,6 +24,12 @@ void FileStream::open(const char* path, const char* mode)
     } else if (strcmp(mode, "wb") == 0) {
         access = GENERIC_WRITE;
         creation = CREATE_ALWAYS;
+    } else if (strcmp(mode, "ab") == 0) {
+        access = GENERIC_WRITE;
+        creation = OPEN_ALWAYS;
+        seek(0, SeekMode::End);
+    } else {
+        throw Exception("Invalid mode specified for file stream.");
     }
 
     m_file = CreateFileA(path, access, FILE_SHARE_READ, nullptr, creation, FILE_ATTRIBUTE_NORMAL, nullptr);

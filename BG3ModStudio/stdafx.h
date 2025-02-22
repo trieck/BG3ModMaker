@@ -49,18 +49,18 @@ using tstring = std::string;
     CTreeItem(((LPNMTREEVIEW)(n))->itemOld.hItem, t)
 
 #define MSG_WM_PAINT2(func) \
-	if (uMsg == WM_PAINT) { \
-		this->SetMsgHandled(TRUE); \
-		func(CPaintDC(*this)); \
-		lResult = 0; \
-		if(this->IsMsgHandled()) \
-			return TRUE; \
-	}
+    if (uMsg == WM_PAINT) { \
+        this->SetMsgHandled(TRUE); \
+        func(CPaintDC(*this)); \
+        lResult = 0; \
+        if(this->IsMsgHandled()) \
+            return TRUE; \
+    }
 
 #define COMMAND_ID_HANDLER2(id, func) \
-	if(uMsg == WM_COMMAND && (id) == LOWORD(wParam)) { \
-		lResult = func(); \
-	}
+    if(uMsg == WM_COMMAND && (id) == LOWORD(wParam)) { \
+        lResult = func(); \
+    }
 
 extern CAppModule _Module;
 

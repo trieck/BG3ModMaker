@@ -1,4 +1,5 @@
 #pragma once
+#include "framework.h"
 
 /////////////////////////////////////////////////////////////////////////////
 class ATL_NO_VTABLE UTF8Stream : public CComObjectRoot, public IStream
@@ -18,6 +19,7 @@ public:
     HRESULT Reset() const;
     CStringA ReadString();
     CStringW ReadUTF16String();
+    ByteBuffer ReadBytes(size_t size = -1);
 
     // IStream members
     STDMETHODIMP Read(void* pv, ULONG cb, ULONG* pcbRead) override;

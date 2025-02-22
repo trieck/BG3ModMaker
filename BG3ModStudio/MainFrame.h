@@ -1,6 +1,6 @@
 #pragma once
 
-#include "FileView.h"
+#include "FileViews.h"
 #include "FolderView.h"
 #include "resources/resource.h"
 #include "resources/ribbon.h"
@@ -50,7 +50,7 @@ public:
     END_MSG_MAP()
 
 private:
-    void UpdateEncodingStatus(FileView::FileEncoding encoding);
+    void UpdateEncodingStatus(FileEncoding encoding);
 
     CSplitterWindow m_splitter;
     CCommandBarCtrl m_cmdBar;

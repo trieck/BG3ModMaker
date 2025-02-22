@@ -37,7 +37,7 @@ public:
     ByteBuffer bytes() const;
 
 private:
-    IStreamPtr m_stream;
+    IOStreamPtr m_stream;
 };
 
 template <typename T>

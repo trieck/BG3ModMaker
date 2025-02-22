@@ -157,11 +157,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="BG3ModStudio.h" />
+    <ClInclude Include="BinaryFileView.h" />
     <ClInclude Include="COMError.h" />
     <ClInclude Include="DefaultRTFFormatter.h" />
     <ClInclude Include="FileDialogEx.h" />
-    <ClInclude Include="FileView.h" />
+    <ClInclude Include="FileViewFactory.h" />
+    <ClInclude Include="FileViews.h" />
     <ClInclude Include="FolderView.h" />
+    <ClInclude Include="IFileView.h" />
+    <ClInclude Include="JsonRTFFormatter.h" />
+    <ClInclude Include="JsonTokenizer.h" />
     <ClInclude Include="MainFrame.h" />
     <ClInclude Include="MessageLoopEx.h" />
     <ClInclude Include="resources\resource.h" />
@@ -170,17 +175,24 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StringHelper.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="TextFileView.h" />
+    <ClInclude Include="TextRTFFormatter.h" />
+    <ClInclude Include="TextTokenizer.h" />
     <ClInclude Include="UTF8Stream.h" />
     <ClInclude Include="XmlRTFFormatter.h" />
     <ClInclude Include="XmlTokenizer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BG3ModStudio.cpp" />
+    <ClCompile Include="BinaryFileView.cpp" />
     <ClCompile Include="COMError.cpp" />
     <ClCompile Include="DefaultRTFFormatter.cpp" />
     <ClCompile Include="FileDialogEx.cpp" />
-    <ClCompile Include="FileView.cpp" />
+    <ClCompile Include="FileViewFactory.cpp" />
+    <ClCompile Include="FileViews.cpp" />
     <ClCompile Include="FolderView.cpp" />
+    <ClCompile Include="JsonRTFFormatter.cpp" />
+    <ClCompile Include="JsonTokenizer.cpp" />
     <ClCompile Include="MainFrame.cpp" />
     <ClCompile Include="MessageLoopEx.cpp" />
     <ClCompile Include="RTFFormatterRegistry.cpp" />
@@ -192,6 +204,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="StringHelper.cpp" />
+    <ClCompile Include="TextFileView.cpp" />
+    <ClCompile Include="TextRTFFormatter.cpp" />
+    <ClCompile Include="TextTokenizer.cpp" />
     <ClCompile Include="UTF8Stream.cpp" />
     <ClCompile Include="XmlRTFFormatter.cpp" />
     <ClCompile Include="XmlTokenizer.cpp" />

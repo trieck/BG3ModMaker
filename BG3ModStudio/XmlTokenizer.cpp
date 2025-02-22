@@ -42,8 +42,6 @@ CStringA XmlToken::GetTypeAsString() const
         return "Instruction End";
     case XmlTokenType::TT_WHITESPACE:
         return "Whitespace";
-    case XmlTokenType::TT_NEWLINE:
-        return "Newline";
     case XmlTokenType::TT_QUOTE:
         return "Quote";
     case XmlTokenType::TT_EQUAL:
@@ -109,7 +107,6 @@ XmlToken XmlTokenizer::GetToken(LPCSTR* ppin)
         switch (**ppin) {
         case '\0':
             tok.type = XmlTokenType::TT_EMPTY;
-            (*ppin)++;
             return tok;
         case '<':
             m_inTag = true;
@@ -204,7 +201,7 @@ XmlToken XmlTokenizer::GetToken(LPCSTR* ppin)
             return tok;
         default:
             if (isspace(**ppin)) {
-                while (_istspace(**ppin)) {
+                while (isspace(**ppin)) {
                     tok.value += *(*ppin)++;
                 }
                 tok.type = XmlTokenType::TT_WHITESPACE;
@@ -240,11 +237,6 @@ XmlToken XmlTokenizer::GetToken(LPCSTR* ppin)
                 return tok;
             }
 
-            if (**ppin == '\n' || **ppin == '\r') {
-                tok.type = XmlTokenType::TT_NEWLINE;
-                tok.value = *(*ppin)++;
-                return tok;
-            }
             if (isalnum(**ppin)) {
                 while (isalnum(**ppin) || **ppin == '_' || **ppin == '-' || **ppin == '.' || **ppin ==
                     ':') {
