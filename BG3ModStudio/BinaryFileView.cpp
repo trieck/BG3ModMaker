@@ -1,63 +1,42 @@
 #include "stdafx.h"
-#include "BinaryFileView.h"
 
+#include <array>
+
+#include "BinaryFileView.h"
 #include "Exception.h"
 #include "FileStream.h"
 #include "TextFileView.h"
 
 namespace { // anonymous
+
 constexpr auto BUFFER_SIZE = 4096;
 constexpr auto LINESIZE = 16;
-constexpr auto BUFFSIZE = 81;
-constexpr auto DATAOFFSET = 13;
-constexpr auto CHAROFFSET = 5;
+constexpr auto BUFFSIZE = 80;
+constexpr auto COLOR_SILVER = RGB(0xE0, 0xE0, 0xE0);
+constexpr auto MAX_LINE_SIZE = 80;
 
-int32_t FormatLine(uint32_t line, LPSTR buffer, LPCSTR pdata, size_t size)
-{
-    auto pbuffer = buffer;
-    size_t left = BUFFSIZE + 1;
+std::string FormatLine(uint32_t line, const uint8_t* pdata, size_t size) {
+    std::array<char, MAX_LINE_SIZE> buffer{};
 
-    left -= sprintf_s(pbuffer, left, "%0.8x     ", line * LINESIZE);
+    // Write address
+    int offset = snprintf(buffer.data(), buffer.size(), "%08X  ", line * LINESIZE);
 
-    pbuffer += DATAOFFSET;
-    left -= DATAOFFSET;
-
-    for (auto i = 0u; i < size; i++) {
-        if (i > 0) {
-            *pbuffer++ = ' ';
-            left--;
-        }
-
-        sprintf_s(pbuffer, left, "%0.2x", pdata[i]);
-
-        pbuffer += 2;
-        left -= 2;
+    // Write hex bytes
+    for (size_t i = 0; i < size; ++i) {
+        offset += snprintf(buffer.data() + offset, buffer.size() - offset, "%02X ", pdata[i]);
     }
 
-    auto diff = LINESIZE - size;
-    while (diff) {
-        pbuffer[0] = ' ';
-        pbuffer[1] = ' ';
-        pbuffer[2] = ' ';
-        pbuffer += 3;
-        left -= 3;
-        diff--;
+    // Fill the rest of the line with spaces
+    offset += snprintf(buffer.data() + offset, buffer.size() - offset, "%*s", static_cast<int>((LINESIZE - size) * 3), "");
+    offset += snprintf(buffer.data() + offset, buffer.size() - offset, "  ");
+
+    for (size_t i = 0; i < size; ++i) {
+        buffer[offset++] = std::isprint(pdata[i]) ? static_cast<char>(pdata[i]) : '.';
     }
 
-    strcpy_s(pbuffer, left, "     ");
-    pbuffer += CHAROFFSET;
+    buffer[offset] = '\0';
 
-    for (auto i = 0u; i < size; ++i) {
-        if (_istprint(pdata[i])) {
-            pbuffer[i] = pdata[i];
-        } else {
-            pbuffer[i] = '.';
-        }
-    }
-
-    pbuffer[size] = '\0';
-
-    return static_cast<int>((pbuffer + size) - buffer);
+    return std::string(buffer.data(), offset);
 }
 
 } // anonymous namespace
@@ -83,7 +62,7 @@ LRESULT BinaryFileView::OnCreate(LPCREATESTRUCT pcs)
         return -1;
     }
 
-    if (!m_pen.CreatePen(PS_SOLID, 1, RGB(0, 0, 0))) {
+    if (!m_gridPen.CreatePen(PS_SOLID, 1, COLOR_SILVER)) {
         ATLTRACE("Failed to create pen.\n");
         return -1;
     }
@@ -97,28 +76,28 @@ LRESULT BinaryFileView::OnPaint(CPaintDC dc)
 {
     dc.SetViewportOrg(-m_ScrollPos.x, -m_ScrollPos.y);
     dc.SetBkMode(TRANSPARENT);
+    dc.SetTextColor(0);
 
     CRect rc;
     dc.GetClipBox(&rc);
 
     auto oldFont = dc.SelectFont(m_font);
-    auto oldPen = dc.SelectPen(m_pen);
 
     auto size = m_buffer.second;
     auto nstart = std::max<int>(0, rc.top / m_cyChar);
     auto nend = std::max<int>(0, std::min<int>(m_nLinesTotal - 1, (rc.bottom + m_cyChar - 1) / m_cyChar));
 
-    static CHAR buffer[BUFFSIZE + 1];
-    auto pdata = reinterpret_cast<LPCSTR>(m_buffer.first.get());
-
+    auto pdata = m_buffer.first.get();
+    
     for (auto i = nstart; i <= nend; ++i) {
-        auto nlength = std::min<size_t>(LINESIZE, size - (static_cast<size_t>(i) * LINESIZE));
-        auto j = FormatLine(i, buffer, pdata + static_cast<ptrdiff_t>(i * LINESIZE), nlength);
-        TextOutA(dc, 0, i * m_cyChar, buffer, j);
+        auto offset = static_cast<size_t>(i) * LINESIZE;
+        auto length = std::min<size_t>(LINESIZE, size - offset);
+        auto line = FormatLine(i, pdata + offset, length);
+        TextOutA(dc, 0, i * m_cyChar, line.c_str(), static_cast<int>(line.length()));
+        DrawGridLine(dc, (i + 1) * m_cyChar - 1, rc.right);
     }
 
     dc.SelectFont(oldFont);
-    dc.SelectPen(oldPen);
 
     return 0;
 }
@@ -232,7 +211,6 @@ void BinaryFileView::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar pScrollBar)
     }
 
     ScrollWindow(-delta, 0);
-
     SetScrollPos(SB_HORZ, m_ScrollPos.x = pos);
     UpdateWindow();
 }
@@ -291,6 +269,7 @@ void BinaryFileView::OnVScroll(UINT nSBCode, UINT /*nPos*/, CScrollBar /*pScroll
 
     ScrollWindow(0, -delta);
     SetScrollPos(SB_VERT, m_ScrollPos.y = pos);
+    UpdateWindow();
 }
 
 LRESULT BinaryFileView::OnMouseWheel(UINT /*nFlags*/, short zDelta, CPoint /*pt*/)
@@ -374,7 +353,12 @@ BOOL BinaryFileView::LoadFile(const CString& path)
     return TRUE;
 }
 
-BOOL BinaryFileView::SaveFile(const CString& path)
+BOOL BinaryFileView::SaveFile()
+{
+    return TRUE;
+}
+
+BOOL BinaryFileView::SaveFileAs(const CString& path)
 {
     return TRUE;
 }
@@ -382,6 +366,11 @@ BOOL BinaryFileView::SaveFile(const CString& path)
 BOOL BinaryFileView::Destroy()
 {
     return DestroyWindow();
+}
+
+BOOL BinaryFileView::IsDirty() const
+{
+    return FALSE;
 }
 
 LPCTSTR BinaryFileView::GetPath() const
@@ -397,6 +386,14 @@ FileEncoding BinaryFileView::GetEncoding() const
 BinaryFileView::operator HWND() const
 {
     return m_hWnd;
+}
+
+void BinaryFileView::DrawGridLine(CPaintDC& dc, int32_t vpos, LONG xextent)
+{
+    CPen oldPen = dc.SelectPen(m_gridPen);
+    dc.MoveTo(0, vpos);
+    dc.LineTo(xextent, vpos);
+    dc.SelectPen(oldPen);
 }
 
 void BinaryFileView::SetSizes()

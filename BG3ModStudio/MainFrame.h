@@ -20,6 +20,7 @@ public:
     LRESULT OnViewStatusBar();
     LRESULT OnFileOpen();
     LRESULT OnFileSave() const;
+    LRESULT OnFileSaveAll() const;
     LRESULT OnFileExit();
 
     LRESULT OnTVSelChanged(LPNMHDR pnmhdr);
@@ -41,6 +42,7 @@ public:
         COMMAND_ID_HANDLER2(ID_FILE_OPEN, OnFileOpen)
         COMMAND_ID_HANDLER2(ID_APP_EXIT, OnFileExit)
         COMMAND_ID_HANDLER2(ID_FILE_SAVE, OnFileSave)
+        COMMAND_ID_HANDLER2(ID_FILE_SAVE_ALL, OnFileSaveAll)
         REFLECT_NOTIFY_CODE(TVN_ITEMEXPANDING)
         REFLECT_NOTIFY_CODE(TVN_DELETEITEM)
         NOTIFY_CODE_HANDLER_EX(TVN_SELCHANGED, OnTVSelChanged)

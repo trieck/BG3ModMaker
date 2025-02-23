@@ -76,7 +76,7 @@ BOOL TextFileView::Create(HWND parent, _U_RECT rect, DWORD dwStyle, DWORD dwStyl
 {
     dwStyle |= WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_HSCROLL |
         ES_AUTOHSCROLL | ES_AUTOVSCROLL | ES_MULTILINE
-        | ES_NOOLEDRAGDROP | ES_READONLY;
+        | ES_NOOLEDRAGDROP;
 
     auto hWnd = Base::Create(parent, rect, nullptr, dwStyle, dwStyleEx);
 
@@ -125,10 +125,27 @@ BOOL TextFileView::LoadFile(const CString& path)
 
     Flush();
 
+    SetModify(FALSE);
+
     return TRUE;
 }
 
-BOOL TextFileView::SaveFile(const CString& path)
+BOOL TextFileView::SaveFile()
+{
+    if (m_path.IsEmpty()) {
+        return FALSE;
+    }
+
+    if (!SaveFileAs(m_path)) {
+        return FALSE;
+    }
+
+    SetModify(FALSE);
+
+    return TRUE;
+}
+
+BOOL TextFileView::SaveFileAs(const CString& path)
 {
     CComObjectStack<UTF8Stream> stream;
     IStream* pStream = &stream;
@@ -183,6 +200,11 @@ BOOL TextFileView::SaveFile(const CString& path)
 BOOL TextFileView::Destroy()
 {
     return DestroyWindow();
+}
+
+BOOL TextFileView::IsDirty() const
+{
+    return GetModify();
 }
 
 LPCTSTR TextFileView::GetPath() const

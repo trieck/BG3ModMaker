@@ -20,6 +20,8 @@ public:
 
     BOOL ActivateFile(const CString& path, void* data);
     IFileView::Ptr ActiveFile() const;
+    int ActivePage() const;
+    const std::vector<IFileView::Ptr>& Files() const;
 
     PVOID GetData(int index) const;
     PVOID CloseFile(int index);
@@ -27,6 +29,8 @@ public:
     void CloseAllFiles();
     PVOID CloseActiveFile();
     FileEncoding FileEncoding(int index) const;
+    BOOL IsDirty(int index) const;
+    BOOL IsDirty() const;
 
 private:
     std::unordered_map<PVOID, INT> m_data; // map file data to page indexes

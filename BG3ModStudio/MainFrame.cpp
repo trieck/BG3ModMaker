@@ -115,10 +115,25 @@ LRESULT MainFrame::OnFileSave() const
     auto activeFile = m_filesView.ActiveFile();
     ATLASSERT(activeFile != nullptr);
 
-    if (!activeFile->SaveFile(R"(C:\Users\triec\Desktop\test.txt)")) {
+    if (!activeFile->SaveFile()) {
         CString message;
         message.Format(L"Unable to save file \"%s\".", activeFile->GetPath());
         AtlMessageBox(*this, static_cast<LPCWSTR>(message), nullptr, MB_ICONERROR);
+    }
+
+    return 0;
+}
+
+LRESULT MainFrame::OnFileSaveAll() const
+{
+    for (auto& file : m_filesView.Files()) {
+        if (file->IsDirty()) {
+            if (!file->SaveFile()) {
+                CString message;
+                message.Format(L"Unable to save file \"%s\".", file->GetPath());
+                AtlMessageBox(*this, static_cast<LPCWSTR>(message), nullptr, MB_ICONERROR);
+            }
+        }
     }
 
     return 0;
@@ -239,8 +254,6 @@ void MainFrame::UpdateEncodingStatus(FileEncoding encoding)
         break;
     }
 
-    // TODO: we want these to be right-aligned
-
     m_statusBar.SetIcon(1, hIcon);
     m_statusBar.SetText(1, status);
 }
@@ -256,8 +269,8 @@ LRESULT MainFrame::OnViewStatusBar()
 
 BOOL MainFrame::OnIdle()
 {
-    UIEnable(ID_FILE_SAVE, m_filesView.ActiveFile() != nullptr);
-    UIEnable(ID_FILE_SAVE_ALL, FALSE);
+    UIEnable(ID_FILE_SAVE, m_filesView.IsDirty(m_filesView.ActivePage()));
+    UIEnable(ID_FILE_SAVE_ALL, m_filesView.IsDirty());
     UIUpdateMenuBar();
 
     return FALSE;

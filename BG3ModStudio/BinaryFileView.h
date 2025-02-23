@@ -36,13 +36,16 @@ public:
     // IFileView
     BOOL Create(HWND parent, _U_RECT rect = nullptr, DWORD dwStyle = 0, DWORD dwStyleEx = 0) override;
     BOOL LoadFile(const CString& path) override;
-    BOOL SaveFile(const CString& path) override;
+    BOOL SaveFile() override;
+    BOOL SaveFileAs(const CString& path) override;
     BOOL Destroy() override;
+    BOOL IsDirty() const override;
     LPCTSTR GetPath() const override;
     FileEncoding GetEncoding() const override;
     operator HWND() const override;
 
 private:
+    void DrawGridLine(CPaintDC& dc, int32_t vpos, LONG xextent);
     BOOL Write(LPCSTR text) const;
     BOOL Write(LPCSTR text, size_t length) const;
     BOOL Flush();
@@ -53,7 +56,7 @@ private:
 
     CFont m_font;
     CBrush m_bkgndBrush;
-    CPen m_pen;
+    CPen m_gridPen;
     CString m_path;
     int32_t m_cxChar, m_cyChar;
     int32_t m_nLinesTotal;

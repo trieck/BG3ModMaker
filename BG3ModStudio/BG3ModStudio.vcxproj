@@ -159,6 +159,7 @@
     <ClInclude Include="BG3ModStudio.h" />
     <ClInclude Include="BinaryFileView.h" />
     <ClInclude Include="COMError.h" />
+    <ClInclude Include="SelectObject.h" />
     <ClInclude Include="DefaultRTFFormatter.h" />
     <ClInclude Include="FileDialogEx.h" />
     <ClInclude Include="FileViewFactory.h" />
@@ -186,6 +187,7 @@
     <ClCompile Include="BG3ModStudio.cpp" />
     <ClCompile Include="BinaryFileView.cpp" />
     <ClCompile Include="COMError.cpp" />
+    <ClCompile Include="SelectObject.cpp" />
     <ClCompile Include="DefaultRTFFormatter.cpp" />
     <ClCompile Include="FileDialogEx.cpp" />
     <ClCompile Include="FileViewFactory.cpp" />

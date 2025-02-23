@@ -19,8 +19,10 @@ public:
 
     virtual BOOL Create(HWND parent, _U_RECT rect = nullptr, DWORD dwStyle = 0, DWORD dwStyleEx = 0) = 0;
     virtual BOOL LoadFile(const CString& path) = 0;
-    virtual BOOL SaveFile(const CString& path) = 0;
+    virtual BOOL SaveFile() = 0;
+    virtual BOOL SaveFileAs(const CString& path) = 0;
     virtual BOOL Destroy() = 0;
+    virtual BOOL IsDirty() const = 0;
     virtual LPCTSTR GetPath() const = 0;
     virtual FileEncoding GetEncoding() const = 0;
     virtual operator HWND() const = 0;

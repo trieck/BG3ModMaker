@@ -23,8 +23,10 @@ public:
     // IFileView
     BOOL Create(HWND parent, _U_RECT rect = nullptr, DWORD dwStyle = 0, DWORD dwStyleEx = 0) override;
     BOOL LoadFile(const CString& path) override;
-    BOOL SaveFile(const CString& path) override;
+    BOOL SaveFile() override;
+    BOOL SaveFileAs(const CString& path) override;
     BOOL Destroy() override;
+    BOOL IsDirty() const override;
     LPCTSTR GetPath() const override;
     FileEncoding GetEncoding() const override;
     operator HWND() const override;

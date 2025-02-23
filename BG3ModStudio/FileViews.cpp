@@ -1,7 +1,8 @@
 #include "stdafx.h"
 #include "FileViews.h"
-
 #include "FileViewFactory.h"
+#include "SelectObject.h"
+#include "resources/resource.h"
 
 bool FilesView::CreateTabControl()
 {
@@ -64,76 +65,91 @@ LRESULT FilesView::OnDrawItem(int /*nID*/, LPDRAWITEMSTRUCT pdis) const
     if (pdis->CtlType != ODT_TAB) {
         return 0;
     }
-    
-    auto tabIndex = static_cast<int>(pdis->itemID);
+
+    int tabIndex = static_cast<int>(pdis->itemID);
     if (tabIndex < 0) {
         return 0;
     }
 
-    auto isActive = tabIndex == m_nActivePage;
+    bool isActive = (tabIndex == m_nActivePage);
+    HDC hdc = pdis->hDC;
+    RECT rc = pdis->rcItem;
 
-    auto rc = pdis->rcItem;
-    auto hdc = pdis->hDC;
+    CBrush brushBackground;
+    brushBackground.CreateSolidBrush(GetSysColor(COLOR_3DFACE));
+    CSelectObject brush(hdc, brushBackground);
 
-    auto hBrush = CreateSolidBrush(GetSysColor(COLOR_3DFACE));
-    auto hOldBrush = static_cast<HBRUSH>(SelectObject(hdc, hBrush));
-    auto hPen = CreatePen(PS_SOLID, 1, isActive ? GetSysColor(COLOR_BTNTEXT) : GetSysColor(COLOR_3DSHADOW));
-    auto hOldPen = static_cast<HPEN>(SelectObject(hdc, hPen));
+    COLORREF clrTop = GetSysColor(COLOR_3DHIGHLIGHT); // Lighter top
+    COLORREF clrBottom = GetSysColor(COLOR_3DSHADOW);   // Darker bottom
 
-    auto cornerRadius = 8;
-    RoundRect(hdc, rc.left, rc.top, rc.right, rc.bottom, cornerRadius, cornerRadius);
+    auto rTop = static_cast<uint16_t>(GetRValue(clrTop) << 8);
+    auto gTop = static_cast<uint16_t>(GetGValue(clrTop) << 8);
+    auto bTop = static_cast<uint16_t>(GetBValue(clrTop) << 8);
 
-    SelectObject(hdc, hOldPen);
-    SelectObject(hdc, hOldBrush);
+    auto rBottom = static_cast<uint16_t>(GetRValue(clrBottom) << 8);
+    auto gBottom = static_cast<uint16_t>(GetGValue(clrBottom) << 8);
+    auto bBottom = static_cast<uint16_t>(GetBValue(clrBottom) << 8);
 
-    DeleteObject(hPen);
-    DeleteObject(hBrush);
+    GRADIENT_RECT gRect = { 0, 1 };
+    TRIVERTEX vertex[2] = {
+        { rc.left, rc.top,  rTop, gTop, bTop, 0x0000 }, // Light gray top
+        { rc.right, rc.bottom, rBottom, gBottom, bBottom, 0x0000 } // Darker gray bottom
+    };
 
-    auto hPenHighlight = CreatePen(PS_SOLID, 1, GetSysColor(COLOR_3DHIGHLIGHT));
-    auto hPenShadow = CreatePen(PS_SOLID, 1, GetSysColor(COLOR_3DSHADOW));
-    auto hPenDarkShadow = CreatePen(PS_SOLID, 1, GetSysColor(COLOR_3DDKSHADOW));
+    GradientFill(hdc, vertex, 2, &gRect, 1, GRADIENT_FILL_RECT_V);
 
-    hOldPen = static_cast<HPEN>(SelectObject(hdc, hPenHighlight));
+    // Tab Borders (3D effect)
+    { // Highlight Edge
+        CPen penHighlight;
+        penHighlight.CreatePen(PS_SOLID, 1, GetSysColor(COLOR_3DHIGHLIGHT));
 
-    MoveToEx(hdc, rc.left, rc.bottom - 1, nullptr);
-    LineTo(hdc, rc.left, rc.top);
-    LineTo(hdc, rc.right - 1, rc.top);
+        CSelectObject _pen(hdc, penHighlight);
+        MoveToEx(hdc, rc.left, rc.bottom - 1, nullptr);
+        LineTo(hdc, rc.left, rc.top);
+        LineTo(hdc, rc.right - 1, rc.top);
+    }
 
-    SelectObject(hdc, hPenShadow);
+    { // Shadow Edge
+        CPen penShadow;
+        penShadow.CreatePen(PS_SOLID, 1, GetSysColor(COLOR_3DSHADOW));
 
-    MoveToEx(hdc, rc.left, rc.bottom - 1, nullptr);
-    LineTo(hdc, rc.right - 1, rc.bottom - 1);
-    LineTo(hdc, rc.right - 1, rc.top);
+        CSelectObject _pen(hdc, penShadow);
+        MoveToEx(hdc, rc.left, rc.bottom - 1, nullptr);
+        LineTo(hdc, rc.right - 1, rc.bottom - 1);
+        LineTo(hdc, rc.right - 1, rc.top);
+    }
 
-    SelectObject(hdc, hPenDarkShadow);
+    { // Darker Shadow
+        CPen penDarkShadow;
+        penDarkShadow.CreatePen(PS_SOLID, 1, GetSysColor(COLOR_3DDKSHADOW));
+        CSelectObject _pen(hdc, penDarkShadow);
+        MoveToEx(hdc, rc.left + 1, rc.bottom - 2, nullptr);
+        LineTo(hdc, rc.right - 2, rc.bottom - 2);
+        LineTo(hdc, rc.right - 2, rc.top + 1);
+    }
 
-    MoveToEx(hdc, rc.left + 1, rc.bottom - 2, nullptr);
-    LineTo(hdc, rc.right - 2, rc.bottom - 2);
-    LineTo(hdc, rc.right - 2, rc.top + 1);
+    // Draw Tab Text
+    TCHAR szText[256]{};
 
-    SelectObject(hdc, hOldPen);
-    DeleteObject(hPenHighlight);
-    DeleteObject(hPenShadow);
-    DeleteObject(hPenDarkShadow);
-
-    TCHAR szText[256];
-    TCITEM item;
+    TCITEM item{};
     item.mask = TCIF_TEXT;
     item.pszText = szText;
-    item.cchTextMax = sizeof(szText);
+    item.cchTextMax = sizeof(szText) / sizeof(TCHAR);
     m_tab.GetItem(tabIndex, &item);
 
     SetBkMode(hdc, TRANSPARENT);
 
-    SetTextColor(hdc, GetSysColor(COLOR_3DSHADOW));
     RECT rcShadow = rc;
     OffsetRect(&rcShadow, 1, 1);
 
-    auto dtFlags = DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX;
+    UINT dtFlags = DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX;
+
+    // Drop shadow effect
+    SetTextColor(hdc, GetSysColor(COLOR_3DSHADOW));
     DrawText(hdc, szText, -1, &rcShadow, dtFlags);
 
+    // Final text color
     SetTextColor(hdc, isActive ? GetSysColor(COLOR_BTNTEXT) : GetSysColor(COLOR_GRAYTEXT));
-
     DrawText(hdc, szText, -1, &rc, dtFlags);
 
     return 1;
@@ -196,6 +212,16 @@ IFileView::Ptr FilesView::ActiveFile() const
     return m_views[m_nActivePage];
 }
 
+int FilesView::ActivePage() const
+{
+    return m_nActivePage;
+}
+
+const std::vector<IFileView::Ptr>& FilesView::Files() const
+{
+    return m_views;
+}
+
 PVOID FilesView::GetData(int index) const
 {
     if (index < 0 || index >= GetPageCount()) {
@@ -213,6 +239,26 @@ PVOID FilesView::CloseFile(int index)
         return nullptr;
     }
 
+    const auto& vit = m_views.begin() + index;
+    auto& fileView = *vit;
+
+    if (fileView->IsDirty()) {
+        CString message;
+        message.Format(L"Save changes to \"%s\"?", fileView->GetPath());
+        auto result = AtlMessageBox(*this, static_cast<LPCWSTR>(message), IDR_MAINFRAME, MB_YESNOCANCEL | MB_ICONQUESTION | MB_ICONWARNING);
+        if (result == IDCANCEL) {
+            return nullptr;
+        }
+
+        if (result == IDYES) {
+            if (!fileView->SaveFile()) {
+                message.Format(L"Unable to save file \"%s\".", fileView->GetPath());
+                AtlMessageBox(*this, static_cast<LPCWSTR>(message), nullptr, MB_ICONERROR);
+                return nullptr;
+            }
+        }
+    }
+
     auto hItem = GetData(index);
 
     auto it = m_data.find(hItem);
@@ -227,9 +273,6 @@ PVOID FilesView::CloseFile(int index)
         }
     }
 
-    const auto& vit = m_views.begin() + index;
-
-    auto& fileView = *vit;
     fileView->Destroy();
 
     m_views.erase(vit);
@@ -297,4 +340,24 @@ FileEncoding FilesView::FileEncoding(int index) const
     ATLASSERT(index < static_cast<int>(m_views.size()));
 
     return m_views[index]->GetEncoding();
+}
+
+BOOL FilesView::IsDirty(int index) const
+{
+    if (index < 0 || index >= GetPageCount()) {
+        return FALSE;
+    }
+
+    return m_views[index]->IsDirty();
+}
+
+BOOL FilesView::IsDirty() const
+{
+    for (const auto& view : m_views) {
+        if (view->IsDirty()) {
+            return TRUE;
+        }
+    }
+
+    return FALSE;
 }

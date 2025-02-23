@@ -89,6 +89,9 @@
     <ClInclude Include="BinaryFileView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SelectObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BG3ModStudio.cpp">
@@ -155,6 +158,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="BinaryFileView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SelectObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
