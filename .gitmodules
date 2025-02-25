@@ -1,0 +1,3 @@
+[submodule "BG3ModStudio/TabView"]
+	path = BG3ModStudio/TabView
+	url = https://github.com/trieck/TabView.git

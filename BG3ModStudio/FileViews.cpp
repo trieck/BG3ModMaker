@@ -34,9 +34,10 @@ bool FilesView::CreateTabControl()
 
     m_tab.SetItemExtra(sizeof(TABVIEWPAGE));
 
-    m_tab.SendMessage(TCM_SETITEMSIZE, 0, MAKELPARAM(150, newTabHeight));
+    m_tab.SendMessage(TCM_SETITEMSIZE, 0, MAKELPARAM(170, newTabHeight));
 
-    m_cyTabHeight = CalcTabHeight();    
+    m_cyTabHeight = CalcTabHeight();
+    m_cchTabTextLength = 20;
 
     return true;
 }
