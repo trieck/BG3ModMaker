@@ -92,6 +92,12 @@
     <ClInclude Include="SelectObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TabViewCtrl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TabViewImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BG3ModStudio.cpp">

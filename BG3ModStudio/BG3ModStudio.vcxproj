@@ -181,6 +181,8 @@
     <ClInclude Include="RTFStreamFormatter.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StringHelper.h" />
+    <ClInclude Include="TabViewCtrl.h" />
+    <ClInclude Include="TabViewImpl.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TextFileView.h" />
     <ClInclude Include="TextRTFFormatter.h" />

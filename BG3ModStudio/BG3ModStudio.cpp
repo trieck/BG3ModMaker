@@ -2,6 +2,7 @@
 #include "MainFrame.h"
 #include "BG3ModStudio.h"
 #include "MessageLoopEx.h"
+#include "TabView.h"
 
 CAppModule _Module;
 
@@ -34,7 +35,7 @@ BG3ModStudio::~BG3ModStudio()
     CoUninitialize();
 }
 
-bool BG3ModStudio::init()
+BOOL BG3ModStudio::init()
 {
     auto hr = CoInitialize(nullptr);
     if (FAILED(hr)) {
@@ -63,7 +64,12 @@ bool BG3ModStudio::init()
         return FALSE;
     }
 
-    return true;
+    if (!InitTabView()) {
+        ATLTRACE(_T("Unable to initialize tab view.\n"));
+        return FALSE;
+    }
+
+    return TRUE;
 }
 
 int BG3ModStudio::run(HINSTANCE hInstance, LPWSTR lpCmdLine, int nShowCmd)

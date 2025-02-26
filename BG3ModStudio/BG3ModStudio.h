@@ -6,7 +6,7 @@ public:
     BG3ModStudio() = default;
     ~BG3ModStudio();
 
-    bool init();
+    BOOL init();
     static int run(HINSTANCE hInstance, LPWSTR lpCmdLine, int nShowCmd);
 
 private:

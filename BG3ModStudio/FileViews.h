@@ -1,22 +1,20 @@
 #pragma once
 
 #include "TextFileView.h"
+#include "TabViewImpl.h"
 
-class FilesView : public CTabViewImpl<FilesView>
+class FilesView : public TabViewImpl<FilesView>
 {
 public:
-    BEGIN_MSG_MAP(ComDetailView)
-        MSG_WM_DRAWITEM(OnDrawItem)
+    BEGIN_MSG_MAP(FilesView)
         REFLECT_NOTIFY_CODE(TBVN_PAGEACTIVATED)
-        CHAIN_MSG_MAP(CTabViewImpl)
-        ALT_MSG_MAP(1) // tab control
+        CHAIN_MSG_MAP(TabViewImpl)
+        ALT_MSG_MAP(ALT_MSG_MAP_TABCTRL) // tab control
     END_MSG_MAP()
 
     DECLARE_WND_CLASS_EX(_T("FilesView"), 0, COLOR_APPWORKSPACE)
 
-    bool CreateTabControl();
     void UpdateLayout();
-    LRESULT OnDrawItem(int nID, LPDRAWITEMSTRUCT pdis) const;
 
     BOOL ActivateFile(const CString& path, void* data);
     IFileView::Ptr ActiveFile() const;
