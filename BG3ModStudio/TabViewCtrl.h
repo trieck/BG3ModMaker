@@ -6,6 +6,10 @@ template<class TBase>
 class TabViewCtrlT : public TBase
 {
 public:
+
+    CTabCtrl m_tabCtrl;
+    static constexpr auto m_nTabID = 0x1001;
+
     explicit TabViewCtrlT(HWND hWnd = nullptr) : TBase(hWnd)
     {
     }
@@ -17,9 +21,27 @@ public:
     }
 
     HWND Create(HWND hWndParent, _U_RECT rect = nullptr, LPCTSTR szWindowName = nullptr,
-        DWORD dwStyle = 0, DWORD dwExStyle = 0, _U_MENUorID MenuOrID = 0U, LPVOID lpCreateParam = nullptr)
+        DWORD dwStyle = CControlWinTraits::GetWndStyle(0), DWORD dwExStyle = CControlWinTraits::GetWndExStyle(0), _U_MENUorID MenuOrID = 0U, LPVOID lpCreateParam = nullptr)
     {
-        return Create(GetWndClassName(), hWndParent, rect.m_lpRect, szWindowName, dwStyle, dwExStyle, MenuOrID.m_hMenu, lpCreateParam);
+        ATLASSERT(hWndParent != nullptr);
+        ATLASSERT(this->m_hWnd == nullptr);
+        ATLASSERT(!m_tabCtrl.IsWindow());
+
+        if (!TBase::Create(GetWndClassName(), hWndParent, rect.m_lpRect, szWindowName, dwStyle, dwExStyle, MenuOrID.m_hMenu, lpCreateParam)) {
+            ATLTRACE("Failed to create tab view control.\n");
+            return nullptr;
+        }
+
+        if (!m_tabCtrl.Create(*this, this->rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, 0, m_nTabID)) {
+            ATLTRACE("Failed to create tab control.\n");
+            return nullptr;
+        }
+
+        m_tabCtrl.SetFont(AtlCreateControlFont());
+
+        this->SetTabCtrl(m_tabCtrl);
+
+        return this->m_hWnd;
     }
 
     static LPCTSTR GetWndClassName()
@@ -61,6 +83,12 @@ public:
     {
         ATLASSERT(::IsWindow(this->m_hWnd));
         return static_cast<BOOL>(::SendMessage(this->m_hWnd, TVWM_REMOVETAB, nItem, 0));
+    }
+
+    BOOL ShowTabCtrl(BOOL bShow)
+    {
+        ATLASSERT(::IsWindow(this->m_hWnd));
+        return static_cast<BOOL>(::SendMessage(this->m_hWnd, TVWM_SHOWTABCTRL, bShow, 0));
     }
 
     BOOL SetActiveTab(int nItem)

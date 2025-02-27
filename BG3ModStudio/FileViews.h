@@ -9,12 +9,9 @@ public:
     BEGIN_MSG_MAP(FilesView)
         REFLECT_NOTIFY_CODE(TBVN_PAGEACTIVATED)
         CHAIN_MSG_MAP(TabViewImpl)
-        ALT_MSG_MAP(ALT_MSG_MAP_TABCTRL) // tab control
     END_MSG_MAP()
 
     DECLARE_WND_CLASS_EX(_T("FilesView"), 0, COLOR_APPWORKSPACE)
-
-    void UpdateLayout();
 
     BOOL ActivateFile(const CString& path, void* data);
     IFileView::Ptr ActiveFile() const;

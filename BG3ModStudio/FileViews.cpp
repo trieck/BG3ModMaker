@@ -3,14 +3,6 @@
 #include "FileViewFactory.h"
 #include "resources/resource.h"
 
-void FilesView::UpdateLayout()
-{
-    /*RECT rc;
-    GetClientRect(&rc);
-
-    MoveWindow(&rc);*/
-}
-
 BOOL FilesView::ActivateFile(const CString& path, void* data)
 {
     auto it = m_data.find(data);

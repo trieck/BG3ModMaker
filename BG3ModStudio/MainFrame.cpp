@@ -22,7 +22,7 @@ BOOL MainFrame::PreTranslateMessage(MSG* pMsg)
 
 LRESULT MainFrame::OnCreate(LPCREATESTRUCT pcs)
 {
-    auto hWndCmdBar = m_cmdBar.Create(m_hWnd, rcDefault, nullptr, ATL_SIMPLE_CMDBAR_PANE_STYLE);
+    m_cmdBar.Create(m_hWnd, rcDefault, nullptr, ATL_SIMPLE_CMDBAR_PANE_STYLE);
     m_cmdBar.AttachMenu(GetMenu());
     m_cmdBar.LoadImages(IDR_MAINFRAME);
     SetMenu(nullptr); // remove old menu
@@ -37,7 +37,7 @@ LRESULT MainFrame::OnCreate(LPCREATESTRUCT pcs)
         return -1;
     }
 
-    if (!AddSimpleReBarBand(hWndCmdBar)) {
+    if (!AddSimpleReBarBand(m_cmdBar)) {
         ATLTRACE("Unable to add rebar band.\n");
         return -1;
     }
@@ -69,7 +69,7 @@ LRESULT MainFrame::OnCreate(LPCREATESTRUCT pcs)
         return -1;
     }
 
-    if (!m_filesView.Create(m_splitter, rcDefault, nullptr,
+    if (!m_filesView.Create(m_splitter, rcDefault, nullptr, 
                             WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, WS_EX_CLIENTEDGE)) {
         return -1;
     }
@@ -87,7 +87,7 @@ LRESULT MainFrame::OnCreate(LPCREATESTRUCT pcs)
 
     // register object for message filtering and idle updates
     auto pLoop = _Module.GetMessageLoop();
-    ATLASSERT(pLoop != NULL);
+    ATLASSERT(pLoop != nullptr);
     pLoop->AddMessageFilter(this);
     pLoop->AddIdleHandler(this);
 
