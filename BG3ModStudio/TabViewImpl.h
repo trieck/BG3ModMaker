@@ -8,15 +8,25 @@ class ATL_NO_VTABLE TabViewImpl : public CWindowImpl<T, TBase, TWinTraits>
 public:
     DECLARE_WND_CLASS_EX2(NULL, T, 0, COLOR_APPWORKSPACE)
 
-
     TabViewCtrl m_tabViewCtrl;
 
     BEGIN_MSG_MAP(TabViewImpl)
         MSG_WM_CREATE(OnCreate)
         MSG_WM_DESTROY(OnDestroy)
         MSG_WM_SIZE(OnSize)
+        MSG_WM_SETFOCUS(OnSetFocus)
         NOTIFY_HANDLER(TabViewCtrl::m_nTabID, TCN_SELCHANGE, OnTabChanged)
     END_MSG_MAP()
+
+    void OnSetFocus(HWND /*hWndOld*/)
+    {
+        if (m_tabViewCtrl.IsWindow()) {
+            HWND hWndActivePage = GetActiveView();
+            if (hWndActivePage != nullptr) {
+                ::SetFocus(hWndActivePage);
+            }
+        }
+    }
 
     LRESULT OnTabChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/)
     {
@@ -104,6 +114,12 @@ public:
     {
         ATLASSERT(m_tabViewCtrl.IsWindow());
         return m_tabViewCtrl.GetActiveTab();
+    }
+
+    HWND GetActiveView() const
+    {
+        ATLASSERT(m_tabViewCtrl.IsWindow());
+        return m_tabViewCtrl.GetView(m_tabViewCtrl.GetActiveTab());
     }
 
     void SetActivePage(int index)
