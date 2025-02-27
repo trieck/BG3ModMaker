@@ -15,6 +15,7 @@ public:
         MSG_WM_DESTROY(OnDestroy)
         MSG_WM_SIZE(OnSize)
         MSG_WM_SETFOCUS(OnSetFocus)
+        FORWARD_NOTIFICATIONS()
         NOTIFY_HANDLER(TabViewCtrl::m_nTabID, TCN_SELCHANGE, OnTabChanged)
     END_MSG_MAP()
 
@@ -153,6 +154,11 @@ public:
         if (!m_tabViewCtrl.AddTab(&item)) {
             return FALSE;
         }
+
+        SetActivePage(nPage);
+
+        auto pT = static_cast<T*>(this);
+        pT->OnPageActivated(nPage);
 
         UpdateLayout();
 

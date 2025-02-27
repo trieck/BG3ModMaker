@@ -58,7 +58,7 @@ private:
     CCommandBarCtrl m_cmdBar;
     CStatusBarCtrl m_statusBar;
     FolderView m_folderView{};
-    FilesView m_filesView;
+    FilesView m_filesView{};
     CIcon m_bom, m_nobom;
 };
 
