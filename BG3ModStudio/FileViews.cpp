@@ -48,7 +48,7 @@ LRESULT FilesView::OnTabSelChange(int idCtrl, LPNMHDR pnmh, BOOL& bHandled)
     return 0;
 }
 
-BOOL FilesView::ActivateFile(const CString& path, void* data)
+BOOL FilesView::ActivateFile(const CString& path, LPVOID data)
 {
     auto it = m_data.find(data);
     if (it != m_data.end()) {
@@ -94,6 +94,18 @@ BOOL FilesView::ActivateFile(const CString& path, void* data)
 
     m_tabViewCtrl.m_tabCtrl.GetToolTips().UpdateTipText(&ti);
     SetActivePage(nPages);
+
+    return TRUE;
+}
+
+BOOL FilesView::CloseFileByData(LPVOID data)
+{
+    auto it = m_data.find(data);
+    if (it == m_data.end()) {
+        return FALSE;
+    }
+
+    CloseFile(it->second);
 
     return TRUE;
 }

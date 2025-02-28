@@ -73,7 +73,7 @@ void FolderView::SetFolder(const CString& folder)
     tvis.itemex.iImage = 0;
     tvis.itemex.iSelectedImage = 0;
     tvis.itemex.iExpandedImage = 0;
-    tvis.itemex.lParam = std::bit_cast<LPARAM>(new TreeItemData{TIT_FOLDER, folder});
+    tvis.itemex.lParam = std::bit_cast<LPARAM>(new TreeItemData{.type= TIT_FOLDER, .path= folder});
 
     InsertItem(&tvis);
 

@@ -2,6 +2,7 @@
 #include "FileViewFactory.h"
 
 #include "BinaryFileView.h"
+#include "Exception.h"
 #include "FileStream.h"
 #include "TextFileView.h"
 
@@ -11,7 +12,12 @@ namespace { // anonymous namespace
         CStringA strPath(path);
 
         FileStream file;
-        file.open(strPath, "rb");
+        try {
+            file.open(strPath, "rb");
+        } catch (const Exception& e) {
+            ATLTRACE("Failed to open file: %s\n", e.what());
+            return FALSE;
+        }
 
         char buffer[1024];
         auto read = file.read(buffer, sizeof(buffer));

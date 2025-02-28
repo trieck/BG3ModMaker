@@ -171,7 +171,12 @@ BOOL TextFileView::SaveFileAs(const CString& path)
     CStringA strPath(path);
 
     FileStream file;
-    file.open(strPath, "wb");
+    try {
+        file.open(strPath, "wb");   
+    } catch (const Exception& e) {
+        ATLTRACE("Failed to open file: %s\n", e.what());
+        return FALSE;
+    }    
 
     WriteBOM(file);
 

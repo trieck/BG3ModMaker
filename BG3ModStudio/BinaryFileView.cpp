@@ -326,8 +326,7 @@ BOOL BinaryFileView::LoadFile(const CString& path)
 
     try {
         file.open(strPath, "rb");
-    }
-    catch (const Exception& e) {
+    } catch (const Exception& e) {
         ATLTRACE("Failed to open file: %s\n", e.what());
         return FALSE;
     }

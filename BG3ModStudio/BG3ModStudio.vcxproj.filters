@@ -98,6 +98,9 @@
     <ClInclude Include="TabViewImpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FileOperation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BG3ModStudio.cpp">
@@ -169,6 +172,9 @@
     <ClCompile Include="SelectObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FileOperation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="ribbon.xml">
@@ -203,6 +209,13 @@
     <Image Include="resources\bom.ico">
       <Filter>Resources</Filter>
     </Image>
+    <Image Include="resources\filenew.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="resources\close.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="close.bmp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\BG3ModStudio.rc">

@@ -3,7 +3,7 @@
 class COMError
 {
 public:
-    COMError(HRESULT hr, LPUNKNOWN pUnknown = nullptr, REFIID iid = GUID_NULL);
+    explicit COMError(HRESULT hr, LPUNKNOWN pUnknown = nullptr, REFIID iid = GUID_NULL);
     operator CString() const;
 
 private:

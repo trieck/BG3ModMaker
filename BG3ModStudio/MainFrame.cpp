@@ -1,7 +1,9 @@
 #include "stdafx.h"
-#include "FileDialogEx.h"
-#include "MainFrame.h"
 
+#include "COMError.h"
+#include "FileDialogEx.h"
+#include "FileOperation.h"
+#include "MainFrame.h"
 
 BOOL MainFrame::DefCreate()
 {
@@ -94,18 +96,31 @@ LRESULT MainFrame::OnCreate(LPCREATESTRUCT pcs)
     return 1;
 }
 
-LRESULT MainFrame::OnFileOpen()
+LRESULT MainFrame::OnFolderOpen()
 {
     FileDialogEx dlg(FileDialogEx::Folder, *this);
-
-    if (dlg.DoModal() == IDOK) {
-        const auto& paths = dlg.paths();
-        ATLASSERT(!paths.empty());
-
-        m_filesView.CloseAllFiles();
-
-        m_folderView.SetFolder(paths[0]);
+    if (dlg.DoModal() != IDOK) {
+        return 0;
     }
+
+    const auto& paths = dlg.paths();
+    ATLASSERT(!paths.empty());
+
+    m_filesView.CloseAllFiles();
+
+    m_folderView.SetFolder(paths[0]);
+
+    UpdateTitle();
+
+    return 0;
+}
+
+LRESULT MainFrame::OnFolderClose()
+{
+    m_folderView.DeleteAllItems();
+    m_folderView.RedrawWindow();
+
+    UpdateTitle();
 
     return 0;
 }
@@ -142,6 +157,78 @@ LRESULT MainFrame::OnFileSaveAll() const
 LRESULT MainFrame::OnFileExit()
 {
     PostMessage(WM_CLOSE);
+    return 0;
+}
+
+LRESULT MainFrame::OnDeleteFile()
+{
+    auto item = m_folderView.GetSelectedItem();
+    if (item.IsNull()) {
+        return 0;
+    }
+
+    auto data = std::bit_cast<TreeItemData*>(item.GetData());
+    CString filename = data ? data->path : CString();
+    if (filename.IsEmpty()) {
+        return 0;
+    }
+
+    auto isFolder = data && data->type == TIT_FOLDER;
+
+    CString message;
+    if (isFolder) {
+        message.Format(L"Are you sure you want to delete the folder \"%s\"?", filename);
+    } else {
+        message.Format(L"Are you sure you want to delete the file \"%s\"?", filename);
+    }
+
+    auto result = AtlMessageBox(*this, static_cast<LPCTSTR>(message), nullptr, MB_ICONQUESTION | MB_YESNO);
+    if (result != IDYES) {
+        return 0;
+    }
+
+    FileOperation op;
+    auto hr = op.Create();
+    if (FAILED(hr)) {
+        CoMessageBox(*this, hr, nullptr, MB_ICONERROR);
+        return 0;
+    }
+
+    CWaitCursor wait;
+    hr = op.DeleteItem(filename);
+    if (FAILED(hr)) {
+        CoMessageBox(*this, hr, nullptr, MB_ICONERROR);
+        return 0;
+    }
+
+    auto hItem = item.m_hTreeItem;
+
+    m_folderView.DeleteItem(hItem);
+    m_folderView.RedrawWindow();
+
+    return 0;
+}
+
+LRESULT MainFrame::OnNewFileHere()
+{
+    FileDialogEx dlg(FileDialogEx::Save, *this, L"*.*", nullptr, 0, L"*.*");
+        
+    dlg.DoModal();
+
+    return 0;
+}
+
+LRESULT MainFrame::OnTVDelete(LPNMHDR pnmhdr)
+{
+    const auto item = MAKE_OLDTREEITEM(pnmhdr, &m_folderView);
+
+    if (m_filesView.IsWindow()) {
+        m_filesView.CloseFileByData(item.m_hTreeItem);
+    }
+
+    BOOL bHandled;
+    ReflectNotifications(WM_NOTIFY, 0, reinterpret_cast<LPARAM>(pnmhdr), bHandled);
+
     return 0;
 }
 
@@ -231,6 +318,70 @@ LRESULT MainFrame::OnTabContextMenu(LPNMHDR pnmh)
     return 0;
 }
 
+LRESULT MainFrame::OnRClick(LPNMHDR pnmh)
+{
+    if (pnmh->hwndFrom != m_folderView) {
+        return 0;
+    }
+
+    auto item = m_folderView.GetSelectedItem();
+    if (item.IsNull()) {
+        return 0;
+    }
+
+    CMenu menu;
+    menu.LoadMenu(IDR_TREE_CONTEXT);
+
+    CMenuHandle popup = menu.GetSubMenu(0);
+
+    CPoint pt;
+    GetCursorPos(&pt);
+
+    auto data = std::bit_cast<TreeItemData*>(item.GetData());
+    auto isFolder = data && data->type == TIT_FOLDER;
+
+    if (isFolder) {
+        popup.ModifyMenu(ID_TREE_DELETE_FILE, MF_BYCOMMAND | MF_ENABLED, ID_TREE_DELETE_FILE, L"Delete Folder");
+    } else {
+        popup.EnableMenuItem(ID_TREE_NEWFILEHERE, MF_GRAYED);
+    }
+
+    popup.TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_VERTICAL, pt.x, pt.y, *this);
+
+    return 0;
+}
+
+BOOL MainFrame::FolderIsOpen() const
+{
+    if (!m_folderView.IsWindow()) {
+        return FALSE;
+    }
+
+    auto root = m_folderView.GetRootItem();
+    return !root.IsNull();
+}
+
+void MainFrame::UpdateTitle()
+{
+    CString strTitle;
+
+    auto* title = AtlGetStringPtr(IDR_MAINFRAME);
+    ATLASSERT(title != nullptr);
+
+    if (FolderIsOpen()) {
+        auto root = m_folderView.GetRootItem();
+        ATLASSERT(root.m_hTreeItem != nullptr);
+        auto data = std::bit_cast<TreeItemData*>(root.GetData());
+        if (data != nullptr && data->path.GetLength()) {
+            strTitle.Format(_T("%s : %s"), title, data->path);
+        }
+    } else {
+        strTitle = title;
+    }
+
+    SetWindowText(strTitle);
+}
+
 void MainFrame::UpdateEncodingStatus(FileEncoding encoding)
 {
     CString status;
@@ -265,6 +416,8 @@ LRESULT MainFrame::OnViewStatusBar()
 
 BOOL MainFrame::OnIdle()
 {
+    UIEnable(ID_FILE_NEW, FolderIsOpen());
+    UIEnable(ID_FILE_CLOSE, FolderIsOpen());
     UIEnable(ID_FILE_SAVE, m_filesView.IsDirty(m_filesView.ActivePage()));
     UIEnable(ID_FILE_SAVE_ALL, m_filesView.IsDirty());
     UIUpdateMenuBar();

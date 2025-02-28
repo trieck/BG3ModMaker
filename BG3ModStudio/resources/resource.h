@@ -9,9 +9,9 @@
 #define IDI_FOLDER                      102
 #define IDI_FILE                        103
 #define IDR_TAB_CONTEXT                 106
+#define IDR_TREE_CONTEXT                107
 #define ID_FILE_SAVE_ALL                0x6C
 #define IDI_NOBOM                       109
-#define IDI_ICON1                       110
 #define IDI_BOM                         110
 #define ATL_IDC_TAB_CONTROL             0x3020
 #define ID_APPLY_NOW                    0x3021
@@ -21,6 +21,8 @@
 #define ID_TAB_CLOSE                    40007
 #define ID_TAB_CLOSE_ALL                40008
 #define ID_TAB_CLOSE_OTHERS             40009
+#define ID_TREE_NEWFILEHERE             40010
+#define ID_TREE_DELETE_FILE             40011
 #define ATL_IDS_IDLEMESSAGE             0xE001
 #define ID_FILE_NEW                     0xE100
 #define ID_FILE_OPEN                    0xE101
@@ -126,8 +128,8 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        111
-#define _APS_NEXT_COMMAND_VALUE         40013
+#define _APS_NEXT_RESOURCE_VALUE        113
+#define _APS_NEXT_COMMAND_VALUE         40017
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

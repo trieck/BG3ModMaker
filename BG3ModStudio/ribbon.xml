@@ -2,10 +2,22 @@
 
 <Application xmlns="http://schemas.microsoft.com/windows/2009/Ribbon">
     <Application.Commands>
+        <Command Name="FILE_NEW" Symbol="ID_FILE_NEW" Id="0xE100" Keytip="O">
+            <Command.LabelTitle>Create a New File...</Command.LabelTitle>
+            <Command.TooltipTitle>Create a New File(Ctrl+N)</Command.TooltipTitle>
+            <Command.TooltipDescription>Create a New File</Command.TooltipDescription>
+        </Command>
+        
         <Command Name="FILE_OPEN" Symbol="ID_FILE_OPEN" Id="0xE101" Keytip="O">
             <Command.LabelTitle>Open a Folder...</Command.LabelTitle>
             <Command.TooltipTitle>Open a Folder(Ctrl+O)</Command.TooltipTitle>
             <Command.TooltipDescription>Open a Folder</Command.TooltipDescription>
+        </Command>
+
+        <Command Name="FILE_CLOSE" Symbol="ID_FILE_CLOSE" Id="0xE102" Keytip="O">
+            <Command.LabelTitle>Close the Folder...</Command.LabelTitle>
+            <Command.TooltipTitle>Close the Folder(Ctrl+C)</Command.TooltipTitle>
+            <Command.TooltipDescription>Close the Folder</Command.TooltipDescription>
         </Command>
 
         <Command Name="FILE_SAVE" Symbol="ID_FILE_SAVE" Id="0xE103" Keytip="O">
@@ -45,7 +57,9 @@
                     <MenuGroup Class="StandardItems">
                     </MenuGroup>
                     <MenuGroup>
+                        <Button CommandName="FILE_NEW"/>
                         <Button CommandName="FILE_OPEN"/>
+                        <Button CommandName="FILE_CLOSE"/>
                         <Button CommandName="FILE_SAVE"/>
                         <Button CommandName="FILE_SAVE_ALL"/>
                     </MenuGroup>
@@ -75,12 +89,20 @@
                     <Group CommandName="GROUP_TOOLS">
                         <SizeDefinition>
                             <ControlNameMap>
+                                <ControlNameDefinition Name="FILE_NEW"/>
                                 <ControlNameDefinition Name="FILE_OPEN"/>
+                                <ControlNameDefinition Name="FILE_CLOSE"/>
                                 <ControlNameDefinition Name="FILE_SAVE"/>
                                 <ControlNameDefinition Name="FILE_SAVE_ALL"/>
                             </ControlNameMap>
                             <GroupSizeDefinition Size="Large">
+                                <ControlSizeDefinition ControlName="FILE_NEW"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true"/>
                                 <ControlSizeDefinition ControlName="FILE_OPEN"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true"/>
+                                <ControlSizeDefinition ControlName="FILE_CLOSE"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true"/>
                                 <ControlSizeDefinition ControlName="FILE_SAVE"
@@ -91,7 +113,13 @@
                                                        IsLabelVisible="true"/>
                             </GroupSizeDefinition>
                             <GroupSizeDefinition Size="Medium">
+                                <ControlSizeDefinition ControlName="FILE_NEW"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true"/>
                                 <ControlSizeDefinition ControlName="FILE_OPEN"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true"/>
+                                <ControlSizeDefinition ControlName="FILE_CLOSE"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true"/>
                                 <ControlSizeDefinition ControlName="FILE_SAVE"
@@ -102,8 +130,14 @@
                                                        IsLabelVisible="true"/>
                             </GroupSizeDefinition>
                             <GroupSizeDefinition Size="Small">
+                                <ControlSizeDefinition ControlName="FILE_NEW"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true"/>
                                 <ControlSizeDefinition ControlName="FILE_OPEN"
                                                        ImageSize="Small"
+                                                       IsLabelVisible="true"/>
+                                <ControlSizeDefinition ControlName="FILE_CLOSE"
+                                                       ImageSize="Large"
                                                        IsLabelVisible="true"/>
                                 <ControlSizeDefinition ControlName="FILE_SAVE"
                                                        ImageSize="Small"
@@ -113,7 +147,9 @@
                                                        IsLabelVisible="true"/>
                             </GroupSizeDefinition>
                         </SizeDefinition>
+                        <Button CommandName="FILE_NEW"/>
                         <Button CommandName="FILE_OPEN"/>
+                        <Button CommandName="FILE_CLOSE"/>
                         <Button CommandName="FILE_SAVE"/>
                         <Button CommandName="FILE_SAVE_ALL"/>
                     </Group>

@@ -17,14 +17,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return 1;
     }
 
-    try {
-        BG3ModStudio::run(hInstance, lpCmdLine, nShowCmd);
-    } catch (const std::exception& e) {
-        ATLTRACE("Exception: %s\n", e.what());
-        return 1;
-    }
-
-    return 0;
+    return BG3ModStudio::run(hInstance, lpCmdLine, nShowCmd);
 }
 
 BG3ModStudio::~BG3ModStudio()

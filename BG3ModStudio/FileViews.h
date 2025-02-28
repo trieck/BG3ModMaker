@@ -18,13 +18,14 @@ public:
     LRESULT OnCreate(LPCREATESTRUCT pcs);
     LRESULT OnTabSelChange(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
 
-    BOOL ActivateFile(const CString& path, void* data);
+    BOOL ActivateFile(const CString& path, LPVOID data);
     IFileView::Ptr ActiveFile() const;
     int ActivePage() const;
     const std::vector<IFileView::Ptr>& Files() const;
 
     PVOID GetData(int index) const;
     PVOID CloseFile(int index);
+    BOOL CloseFileByData(LPVOID data);
     PVOID CloseOtherFiles(int index);
     void CloseAllFiles();
     PVOID CloseActiveFile();
@@ -34,6 +35,6 @@ public:
 
 private:
     CFont m_tabFont;
-    std::unordered_map<PVOID, INT> m_data; // map file data to page indexes
+    std::unordered_map<LPVOID, INT> m_data; // map file data to page indexes
     std::vector<IFileView::Ptr> m_views; // file views
 };
