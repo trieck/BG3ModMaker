@@ -52,3 +52,21 @@ IFileView::Ptr FileViewFactory::CreateFileView(const CString& path, HWND parent,
 
     return fileView;
 }
+
+IFileView::Ptr FileViewFactory::CreateFileView(HWND parent, _U_RECT rect, DWORD dwStyle, DWORD dwStyleEx)
+{
+    IFileView::Ptr fileView;
+
+    fileView = std::make_shared<TextFileView>();
+    if (fileView == nullptr) {
+        ATLTRACE("Failed to create file view.\n");
+        return nullptr;
+    }
+
+    if (!fileView->Create(parent, rect, dwStyle, dwStyleEx)) {
+        ATLTRACE("Failed to create file view window.\n");
+        return nullptr;
+    }
+
+    return fileView;
+}

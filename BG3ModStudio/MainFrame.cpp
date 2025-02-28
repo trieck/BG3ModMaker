@@ -120,36 +120,26 @@ LRESULT MainFrame::OnFolderClose()
     m_folderView.DeleteAllItems();
     m_folderView.RedrawWindow();
 
+    m_filesView.CloseAllFiles();
+
     UpdateTitle();
 
     return 0;
 }
 
-LRESULT MainFrame::OnFileSave() const
+LRESULT MainFrame::OnFileSave()
 {
     auto activeFile = m_filesView.ActiveFile();
     ATLASSERT(activeFile != nullptr);
 
-    if (!activeFile->SaveFile()) {
-        CString message;
-        message.Format(L"Unable to save file \"%s\".", activeFile->GetPath());
-        AtlMessageBox(*this, static_cast<LPCWSTR>(message), nullptr, MB_ICONERROR);
-    }
+    m_filesView.SaveFile(activeFile);
 
     return 0;
 }
 
-LRESULT MainFrame::OnFileSaveAll() const
+LRESULT MainFrame::OnFileSaveAll()
 {
-    for (auto& file : m_filesView.Files()) {
-        if (file->IsDirty()) {
-            if (!file->SaveFile()) {
-                CString message;
-                message.Format(L"Unable to save file \"%s\".", file->GetPath());
-                AtlMessageBox(*this, static_cast<LPCWSTR>(message), nullptr, MB_ICONERROR);
-            }
-        }
-    }
+    m_filesView.SaveAll();
 
     return 0;
 }
@@ -209,6 +199,15 @@ LRESULT MainFrame::OnDeleteFile()
     return 0;
 }
 
+LRESULT MainFrame::OnNewFile()
+{
+    ATLASSERT(m_filesView.IsWindow());
+
+    m_filesView.NewFile();
+
+    return 0;
+}
+
 LRESULT MainFrame::OnNewFileHere()
 {
     FileDialogEx dlg(FileDialogEx::Save, *this, L"*.*", nullptr, 0, L"*.*");
@@ -216,6 +215,19 @@ LRESULT MainFrame::OnNewFileHere()
     dlg.DoModal();
 
     return 0;
+}
+
+void MainFrame::OnClose()
+{
+    if (m_filesView.IsWindow()) {
+        m_filesView.CloseAllFiles();
+    }
+
+    if (m_folderView.IsWindow()) {
+        m_folderView.DeleteAllItems();
+    }
+    
+    DestroyWindow();
 }
 
 LRESULT MainFrame::OnTVDelete(LPNMHDR pnmhdr)
@@ -346,7 +358,7 @@ LRESULT MainFrame::OnRClick(LPNMHDR pnmh)
         popup.EnableMenuItem(ID_TREE_NEWFILEHERE, MF_GRAYED);
     }
 
-    popup.TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_VERTICAL, pt.x, pt.y, *this);
+    popup.TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_VERTICAL, pt.x, pt.y, *this);
 
     return 0;
 }
@@ -418,8 +430,12 @@ BOOL MainFrame::OnIdle()
 {
     UIEnable(ID_FILE_NEW, FolderIsOpen());
     UIEnable(ID_FILE_CLOSE, FolderIsOpen());
-    UIEnable(ID_FILE_SAVE, m_filesView.IsDirty(m_filesView.ActivePage()));
-    UIEnable(ID_FILE_SAVE_ALL, m_filesView.IsDirty());
+
+    if (m_filesView.IsWindow()) {
+        UIEnable(ID_FILE_SAVE, m_filesView.IsDirty(m_filesView.ActivePage()));
+        UIEnable(ID_FILE_SAVE_ALL, m_filesView.IsDirty());
+    }
+
     UIUpdateMenuBar();
 
     return FALSE;

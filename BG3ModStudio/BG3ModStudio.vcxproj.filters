@@ -215,7 +215,6 @@
     <Image Include="resources\close.bmp">
       <Filter>Resources</Filter>
     </Image>
-    <Image Include="close.bmp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\BG3ModStudio.rc">

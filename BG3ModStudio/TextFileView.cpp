@@ -212,9 +212,14 @@ BOOL TextFileView::IsDirty() const
     return GetModify();
 }
 
-LPCTSTR TextFileView::GetPath() const
+const CString& TextFileView::GetPath() const
 {
-    return m_path.GetString();
+    return m_path;
+}
+
+void TextFileView::SetPath(const CString& path)
+{
+    m_path = path;
 }
 
 FileEncoding TextFileView::GetEncoding() const

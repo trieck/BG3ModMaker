@@ -232,7 +232,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="close.bmp" />
     <Image Include="resources\app.ico" />
     <Image Include="resources\bom.ico" />
     <Image Include="resources\close.bmp" />

@@ -23,7 +23,8 @@ public:
     virtual BOOL SaveFileAs(const CString& path) = 0;
     virtual BOOL Destroy() = 0;
     virtual BOOL IsDirty() const = 0;
-    virtual LPCTSTR GetPath() const = 0;
+    virtual const CString& GetPath() const = 0;
+    virtual VOID SetPath(const CString& path) = 0;
     virtual FileEncoding GetEncoding() const = 0;
     virtual operator HWND() const = 0;
 };

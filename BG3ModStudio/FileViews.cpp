@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "FileViews.h"
+
+#include "FileDialogEx.h"
 #include "FileViewFactory.h"
 #include "resources/resource.h"
 
@@ -48,6 +50,22 @@ LRESULT FilesView::OnTabSelChange(int idCtrl, LPNMHDR pnmh, BOOL& bHandled)
     return 0;
 }
 
+BOOL FilesView::NewFile()
+{
+    auto fileView = FileViewFactory::CreateFileView(*this, rcDefault);
+    if (fileView == nullptr) {
+        AtlMessageBox(*this, L"Unable to create a file view", nullptr, MB_ICONERROR);
+        return FALSE;
+    }
+
+    CString title;
+    title.Format(L"Untitled %d", ++m_nextId);
+
+    AddPage(fileView, title, nullptr);
+
+    return TRUE;
+}
+
 BOOL FilesView::ActivateFile(const CString& path, LPVOID data)
 {
     auto it = m_data.find(data);
@@ -74,26 +92,9 @@ BOOL FilesView::ActivateFile(const CString& path, LPVOID data)
         return FALSE;
     }
 
-    auto nPages = GetPageCount();
-    m_data[data] = nPages;
-
     CString title = PathFindFileName(path);
 
-    m_views.emplace_back(fileView);
-
-    AddPage(*fileView, title, 0, data);
-
-    ATLASSERT(m_tabViewCtrl.m_tabCtrl.IsWindow());
-
-    TOOLINFO ti{};
-    ti.cbSize = sizeof(TOOLINFO);
-    ti.hwnd = m_tabViewCtrl.m_tabCtrl;
-    ti.uId = nPages;
-    ti.hinst = _Module.GetResourceInstance();
-    ti.lpszText = const_cast<LPWSTR>(path.GetString());
-
-    m_tabViewCtrl.m_tabCtrl.GetToolTips().UpdateTipText(&ti);
-    SetActivePage(nPages);
+    AddPage(fileView, title, path, data);
 
     return TRUE;
 }
@@ -206,7 +207,7 @@ PVOID FilesView::CloseFile(int index)
 
     for (auto i = 0; i < GetPageCount(); ++i) {
         ti.uId = i;
-        ti.lpszText = const_cast<LPWSTR>(m_views[i]->GetPath());
+        ti.lpszText = const_cast<LPWSTR>(m_views[i]->GetPath().GetString());
         toolTips.AddTool(&ti);
     }
 
@@ -270,4 +271,132 @@ BOOL FilesView::IsDirty() const
     }
 
     return FALSE;
+}
+
+BOOL FilesView::SaveFile(const IFileView::Ptr& fileView)
+{
+    if (fileView == nullptr) {
+        return FALSE;
+    }
+
+    if (!fileView->IsDirty()) {
+        return TRUE;
+    }
+
+    if (fileView->GetPath().IsEmpty()) {
+        // Prompt for a file name
+        auto path = GetTitle(fileView);
+        if (path.IsEmpty()) {
+            path = L"Untitled";
+        }
+
+        auto filter = L"Text Files (*.txt)\0*.txt\0"
+            L"XML Files (*.xml, *.lsx)\0*.xml;*.lsx\0"
+            L"JSON Files (*.json, *.lsj)\0*.json;*.lsj\0"
+            L"All Files (*.*)\0*.*\0\0";
+
+        FileDialogEx dlg(FileDialogEx::Save, *this, nullptr, path, 0, filter);
+        if (dlg.DoModal() != IDOK) {
+            return FALSE;
+        }
+
+        auto filename = dlg.paths().front();
+        fileView->SetPath(filename);
+
+        SetTitle(fileView, PathFindFileName(filename));
+    }
+
+    if (!fileView->SaveFile()) {
+        CString message;
+        message.Format(L"Unable to save file \"%s\".", fileView->GetPath());
+        AtlMessageBox(*this, static_cast<LPCWSTR>(message), nullptr, MB_ICONERROR);
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+BOOL FilesView::SaveAll()
+{
+    BOOL success = TRUE;
+
+    for (const auto& view : m_views) {
+        if (!SaveFile(view)) {
+            success = FALSE;
+        }
+    }
+
+    return success;
+}
+
+CString FilesView::GetTitle(const IFileView::Ptr& fileView) const
+{
+    if (fileView == nullptr) {
+        return L"";
+    }
+
+    CString title;
+
+    for (auto i = 0; i < GetPageCount(); ++i) {
+        if (m_views[i] == fileView) {
+            title = GetPageTitle(i);
+            break;
+        }
+    }
+
+    return title;
+}
+
+void FilesView::SetTitle(const IFileView::Ptr& fileView, LPCTSTR lpstrTitle)
+{
+    if (fileView == nullptr) {
+        return;
+    }
+
+    for (auto i = 0; i < GetPageCount(); ++i) {
+        if (m_views[i] == fileView) {
+            SetPageTitle(i, lpstrTitle);
+            break;
+        }
+    }
+}
+
+
+BOOL FilesView::AddPage(const IFileView::Ptr& fileView, LPCTSTR lpstrTitle, LPCTSTR lpstrPath, LPVOID pData)
+{
+    ATLASSERT(fileView != nullptr);
+    ATLASSERT(lpstrTitle != nullptr);
+
+    auto nPages = GetPageCount();
+
+    if (pData != nullptr) {
+        m_data[pData] = nPages;
+    }
+
+    m_views.emplace_back(fileView);
+
+    if (!Base::AddPage(*fileView, lpstrTitle, -1, pData)) {
+        ATLTRACE("Unable to add page.\n");
+        return FALSE;
+    }
+
+    ATLASSERT(m_tabViewCtrl.m_tabCtrl.IsWindow());
+
+    CString path;
+    if (lpstrPath != nullptr) {
+        path = lpstrPath;
+    }
+
+    TOOLINFO ti{};
+    ti.cbSize = sizeof(TOOLINFO);
+    ti.hwnd = m_tabViewCtrl.m_tabCtrl;
+    ti.uId = nPages;
+    ti.hinst = _Module.GetResourceInstance();
+    ti.lpszText = const_cast<LPTSTR>(path.GetString());
+
+    m_tabViewCtrl.m_tabCtrl.GetToolTips().UpdateTipText(&ti);
+
+    SetActivePage(nPages);
+
+    return TRUE;
 }

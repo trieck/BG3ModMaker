@@ -27,7 +27,8 @@ public:
     BOOL SaveFileAs(const CString& path) override;
     BOOL Destroy() override;
     BOOL IsDirty() const override;
-    LPCTSTR GetPath() const override;
+    const CString& GetPath() const override;
+    VOID SetPath(const CString& path) override;
     FileEncoding GetEncoding() const override;
     operator HWND() const override;
 

@@ -76,6 +76,10 @@ INT_PTR FileDialogEx::DoModal()
         dwOptions &= ~FOS_PICKFOLDERS;
     }
 
+    if (m_type == Save) {
+        dwOptions |= FOS_OVERWRITEPROMPT;
+    }
+
     hr = pfd->SetOptions(dwOptions);
     if (FAILED(hr)) {
         ATLTRACE("Unable to set file dialog options.\n");
@@ -90,7 +94,7 @@ INT_PTR FileDialogEx::DoModal()
         }
     }
 
-    if (!m_strFilename.IsEmpty()) {
+    if (!m_strFilename.IsEmpty() && m_type == Save) {
         hr = pfd->SetFileName(m_strFilename);
         if (FAILED(hr)) {
             ATLTRACE("Unable to set file dialog filename.\n");

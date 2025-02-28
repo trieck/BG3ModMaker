@@ -372,9 +372,14 @@ BOOL BinaryFileView::IsDirty() const
     return FALSE;
 }
 
-LPCTSTR BinaryFileView::GetPath() const
+const CString& BinaryFileView::GetPath() const
 {
-    return m_path.GetString();
+    return m_path;
+}
+
+void BinaryFileView::SetPath(const CString& path)
+{
+    m_path = path;
 }
 
 FileEncoding BinaryFileView::GetEncoding() const

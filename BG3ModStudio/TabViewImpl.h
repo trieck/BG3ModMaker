@@ -102,6 +102,35 @@ public:
         return m_tabViewCtrl.GetItemCount();
     }
 
+    CString GetPageTitle(int index) const
+    {
+        ATLASSERT(m_tabViewCtrl.IsWindow());
+
+        CString title;
+        auto* ptitle = title.GetBuffer(MAX_PATH);
+
+        TCITEM item{};
+        item.mask = TCIF_TEXT;
+        item.cchTextMax = MAX_PATH;
+        item.pszText = ptitle;
+
+        m_tabViewCtrl.GetTabItem(index, &item);
+        title.ReleaseBuffer();
+
+        return title;
+    }
+
+    void SetPageTitle(int index, LPCTSTR lpstrTitle)
+    {
+        ATLASSERT(m_tabViewCtrl.IsWindow());
+
+        TCITEM item{};
+        item.mask = TCIF_TEXT;
+        item.pszText = const_cast<LPTSTR>(lpstrTitle);
+
+        m_tabViewCtrl.SetTabItem(index, &item);
+    }
+
     int GetActivePage() const
     {
         ATLASSERT(m_tabViewCtrl.IsWindow());

@@ -20,11 +20,13 @@ public:
     LRESULT OnViewStatusBar();
     LRESULT OnFolderOpen();
     LRESULT OnFolderClose ();
-    LRESULT OnFileSave() const;
-    LRESULT OnFileSaveAll() const;
+    LRESULT OnFileSave();
+    LRESULT OnFileSaveAll();
     LRESULT OnFileExit();
     LRESULT OnDeleteFile();
+    LRESULT OnNewFile();
     LRESULT OnNewFileHere();
+    void OnClose();
 
     LRESULT OnTVSelChanged(LPNMHDR pnmhdr);
     LRESULT OnTVDelete(LPNMHDR pnmhdr);
@@ -45,7 +47,10 @@ public:
 
     BEGIN_MSG_MAP(MainFrame)
         MSG_WM_CREATE(OnCreate)
+        MSG_WM_CLOSE(OnClose)
+
         COMMAND_ID_HANDLER2(ID_VIEW_STATUS_BAR, OnViewStatusBar)
+        COMMAND_ID_HANDLER2(ID_FILE_NEW, OnNewFile)
         COMMAND_ID_HANDLER2(ID_FILE_OPEN, OnFolderOpen)
         COMMAND_ID_HANDLER2(ID_FILE_CLOSE, OnFolderClose)
         COMMAND_ID_HANDLER2(ID_APP_EXIT, OnFileExit)
