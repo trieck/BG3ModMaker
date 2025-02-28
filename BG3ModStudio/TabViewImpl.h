@@ -14,43 +14,26 @@ public:
         MSG_WM_CREATE(OnCreate)
         MSG_WM_DESTROY(OnDestroy)
         MSG_WM_SIZE(OnSize)
-        MSG_WM_SETFOCUS(OnSetFocus)
-        FORWARD_NOTIFICATIONS()
-        NOTIFY_HANDLER(TabViewCtrl::m_nTabID, TCN_SELCHANGE, OnTabChanged)
+        NOTIFY_CODE_HANDLER(TVWN_CONTEXTMENU, OnTabContextMenu)
     END_MSG_MAP()
 
-    void OnSetFocus(HWND /*hWndOld*/)
+    LRESULT OnTabContextMenu(int idCtrl, LPNMHDR pnmh, BOOL& bHandled)
     {
-        if (m_tabViewCtrl.IsWindow()) {
-            HWND hWndActivePage = GetActiveView();
-            if (hWndActivePage != nullptr) {
-                ::SetFocus(hWndActivePage);
-            }
-        }
-    }
+        auto pcmi = reinterpret_cast<LPTBVCONTEXTMENUINFO>(pnmh);
+        pcmi->hdr.code = TBVN_CONTEXTMENU;
 
-    LRESULT OnTabChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/)
-    {
-        ATLASSERT(m_tabViewCtrl.IsWindow());
-        auto index = m_tabViewCtrl.GetActiveTab();
-        if (index == -1) {
-            return 0;
-        }
-
-        SetActivePage(index);
-                        
-        T* pT = static_cast<T*>(this);
-        pT->OnPageActivated(index);
+        SendMessage(GetParent(this->m_hWnd), WM_NOTIFY, idCtrl, reinterpret_cast<LPARAM>(pcmi));
 
         return 0;
     }
-        
+
     void UpdateLayout()
     {
         CRect rc;
         this->GetClientRect(&rc);
 
         if (m_tabViewCtrl.IsWindow()) {
+            m_tabViewCtrl.SetWindowPos(nullptr, rc.left, rc.top, rc.Width() + 1, rc.Height() + 1, SWP_NOZORDER);
             m_tabViewCtrl.SetWindowPos(nullptr, rc.left, rc.top, rc.Width(), rc.Height(), SWP_NOZORDER);
         }
     }
@@ -93,7 +76,15 @@ public:
         if (index < 0 || index >= GetPageCount()) {
             return;
         }
+
         ClosePage(index);
+
+        int nPage = GetActivePage();
+
+        auto pT = static_cast<T*>(this);
+        pT->OnPageActivated(nPage);
+
+        UpdateLayout();
     }
 
     void RemoveAllPages()
@@ -164,7 +155,7 @@ public:
 
         return TRUE;
     }
-        
+
     void OnPageActivated(int nPage)
     {
         NMHDR nmhdr;
@@ -188,7 +179,7 @@ public:
         if (nCount == 0) {
             m_tabViewCtrl.ShowTabCtrl(TRUE);
         }
-        
+
         return TRUE;
     }
 

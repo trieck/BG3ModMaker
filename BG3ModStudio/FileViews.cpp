@@ -3,6 +3,51 @@
 #include "FileViewFactory.h"
 #include "resources/resource.h"
 
+LRESULT FilesView::OnCreate(LPCREATESTRUCT pcs)
+{
+    if (pcs == nullptr) {
+        return -1;
+    }
+
+    if (TabViewImpl::OnCreate(pcs) == -1) {
+        return -1;
+    }
+
+    LOGFONT lf{};
+    lf.lfCharSet = DEFAULT_CHARSET;
+    lf.lfHeight = 17;
+    lf.lfWeight = FW_SEMIBOLD;
+    Checked::tcsncpy_s(lf.lfFaceName, _countof(lf.lfFaceName), _T("Tahoma"), _TRUNCATE);
+
+    m_tabFont.CreateFontIndirect(&lf);
+    m_tabViewCtrl.m_tabCtrl.SetFont(m_tabFont);
+
+    m_tabViewCtrl.SetTopMargin(1);
+    m_tabViewCtrl.SetViewBorder(2);
+
+    return 0;
+}
+
+LRESULT FilesView::OnTabSelChange(int idCtrl, LPNMHDR pnmh, BOOL& bHandled)
+{
+    ATLASSERT(idCtrl == TabViewCtrl::m_nTabID);
+    ATLASSERT(pnmh->hwndFrom == m_tabViewCtrl.m_tabCtrl);
+    ATLASSERT(pnmh->code == TCN_SELCHANGE);
+
+    auto index = m_tabViewCtrl.GetActiveTab();
+    if (index == -1) {
+        return 0;
+    }
+
+    SetActivePage(index);
+    OnPageActivated(index);
+    UpdateLayout();
+
+    bHandled = TRUE;
+
+    return 0;
+}
+
 BOOL FilesView::ActivateFile(const CString& path, void* data)
 {
     auto it = m_data.find(data);
@@ -38,6 +83,16 @@ BOOL FilesView::ActivateFile(const CString& path, void* data)
 
     AddPage(*fileView, title, 0, data);
 
+    ATLASSERT(m_tabViewCtrl.m_tabCtrl.IsWindow());
+
+    TOOLINFO ti{};
+    ti.cbSize = sizeof(TOOLINFO);
+    ti.hwnd = m_tabViewCtrl.m_tabCtrl;
+    ti.uId = nPages;
+    ti.hinst = _Module.GetResourceInstance();
+    ti.lpszText = const_cast<LPWSTR>(path.GetString());
+
+    m_tabViewCtrl.m_tabCtrl.GetToolTips().UpdateTipText(&ti);
     SetActivePage(nPages);
 
     return TRUE;
@@ -122,7 +177,26 @@ PVOID FilesView::CloseFile(int index)
 
     RemovePage(index);
 
-    // TODO: Update tooltips
+    // Update tooltips
+    TOOLINFO ti{};
+    ti.cbSize = sizeof(TOOLINFO);
+    ti.hwnd = m_tabViewCtrl.m_tabCtrl;
+    ti.uId = index;
+    ti.hinst = _Module.GetResourceInstance();
+
+    auto toolTips = m_tabViewCtrl.m_tabCtrl.GetToolTips();
+
+    auto toolCount = toolTips.GetToolCount();
+    for (auto i = 0; i < toolCount; ++i) {
+        ti.uId = i;
+        toolTips.DelTool(&ti);
+    }
+
+    for (auto i = 0; i < GetPageCount(); ++i) {
+        ti.uId = i;
+        ti.lpszText = const_cast<LPWSTR>(m_views[i]->GetPath());
+        toolTips.AddTool(&ti);
+    }
 
     UpdateLayout();
 

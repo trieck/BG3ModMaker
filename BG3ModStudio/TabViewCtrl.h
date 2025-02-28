@@ -32,11 +32,11 @@ public:
             return nullptr;
         }
 
-        if (!m_tabCtrl.Create(*this, this->rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, 0, m_nTabID)) {
+        if (!m_tabCtrl.Create(*this, this->rcDefault, nullptr, CControlWinTraits::GetWndStyle(0) | TCS_TOOLTIPS, 0, m_nTabID)) {
             ATLTRACE("Failed to create tab control.\n");
             return nullptr;
         }
-
+        
         m_tabCtrl.SetFont(AtlCreateControlFont());
 
         this->SetTabCtrl(m_tabCtrl);
@@ -150,6 +150,30 @@ public:
         ATLASSERT(::IsWindow(this->m_hWnd));
 
         ::SendMessage(this->m_hWnd, WM_CONTEXTMENU, reinterpret_cast<WPARAM>(hWndTabCtrl), MAKELPARAM(pt.x, pt.y));
+    }
+
+    void SetBkColor(COLORREF color)
+    {
+        ATLASSERT(::IsWindow(this->m_hWnd));
+        ::SendMessage(this->m_hWnd, TVWM_SETBKCOLOR, color, 0);
+    }
+
+    COLORREF GetBkColor() const
+    {
+        ATLASSERT(::IsWindow(this->m_hWnd));
+        return static_cast<COLORREF>(::SendMessage(this->m_hWnd, TVWM_GETBKCOLOR, 0, 0));
+    }
+
+    void SetTopMargin(int nBorder)
+    {
+        ATLASSERT(::IsWindow(this->m_hWnd));
+        ::SendMessage(this->m_hWnd, TVWM_SETTOPMARGIN, nBorder, 0);
+    }
+
+    int GetTopMargin() const
+    {
+        ATLASSERT(::IsWindow(this->m_hWnd));
+        return static_cast<int>(::SendMessage(this->m_hWnd, TVWM_GETTOPMARGIN, 0, 0));
     }
 };
 

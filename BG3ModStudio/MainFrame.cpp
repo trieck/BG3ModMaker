@@ -196,10 +196,6 @@ LRESULT MainFrame::OnTabContextMenu(LPNMHDR pnmh)
 {
     auto lpcmi = reinterpret_cast<LPTBVCONTEXTMENUINFO>(pnmh);
 
-    if (pnmh->hwndFrom != m_filesView) {
-        return 0;
-    }
-
     auto tab = static_cast<int>(pnmh->idFrom);
 
     CMenu menu;
