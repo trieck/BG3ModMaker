@@ -18,5 +18,5 @@ private:
 int CoMessageBox(HWND hWndOwner,
     HRESULT hr,
     LPUNKNOWN pUnknown = nullptr,
-    ATL::_U_STRINGorID title = static_cast<LPCTSTR>(nullptr),
+    _U_STRINGorID title = static_cast<LPCTSTR>(nullptr),
     UINT uType = MB_OK | MB_ICONINFORMATION);

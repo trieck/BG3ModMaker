@@ -101,6 +101,12 @@
     <ClInclude Include="FileOperation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FolderMonitor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShellHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BG3ModStudio.cpp">
@@ -173,6 +179,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FileOperation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FolderMonitor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ShellHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

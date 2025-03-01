@@ -76,7 +76,13 @@ BOOL FilesView::ActivateFile(const CString& path, LPVOID data)
         return TRUE;
     }
 
-    auto fileView = FileViewFactory::CreateFileView(path, *this, rcDefault);
+    // The file view may be open and not associated with the data yet
+    auto fileView = GetFileView(path);
+    if (fileView != nullptr) {
+        return ActivateView(fileView, data);
+    }
+
+    fileView = FileViewFactory::CreateFileView(path, *this, rcDefault);
     if (fileView == nullptr) {
         CString message;
         message.Format(L"Unable to create a file view for \"%s\".\nThis file type may be unsupported.",
@@ -86,6 +92,8 @@ BOOL FilesView::ActivateFile(const CString& path, LPVOID data)
     }
 
     if (!fileView->LoadFile(path)) {
+        fileView->Destroy();
+
         CString message;
         message.Format(L"Unable to load file \"%s\".", path.GetString());
         AtlMessageBox(*this, static_cast<LPCWSTR>(message), nullptr, MB_ICONERROR);
@@ -138,6 +146,7 @@ PVOID FilesView::GetData(int index) const
         return nullptr;
     }
 
+    // FIXME:!!! WHAT???
     auto hItem = GetPageData(index);
 
     return hItem;
@@ -290,10 +299,10 @@ BOOL FilesView::SaveFile(const IFileView::Ptr& fileView)
             path = L"Untitled";
         }
 
-        auto filter = L"Text Files (*.txt)\0*.txt\0"
+        auto filter = L"All Files (*.*)\0*.*\0"
             L"XML Files (*.xml, *.lsx)\0*.xml;*.lsx\0"
             L"JSON Files (*.json, *.lsj)\0*.json;*.lsj\0"
-            L"All Files (*.*)\0*.*\0\0";
+            L"Text Files(*.txt)\0 * .txt\0\0";
 
         FileDialogEx dlg(FileDialogEx::Save, *this, nullptr, path, 0, filter);
         if (dlg.DoModal() != IDOK) {
@@ -361,6 +370,129 @@ void FilesView::SetTitle(const IFileView::Ptr& fileView, LPCTSTR lpstrTitle)
     }
 }
 
+IFileView::Ptr FilesView::GetFileView(int index) const
+{
+    if (index < 0 || index >= GetPageCount()) {
+        return nullptr;
+    }
+    return m_views[index];
+}
+
+IFileView::Ptr FilesView::GetFileView(LPVOID data) const
+{
+    auto it = m_data.find(data);
+    if (it == m_data.end()) {
+        return nullptr;
+    }
+
+    return m_views[it->second];
+}
+
+IFileView::Ptr FilesView::GetFileView(const CString& path) const
+{
+    for (const auto& view : m_views) {
+        if (view->GetPath().CompareNoCase(path) == 0) {
+            return view;
+        }
+    }
+
+    return nullptr;
+}
+
+inline BOOL FilesView::ActivateView(const IFileView::Ptr& fileView, LPVOID data)
+{
+    auto index = GetViewIndex(fileView);
+    if (index == -1) {
+        return FALSE;
+    }
+
+    m_data[data] = index;   // rewrite or insert
+
+    SetActivePage(index);
+    OnPageActivated(index);
+    UpdateLayout();
+
+    return TRUE;
+}
+
+int FilesView::GetViewIndex(const IFileView::Ptr& fileView) const
+{
+    for (auto i = 0; i < GetPageCount(); ++i) {
+        if (m_views[i] == fileView) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+BOOL FilesView::SetData(const CString& path, LPVOID data)
+{
+    auto fileView = GetFileView(path);
+    if (fileView == nullptr) {
+        return FALSE;
+    }
+
+    auto index = GetViewIndex(fileView);
+    if (index == -1) {
+        return FALSE;
+    }
+
+    m_data[data] = index;
+
+    SetPageData(index, data);
+
+    return TRUE;
+}
+
+BOOL FilesView::RenameFile(const CString& oldname, const CString& newname)
+{
+    auto fileView = GetFileView(oldname);
+    if (fileView == nullptr) {
+        return FALSE;
+    }
+
+    if (fileView->IsDirty()) {
+        CString message;
+        message.Format(L"The file \"%s\" has been renamed, but your changes have not been saved.\n"
+            L"Do you want to save the changes?", oldname.GetString());
+        auto result = AtlMessageBox(*this, static_cast<LPCWSTR>(message), IDR_MAINFRAME,
+            MB_YESNOCANCEL | MB_ICONQUESTION | MB_ICONWARNING);
+        if (result == IDCANCEL) {
+            return FALSE;
+        }
+
+        if (result == IDYES) {
+            return SaveFile(fileView);
+        }
+    }
+
+    auto index = GetViewIndex(fileView);
+    if (index == -1) {
+        return FALSE;
+    }
+
+    fileView->SetPath(newname);
+
+    SetTitle(fileView, PathFindFileName(newname));
+
+    auto toolTips = m_tabViewCtrl.m_tabCtrl.GetToolTips();
+
+    TOOLINFO ti{};
+    ti.cbSize = sizeof(TOOLINFO);
+    ti.hwnd = m_tabViewCtrl.m_tabCtrl;
+    ti.uId = index;
+    ti.hinst = _Module.GetResourceInstance();
+
+    toolTips.DelTool(&ti);
+
+    ti.lpszText = const_cast<LPWSTR>(newname.GetString());
+    toolTips.AddTool(&ti);
+
+    UpdateLayout();
+
+    return TRUE;
+}
 
 BOOL FilesView::AddPage(const IFileView::Ptr& fileView, LPCTSTR lpstrTitle, LPCTSTR lpstrPath, LPVOID pData)
 {

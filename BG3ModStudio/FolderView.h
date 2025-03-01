@@ -6,10 +6,10 @@ enum TreeItemType {
     TIT_FILE = 2
 };
 
-struct TreeItemData {
+typedef struct TreeItemData {
     TreeItemType type;
     CString path;
-};
+} TREEITEMDATA, *LPTREEITEMDATA;
 
 class FolderView : public CWindowImpl<FolderView, CTreeViewCtrlEx>
 {
@@ -32,7 +32,15 @@ public:
 
     void SetFolder(const CString& folder);
     void ExpandFolders(const CTreeItem& folder);
+    HTREEITEM AddFile(const CString& filename);
+    HTREEITEM FindFile(const CString& filename);
+    HTREEITEM RenameFile(const CString& oldname, const CString& newname);
+
 private:
+    HTREEITEM InsertFile(HTREEITEM hRoot, const CString& filename, std::deque<CString>& components);
+    HTREEITEM InsertFile(HTREEITEM hRoot, const CString& filename, const CString& subpath, const CString& component);
+    HTREEITEM FindFile(HTREEITEM hRoot, std::deque<CString>& components);
+    HTREEITEM FindFile(HTREEITEM hRoot, const CString& subpath, const CString& component);
+
     CImageList m_ImageList;
 };
-

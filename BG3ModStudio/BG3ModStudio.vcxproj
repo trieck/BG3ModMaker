@@ -166,6 +166,7 @@
     <ClInclude Include="BinaryFileView.h" />
     <ClInclude Include="COMError.h" />
     <ClInclude Include="FileOperation.h" />
+    <ClInclude Include="FolderMonitor.h" />
     <ClInclude Include="SelectObject.h" />
     <ClInclude Include="DefaultRTFFormatter.h" />
     <ClInclude Include="FileDialogEx.h" />
@@ -180,6 +181,7 @@
     <ClInclude Include="resources\resource.h" />
     <ClInclude Include="RTFFormatterRegistry.h" />
     <ClInclude Include="RTFStreamFormatter.h" />
+    <ClInclude Include="ShellHelper.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StringHelper.h" />
     <ClInclude Include="TabViewCtrl.h" />
@@ -197,6 +199,7 @@
     <ClCompile Include="BinaryFileView.cpp" />
     <ClCompile Include="COMError.cpp" />
     <ClCompile Include="FileOperation.cpp" />
+    <ClCompile Include="FolderMonitor.cpp" />
     <ClCompile Include="SelectObject.cpp" />
     <ClCompile Include="DefaultRTFFormatter.cpp" />
     <ClCompile Include="FileDialogEx.cpp" />
@@ -209,6 +212,7 @@
     <ClCompile Include="MessageLoopEx.cpp" />
     <ClCompile Include="RTFFormatterRegistry.cpp" />
     <ClCompile Include="RTFStreamFormatter.cpp" />
+    <ClCompile Include="ShellHelper.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>

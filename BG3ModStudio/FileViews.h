@@ -40,7 +40,13 @@ public:
     BOOL SaveAll();
     CString GetTitle(const IFileView::Ptr& fileView) const;
     void SetTitle(const IFileView::Ptr& fileView, LPCTSTR lpstrTitle);
-
+    IFileView::Ptr GetFileView(int index) const;
+    IFileView::Ptr GetFileView(LPVOID data) const;
+    IFileView::Ptr GetFileView(const CString& path) const;
+    BOOL ActivateView(const IFileView::Ptr& fileView, LPVOID data);
+    int GetViewIndex(const IFileView::Ptr& fileView) const;
+    BOOL SetData(const CString& path, LPVOID data);
+    BOOL RenameFile(const CString& oldname, const CString& newname);
 private:
     BOOL AddPage(const IFileView::Ptr& fileView, LPCTSTR lpstrTitle, LPCTSTR lpstrPath, LPVOID pData = nullptr);    
 

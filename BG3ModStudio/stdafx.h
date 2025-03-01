@@ -29,13 +29,15 @@
 #include <atlwin.h>
 #include <comdef.h>
 
-#include <vector>
+#include <bit>
+#include <deque>
+#include <memory>
+#include <ranges>
+#include <stack>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
-#include <string>
-#include <ranges>
-#include <bit>
-#include <memory>
+#include <vector>
 
 #ifdef _UNICODE
 using tstring = std::wstring;

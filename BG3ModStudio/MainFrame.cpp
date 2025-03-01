@@ -5,6 +5,8 @@
 #include "FileOperation.h"
 #include "MainFrame.h"
 
+static constexpr auto FOLDER_MONITOR_WAIT_TIME = 50;
+
 BOOL MainFrame::DefCreate()
 {
     RECT rect = {0, 0, 1024, 600};
@@ -112,11 +114,24 @@ LRESULT MainFrame::OnFolderOpen()
 
     UpdateTitle();
 
+    CWaitCursor wait;
+    if (m_folderMonitor) {
+        m_folderMonitor->Stop(FOLDER_MONITOR_WAIT_TIME);
+    }
+
+    m_folderMonitor = FolderMonitor::Create(m_hWnd, paths[0]);
+    m_folderMonitor->Start();
+
     return 0;
 }
 
 LRESULT MainFrame::OnFolderClose()
 {
+    if (m_folderMonitor) {
+        CWaitCursor wait;
+        m_folderMonitor->Stop(FOLDER_MONITOR_WAIT_TIME);
+    }
+
     m_folderView.DeleteAllItems();
     m_folderView.RedrawWindow();
 
@@ -219,6 +234,11 @@ LRESULT MainFrame::OnNewFileHere()
 
 void MainFrame::OnClose()
 {
+    if (m_folderMonitor) {
+        CWaitCursor wait;
+        m_folderMonitor->Stop(FOLDER_MONITOR_WAIT_TIME);
+    }
+
     if (m_filesView.IsWindow()) {
         m_filesView.CloseAllFiles();
     }
@@ -361,6 +381,77 @@ LRESULT MainFrame::OnRClick(LPNMHDR pnmh)
     popup.TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_VERTICAL, pt.x, pt.y, *this);
 
     return 0;
+}
+
+LRESULT MainFrame::OnFileChanged(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+{
+    auto bstrFilename = reinterpret_cast<BSTR>(lParam);
+
+    CString strFilename(bstrFilename);
+
+    SysFreeString(bstrFilename);
+
+    ProcessFileChange(static_cast<UINT>(wParam), strFilename);
+
+    bHandled = TRUE;
+
+    return 0;
+}
+
+void MainFrame::ProcessFileChange(UINT action, const CString& filename)
+{
+    if (!m_folderView.IsWindow()) {
+        return;
+    }
+
+    switch (action) {
+    case FILE_ACTION_ADDED:
+        AddFile(filename);
+        break;
+    case FILE_ACTION_REMOVED:
+        RemoveFile(filename);
+        break;
+    case FILE_ACTION_RENAMED_OLD_NAME:
+        m_oldnames.emplace(filename.GetString());
+        break;
+    case FILE_ACTION_RENAMED_NEW_NAME:
+        if (m_oldnames.empty()) {
+            break; // out-of-place
+        }
+        RenameFile(m_oldnames.top().c_str(), filename);
+        m_oldnames.pop();
+        break;
+    default:
+        break;
+    }
+}
+
+void MainFrame::AddFile(const CString& filename)
+{
+    HTREEITEM hItem = m_folderView.AddFile(filename);
+    if (hItem == nullptr) {
+        return;
+    }
+
+    m_filesView.SetData(filename, hItem);
+}
+
+void MainFrame::RemoveFile(const CString& filename)
+{
+    auto hItem = m_folderView.FindFile(filename);
+    if (hItem == nullptr) {
+        return;
+    }
+
+    m_filesView.CloseFileByData(hItem); // should we do this?
+    m_folderView.DeleteItem(hItem);
+}
+
+void MainFrame::RenameFile(const CString& oldname, const CString& newname)
+{
+    if (m_folderView.RenameFile(oldname, newname)) {
+        m_filesView.RenameFile(oldname, newname);
+    }
 }
 
 BOOL MainFrame::FolderIsOpen() const

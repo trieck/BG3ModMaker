@@ -2,6 +2,7 @@
 
 #include "FileViews.h"
 #include "FolderView.h"
+#include "FolderMonitor.h"
 #include "resources/resource.h"
 #include "resources/ribbon.h"
 
@@ -33,6 +34,7 @@ public:
     LRESULT OnTabActivated(LPNMHDR pnmhdr);
     LRESULT OnTabContextMenu(LPNMHDR pnmh);
     LRESULT OnRClick(LPNMHDR pnmh);
+    LRESULT OnFileChanged(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 
     BEGIN_RIBBON_CONTROL_MAP(MainFrame)
     END_RIBBON_CONTROL_MAP()
@@ -48,6 +50,7 @@ public:
     BEGIN_MSG_MAP(MainFrame)
         MSG_WM_CREATE(OnCreate)
         MSG_WM_CLOSE(OnClose)
+        MESSAGE_HANDLER(WM_FILE_CHANGED, OnFileChanged)
 
         COMMAND_ID_HANDLER2(ID_VIEW_STATUS_BAR, OnViewStatusBar)
         COMMAND_ID_HANDLER2(ID_FILE_NEW, OnNewFile)
@@ -69,6 +72,10 @@ public:
     END_MSG_MAP()
 
 private:
+    void ProcessFileChange(UINT action, const CString& filename);
+    void AddFile(const CString& filename);
+    void RemoveFile(const CString& filename);
+    void RenameFile(const CString& oldname, const CString& newname);
     BOOL FolderIsOpen() const;
     void UpdateTitle();
     void UpdateEncodingStatus(FileEncoding encoding);
@@ -79,5 +86,6 @@ private:
     FolderView m_folderView{};
     FilesView m_filesView{};
     CIcon m_bom, m_nobom;
+    FolderMonitor::Ptr m_folderMonitor;
+    std::stack<std::wstring> m_oldnames; // old file names for renaming
 };
-
