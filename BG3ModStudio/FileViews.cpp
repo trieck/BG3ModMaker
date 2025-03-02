@@ -452,18 +452,16 @@ BOOL FilesView::RenameFile(const CString& oldname, const CString& newname)
         return FALSE;
     }
 
+    fileView->SetPath(newname);
+
     if (fileView->IsDirty()) {
         CString message;
-        message.Format(L"The file \"%s\" has been renamed, but your changes have not been saved.\n"
-            L"Do you want to save the changes?", oldname.GetString());
+        message.Format(L"The file \"%s\" has been renamed to \"%s\", but your changes have not been saved.\n"
+            L"Do you want to save the changes under the new name?", oldname.GetString(), newname.GetString());
         auto result = AtlMessageBox(*this, static_cast<LPCWSTR>(message), IDR_MAINFRAME,
-            MB_YESNOCANCEL | MB_ICONQUESTION | MB_ICONWARNING);
-        if (result == IDCANCEL) {
-            return FALSE;
-        }
-
+            MB_YESNO | MB_ICONQUESTION | MB_ICONWARNING);
         if (result == IDYES) {
-            return SaveFile(fileView);
+            SaveFile(fileView);
         }
     }
 
@@ -471,8 +469,6 @@ BOOL FilesView::RenameFile(const CString& oldname, const CString& newname)
     if (index == -1) {
         return FALSE;
     }
-
-    fileView->SetPath(newname);
 
     SetTitle(fileView, PathFindFileName(newname));
 

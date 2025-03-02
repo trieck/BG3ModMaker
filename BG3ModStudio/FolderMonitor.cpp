@@ -91,11 +91,15 @@ void FolderMonitor::Monitor()
             continue; // nothing to process 
         }
 
-        auto* pFni = reinterpret_cast<FILE_NOTIFY_INFORMATION*>(buffer);
-        while (pFni != nullptr && pFni->FileNameLength) {
+        auto* pBase = reinterpret_cast<BYTE*>(buffer);
+        auto* pEnd = pBase + bytesTransferred;
+
+        while (pBase < pEnd) {
+            auto* pFni = reinterpret_cast<FILE_NOTIFY_INFORMATION*>(pBase);
+
+            CStringW fileName(pFni->FileName, static_cast<int>(pFni->FileNameLength / sizeof(WCHAR)));
             CStringW path;
-            PathCombine(path.GetBuffer(MAX_PATH), m_directory, pFni->FileName);
-            path.ReleaseBuffer();
+            path.Format(L"%s\\%s", m_directory.GetString(), fileName.GetString());
 
             auto bstrFilename = SysAllocStringLen(path.GetString(), path.GetLength() * sizeof(WCHAR));
 
@@ -105,7 +109,7 @@ void FolderMonitor::Monitor()
                 break;
             }
 
-            pFni = reinterpret_cast<FILE_NOTIFY_INFORMATION*>(reinterpret_cast<BYTE*>(pFni) + pFni->NextEntryOffset);
+            pBase += pFni->NextEntryOffset;
         }
     }
 

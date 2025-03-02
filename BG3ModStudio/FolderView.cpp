@@ -75,7 +75,7 @@ void FolderView::SetFolder(const CString& folder)
     tvis.itemex.iImage = 0;
     tvis.itemex.iSelectedImage = 0;
     tvis.itemex.iExpandedImage = 0;
-    tvis.itemex.lParam = std::bit_cast<LPARAM>(new TreeItemData{.type= TIT_FOLDER, .path= folder});
+    tvis.itemex.lParam = std::bit_cast<LPARAM>(new TreeItemData{.type = TIT_FOLDER, .path = folder});
 
     InsertItem(&tvis);
 
@@ -86,11 +86,20 @@ void FolderView::ExpandFolders(const CTreeItem& folder)
 {
     auto hItem = folder;
 
+    auto child = folder.GetChild();
+
     if (GetItemState(folder.m_hTreeItem, TVIS_EXPANDED)) {
+        if (child.IsNull()) {
+            TVITEMEX item{};
+            item.mask = TVIF_CHILDREN;
+            item.hItem = hItem;
+            item.cChildren = 0;
+            SetItem(&item);
+        }
+
         return; // already expanded
     }
 
-    auto child = folder.GetChild();
     if (!child.IsNull()) {
         return; // already have children
     }
@@ -100,7 +109,7 @@ void FolderView::ExpandFolders(const CTreeItem& folder)
 
     CString pattern;
     pattern.Format(_T("%s\\*"), parentPath.GetString());
-    
+
     WIN32_FIND_DATA findData{};
     auto hFind = FindFirstFile(pattern, &findData);
     if (hFind == INVALID_HANDLE_VALUE) {
@@ -121,13 +130,14 @@ void FolderView::ExpandFolders(const CTreeItem& folder)
             TV_INSERTSTRUCT tvis{};
             tvis.hParent = hItem;
             tvis.hInsertAfter = TVI_LAST;
-            tvis.itemex.mask = TVIF_CHILDREN | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_EXPANDEDIMAGE | TVIF_TEXT | TVIF_PARAM;
+            tvis.itemex.mask = TVIF_CHILDREN | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_EXPANDEDIMAGE | TVIF_TEXT |
+                TVIF_PARAM;
             tvis.itemex.cChildren = 1;
             tvis.itemex.pszText = findData.cFileName;
             tvis.itemex.iImage = 0;
             tvis.itemex.iSelectedImage = 0;
             tvis.itemex.iExpandedImage = 0;
-            tvis.itemex.lParam = std::bit_cast<LPARAM>(new TreeItemData{ .type= TIT_FOLDER, .path= path});
+            tvis.itemex.lParam = std::bit_cast<LPARAM>(new TreeItemData{.type = TIT_FOLDER, .path = path});
 
             InsertItem(&tvis);
 
@@ -141,7 +151,7 @@ void FolderView::ExpandFolders(const CTreeItem& folder)
             tvis.itemex.pszText = findData.cFileName;
             tvis.itemex.iImage = 1;
             tvis.itemex.iSelectedImage = 1;
-            tvis.itemex.lParam = std::bit_cast<LPARAM>(new TreeItemData{ .type = TIT_FILE, .path = path });
+            tvis.itemex.lParam = std::bit_cast<LPARAM>(new TreeItemData{.type = TIT_FILE, .path = path});
             InsertItem(&tvis);
 
             hasChildren = true;
@@ -171,22 +181,28 @@ HTREEITEM FolderView::FindFile(const CString& filename)
         return nullptr;
     }
 
-    CString root;
-    if (!GetItemText(hRoot, root)) {
-        return nullptr;
+    auto* rootData = reinterpret_cast<LPTREEITEMDATA>(GetItemData(hRoot));
+    if (!rootData) {
+        return nullptr; // unknown
     }
 
-    auto rootComponents = SplitPath(root);
+    if (rootData->type != TIT_FOLDER) {
+        return nullptr; // not a folder
+    }
+
+    if (!PathIsPrefix(rootData->path, filename)) {
+        return nullptr; // filename not rooted in tree root
+    }
+
+    auto rootComponents = SplitPath(rootData->path);
     auto components = SplitPath(filename);
 
     while (!rootComponents.empty() && !components.empty()) {
         auto rootComponent = rootComponents.front();
         auto component = components.front();
-
         if (rootComponent.CompareNoCase(component) != 0) {
             break;  // not rooted
         }
-
         rootComponents.pop_front();
         components.pop_front();
     }
@@ -196,7 +212,7 @@ HTREEITEM FolderView::FindFile(const CString& filename)
     }
 
     if (components.empty()) {
-        return hRoot; // the component is the root, your folder will close now.
+        return hRoot; // the component is the root?
     }
 
     return FindFile(hRoot, components);
@@ -213,22 +229,28 @@ HTREEITEM FolderView::AddFile(const CString& filename)
         return nullptr;
     }
 
-    CString root;
-    if (!GetItemText(hRoot, root)) {
-        return nullptr;
+    auto* rootData = reinterpret_cast<LPTREEITEMDATA>(GetItemData(hRoot));
+    if (!rootData) {
+        return nullptr; // unknown
     }
 
-    auto rootComponents = SplitPath(root);
+    if (rootData->type != TIT_FOLDER) {
+        return nullptr; // not a folder
+    }
+
+    if (!PathIsPrefix(rootData->path, filename)) {
+        return nullptr; // filename not rooted in tree root
+    }
+
+    auto rootComponents = SplitPath(rootData->path);
     auto components = SplitPath(filename);
 
     while (!rootComponents.empty() && !components.empty()) {
         auto rootComponent = rootComponents.front();
         auto component = components.front();
-
         if (rootComponent.CompareNoCase(component) != 0) {
             break;  // not rooted
         }
-
         rootComponents.pop_front();
         components.pop_front();
     }
@@ -240,8 +262,8 @@ HTREEITEM FolderView::AddFile(const CString& filename)
     if (components.empty()) {
         return nullptr; // the component is the root?
     }
-    
-    auto hItem = InsertFile(hRoot, filename, components);
+
+    auto hItem = InsertFile(GetRootItem(), filename, components);
     if (hItem != nullptr) {
         auto hParentItem = GetParentItem(hItem);
         TVITEMEX item{};
@@ -262,12 +284,16 @@ HTREEITEM FolderView::AddFile(const CString& filename)
 
 HTREEITEM FolderView::InsertFile(HTREEITEM hRoot, const CString& filename, std::deque<CString>& components)
 {
-    CString root;
-    if (!GetItemText(hRoot, root)) {
-        return nullptr;
+    auto* rootData = reinterpret_cast<LPTREEITEMDATA>(GetItemData(hRoot));
+    if (!rootData) {
+        return nullptr; // unknown
     }
 
-    CString subpath(root);
+    if (rootData->type != TIT_FOLDER) {
+        return nullptr; // not a folder
+    }
+
+    CString subpath(rootData->path);
 
     while (!components.empty() && hRoot != nullptr) {
         auto component = components.front();
@@ -275,13 +301,13 @@ HTREEITEM FolderView::InsertFile(HTREEITEM hRoot, const CString& filename, std::
 
         subpath.AppendFormat(_T("\\%s"), component.GetString());
 
-        hRoot = InsertFile(hRoot, filename, subpath, component);
+        hRoot = InsertSubpath(hRoot, subpath, component);
     }
-    
+
     return hRoot;
 }
 
-HTREEITEM FolderView::InsertFile(HTREEITEM hRoot, const CString& filename, const CString& subpath, const CString& component)
+HTREEITEM FolderView::InsertSubpath(HTREEITEM hRoot, const CString& subpath, const CString& component)
 {
     auto* pData = reinterpret_cast<LPTREEITEMDATA>(GetItemData(hRoot));
     if (!pData) {
@@ -292,15 +318,22 @@ HTREEITEM FolderView::InsertFile(HTREEITEM hRoot, const CString& filename, const
         return nullptr; // not a folder
     }
 
+    auto rootPath = pData->path;
+
+    if (_tcsicmp(rootPath, subpath) == 0) {
+        return hRoot; // root is already the subpath, return it
+    }
+
     HTREEITEM hChild = GetNextItem(hRoot, TVGN_CHILD);
     while (hChild != nullptr) {
         HTREEITEM hNext = GetNextItem(hChild, TVGN_NEXT);
+        pData = reinterpret_cast<LPTREEITEMDATA>(GetItemData(hChild));
+        if (!pData) {
+            continue;
+        }
 
-        CString text;
-        GetItemText(hChild, text);
-
-        if (_tcsicmp(text, component) == 0) {
-            return hChild; // already exists
+        if (_tcsicmp(pData->path, subpath) == 0) {
+            return hChild; // already exists, return it
         }
 
         hChild = hNext;
@@ -308,7 +341,7 @@ HTREEITEM FolderView::InsertFile(HTREEITEM hRoot, const CString& filename, const
 
     auto attributes = GetFileAttributes(subpath);
     if (attributes == INVALID_FILE_ATTRIBUTES) {
-        return nullptr; // no such file
+        return nullptr; // no such subpath
     }
 
     auto isDir = attributes & FILE_ATTRIBUTE_DIRECTORY;
@@ -329,33 +362,12 @@ HTREEITEM FolderView::InsertFile(HTREEITEM hRoot, const CString& filename, const
     tvis.itemex.iImage = isDir ? 0 : 1;
     tvis.itemex.iSelectedImage = isDir ? 0 : 1;
     tvis.itemex.iExpandedImage = isDir ? 0 : 1;
-    tvis.itemex.lParam = std::bit_cast<LPARAM>(new TreeItemData{ .type = type, .path = subpath });
+    tvis.itemex.lParam = std::bit_cast<LPARAM>(new TreeItemData{.type = type, .path = subpath});
 
     return InsertItem(&tvis);
 }
 
 HTREEITEM FolderView::FindFile(HTREEITEM hRoot, std::deque<CString>& components)
-{
-    CString root;
-    if (!GetItemText(hRoot, root)) {
-        return nullptr;
-    }
-
-    CString subpath(root);
-
-    while (!components.empty() && hRoot != nullptr) {
-        auto component = components.front();
-        components.pop_front();
-
-        subpath.AppendFormat(_T("\\%s"), component.GetString());
-
-        hRoot = FindFile(hRoot, subpath, component);
-    }
-
-    return hRoot;
-}
-
-HTREEITEM FolderView::FindFile(HTREEITEM hRoot, const CString& subpath, const CString& component)
 {
     auto* pData = reinterpret_cast<LPTREEITEMDATA>(GetItemData(hRoot));
     if (!pData) {
@@ -366,14 +378,47 @@ HTREEITEM FolderView::FindFile(HTREEITEM hRoot, const CString& subpath, const CS
         return nullptr; // not a folder
     }
 
+    auto rootPath = pData->path;
+
+    CString subpath(rootPath);
+
+    while (!components.empty() && hRoot != nullptr) {
+        auto component = components.front();
+        components.pop_front();
+
+        subpath.AppendFormat(_T("\\%s"), component.GetString());
+
+        hRoot = FindSubpath(hRoot, subpath);
+    }
+
+    return hRoot;
+}
+
+HTREEITEM FolderView::FindSubpath(HTREEITEM hRoot, const CString& subpath)
+{
+    auto* pData = reinterpret_cast<LPTREEITEMDATA>(GetItemData(hRoot));
+    if (!pData) {
+        return nullptr; // unknown
+    }
+
+    if (pData->type != TIT_FOLDER) {
+        return nullptr; // not a folder
+    }
+
+    if (_tcsicmp(pData->path, subpath) == 0) {
+        return hRoot; // found it!
+    }
+
     HTREEITEM hChild = GetNextItem(hRoot, TVGN_CHILD);
     while (hChild != nullptr) {
         HTREEITEM hNext = GetNextItem(hChild, TVGN_NEXT);
 
-        CString text;
-        GetItemText(hChild, text);
+        pData = reinterpret_cast<LPTREEITEMDATA>(GetItemData(hChild));
+        if (!pData) {
+            continue;
+        }
 
-        if (_tcsicmp(text, component) == 0) {
+        if (_tcsicmp(pData->path, subpath) == 0) {
             return hChild; // found it!
         }
 
@@ -393,7 +438,7 @@ HTREEITEM FolderView::RenameFile(const CString& oldname, const CString& newname)
     const auto& filepart = components.back();
 
     auto hItem = FindFile(oldname);
-    
+
     if (hItem != nullptr) {
         auto data = reinterpret_cast<LPTREEITEMDATA>(GetItemData(hItem));
         if (data) {

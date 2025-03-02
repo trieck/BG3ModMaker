@@ -38,9 +38,9 @@ public:
 
 private:
     HTREEITEM InsertFile(HTREEITEM hRoot, const CString& filename, std::deque<CString>& components);
-    HTREEITEM InsertFile(HTREEITEM hRoot, const CString& filename, const CString& subpath, const CString& component);
+    HTREEITEM InsertSubpath(HTREEITEM hRoot, const CString& subpath, const CString& component);
     HTREEITEM FindFile(HTREEITEM hRoot, std::deque<CString>& components);
-    HTREEITEM FindFile(HTREEITEM hRoot, const CString& subpath, const CString& component);
+    HTREEITEM FindSubpath(HTREEITEM hRoot, const CString& subpath);
 
     CImageList m_ImageList;
 };
