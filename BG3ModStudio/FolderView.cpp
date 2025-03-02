@@ -79,7 +79,7 @@ void FolderView::SetFolder(const CString& folder)
 
     InsertItem(&tvis);
 
-    Expand(GetRootItem(), TVE_EXPANDPARTIAL);
+    Expand(GetRootItem(), TVE_EXPAND);
 }
 
 void FolderView::ExpandFolders(const CTreeItem& folder)

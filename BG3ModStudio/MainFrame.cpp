@@ -4,6 +4,9 @@
 #include "FileDialogEx.h"
 #include "FileOperation.h"
 #include "MainFrame.h"
+#include "PAKWriter.h"
+#include "StringHelper.h"
+#include "Util.h"
 
 static constexpr auto FOLDER_MONITOR_WAIT_TIME = 50;
 
@@ -54,33 +57,51 @@ LRESULT MainFrame::OnCreate(LPCREATESTRUCT pcs)
     ATLASSERT(::IsWindow(m_hWndStatusBar));
     m_statusBar.Attach(m_hWndStatusBar);
 
-    int parts[] = { 200, -1 };
+    int parts[] = {200, -1};
     m_statusBar.SetParts(2, parts);
     m_statusBar.SetSimple(FALSE);
-    
+
     m_bom.LoadIcon(IDI_BOM, 12, 12);
     m_nobom.LoadIcon(IDI_NOBOM, 12, 12);
-    
-    m_hWndClient = m_splitter.Create(*this, rcDefault, nullptr,
-                                     WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
+
+    m_hWndClient = m_hSplitter.Create(*this, rcDefault, nullptr,
+                                      WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
     if (m_hWndClient == nullptr) {
-        ATLTRACE("Unable to create splitter window.\n");
+        ATLTRACE("Unable to create horizontal splitter window.\n");
         return -1;
     }
 
-    if (!m_folderView.Create(m_splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+    if (!m_vSplitter.Create(m_hSplitter, rcDefault, nullptr,
+                            WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN)) {
+        ATLTRACE("Unable to create vertical splitter window.\n");
+        return -1;
+    }
+
+    if (!m_folderView.Create(m_vSplitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
                              WS_EX_CLIENTEDGE)) {
+        ATLTRACE("Unable to create folder view window.\n");
         return -1;
     }
 
-    if (!m_filesView.Create(m_splitter, rcDefault, nullptr, 
+    if (!m_filesView.Create(m_vSplitter, rcDefault, nullptr,
                             WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, WS_EX_CLIENTEDGE)) {
+        ATLTRACE("Unable to create files view window.\n");
         return -1;
     }
 
-    m_splitter.SetSplitterPane(0, m_folderView);
-    m_splitter.SetSplitterPane(1, m_filesView);
-    m_splitter.SetSplitterPosPct(30);
+    if (!m_output.Create(m_hSplitter, rcDefault, nullptr,
+                        WS_CAPTION | WS_SYSMENU | WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS)) {
+        ATLTRACE("Unable to create output window.\n");
+        return -1;
+    }
+
+    m_vSplitter.SetSplitterPane(0, m_folderView);
+    m_vSplitter.SetSplitterPane(1, m_filesView);
+    m_vSplitter.SetSplitterPosPct(30);
+
+    m_hSplitter.SetSplitterPane(0, m_vSplitter);
+    m_hSplitter.SetSplitterPane(1, m_output);
+    m_hSplitter.SetSplitterPosPct(70);
 
     UISetCheck(ID_VIEW_STATUS_BAR, 1);
 
@@ -98,11 +119,11 @@ LRESULT MainFrame::OnCreate(LPCREATESTRUCT pcs)
     return 1;
 }
 
-LRESULT MainFrame::OnFolderOpen()
+void MainFrame::OnFolderOpen()
 {
     FileDialogEx dlg(FileDialogEx::Folder, *this);
     if (dlg.DoModal() != IDOK) {
-        return 0;
+        return;
     }
 
     const auto& paths = dlg.paths();
@@ -121,11 +142,9 @@ LRESULT MainFrame::OnFolderOpen()
 
     m_folderMonitor = FolderMonitor::Create(m_hWnd, paths[0]);
     m_folderMonitor->Start();
-
-    return 0;
 }
 
-LRESULT MainFrame::OnFolderClose()
+void MainFrame::OnFolderClose()
 {
     if (m_folderMonitor) {
         CWaitCursor wait;
@@ -138,44 +157,56 @@ LRESULT MainFrame::OnFolderClose()
     m_filesView.CloseAllFiles();
 
     UpdateTitle();
-
-    return 0;
 }
 
-LRESULT MainFrame::OnFileSave()
+void MainFrame::OnFolderPack()
+{
+    CWaitCursor wait;
+
+    PAKWriter writer;
+
+    PreloadTree();
+
+    IterateFiles(m_folderView.GetRootItem(), [&](const CString& filePath)
+    {
+        CString message;
+        message.Format(L"Adding file:\"%s\" to PAK...", filePath);
+        LogMessage(message);
+
+        auto utf8Path = StringHelper::toUTF8(filePath);
+        writer.addFile(utf8Path);
+    });
+}
+
+void MainFrame::OnFileSave()
 {
     auto activeFile = m_filesView.ActiveFile();
     ATLASSERT(activeFile != nullptr);
 
     m_filesView.SaveFile(activeFile);
-
-    return 0;
 }
 
-LRESULT MainFrame::OnFileSaveAll()
+void MainFrame::OnFileSaveAll()
 {
     m_filesView.SaveAll();
-
-    return 0;
 }
 
-LRESULT MainFrame::OnFileExit()
+void MainFrame::OnFileExit()
 {
     PostMessage(WM_CLOSE);
-    return 0;
 }
 
-LRESULT MainFrame::OnDeleteFile()
+void MainFrame::OnDeleteFile()
 {
     auto item = m_folderView.GetSelectedItem();
     if (item.IsNull()) {
-        return 0;
+        return;
     }
 
     auto data = std::bit_cast<TreeItemData*>(item.GetData());
     CString filename = data ? data->path : CString();
     if (filename.IsEmpty()) {
-        return 0;
+        return;
     }
 
     auto isFolder = data && data->type == TIT_FOLDER;
@@ -189,47 +220,41 @@ LRESULT MainFrame::OnDeleteFile()
 
     auto result = AtlMessageBox(*this, static_cast<LPCTSTR>(message), nullptr, MB_ICONQUESTION | MB_YESNO);
     if (result != IDYES) {
-        return 0;
+        return;
     }
 
     FileOperation op;
     auto hr = op.Create();
     if (FAILED(hr)) {
         CoMessageBox(*this, hr, nullptr, MB_ICONERROR);
-        return 0;
+        return;
     }
 
     CWaitCursor wait;
     hr = op.DeleteItem(filename);
     if (FAILED(hr)) {
         CoMessageBox(*this, hr, nullptr, MB_ICONERROR);
-        return 0;
+        return;
     }
 
     auto hItem = item.m_hTreeItem;
 
     m_folderView.DeleteItem(hItem);
     m_folderView.RedrawWindow();
-
-    return 0;
 }
 
-LRESULT MainFrame::OnNewFile()
+void MainFrame::OnNewFile()
 {
     ATLASSERT(m_filesView.IsWindow());
 
     m_filesView.NewFile();
-
-    return 0;
 }
 
-LRESULT MainFrame::OnNewFileHere()
+void MainFrame::OnNewFileHere()
 {
     FileDialogEx dlg(FileDialogEx::Save, *this, L"*.*", nullptr, 0, L"*.*");
-        
-    dlg.DoModal();
 
-    return 0;
+    dlg.DoModal();
 }
 
 void MainFrame::OnClose()
@@ -246,7 +271,7 @@ void MainFrame::OnClose()
     if (m_folderView.IsWindow()) {
         m_folderView.DeleteAllItems();
     }
-    
+
     DestroyWindow();
 }
 
@@ -500,7 +525,7 @@ void MainFrame::UpdateEncodingStatus(FileEncoding encoding)
         hIcon = m_bom;
         break;
     default:
-        status = L"";   // Unknown
+        status = L""; // Unknown
         break;
     }
 
@@ -508,19 +533,90 @@ void MainFrame::UpdateEncodingStatus(FileEncoding encoding)
     m_statusBar.SetText(1, status);
 }
 
-LRESULT MainFrame::OnViewStatusBar()
+void MainFrame::IterateFiles(HTREEITEM hItem, const FileCallback& callback)
+{
+    if (!hItem) {
+        return;
+    }
+
+    do {
+        auto data = std::bit_cast<LPTREEITEMDATA>(m_folderView.GetItemData(hItem));
+        if (data && data->type == TIT_FILE) {
+            callback(data->path);
+        } else if (data->type == TIT_FOLDER) {
+            auto hChild = m_folderView.GetChildItem(hItem);
+            if (hChild != nullptr) {
+                IterateFiles(hChild, callback);
+            }
+        } else {
+            ATLASSERT(0);
+        }
+
+        hItem = m_folderView.GetNextSiblingItem(hItem);
+    }
+    while (hItem);
+}
+
+void MainFrame::PreloadTree()
+{
+    m_folderView.LockWindowUpdate(TRUE);
+    PreloadTree(m_folderView.GetRootItem());
+    m_folderView.LockWindowUpdate(FALSE);
+}
+
+void MainFrame::PreloadTree(HTREEITEM hItem)
+{
+    while (hItem != nullptr) {
+        if (m_folderView.ItemHasChildren(hItem)) {
+            UINT state = m_folderView.GetItemState(hItem, TVIS_EXPANDED);
+
+            if (!(state & TVIS_EXPANDED)) {
+                m_folderView.Expand(hItem, TVE_EXPAND);
+                PreloadTree(m_folderView.GetChildItem(hItem));
+                m_folderView.Expand(hItem, TVE_COLLAPSE);
+            } else {
+                PreloadTree(m_folderView.GetChildItem(hItem));
+            }
+        }
+        hItem = m_folderView.GetNextSiblingItem(hItem);
+    }
+}
+
+void MainFrame::LogMessage(const CString& message)
+{
+    if (m_output.IsWindow()) {
+        m_output.AddLog(message);
+    }
+}
+
+void MainFrame::OnViewStatusBar()
 {
     BOOL bVisible = !::IsWindowVisible(m_hWndStatusBar);
     ::ShowWindow(m_hWndStatusBar, bVisible ? SW_SHOWNOACTIVATE : SW_HIDE);
     UISetCheck(ID_VIEW_STATUS_BAR, bVisible);
     UpdateLayout();
-    return 0;
+}
+
+void MainFrame::OnViewOutput()
+{
+    BOOL bVisible = m_hSplitter.GetSinglePaneMode() != SPLIT_PANE_NONE;
+
+    if (bVisible) {
+        m_hSplitter.SetSinglePaneMode(SPLIT_PANE_NONE);
+    } else {
+        m_hSplitter.SetSinglePaneMode(SPLIT_PANE_TOP);
+    }
 }
 
 BOOL MainFrame::OnIdle()
 {
     UIEnable(ID_FILE_NEW, FolderIsOpen());
     UIEnable(ID_FILE_CLOSE, FolderIsOpen());
+    UIEnable(ID_FILE_PACKAGE, FolderIsOpen());
+
+    if (m_hSplitter.IsWindow()) {
+        UISetCheck(ID_VIEW_OUTPUT, m_hSplitter.GetSinglePaneMode() == SPLIT_PANE_NONE);
+    }
 
     if (m_filesView.IsWindow()) {
         UIEnable(ID_FILE_SAVE, m_filesView.IsDirty(m_filesView.ActivePage()));

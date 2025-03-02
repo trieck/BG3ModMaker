@@ -31,6 +31,7 @@
 
 #include <bit>
 #include <deque>
+#include <functional>
 #include <memory>
 #include <ranges>
 #include <stack>
@@ -59,9 +60,23 @@ using tstring = std::string;
             return TRUE; \
     }
 
+#define MSG_WM_NCCALCSIZE2(func) \
+	if (uMsg == WM_NCCALCSIZE) \
+	{ \
+		this->SetMsgHandled(TRUE); \
+		lResult = func((BOOL)wParam, (LPNCCALCSIZE_PARAMS)lParam); \
+		if(this->IsMsgHandled()) \
+			return TRUE; \
+	}
+
 #define COMMAND_ID_HANDLER2(id, func) \
     if(uMsg == WM_COMMAND && (id) == LOWORD(wParam)) { \
         lResult = func(); \
+    }
+
+#define COMMAND_ID_HANDLER3(id, func) \
+    if(uMsg == WM_COMMAND && (id) == LOWORD(wParam)) { \
+        func(); \
     }
 
 extern CAppModule _Module;

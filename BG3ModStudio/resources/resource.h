@@ -8,6 +8,7 @@
 #define IDR_MAINFRAME                   101
 #define IDI_FOLDER                      102
 #define IDI_FILE                        103
+#define ID_FILE_PACKAGE                 104
 #define IDR_TAB_CONTEXT                 106
 #define IDR_TREE_CONTEXT                107
 #define ID_FILE_SAVE_ALL                0x6C
@@ -107,6 +108,7 @@
 #define ID_OLE_VERB_FIRST               0xE210
 #define ID_VIEW_TOOLBAR                 0xE800
 #define ID_VIEW_STATUS_BAR              0xE801
+#define ID_VIEW_OUTPUT                  0xE802
 #define ID_VIEW_REFRESH                 0xE803
 #define ID_VIEW_RIBBON                  0xE804
 #define ATL_IDS_SCSIZE                  0xEF00
@@ -128,7 +130,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        113
+#define _APS_NEXT_RESOURCE_VALUE        114
 #define _APS_NEXT_COMMAND_VALUE         40017
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           101

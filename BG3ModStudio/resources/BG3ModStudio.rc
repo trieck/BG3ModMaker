@@ -172,6 +172,10 @@ ID_FILE_NEW             BITMAP                  "filenew.bmp"
 
 ID_FILE_CLOSE           BITMAP                  "close.bmp"
 
+ID_FILE_PACKAGE         BITMAP                  "package.bmp"
+
+ID_APP_ABOUT            BITMAP                  "about.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -186,6 +190,7 @@ END
 STRINGTABLE
 BEGIN
     ID_VIEW_STATUS_BAR      "Show or hide the status bar\nToggle StatusBar"
+    ID_VIEW_OUTPUT          "Show or hide the output window\nToggle Output Window"
 END
 
 STRINGTABLE
@@ -195,6 +200,7 @@ END
 
 STRINGTABLE
 BEGIN
+    ID_APP_ABOUT            "About BG3 Mod Studio"
     ID_APP_EXIT             "Quit the application; prompts to save documents\nExit"
 END
 

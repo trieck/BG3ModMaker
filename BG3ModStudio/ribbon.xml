@@ -7,7 +7,7 @@
             <Command.TooltipTitle>Create a New File(Ctrl+N)</Command.TooltipTitle>
             <Command.TooltipDescription>Create a New File</Command.TooltipDescription>
         </Command>
-        
+
         <Command Name="FILE_OPEN" Symbol="ID_FILE_OPEN" Id="0xE101" Keytip="O">
             <Command.LabelTitle>Open a Folder...</Command.LabelTitle>
             <Command.TooltipTitle>Open a Folder(Ctrl+O)</Command.TooltipTitle>
@@ -18,6 +18,12 @@
             <Command.LabelTitle>Close the Folder...</Command.LabelTitle>
             <Command.TooltipTitle>Close the Folder(Ctrl+C)</Command.TooltipTitle>
             <Command.TooltipDescription>Close the Folder</Command.TooltipDescription>
+        </Command>
+
+        <Command Name="FILE_PACKAGE" Symbol="ID_FILE_PACKAGE" Id="104" Keytip="O">
+            <Command.LabelTitle>Create a PAK file...</Command.LabelTitle>
+            <Command.TooltipTitle>Create a PAK file(Ctrl+P)</Command.TooltipTitle>
+            <Command.TooltipDescription>Create a PAK file</Command.TooltipDescription>
         </Command>
 
         <Command Name="FILE_SAVE" Symbol="ID_FILE_SAVE" Id="0xE103" Keytip="O">
@@ -32,21 +38,33 @@
             <Command.TooltipDescription>Save All File</Command.TooltipDescription>
         </Command>
 
-        <Command Name="VIEW_STATUS_BAR" Symbol="ID_VIEW_STATUS_BAR" Id="0xE801"/>
-        <Command Name="APP_EXIT" Symbol="ID_APP_EXIT" Id="0xE141"/>
+        <Command Name="APP_ABOUT" Symbol="ID_APP_ABOUT" Id="0xE140" Keytip="O">
+            <Command.LabelTitle>About BG3 Mod Studio...</Command.LabelTitle>
+            <Command.TooltipTitle>About BG3 Mod Studio(Ctrl+Shift+A)</Command.TooltipTitle>
+            <Command.TooltipDescription>About BG3 Mod Studio</Command.TooltipDescription>
+        </Command>
+
+        <Command Name="VIEW_OUTPUT" Symbol="ID_VIEW_OUTPUT" Id="0xE802" Keytip="O">
+            <Command.LabelTitle>Show the output window</Command.LabelTitle>
+            <Command.TooltipTitle>Toggle the output window(Ctrl+Shift+O)</Command.TooltipTitle>
+            <Command.TooltipDescription>Show or hide the output window</Command.TooltipDescription>
+        </Command>
+
+        <Command Name="VIEW_STATUS_BAR" Symbol="ID_VIEW_STATUS_BAR" Id="0xE801" />
+        <Command Name="APP_EXIT" Symbol="ID_APP_EXIT" Id="0xE141" />
 
         <!-- Tabs -->
-        <Command Name="TAB_HOME" Symbol="ID_TAB_HOME" LabelTitle="Home"/>
-        <Command Name="TAB_VIEW" Symbol="ID_TAB_VIEW" LabelTitle="View"/>
+        <Command Name="TAB_HOME" Symbol="ID_TAB_HOME" LabelTitle="Home" />
+        <Command Name="TAB_VIEW" Symbol="ID_TAB_VIEW" LabelTitle="View" />
 
         <!-- Groups -->
-        <Command Name="GROUP_TOOLS" Symbol="ID_GROUP_TOOLS" LabelTitle="Tools"/>
-        <Command Name="GROUP_SHOW" Symbol="ID_GROUP_SHOW" LabelTitle="Show or Hide"/>
-        <Command Name="GROUP_HELP" Symbol="ID_GROUP_HELP" LabelTitle="Help"/>
+        <Command Name="GROUP_TOOLS" Symbol="ID_GROUP_TOOLS" LabelTitle="Tools" />
+        <Command Name="GROUP_SHOW" Symbol="ID_GROUP_SHOW" LabelTitle="Show or Hide" />
+        <Command Name="GROUP_HELP" Symbol="ID_GROUP_HELP" LabelTitle="Help" />
 
         <!-- App Menu, Quick Access Toolbar -->
-        <Command Name="AppMenu" Symbol="ID_RIBBON_APP_MENU"/>
-        <Command Name="QAT" Symbol="ID_RIBBON_QAT"/>
+        <Command Name="AppMenu" Symbol="ID_RIBBON_APP_MENU" />
+        <Command Name="QAT" Symbol="ID_RIBBON_QAT" />
     </Application.Commands>
 
     <Application.Views>
@@ -57,14 +75,16 @@
                     <MenuGroup Class="StandardItems">
                     </MenuGroup>
                     <MenuGroup>
-                        <Button CommandName="FILE_NEW"/>
-                        <Button CommandName="FILE_OPEN"/>
-                        <Button CommandName="FILE_CLOSE"/>
-                        <Button CommandName="FILE_SAVE"/>
-                        <Button CommandName="FILE_SAVE_ALL"/>
+                        <Button CommandName="FILE_NEW" />
+                        <Button CommandName="FILE_OPEN" />
+                        <Button CommandName="FILE_CLOSE" />
+                        <Button CommandName="FILE_PACKAGE" />
+                        <Button CommandName="FILE_SAVE" />
+                        <Button CommandName="FILE_SAVE_ALL" />
                     </MenuGroup>
                     <MenuGroup>
-                        <Button CommandName="APP_EXIT"/>
+                        <Button CommandName="APP_ABOUT" />
+                        <Button CommandName="APP_EXIT" />
                     </MenuGroup>
                 </ApplicationMenu>
             </Ribbon.ApplicationMenu>
@@ -80,78 +100,89 @@
                     <Tab.ScalingPolicy>
                         <ScalingPolicy>
                             <ScalingPolicy.IdealSizes>
-                                <Scale Group="GROUP_TOOLS" Size="Large"/>
+                                <Scale Group="GROUP_TOOLS" Size="Large" />
                             </ScalingPolicy.IdealSizes>
-                            <Scale Group="GROUP_TOOLS" Size="Small"/>
+                            <Scale Group="GROUP_TOOLS" Size="Small" />
                         </ScalingPolicy>
                     </Tab.ScalingPolicy>
 
                     <Group CommandName="GROUP_TOOLS">
                         <SizeDefinition>
                             <ControlNameMap>
-                                <ControlNameDefinition Name="FILE_NEW"/>
-                                <ControlNameDefinition Name="FILE_OPEN"/>
-                                <ControlNameDefinition Name="FILE_CLOSE"/>
-                                <ControlNameDefinition Name="FILE_SAVE"/>
-                                <ControlNameDefinition Name="FILE_SAVE_ALL"/>
+                                <ControlNameDefinition Name="FILE_NEW" />
+                                <ControlNameDefinition Name="FILE_OPEN" />
+                                <ControlNameDefinition Name="FILE_CLOSE" />
+                                <ControlNameDefinition Name="FILE_PACKAGE" />
+                                <ControlNameDefinition Name="FILE_SAVE" />
+                                <ControlNameDefinition Name="FILE_SAVE_ALL" />
                             </ControlNameMap>
                             <GroupSizeDefinition Size="Large">
                                 <ControlSizeDefinition ControlName="FILE_NEW"
                                                        ImageSize="Large"
-                                                       IsLabelVisible="true"/>
+                                                       IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="FILE_OPEN"
                                                        ImageSize="Large"
-                                                       IsLabelVisible="true"/>
+                                                       IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="FILE_CLOSE"
                                                        ImageSize="Large"
-                                                       IsLabelVisible="true"/>
+                                                       IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="FILE_PACKAGE"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="FILE_SAVE"
                                                        ImageSize="Large"
-                                                       IsLabelVisible="true"/>
+                                                       IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="FILE_SAVE_ALL"
                                                        ImageSize="Large"
-                                                       IsLabelVisible="true"/>
+                                                       IsLabelVisible="true" />
                             </GroupSizeDefinition>
                             <GroupSizeDefinition Size="Medium">
                                 <ControlSizeDefinition ControlName="FILE_NEW"
                                                        ImageSize="Large"
-                                                       IsLabelVisible="true"/>
+                                                       IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="FILE_OPEN"
                                                        ImageSize="Large"
-                                                       IsLabelVisible="true"/>
+                                                       IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="FILE_CLOSE"
                                                        ImageSize="Large"
-                                                       IsLabelVisible="true"/>
+                                                       IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="FILE_PACKAGE"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="FILE_SAVE"
                                                        ImageSize="Large"
-                                                       IsLabelVisible="true"/>
+                                                       IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="FILE_SAVE_ALL"
                                                        ImageSize="Large"
-                                                       IsLabelVisible="true"/>
+                                                       IsLabelVisible="true" />
                             </GroupSizeDefinition>
                             <GroupSizeDefinition Size="Small">
                                 <ControlSizeDefinition ControlName="FILE_NEW"
                                                        ImageSize="Large"
-                                                       IsLabelVisible="true"/>
+                                                       IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="FILE_OPEN"
                                                        ImageSize="Small"
-                                                       IsLabelVisible="true"/>
+                                                       IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="FILE_CLOSE"
                                                        ImageSize="Large"
-                                                       IsLabelVisible="true"/>
+                                                       IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="FILE_PACKAGE"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="FILE_SAVE"
                                                        ImageSize="Small"
-                                                       IsLabelVisible="true"/>
+                                                       IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="FILE_SAVE_ALL"
                                                        ImageSize="Small"
-                                                       IsLabelVisible="true"/>
+                                                       IsLabelVisible="true" />
                             </GroupSizeDefinition>
                         </SizeDefinition>
-                        <Button CommandName="FILE_NEW"/>
-                        <Button CommandName="FILE_OPEN"/>
-                        <Button CommandName="FILE_CLOSE"/>
-                        <Button CommandName="FILE_SAVE"/>
-                        <Button CommandName="FILE_SAVE_ALL"/>
+                        <Button CommandName="FILE_NEW" />
+                        <Button CommandName="FILE_OPEN" />
+                        <Button CommandName="FILE_CLOSE" />
+                        <Button CommandName="FILE_PACKAGE" />
+                        <Button CommandName="FILE_SAVE" />
+                        <Button CommandName="FILE_SAVE_ALL" />
                     </Group>
                 </Tab>
 
@@ -159,36 +190,48 @@
                     <Tab.ScalingPolicy>
                         <ScalingPolicy>
                             <ScalingPolicy.IdealSizes>
-                                <Scale Group="GROUP_SHOW" Size="Large"/>
+                                <Scale Group="GROUP_SHOW" Size="Large" />
                             </ScalingPolicy.IdealSizes>
-                            <Scale Group="GROUP_SHOW" Size="Small"/>
+                            <Scale Group="GROUP_SHOW" Size="Small" />
                         </ScalingPolicy>
                     </Tab.ScalingPolicy>
 
                     <Group CommandName="GROUP_SHOW">
                         <SizeDefinition>
                             <ControlNameMap>
-                                <ControlNameDefinition Name="VIEW_STATUS_BAR"/>
+                                <ControlNameDefinition Name="VIEW_STATUS_BAR" />
+                                <ControlNameDefinition Name="VIEW_OUTPUT" />
                             </ControlNameMap>
                             <GroupSizeDefinition Size="Large">
                                 <ControlSizeDefinition ControlName="VIEW_STATUS_BAR"
                                                        ImageSize="Small"
-                                                       IsLabelVisible="true"/>
+                                                       IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="VIEW_OUTPUT"
+                                                       ImageSize="Small"
+                                                       IsLabelVisible="true" />
 
                             </GroupSizeDefinition>
                             <GroupSizeDefinition Size="Medium">
                                 <ControlSizeDefinition ControlName="VIEW_STATUS_BAR"
                                                        ImageSize="Small"
-                                                       IsLabelVisible="true"/>
+                                                       IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="VIEW_OUTPUT"
+                                                       ImageSize="Small"
+                                                       IsLabelVisible="true" />
                             </GroupSizeDefinition>
                             <GroupSizeDefinition Size="Small">
                                 <ControlSizeDefinition ControlName="VIEW_STATUS_BAR"
                                                        ImageSize="Small"
-                                                       IsLabelVisible="false"/>
+                                                       IsLabelVisible="false" />
+                                <ControlSizeDefinition ControlName="VIEW_OUTPUT"
+                                                       ImageSize="Small"
+                                                       IsLabelVisible="true" />
 
                             </GroupSizeDefinition>
                         </SizeDefinition>
-                        <CheckBox CommandName="VIEW_STATUS_BAR"/>
+
+                        <CheckBox CommandName="VIEW_STATUS_BAR" />
+                        <CheckBox CommandName="VIEW_OUTPUT" />
                     </Group>
                 </Tab>
             </Ribbon.Tabs>

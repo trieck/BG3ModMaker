@@ -167,6 +167,7 @@
     <ClInclude Include="COMError.h" />
     <ClInclude Include="FileOperation.h" />
     <ClInclude Include="FolderMonitor.h" />
+    <ClInclude Include="OutputWindow.h" />
     <ClInclude Include="SelectObject.h" />
     <ClInclude Include="DefaultRTFFormatter.h" />
     <ClInclude Include="FileDialogEx.h" />
@@ -191,6 +192,7 @@
     <ClInclude Include="TextRTFFormatter.h" />
     <ClInclude Include="TextTokenizer.h" />
     <ClInclude Include="UTF8Stream.h" />
+    <ClInclude Include="Util.h" />
     <ClInclude Include="XmlRTFFormatter.h" />
     <ClInclude Include="XmlTokenizer.h" />
   </ItemGroup>
@@ -200,7 +202,7 @@
     <ClCompile Include="COMError.cpp" />
     <ClCompile Include="FileOperation.cpp" />
     <ClCompile Include="FolderMonitor.cpp" />
-    <ClCompile Include="SelectObject.cpp" />
+    <ClCompile Include="OutputWindow.cpp" />
     <ClCompile Include="DefaultRTFFormatter.cpp" />
     <ClCompile Include="FileDialogEx.cpp" />
     <ClCompile Include="FileViewFactory.cpp" />
@@ -224,6 +226,7 @@
     <ClCompile Include="TextRTFFormatter.cpp" />
     <ClCompile Include="TextTokenizer.cpp" />
     <ClCompile Include="UTF8Stream.cpp" />
+    <ClCompile Include="Util.cpp" />
     <ClCompile Include="XmlRTFFormatter.cpp" />
     <ClCompile Include="XmlTokenizer.cpp" />
   </ItemGroup>
@@ -236,6 +239,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Image Include="about.bmp" />
+    <Image Include="resources\about.bmp" />
     <Image Include="resources\app.ico" />
     <Image Include="resources\bom.ico" />
     <Image Include="resources\close.bmp" />
@@ -245,6 +250,7 @@
     <Image Include="resources\folder.ico" />
     <Image Include="resources\nobom.ico" />
     <Image Include="resources\open.bmp" />
+    <Image Include="resources\package.bmp" />
     <Image Include="resources\save.bmp" />
     <Image Include="resources\saveall.bmp" />
   </ItemGroup>
