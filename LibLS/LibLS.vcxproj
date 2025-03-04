@@ -165,19 +165,22 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Compress.h" />
+    <ClInclude Include="CRC32.h" />
     <ClInclude Include="Exception.h" />
     <ClInclude Include="FileStream.h" />
     <ClInclude Include="Indexer.h" />
-    <ClInclude Include="IStreamBase.h" />
+    <ClInclude Include="StreamBase.h" />
     <ClInclude Include="LSCommon.h" />
     <ClInclude Include="LSFCommon.h" />
     <ClInclude Include="LSFReader.h" />
     <ClInclude Include="LZ4Codec.h" />
     <ClInclude Include="LZ4FrameCompressor.h" />
+    <ClInclude Include="MD5.h" />
     <ClInclude Include="Node.h" />
     <ClInclude Include="NodeAttribute.h" />
-    <ClInclude Include="PAKFormat.h" />
+    <ClInclude Include="Package.h" />
     <ClInclude Include="PAKReader.h" />
+    <ClInclude Include="PAKWriter.h" />
     <ClInclude Include="Searcher.h" />
     <ClInclude Include="Stream.h" />
     <ClInclude Include="Timer.h" />
@@ -193,6 +196,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="CRC32.cpp" />
     <ClCompile Include="Exception.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
@@ -210,20 +214,17 @@
     <ClCompile Include="LSFReader.cpp" />
     <ClCompile Include="LZ4Codec.cpp" />
     <ClCompile Include="LZ4FrameCompressor.cpp" />
+    <ClCompile Include="MD5.cpp" />
     <ClCompile Include="Node.cpp" />
     <ClCompile Include="NodeAttribute.cpp" />
-    <ClCompile Include="PAKFormat.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
-    </ClCompile>
+    <ClCompile Include="Package.cpp" />
     <ClCompile Include="PAKReader.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="PAKWriter.cpp" />
     <ClCompile Include="Searcher.cpp" />
     <ClCompile Include="Stream.cpp" />
     <ClCompile Include="Timer.cpp" />

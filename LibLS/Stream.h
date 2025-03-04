@@ -1,13 +1,16 @@
 #pragma once
 
-#include "Exception.h"
+#include "StreamBase.h"
 #include "framework.h"
-#include "IStreamBase.h"
 
-class Stream : public IStreamBase
+class Stream : public StreamBase
 {
 public:
+    using StreamBase::read;
+    using StreamBase::write;
+
     Stream();
+    explicit Stream(size_t capacity);
     Stream(const char* buf, size_t size);
     explicit Stream(const ByteBuffer& buf);
     explicit Stream(const std::string& str);
@@ -15,40 +18,33 @@ public:
 
     Stream(const Stream&) = delete;
     Stream& operator=(const Stream&) = delete;
-    Stream(Stream&&) = delete;
-
-    template <typename T>
-    T read();
+    Stream(Stream&&) noexcept;
+    Stream& operator=(Stream&&) noexcept;
 
     // IStreamBase
-    size_t read(char* buf, size_t size) const override;
-    size_t write(const char* buf, size_t size) const override;
-    void seek(int64_t offset, SeekMode mode) const override;
+    size_t read(char* buf, size_t size) override;
+    size_t write(const char* buf, size_t size) override;
+    void seek(int64_t offset, SeekMode mode) override;
     size_t tell() const override;
     size_t size() const override;
 
-    using Ptr = std::unique_ptr<Stream>;
-    static Ptr makeStream(const char* buf, size_t size);
-    static Ptr makeStream(const ByteBuffer& buf);
-    static Ptr makeStream(const std::string& str);
+    static Stream makeStream(uint8Ptr&& ptr, size_t size);
+    static Stream makeStream(const char* buf, size_t size);
+    static Stream makeStream(const ByteBuffer& buf);
+    static Stream makeStream(const std::string& str);
 
-    Ptr read(size_t bytes) const;
+    Stream read(size_t bytes);
     std::string str() const;
     ByteBuffer bytes() const;
+    size_t capacity() const;
+
+    void attach(ByteBuffer buffer);
+    ByteBuffer detach();
 
 private:
-    IOStreamPtr m_stream;
+    void alloc(size_t size);
+    void realloc(size_t size);
+
+    std::size_t m_pos, m_size, m_capacity;
+    uint8Ptr m_bytes;
 };
-
-template <typename T>
-T Stream::read()
-{
-    T value;
-    m_stream->read(reinterpret_cast<char*>(&value), sizeof(T));
-    if (m_stream->fail()) {
-        throw Exception(std::format("Failed to read {} bytes from stream", sizeof(T)));
-    }
-
-    return value;
-}
-

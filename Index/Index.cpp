@@ -1,11 +1,10 @@
 
 #include "stdafx.h"
-
 #include <iostream>
 #include <xapian.h>
 
-#include "Timer.h"
 #include "Indexer.h"
+#include "Timer.h"
 
 int main(int argc, char* argv[])
 {

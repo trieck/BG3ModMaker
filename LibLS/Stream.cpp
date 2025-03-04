@@ -1,109 +1,228 @@
 #include "pch.h"
-
-#include "Exception.h"
 #include "Stream.h"
-#include "Utility.h"
 
-Stream::Stream()
+#include <algorithm>
+#include "Exception.h"
+
+static auto constexpr DEFAULT_BUFFER_SIZE = 4096;
+
+Stream::Stream() : m_pos(0), m_size(0), m_capacity(0)
 {
-    m_stream = std::make_unique<std::stringstream>();
+    alloc(DEFAULT_BUFFER_SIZE);
+}
+
+Stream::Stream(size_t capacity) : m_pos(0), m_size(0), m_capacity(0)
+{
+    alloc(capacity);
 }
 
 Stream::Stream(const char* buf, size_t size)
 {
-    m_stream = createMemoryStream(buf, size);
+    alloc(std::max<size_t>(size, DEFAULT_BUFFER_SIZE));
+
+    memcpy(m_bytes.get(), buf, size);
+
+    m_size = size;
 }
 
 Stream::Stream(const ByteBuffer& buf)
 {
-    m_stream = createMemoryStream(buf);
+    auto* pbuf = buf.first.get();
+    auto size = buf.second;
+
+    alloc(std::max<size_t>(size, DEFAULT_BUFFER_SIZE));
+
+    memcpy(m_bytes.get(), pbuf, size);
+
+    m_size = size;
 }
 
 Stream::Stream(const std::string& str)
 {
-    m_stream = createMemoryStream(str);
+    auto* pstr = str.c_str();
+    auto size = str.size();
+
+    alloc(std::max<size_t>(size, DEFAULT_BUFFER_SIZE));
+
+    memcpy(m_bytes.get(), pstr, size);
+
+    m_size = size;
 }
 
-Stream::~Stream()
-= default;
+Stream::~Stream() = default;
 
-size_t Stream::read(char* buf, size_t size) const
+size_t Stream::read(char* buf, size_t size)
 {
-    m_stream->read(buf, static_cast<std::streamsize>(size));
-    if (m_stream->fail()) {
-        throw Exception(std::format("Unable to read bytes of size {} from stream.", size));
+    auto cbRead = std::min<size_t>(size, m_size - m_pos);
+
+    memcpy(buf, m_bytes.get() + m_pos, cbRead);
+
+    m_pos += cbRead;
+
+    return cbRead;
+}
+
+size_t Stream::write(const char* buf, size_t size)
+{
+    auto newSize = m_pos + size;
+    if (newSize > m_capacity) {
+        realloc(std::max({newSize, static_cast<size_t>(DEFAULT_BUFFER_SIZE), m_capacity * 2}));
     }
+
+    memcpy(m_bytes.get() + m_pos, buf, size);
+
+    m_size = std::max(m_size, newSize);
+    m_pos += size;
 
     return size;
 }
 
-size_t Stream::write(const char* buf, size_t size) const
+void Stream::seek(int64_t offset, SeekMode mode)
 {
-    m_stream->write(buf, static_cast<std::streamsize>(size));
-    if (m_stream->fail()) {
-        throw Exception(std::format("Unable to write bytes of size {} to stream.", size));
-    }
+    switch (mode) {
+    case SeekMode::Begin:
+        if (offset >= 0 && static_cast<size_t>(offset) < m_size) {
+            m_pos = offset;
+        } else {
+            throw Exception("Invalid seek");
+        }
+        break;
+    case SeekMode::Current:
+        if (offset > 0 && m_pos + offset < m_size) {
+            m_pos += offset;
+        } else if (offset < 0 && static_cast<size_t>(-offset) <= m_pos) {
+            m_pos += offset;
+        } else {
+            throw Exception("Invalid seek");
+        }
 
-    return size;
-}
+        break;
+    case SeekMode::End:
+        if (offset > 0 || static_cast<size_t>(-offset) > m_size) {
+            throw Exception("Invalid seek");
+        }
 
-void Stream::seek(int64_t offset, SeekMode mode) const
-{
-    m_stream->seekg(offset, static_cast<std::ios::seekdir>(mode));
-    if (m_stream->fail()) {
-        throw Exception(GetLastError());
+        m_pos = m_size + offset;
+        break;
     }
 }
 
 size_t Stream::tell() const
 {
-    return m_stream->tellg();
+    return m_pos;
+}
+
+void Stream::alloc(size_t size)
+{
+    if (size > 0) {
+        m_bytes = std::make_unique<uint8_t[]>(size);
+    }
+
+    m_capacity = size;
+    m_pos = 0;
+}
+
+void Stream::realloc(size_t size)
+{
+    auto newBytes = std::make_unique<uint8_t[]>(size);
+    memcpy(newBytes.get(), m_bytes.get(), m_size);
+    m_bytes = std::move(newBytes);
+    m_capacity = size;
 }
 
 size_t Stream::size() const
 {
-    auto pos = m_stream->tellg();
-    m_stream->seekg(0, std::ios::end);
-    auto size = m_stream->tellg();
-    m_stream->seekg(pos);
-    return size;
+    return m_size;
 }
 
-Stream::Ptr Stream::makeStream(const char* buf, size_t size)
+Stream Stream::makeStream(uint8Ptr&& ptr, size_t size)
 {
-    return std::make_unique<Stream>(buf, size);
+    Stream stream;
+    stream.attach({ std::move(ptr), size });
+    return stream;
 }
 
-Stream::Ptr Stream::makeStream(const ByteBuffer& buf)
+Stream Stream::makeStream(const char* buf, size_t size)
 {
-    return std::make_unique<Stream>(buf);
+    return { buf, size };
 }
 
-Stream::Ptr Stream::makeStream(const std::string& str)
+Stream Stream::makeStream(const ByteBuffer& buf)
 {
-    return std::make_unique<Stream>(str);
+    Stream stream(buf);
+    return stream;
 }
 
-Stream::Ptr Stream::read(size_t bytes) const
+Stream Stream::makeStream(const std::string& str)
+{
+    Stream stream(str);
+    return stream;
+}
+
+Stream Stream::read(size_t bytes)
 {
     auto buf = std::make_unique<char[]>(bytes);
 
     read(buf.get(), bytes);
 
-    return std::make_unique<Stream>(buf.get(), bytes);
+    return { buf.get(), bytes };
 }
 
 std::string Stream::str() const
 {
-    return dynamic_cast<std::istringstream*>(m_stream.get())->str();
+    return std::string(reinterpret_cast<char*>(m_bytes.get()), m_size);
 }
 
 ByteBuffer Stream::bytes() const
 {
-    auto sz = size();
-    auto p = std::make_unique<uint8_t[]>(sz);
+    Stream stream(reinterpret_cast<char*>(m_bytes.get()), m_size);
 
-    read(reinterpret_cast<char*>(p.get()), sz);
-
-    return { std::move(p), sz };
+    return {std::move(stream.m_bytes), stream.m_size};
 }
+
+size_t Stream::capacity() const
+{
+    return m_capacity;
+}
+
+void Stream::attach(ByteBuffer buffer)
+{
+    m_bytes = std::move(buffer.first);
+    m_size = buffer.second;
+    m_capacity = buffer.second;
+    m_pos = 0;
+}
+
+ByteBuffer Stream::detach()
+{
+    ByteBuffer buffer {std::move(m_bytes), m_size};
+
+    m_pos = 0;
+    m_size = 0;
+    m_capacity = 0;
+    m_bytes.reset();
+
+    return buffer;
+}
+
+Stream::Stream(Stream&& rhs) noexcept
+{
+    *this = std::move(rhs);
+}
+
+Stream& Stream::operator=(Stream&& rhs) noexcept
+{
+    if (this != &rhs) {
+        m_pos = rhs.m_pos;
+        m_size = rhs.m_size;
+        m_capacity = rhs.m_capacity;
+        m_bytes = std::move(rhs.m_bytes);
+
+        rhs.m_pos = 0;
+        rhs.m_size = 0;
+        rhs.m_capacity = 0;
+    }
+
+    return *this;
+}
+

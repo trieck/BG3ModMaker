@@ -216,7 +216,6 @@ struct Resource
         metadata.majorVersion = 3;
     }
 
-
     XmlWrapper toXml() const;
 };
 

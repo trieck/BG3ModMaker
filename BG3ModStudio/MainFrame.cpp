@@ -6,7 +6,6 @@
 #include "MainFrame.h"
 #include "PAKWriter.h"
 #include "StringHelper.h"
-#include "Util.h"
 
 static constexpr auto FOLDER_MONITOR_WAIT_TIME = 50;
 
@@ -163,7 +162,10 @@ void MainFrame::OnFolderPack()
 {
     CWaitCursor wait;
 
-    PAKWriter writer;
+    PackageBuildData build{};
+    build.version = PackageHeaderCommon::currentVersion;
+    build.compression = CompressionMethod::NONE;
+    build.compressionLevel = LSCompressionLevel::DEFAULT;
 
     PreloadTree();
 
@@ -174,8 +176,11 @@ void MainFrame::OnFolderPack()
         LogMessage(message);
 
         auto utf8Path = StringHelper::toUTF8(filePath);
-        writer.addFile(utf8Path);
+        build.files.emplace_back(utf8Path.GetString());
     });
+
+    PAKWriter writer(build, "d:\\tmp\\test.pak");
+    writer.write();
 }
 
 void MainFrame::OnFileSave()

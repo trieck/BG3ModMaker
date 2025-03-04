@@ -6,7 +6,6 @@
 #include <xapian.h>
 
 #include "Indexer.h"
-
 #include "LSFReader.h"
 #include "Utility.h"
 #include "XmlWrapper.h"

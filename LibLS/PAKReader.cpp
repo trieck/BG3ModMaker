@@ -1,12 +1,11 @@
 #include "pch.h"
 #include "Compress.h"
-#include "PAKFormat.h"
 #include "PAKReader.h"
 #include "Stream.h"
+#include "Exception.h"
 
 // anonymous namespace
 namespace {
-    constexpr uint32_t PAK_MAGIC = 0x4B50534C;
 
     template <typename TFile>
     bool readStructs(Stream& stream, std::vector<TFile>& entries, uint32_t numFiles)
@@ -78,7 +77,6 @@ namespace {
             throw Exception("Failed to read file list.");
         }
 
-        // TODO: can we initialize this in a lazy way?
         for (const auto& entry : entries) {
             // TODO: handle archive parts, whatever they are
             auto info = createFromEntry<TFileEntry>(package, entry);
@@ -152,7 +150,7 @@ void PAKReader::close()
     m_package.reset();
 }
 
-bool PAKReader::explode(const char* path) const
+bool PAKReader::explode(const char* path)
 {
     for (auto& files = m_package.m_files; const auto& fileInfo : files) {
         if (!extractFile(fileInfo, path)) {
@@ -188,7 +186,7 @@ const PackagedFileInfo& PAKReader::operator[](const std::string& name) const
     throw std::out_of_range("File not found.");
 }
 
-ByteBuffer PAKReader::readFile(const std::string& name) const
+ByteBuffer PAKReader::readFile(const std::string& name)
 {
     const auto& file = (*this)[name];
 
@@ -210,7 +208,7 @@ ByteBuffer PAKReader::readFile(const std::string& name) const
     return { std::move(fileData), file.size() };
 }
 
-bool PAKReader::extractFile(const PackagedFileInfo& file, const char* path) const
+bool PAKReader::extractFile(const PackagedFileInfo& file, const char* path)
 {
     auto [fileData, fileSize] = readFile(file.name);
 
@@ -234,7 +232,7 @@ inline bool Package::load(const char* filename)
     return true;
 }
 
-void Package::seek(int64_t offset, SeekMode mode) const
+void Package::seek(int64_t offset, SeekMode mode)
 {
     m_file.seek(offset, mode);
 }
@@ -247,7 +245,7 @@ void Package::reset()
     m_filemap.clear();
 }
 
-void Package::read(void* buffer, std::size_t size) const
+void Package::read(void* buffer, std::size_t size)
 {
     m_file.read(static_cast<char*>(buffer), size);
 }

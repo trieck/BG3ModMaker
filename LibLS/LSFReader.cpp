@@ -1,11 +1,10 @@
 #include "pch.h"
+#include "Compress.h"
+#include "Exception.h"
+#include "LSCommon.h"
 #include "LSFReader.h"
 
-#include "Compress.h"
-#include "LSCommon.h"
-
-LSFReader::LSFReader()
-= default;
+LSFReader::LSFReader() = default;
 
 LSFReader::~LSFReader()
 = default;
@@ -64,7 +63,7 @@ Resource::Ptr LSFReader::read(const ByteBuffer& info)
 
 void LSFReader::readHeader()
 {
-    auto [magic, version] = m_stream->read<LSFMagic>();
+    auto [magic, version] = m_stream.read<LSFMagic>();
     if (std::memcmp(magic, LSF_MAGIC, sizeof(LSF_MAGIC)) != 0) {
         throw Exception("Invalid LSF file.");
     }
@@ -75,7 +74,7 @@ void LSFReader::readHeader()
     }
 
     if (version >= static_cast<uint32_t>(LSFVersion::BG3_EXTENDED_HEADER)) {
-        auto [engineVersion] = m_stream->read<LSFExtendedHeader>();
+        auto [engineVersion] = m_stream.read<LSFExtendedHeader>();
         m_gameVersion = PackedVersion::fromInt64(engineVersion);
 
         // Workaround for LSF files with missing engine version
@@ -83,7 +82,7 @@ void LSFReader::readHeader()
             m_gameVersion = {.major = 4, .minor = 0, .revision = 9, .build = 0};
         }
     } else {
-        auto [engineVersion] = m_stream->read<LSFHeader>();
+        auto [engineVersion] = m_stream.read<LSFHeader>();
         m_gameVersion = PackedVersion::fromInt64(engineVersion);
 
         // Workaround for merged LSF files with missing engine version number
@@ -93,7 +92,7 @@ void LSFReader::readHeader()
     }
 
     if (version < static_cast<uint32_t>(LSFVersion::BG3_NODE_KEYS)) {
-        auto meta = m_stream->read<LSFMetadataV5>();
+        auto meta = m_stream.read<LSFMetadataV5>();
         m_metadata.stringsUncompressedSize = meta.stringsUncompressedSize;
         m_metadata.stringsSizeOnDisk = meta.stringsSizeOnDisk;
         m_metadata.nodesUncompressedSize = meta.nodesUncompressedSize;
@@ -105,13 +104,13 @@ void LSFReader::readHeader()
         m_metadata.compressionFlags = meta.compressionFlags;
         m_metadata.metadataFormat = meta.metadataFormat;
     } else {
-        m_metadata = m_stream->read<LSFMetadataV6>();
+        m_metadata = m_stream.read<LSFMetadataV6>();
     }
 
     m_version = static_cast<LSFVersion>(version);
 }
 
-void LSFReader::readNames(const Stream::Ptr& stream)
+void LSFReader::readNames(Stream& stream)
 {
     // Format:
     // 32-bit hash entry count (N)
@@ -121,15 +120,15 @@ void LSFReader::readNames(const Stream::Ptr& stream)
 
     m_names.clear();
 
-    auto numHashEntries = stream->read<uint32_t>();
+    auto numHashEntries = stream.read<uint32_t>();
     while (numHashEntries-- > 0) {
         auto hash = std::vector<std::string>();
 
-        auto numStrings = stream->read<uint16_t>();
+        auto numStrings = stream.read<uint16_t>();
         while (numStrings-- > 0) {
-            auto nameLen = stream->read<uint16_t>();
-            auto nameStream = stream->read(nameLen);
-            auto name = std::string(nameStream->str());
+            auto nameLen = stream.read<uint16_t>();
+            auto nameStream = stream.read(nameLen);
+            auto name = std::string(nameStream.str());
             hash.emplace_back(std::move(name));
         }
 
@@ -137,20 +136,20 @@ void LSFReader::readNames(const Stream::Ptr& stream)
     }
 }
 
-void LSFReader::readNodes(const Stream::Ptr& stream, bool longNodes)
+void LSFReader::readNodes(Stream& stream, bool longNodes)
 {
-    auto size = stream->size();
-    while (stream->tell() < size) {
+    auto size = stream.size();
+    while (stream.tell() < size) {
         auto resolved = LSFNodeInfo{};
 
         if (longNodes) {
-            auto item = stream->read<LSFNodeEntryV3>();
+            auto item = stream.read<LSFNodeEntryV3>();
             resolved.parentIndex = item.parentIndex;
             resolved.nameIndex = item.nameIndex();
             resolved.nameOffset = item.nameOffset();
             resolved.firstAttributeIndex = item.firstAttributeIndex;
         } else {
-            auto item = stream->read<LSFNodeEntryV2>();
+            auto item = stream.read<LSFNodeEntryV2>();
             resolved.parentIndex = item.parentIndex;
             resolved.nameIndex = item.nameIndex();
             resolved.nameOffset = item.nameOffset();
@@ -161,16 +160,16 @@ void LSFReader::readNodes(const Stream::Ptr& stream, bool longNodes)
     }
 }
 
-void LSFReader::readAttributesV2(const Stream::Ptr& stream)
+void LSFReader::readAttributesV2(Stream& stream)
 {
     std::vector<int32_t> prevAttributeRefs;
 
     uint32_t dataOffset = 0;
     int32_t index = 0;
 
-    auto size = stream->size();
-    while (stream->tell() < size) {
-        auto attribute = stream->read<LSFAttributeEntryV2>();
+    auto size = stream.size();
+    while (stream.tell() < size) {
+        auto attribute = stream.read<LSFAttributeEntryV2>();
 
         LSFAttributeInfo resolved;
         resolved.nameIndex = attribute.nameIndex();
@@ -200,11 +199,11 @@ void LSFReader::readAttributesV2(const Stream::Ptr& stream)
     }
 }
 
-void LSFReader::readAttributesV3(const Stream::Ptr& stream)
+void LSFReader::readAttributesV3(Stream& stream)
 {
-    auto size = stream->size();
-    while (stream->tell() < size) {
-        auto attribute = stream->read<LSFAttributeEntryV3>();
+    auto size = stream.size();
+    while (stream.tell() < size) {
+        auto attribute = stream.read<LSFAttributeEntryV3>();
 
         LSFAttributeInfo resolved;
         resolved.nameIndex = attribute.nameIndex();
@@ -218,11 +217,11 @@ void LSFReader::readAttributesV3(const Stream::Ptr& stream)
     }
 }
 
-void LSFReader::readKeys(const Stream::Ptr& stream)
+void LSFReader::readKeys(Stream& stream)
 {
-    auto size = stream->size();
-    while (stream->tell() < size) {
-        auto key = stream->read<LSFKeyEntry>();
+    auto size = stream.size();
+    while (stream.tell() < size) {
+        auto key = stream.read<LSFKeyEntry>();
         auto keyNameIndex = key.keyNameIndex();
         auto keyNameOffset = key.keyNameOffset();
 
@@ -232,31 +231,31 @@ void LSFReader::readKeys(const Stream::Ptr& stream)
     }
 }
 
-std::string LSFReader::readVector(const NodeAttribute& attr, const Stream::Ptr& stream)
+std::string LSFReader::readVector(const NodeAttribute& attr, Stream& stream)
 {
     std::ostringstream oss;
     oss << std::fixed << std::setprecision(2);
 
     switch (attr.type()) {
     case IVec2:
-        oss << stream->read<int32_t>() << " " << stream->read<int32_t>();
+        oss << stream.read<int32_t>() << " " << stream.read<int32_t>();
         break;
     case IVec3:
-        oss << stream->read<int32_t>() << " " << stream->read<int32_t>() << " " << stream->read<int32_t>();
+        oss << stream.read<int32_t>() << " " << stream.read<int32_t>() << " " << stream.read<int32_t>();
         break;
     case IVec4:
-        oss << stream->read<int32_t>() << " " << stream->read<int32_t>() << " "
-            << stream->read<int32_t>() << " " << stream->read<int32_t>();
+        oss << stream.read<int32_t>() << " " << stream.read<int32_t>() << " "
+            << stream.read<int32_t>() << " " << stream.read<int32_t>();
         break;
     case Vec2:
-        oss << std::setw(5) << stream->read<float>() << " " << stream->read<float>();
+        oss << std::setw(5) << stream.read<float>() << " " << stream.read<float>();
         break;
     case Vec3:
-        oss << std::setw(5) << stream->read<float>() << " " << stream->read<float>() << " " << stream->read<float>();
+        oss << std::setw(5) << stream.read<float>() << " " << stream.read<float>() << " " << stream.read<float>();
         break;
     case Vec4:
-        oss << std::setw(5) << stream->read<float>() << " " << stream->read<float>() << " "
-            << stream->read<float>() << " " << stream->read<float>();
+        oss << std::setw(5) << stream.read<float>() << " " << stream.read<float>() << " "
+            << stream.read<float>() << " " << stream.read<float>();
         break;
     default:
         throw Exception("Unsupported vector type.");
@@ -265,32 +264,32 @@ std::string LSFReader::readVector(const NodeAttribute& attr, const Stream::Ptr& 
     return oss.str();
 }
 
-std::string LSFReader::readTranslatedFSString(const Stream::Ptr& stream) const
+std::string LSFReader::readTranslatedFSString(Stream& stream) const
 {
     TranslatedFSStringT str;
 
     if (m_version >= LSFVersion::BG3) {
-        str.version = stream->read<uint16_t>();
+        str.version = stream.read<uint16_t>();
     } else {
         str.version = 0;
-        auto valueLength = stream->read<int32_t>();
-        str.value = stream->read(valueLength)->str();
+        auto valueLength = stream.read<int32_t>();
+        str.value = stream.read(valueLength).str();
     }
 
-    auto handleLength = stream->read<int32_t>();
-    str.handle = stream->read(handleLength)->str();
+    auto handleLength = stream.read<int32_t>();
+    str.handle = stream.read(handleLength).str();
 
-    auto numArgs = stream->read<int32_t>();
+    auto numArgs = stream.read<int32_t>();
     str.arguments.reserve(numArgs);
 
     for (auto i = 0; i < numArgs; ++i) {
         TranslatedFSStringArgument arg;
-        auto keyLength = stream->read<int32_t>();
-        arg.key = stream->read(keyLength)->str();
+        auto keyLength = stream.read<int32_t>();
+        arg.key = stream.read(keyLength).str();
         arg.string = readTranslatedFSString(stream);
 
-        auto valueLength = stream->read<int32_t>();
-        arg.value = stream->read(valueLength)->str();
+        auto valueLength = stream.read<int32_t>();
+        arg.value = stream.read(valueLength).str();
         str.arguments[i] = arg;
     }
 
@@ -342,7 +341,7 @@ static uint32_t rows(AttributeType type)
     }
 }
 
-std::string LSFReader::readMatrix(const NodeAttribute& attr, const Stream::Ptr& stream)
+std::string LSFReader::readMatrix(const NodeAttribute& attr, Stream& stream)
 {
     auto columns = ::columns(attr.type());
     auto rows = ::rows(attr.type());
@@ -353,14 +352,14 @@ std::string LSFReader::readMatrix(const NodeAttribute& attr, const Stream::Ptr& 
     for (auto row = 0u; row < rows; ++row) {
         for (auto col = 0u; col < columns; ++col) {
             if (row > 0 || col > 0) oss << " ";
-            oss << std::setw(5) << stream->read<float>();
+            oss << std::setw(5) << stream.read<float>();
         }
     }
 
     return oss.str();
 }
 
-NodeAttribute LSFReader::readAttribute(AttributeType type, const Stream::Ptr& reader, uint32_t length) const
+NodeAttribute LSFReader::readAttribute(AttributeType type, Stream& reader, uint32_t length) const
 {
     NodeAttribute attr(type);
     TranslatedString_T str;
@@ -375,21 +374,21 @@ NodeAttribute LSFReader::readAttribute(AttributeType type, const Stream::Ptr& re
     case WString:
     case LSWString:
     case ScratchBuffer:
-        attr.setValue(reader->read(length)->str());
+        attr.setValue(reader.read(length).str());
         break;
     case TranslatedString:
         if (m_version >= LSFVersion::BG3 || (m_gameVersion.major > 4 ||
             (m_gameVersion.major == 4 && m_gameVersion.revision > 0) ||
             (m_gameVersion.major == 4 && m_gameVersion.revision == 0 && m_gameVersion.build >= 0x1a))) {
-            str.version = reader->read<uint16_t>();
+            str.version = reader.read<uint16_t>();
         } else {
             str.version = 0;
-            auto valueLength = reader->read<int32_t>();
-            str.value = reader->read(valueLength)->str();
+            auto valueLength = reader.read<int32_t>();
+            str.value = reader.read(valueLength).str();
         }
 
-        handleLength = reader->read<int32_t>();
-        str.handle = reader->read(handleLength)->str();
+        handleLength = reader.read<int32_t>();
+        str.handle = reader.read(handleLength).str();
         attr.setValue(str.str());
         break;
     case TranslatedFSString:
@@ -418,7 +417,7 @@ NodeAttribute LSFReader::readAttribute(AttributeType type, const Stream::Ptr& re
     return attr;
 }
 
-static std::string readUUID(const Stream::Ptr& ptr)
+static std::string readUUID(Stream& stream)
 {
     std::string uuid;
 
@@ -426,13 +425,13 @@ static std::string readUUID(const Stream::Ptr& ptr)
         if (i == 4 || i == 6 || i == 8 || i == 10) {
             uuid += "-";
         }
-        uuid += std::format("{:02x}", ptr->read<uint8_t>());
+        uuid += std::format("{:02x}", stream.read<uint8_t>());
     }
 
     return uuid;
 }
 
-NodeAttribute LSFReader::readAttribute(AttributeType type, const Stream::Ptr& reader)
+NodeAttribute LSFReader::readAttribute(AttributeType type, Stream& reader)
 {
     NodeAttribute attr(type);
 
@@ -440,40 +439,40 @@ NodeAttribute LSFReader::readAttribute(AttributeType type, const Stream::Ptr& re
     case None:
         break;
     case Byte:
-        attr.setValue(std::to_string(reader->read<uint8_t>()));
+        attr.setValue(std::to_string(reader.read<uint8_t>()));
         break;
     case Int8:
-        attr.setValue(std::to_string(reader->read<int8_t>()));
+        attr.setValue(std::to_string(reader.read<int8_t>()));
         break;
     case Short:
-        attr.setValue(std::to_string(reader->read<int16_t>()));
+        attr.setValue(std::to_string(reader.read<int16_t>()));
         break;
     case UShort:
-        attr.setValue(std::to_string(reader->read<uint16_t>()));
+        attr.setValue(std::to_string(reader.read<uint16_t>()));
         break;
     case Int:
-        attr.setValue(std::to_string(reader->read<int32_t>()));
+        attr.setValue(std::to_string(reader.read<int32_t>()));
         break;
     case UInt:
-        attr.setValue(std::to_string(reader->read<uint32_t>()));
+        attr.setValue(std::to_string(reader.read<uint32_t>()));
         break;
     case Long:
-        attr.setValue(std::to_string(reader->read<int64_t>()));
+        attr.setValue(std::to_string(reader.read<int64_t>()));
         break;
     case Int64:
-        attr.setValue(std::to_string(reader->read<int64_t>()));
+        attr.setValue(std::to_string(reader.read<int64_t>()));
         break;
     case ULongLong:
-        attr.setValue(std::to_string(reader->read<uint64_t>()));
+        attr.setValue(std::to_string(reader.read<uint64_t>()));
         break;
     case Float:
-        attr.setValue(std::to_string(reader->read<float>()));
+        attr.setValue(std::to_string(reader.read<float>()));
         break;
     case Double:
-        attr.setValue(std::to_string(reader->read<double>()));
+        attr.setValue(std::to_string(reader.read<double>()));
         break;
     case Bool:
-        attr.setValue(reader->read<uint8_t>() != 0 ? "true" : "false");
+        attr.setValue(reader.read<uint8_t>() != 0 ? "true" : "false");
         break;
     case UUID:
         attr.setValue(readUUID(reader));
@@ -485,14 +484,14 @@ NodeAttribute LSFReader::readAttribute(AttributeType type, const Stream::Ptr& re
     return attr;
 }
 
-void LSFReader::readNode(const LSFNodeInfo& defn, Node& node, const Stream::Ptr& attributeReader) const
+void LSFReader::readNode(const LSFNodeInfo& defn, Node& node, Stream& attributeReader)
 {
     node.name = m_names[defn.nameIndex][defn.nameOffset];
 
     if (defn.firstAttributeIndex != -1) {
         auto attribute = m_attributes[defn.firstAttributeIndex];
         while (true) {
-            m_values->seek(attribute.dataOffset, SeekMode::Begin);
+            m_values.seek(attribute.dataOffset, SeekMode::Begin);
             auto value = readAttribute(static_cast<AttributeType>(attribute.typeId), attributeReader, attribute.length);
 
             node.attributes[m_names[attribute.nameIndex][attribute.nameOffset]] = value;
@@ -531,22 +530,22 @@ void LSFReader::readRegions(const Resource::Ptr& resource)
     }
 }
 
-Stream::Ptr LSFReader::decompress(uint32_t sizeOnDisk, uint32_t uncompressedSize, std::string debugDumpTo,
-                                  bool allowChunked) const
+Stream LSFReader::decompress(uint32_t sizeOnDisk, uint32_t uncompressedSize, std::string debugDumpTo,
+                                  bool allowChunked)
 {
     if (sizeOnDisk == 0 && uncompressedSize != 0) {
-        auto stream = m_stream->read(uncompressedSize);
+        auto stream = m_stream.read(uncompressedSize);
         return stream;
     }
 
     if (sizeOnDisk == 0 || uncompressedSize == 0) {
-        return std::make_unique<Stream>(); // no data
+        return {}; // no data
     }
 
     auto chunked = m_version >= LSFVersion::CHUNKED_COMPRESS && allowChunked;
     auto isCompressed = m_metadata.compressionMethod() != CompressionMethod::NONE;
     auto compressedSize = isCompressed ? sizeOnDisk : uncompressedSize;
-    auto compressedStream = m_stream->read(compressedSize);
+    auto compressedStream = m_stream.read(compressedSize);
     auto uncompressedStream = decompressStream(m_metadata.compressionMethod(), compressedStream, uncompressedSize,
                                                chunked);
 

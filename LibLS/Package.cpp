@@ -1,0 +1,44 @@
+#include "pch.h"
+#include "Package.h"
+
+PAKHeader LSPKHeader16::commonHeader() const
+{
+    PAKHeader header{};
+
+    header.version = version;
+    header.dataOffset = 0;
+    header.fileListOffset = fileListOffset;
+    header.fileListSize = fileListSize;
+    header.numParts = 1;
+    header.flags = static_cast<PackageFlags>(flags);
+    header.priority = priority;
+
+    return header;
+}
+
+PAKHeader LSPKHeader16::fromCommon(const PackageHeaderCommon& h)
+{
+    PAKHeader header{};
+    header.version = static_cast<uint32_t>(PackageHeaderCommon::currentVersion);
+    header.dataOffset = h.dataOffset;
+    header.fileListOffset = h.fileListOffset;
+    header.fileListSize = h.fileListSize;
+    header.numParts = 1;
+    header.flags = h.flags;
+    header.priority = h.priority;
+    return header;
+}
+
+FileEntry18 FileEntry18::fromCommon(const PackagedFileInfoCommon& info)
+{
+    FileEntry18 entry{};
+    strncpy_s(entry.name, info.name.c_str(), sizeof(entry.name));
+    entry.offsetInFile1 = static_cast<uint32_t>(info.offsetInFile & 0xFFFFFFFF);
+    entry.offsetInFile2 = static_cast<uint16_t>((info.offsetInFile >> 32) & 0xFFFF);
+    entry.archivePart = static_cast<uint8_t>(info.archivePart);
+    entry.flags = static_cast<uint8_t>(info.flags);
+    entry.sizeOnDisk = info.sizeOnDisk;
+    entry.uncompressedSize = compressionMethod(info.flags) == CompressionMethod::NONE ? 0 : info.uncompressedSize;
+    return entry;
+}
+

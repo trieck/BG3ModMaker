@@ -1,39 +1,7 @@
 #pragma once
 
 #include <unordered_map>
-
-#include "PAKFormat.h"
-#include "FileStream.h"
-
-struct Package final
-{
-    Package();
-    ~Package();
-
-    void addFile(const PackagedFileInfo& file);
-    bool load(const char* filename);
-    void seek(int64_t offset, SeekMode mode) const;
-    void reset();
-
-    template<typename T>
-    T read();
-
-    void read(void* buffer, std::size_t size) const;
-
-    PAKHeader m_header{};
-    std::vector<PackagedFileInfo> m_files{};
-    std::unordered_map <std::string, size_t> m_filemap{};
-    std::string m_filename{};
-    FileStream m_file{};
-};
-
-template <typename T>
-T Package::read()
-{
-    T value;
-    m_file.read(reinterpret_cast<char*>(&value), sizeof(T));
-    return value;
-}
+#include "Package.h"
 
 class PAKReader final
 {
@@ -44,7 +12,7 @@ public:
     bool read(const char* filename);
     void close();
 
-    bool explode(const char* path) const;
+    bool explode(const char* path);
     void openStreams(uint32_t numParts);
 
     Package& package();
@@ -53,10 +21,10 @@ public:
 
     const PackagedFileInfo& operator[](const std::string& name) const;
 
-    ByteBuffer readFile(const std::string& name) const;
+    ByteBuffer readFile(const std::string& name);
 
 private:
-    bool extractFile(const PackagedFileInfo& file, const char* path) const;
+    bool extractFile(const PackagedFileInfo& file, const char* path);
 
     Package m_package{};
 };

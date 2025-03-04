@@ -4,15 +4,23 @@
 #include "SelectObject.h"
 #include "Util.h"
 
-static constexpr auto CLOSE_BUTTON_WIDTH = 20;
+static constexpr auto CLOSE_BUTTON_WIDTH = 22;
+static constexpr auto CLOSE_BUTTON_RPADDING = 7;
+static constexpr auto CLOSE_BUTTON_DEFLATE = 2;
 static constexpr auto TEXT_LPADDING = 8;
 static constexpr auto TITLE_BAR_PADDING = 8;
 
 LRESULT OutputWindow::OnCreate(LPCREATESTRUCT)
 {
+    (void)SetWindowTheme(m_hWnd, L"explorer", nullptr);
+
+    BOOL disable = FALSE;
+    (void)DwmSetWindowAttribute(m_hWnd, DWMWA_WINDOW_CORNER_PREFERENCE, &disable, sizeof(disable));
+
     if (!m_listView.Create(*this, rcDefault, nullptr,
                            WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | LVS_REPORT |
-                           LVS_SINGLESEL | LVS_SORTASCENDING, WS_EX_CLIENTEDGE | LVS_EX_FULLROWSELECT)) {
+                           LVS_SINGLESEL | LVS_SORTASCENDING | LVS_NOSORTHEADER,
+                           WS_EX_CLIENTEDGE | LVS_EX_FULLROWSELECT)) {
         ATLTRACE("Unable to create list view.\n");
         return -1;
     }
@@ -71,16 +79,18 @@ void OutputWindow::OnNcPaint(HRGN hRgn)
 
     dc.DrawText(_T("Output"), -1, &rcText, DT_VCENTER | DT_SINGLELINE);
 
-    CRect rcClose(rcTitle.right - CLOSE_BUTTON_WIDTH,
-                  rcTitle.top, rcTitle.right, rcTitle.top + m_titleBarHeight);
+    CRect rcClose(rcTitle.right - CLOSE_BUTTON_WIDTH - CLOSE_BUTTON_RPADDING,
+                  rcTitle.top, rcTitle.right - CLOSE_BUTTON_RPADDING, rcTitle.top + m_titleBarHeight);
+
+    dc.SetTextColor(0); // Black text
 
     if (m_bCloseHover) {
-        dc.FillSolidRect(&rcClose, RGB(240, 240, 240)); // gray background
-        dc.DrawEdge(&rcClose, EDGE_RAISED, BF_RECT); // 3D effect
-        dc.SetTextColor(0); // Black text           // black text
+        dc.FillSolidRect(&rcClose, GetSysColor(COLOR_3DLIGHT));
+        dc.DrawEdge(&rcClose, EDGE_RAISED, BF_RECT);
     } else {
-        dc.SetTextColor(RGB(255, 255, 255)); // white text   
-        dc.FillSolidRect(&rcClose, RGB(220, 80, 80)); // red background
+        rcClose.DeflateRect(CLOSE_BUTTON_DEFLATE, CLOSE_BUTTON_DEFLATE);
+        dc.SetTextColor(0);
+        dc.FillSolidRect(&rcClose, GetSysColor(COLOR_3DFACE));
     }
 
     dc.DrawText(_T("x"), -1, &rcClose, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
@@ -107,7 +117,10 @@ LRESULT OutputWindow::OnNcHitTest(CPoint point)
 
     CRect rcTitle(rcWindow.left, rcWindow.top, rcWindow.right, rcWindow.top + m_titleBarHeight);
 
-    CRect rcClose(rcTitle.right - CLOSE_BUTTON_WIDTH, rcTitle.top, rcTitle.right, rcTitle.top + m_titleBarHeight);
+    CRect rcClose(rcTitle.right - CLOSE_BUTTON_WIDTH - CLOSE_BUTTON_RPADDING, 
+        rcTitle.top, rcTitle.right - CLOSE_BUTTON_RPADDING, rcTitle.top + m_titleBarHeight);
+
+    rcClose.DeflateRect(CLOSE_BUTTON_DEFLATE, CLOSE_BUTTON_DEFLATE);
 
     if (rcClose.PtInRect(point)) {
         return HTCLOSE;
@@ -192,8 +205,10 @@ LRESULT OutputWindow::OnNcMouseMove(UINT nHitTest, CPoint point)
 
     CRect rcTitle(rcWindow.left, rcWindow.top, rcWindow.right, rcWindow.top + m_titleBarHeight);
 
-    CRect rcClose(rcTitle.right - CLOSE_BUTTON_WIDTH,
-                  rcTitle.top, rcTitle.right, rcTitle.top + m_titleBarHeight);
+    CRect rcClose(rcTitle.right - CLOSE_BUTTON_WIDTH - CLOSE_BUTTON_RPADDING,
+                  rcTitle.top, rcTitle.right - CLOSE_BUTTON_RPADDING, rcTitle.top + m_titleBarHeight);
+
+    rcClose.DeflateRect(CLOSE_BUTTON_DEFLATE, CLOSE_BUTTON_DEFLATE);
 
     BOOL bCloseHover = rcClose.PtInRect(point);
 

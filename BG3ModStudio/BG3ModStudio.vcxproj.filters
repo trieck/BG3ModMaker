@@ -242,7 +242,6 @@
     <Image Include="resources\about.bmp">
       <Filter>Resources</Filter>
     </Image>
-    <Image Include="about.bmp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\BG3ModStudio.rc">

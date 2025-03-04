@@ -3,13 +3,9 @@
 #include <lz4frame.h>
 #include "LZ4FrameCompressor.h"
 
-Stream::Ptr LZ4FrameCompressor::decompress(const Stream::Ptr& stream, size_t decompressedSize)
+Stream LZ4FrameCompressor::decompress(Stream& stream, size_t decompressedSize)
 {
-    if (!stream) {
-        throw std::invalid_argument("Invalid input stream.");
-    }
-
-    auto [compressed, sz] = stream->read(stream->size())->bytes();
+    auto [compressed, sz] = stream.read(stream.size()).bytes();
 
     auto output = std::make_unique<uint8_t[]>(decompressedSize);
 

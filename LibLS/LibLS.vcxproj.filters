@@ -33,9 +33,6 @@
     <ClInclude Include="Indexer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PAKFormat.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="PAKReader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -75,7 +72,19 @@
     <ClInclude Include="LZ4Codec.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="IStreamBase.h">
+    <ClInclude Include="StreamBase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PAKWriter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Package.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CRC32.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MD5.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -93,9 +102,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Indexer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PAKFormat.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PAKReader.cpp">
@@ -132,6 +138,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="LSFCommon.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PAKWriter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Package.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CRC32.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MD5.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

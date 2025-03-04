@@ -9,29 +9,3 @@ std::string comma(int64_t i)
     return oss.str();
 }
 
-IOStreamPtr createMemoryStream(const uint8Ptr& data, size_t size)
-{
-    return std::make_unique<std::stringstream>(
-        std::string(reinterpret_cast<char*>(data.get()), size),
-        std::ios::binary);
-}
-
-IOStreamPtr createMemoryStream(const std::string& data)
-{
-    return std::make_unique<std::stringstream>(data, std::ios::binary);
-}
-
-IOStreamPtr createMemoryStream(const ByteBuffer& data)
-{
-    return std::make_unique<std::stringstream>(
-        std::string(reinterpret_cast<const char*>(data.first.get()), data.second),
-        std::ios::binary);
-}
-
-IOStreamPtr createMemoryStream(const char* data, size_t size)
-{
-    return std::make_unique<std::stringstream>(
-        std::string(data, size),
-        std::ios::binary);
-}
-

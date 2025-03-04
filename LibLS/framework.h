@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <cstdint>
 #include <filesystem>
 #include <iostream>
@@ -18,4 +19,3 @@
 
 using uint8Ptr = std::unique_ptr<uint8_t[]>;
 using ByteBuffer = std::pair<uint8Ptr, size_t>;
-using IOStreamPtr = std::unique_ptr<std::iostream>;

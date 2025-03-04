@@ -1,7 +1,7 @@
 #pragma once
 
 #include "IFileView.h"
-#include "IStreamBase.h"
+#include "StreamBase.h"
 #include "UTF8Stream.h"
 
 class TextFileView :
@@ -38,7 +38,7 @@ private:
     BOOL Write(LPCSTR text) const;
     BOOL Write(LPCSTR text, size_t length) const;
     static BOOL SkipBOM(LPSTR& str, size_t size);
-    BOOL WriteBOM(const IStreamBase& stream) const;
+    BOOL WriteBOM(StreamBase& stream) const;
     BOOL Flush();
 
     CString m_path;

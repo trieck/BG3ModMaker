@@ -13,22 +13,22 @@ public:
 
 private:
     void readHeader();
-    void readNames(const Stream::Ptr& stream);
-    void readNodes(const Stream::Ptr& stream, bool longNodes);
-    void readAttributesV2(const Stream::Ptr& stream);
-    void readAttributesV3(const Stream::Ptr& stream);
-    void readKeys(const Stream::Ptr& stream);
-    static std::string readVector(const NodeAttribute& attr, const Stream::Ptr& stream);
-    std::string readTranslatedFSString(const Stream::Ptr& stream) const;
-    static std::string readMatrix(const NodeAttribute& attr, const Stream::Ptr& stream);
-    NodeAttribute readAttribute(AttributeType type, const Stream::Ptr& reader, uint32_t length) const;
-    static NodeAttribute readAttribute(AttributeType type, const Stream::Ptr& reader);
-    void readNode(const LSFNodeInfo& defn, Node& node, const Stream::Ptr& attributeReader) const;
+    void readNames(Stream& stream);
+    void readNodes(Stream& stream, bool longNodes);
+    void readAttributesV2(Stream& stream);
+    void readAttributesV3(Stream& stream);
+    void readKeys(Stream& stream);
+    static std::string readVector(const NodeAttribute& attr, Stream& stream);
+    std::string readTranslatedFSString(Stream& stream) const;
+    static std::string readMatrix(const NodeAttribute& attr, Stream& stream);
+    NodeAttribute readAttribute(AttributeType type, Stream& reader, uint32_t length) const;
+    static NodeAttribute readAttribute(AttributeType type, Stream& reader);
+    void readNode(const LSFNodeInfo& defn, Node& node, Stream& attributeReader);
     void readRegions(const Resource::Ptr& resource);
 
-    Stream::Ptr decompress(uint32_t sizeOnDisk, uint32_t uncompressedSize, std::string debugDumpTo, bool allowChunked) const;
+    Stream decompress(uint32_t sizeOnDisk, uint32_t uncompressedSize, std::string debugDumpTo, bool allowChunked);
 
-    Stream::Ptr m_stream, m_values;
+    Stream m_stream, m_values;
     PackedVersion m_gameVersion;
     LSFVersion m_version;
     LSFMetadataV6 m_metadata{};

@@ -14,7 +14,19 @@ enum class CompressionMethod : uint8_t
     LZSTD = METHOD_LZSTD,
 };
 
+enum class LSCompressionLevel
+{
+    FAST,
+    DEFAULT,
+    MAX
+};
+
 bool decompressData(CompressionMethod method, const uint8_t* compressedData, uint32_t compressedSize,
     uint8Ptr& decompressedData, uint32_t decompressedSize);
 
-Stream::Ptr decompressStream(CompressionMethod method, const Stream::Ptr& stream, uint32_t decompressedSize, bool chunked = false);
+Stream decompressStream(CompressionMethod method, Stream& stream, uint32_t decompressedSize, bool chunked = false);
+
+CompressionFlags compressionFlags(CompressionMethod method);
+CompressionFlags compressionFlags(LSCompressionLevel level);
+CompressionFlags compressionFlags(CompressionMethod method, LSCompressionLevel level);
+CompressionMethod compressionMethod(CompressionFlags flags);

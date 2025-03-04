@@ -63,7 +63,7 @@ void FileStream::write(const void* data, size_t size) const
     }
 }
 
-size_t FileStream::read(char* buf, size_t size) const
+size_t FileStream::read(char* buf, size_t size)
 {
     size_t totalRead = 0;
 
@@ -86,7 +86,7 @@ size_t FileStream::read(char* buf, size_t size) const
     return totalRead;
 }
 
-size_t FileStream::write(const char* buf, size_t size) const
+size_t FileStream::write(const char* buf, size_t size)
 {
     size_t totalWritten = 0;
 
@@ -104,7 +104,7 @@ size_t FileStream::write(const char* buf, size_t size) const
     return totalWritten;
 }
 
-void FileStream::seek(int64_t offset, SeekMode mode) const
+void FileStream::seek(int64_t offset, SeekMode mode)
 {
     LARGE_INTEGER li;
     li.QuadPart = offset;
@@ -133,6 +133,15 @@ size_t FileStream::size() const
     }
 
     return static_cast<size_t>(size.QuadPart);
+}
+
+Stream FileStream::read(size_t bytes)
+{
+    auto buf = std::make_unique<char[]>(bytes);
+
+    read(buf.get(), bytes);
+
+    return { buf.get(), bytes };
 }
 
 bool FileStream::isOpen() const

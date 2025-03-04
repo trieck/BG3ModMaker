@@ -272,7 +272,7 @@ BOOL TextFileView::SkipBOM(LPSTR& str, size_t size)
     return FALSE;
 }
 
-BOOL TextFileView::WriteBOM(const IStreamBase& stream) const
+BOOL TextFileView::WriteBOM(StreamBase& stream) const
 {
     switch (m_encoding) {
     case UTF8BOM:
