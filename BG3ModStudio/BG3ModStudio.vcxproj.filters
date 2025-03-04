@@ -12,6 +12,9 @@
     <Filter Include="Resources">
       <UniqueIdentifier>{273ab127-ed46-4368-b1b0-cf8a88597b2b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scripts">
+      <UniqueIdentifier>{c4c3858a-ab2a-4ac6-8303-0c3c42830542}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -242,10 +245,18 @@
     <Image Include="resources\about.bmp">
       <Filter>Resources</Filter>
     </Image>
+    <Image Include="resources\globe.bmp">
+      <Filter>Resources</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\BG3ModStudio.rc">
       <Filter>Resources</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="scripts\make-transparent.bat">
+      <Filter>Scripts</Filter>
+    </None>
   </ItemGroup>
 </Project>

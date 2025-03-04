@@ -38,6 +38,12 @@
             <Command.TooltipDescription>Save All File</Command.TooltipDescription>
         </Command>
 
+        <Command Name="FILE_GLOBE" Symbol="ID_FILE_GLOBE" Id="114" Keytip="O">
+            <Command.LabelTitle>Convert to LOCA...</Command.LabelTitle>
+            <Command.TooltipTitle>Convert to LOCA(Ctrl+Shift+L)</Command.TooltipTitle>
+            <Command.TooltipDescription>Convert to LOCA</Command.TooltipDescription>
+        </Command>
+
         <Command Name="APP_ABOUT" Symbol="ID_APP_ABOUT" Id="0xE140" Keytip="O">
             <Command.LabelTitle>About BG3 Mod Studio...</Command.LabelTitle>
             <Command.TooltipTitle>About BG3 Mod Studio(Ctrl+Shift+A)</Command.TooltipTitle>
@@ -81,6 +87,7 @@
                         <Button CommandName="FILE_PACKAGE" />
                         <Button CommandName="FILE_SAVE" />
                         <Button CommandName="FILE_SAVE_ALL" />
+                        <Button CommandName="FILE_GLOBE" />
                     </MenuGroup>
                     <MenuGroup>
                         <Button CommandName="APP_ABOUT" />
@@ -115,6 +122,7 @@
                                 <ControlNameDefinition Name="FILE_PACKAGE" />
                                 <ControlNameDefinition Name="FILE_SAVE" />
                                 <ControlNameDefinition Name="FILE_SAVE_ALL" />
+                                <ControlNameDefinition Name="FILE_GLOBE" />
                             </ControlNameMap>
                             <GroupSizeDefinition Size="Large">
                                 <ControlSizeDefinition ControlName="FILE_NEW"
@@ -133,6 +141,9 @@
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="FILE_SAVE_ALL"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="FILE_GLOBE"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
                             </GroupSizeDefinition>
@@ -155,6 +166,9 @@
                                 <ControlSizeDefinition ControlName="FILE_SAVE_ALL"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="FILE_GLOBE"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
                             </GroupSizeDefinition>
                             <GroupSizeDefinition Size="Small">
                                 <ControlSizeDefinition ControlName="FILE_NEW"
@@ -175,6 +189,9 @@
                                 <ControlSizeDefinition ControlName="FILE_SAVE_ALL"
                                                        ImageSize="Small"
                                                        IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="FILE_GLOBE"
+                                                       ImageSize="Small"
+                                                       IsLabelVisible="true" />
                             </GroupSizeDefinition>
                         </SizeDefinition>
                         <Button CommandName="FILE_NEW" />
@@ -183,6 +200,7 @@
                         <Button CommandName="FILE_PACKAGE" />
                         <Button CommandName="FILE_SAVE" />
                         <Button CommandName="FILE_SAVE_ALL" />
+                        <Button CommandName="FILE_GLOBE" />
                     </Group>
                 </Tab>
 

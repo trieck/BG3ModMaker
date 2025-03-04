@@ -4,6 +4,8 @@
 #include "FileDialogEx.h"
 #include "FileOperation.h"
 #include "MainFrame.h"
+
+#include "Localization.h"
 #include "PAKWriter.h"
 #include "StringHelper.h"
 
@@ -121,6 +123,11 @@ LRESULT MainFrame::OnCreate(LPCREATESTRUCT pcs)
 void MainFrame::OnFolderOpen()
 {
     FileDialogEx dlg(FileDialogEx::Folder, *this);
+    auto hr = dlg.Construct();
+    if (FAILED(hr)) {
+        return;
+    }
+
     if (dlg.DoModal() != IDOK) {
         return;
     }
@@ -160,14 +167,28 @@ void MainFrame::OnFolderClose()
 
 void MainFrame::OnFolderPack()
 {
-    CWaitCursor wait;
-
     auto rootPath = m_folderView.GetRootPath();
     if (rootPath.IsEmpty()) {
         AtlMessageBox(*this, L"Please open a folder first.", nullptr, MB_ICONEXCLAMATION);
         return;
     }
 
+    auto filter = L"PAK Files (*.pak)\0*.pak\0"
+        L"All Files(*.*)\0*.*\0\0";
+
+    FileDialogEx dlg(FileDialogEx::Save, *this, nullptr, nullptr, 0, filter);
+    auto hr = dlg.Construct();
+    if (FAILED(hr)) {
+        return;
+    }
+
+    if (dlg.DoModal() != IDOK) {
+        return;
+    }
+
+    auto filename = dlg.paths().front();
+
+    CWaitCursor wait;
     PreloadTree();
 
     PackageBuildData build{};
@@ -175,8 +196,7 @@ void MainFrame::OnFolderPack()
     build.compression = CompressionMethod::NONE;
     build.compressionLevel = LSCompressionLevel::DEFAULT;
 
-    IterateFiles(m_folderView.GetRootItem(), [&](const CString& filePath)
-    {
+    IterateFiles(m_folderView.GetRootItem(), [&](const CString& filePath) {
         CString message;
         message.Format(L"Adding file:\"%s\" to PAK...", filePath);
         LogMessage(message);
@@ -191,8 +211,17 @@ void MainFrame::OnFolderPack()
         build.files.emplace_back(input);
     });
 
-    PAKWriter writer(build, "d:\\tmp\\test.pak");
-    writer.write();
+    auto utf8Filename = StringHelper::toUTF8(filename);
+
+    PAKWriter writer(build, utf8Filename);
+
+    try {
+        writer.write();
+        AtlMessageBox(*this, L"Package created successfully.", nullptr, MB_ICONINFORMATION);
+    } catch (const std::exception& e) {
+        LogMessage(CString(e.what()));
+        AtlMessageBox(*this, L"An error occurred while creating the package.", nullptr, MB_ICONERROR);
+    }
 }
 
 void MainFrame::OnFileSave()
@@ -270,8 +299,86 @@ void MainFrame::OnNewFile()
 void MainFrame::OnNewFileHere()
 {
     FileDialogEx dlg(FileDialogEx::Save, *this, L"*.*", nullptr, 0, L"*.*");
+    auto hr = dlg.Construct();
+    if (FAILED(hr)) {
+        return;
+    }
 
     dlg.DoModal();
+}
+
+void MainFrame::OnConvertLoca()
+{
+    auto item = m_folderView.GetSelectedItem();
+    if (item.IsNull()) {
+        return;
+    }
+
+    auto path = m_folderView.GetItemPath(item);
+    if (path.IsEmpty()) {
+        return;
+    }
+
+    TCHAR szPath[MAX_PATH];
+    Checked::tcscpy_s(szPath, _countof(szPath), path.GetString());
+
+    if (PathFindExtension(szPath) && _tcslen(PathFindExtension(szPath)) > 1) {
+        PathRemoveExtension(szPath);
+    }
+
+    PathRemoveExtension(szPath);
+    _tcscat_s(szPath, _T(".loca"));
+
+    TCHAR szFolder[MAX_PATH];
+    Checked::tcscpy_s(szFolder, _countof(szFolder), path.GetString());
+    PathRemoveFileSpec(szFolder);
+
+    auto filter = L"LOCA Files (*.loca)\0*.loca\0"
+        L"All Files(*.*)\0*.*\0\0";
+
+    FileDialogEx dlg(FileDialogEx::Save, *this, nullptr, szPath, 0, filter);
+    auto hr = dlg.Construct();
+    if (FAILED(hr)) {
+        return;
+    }
+
+    hr = dlg.SetFolder(szFolder);
+    if (FAILED(hr)) {
+        return;
+    }
+
+    if (dlg.DoModal() != IDOK) {
+        return;
+    }
+
+    auto utf8Path = StringHelper::toUTF8(path);
+    auto utf8LocaPath = StringHelper::toUTF8(dlg.paths().front());
+
+    LocaResource resource;
+
+    try {
+        resource = LocaXmlReader::Read(utf8Path.GetString());
+    } catch (const std::exception& e) {
+        CString error = StringHelper::fromUTF8(e.what());
+        CString message;
+        message.Format(L"An error occurred while reading the file: \"%s\": \"%s\".", 
+            path, error);
+        AtlMessageBox(*this, message.GetString(), nullptr, MB_ICONERROR);
+        return;
+    }
+
+    try {
+        LocaWriter::Write(utf8LocaPath.GetString(), resource);
+    } catch (const std::exception& e) {
+        CString error = StringHelper::fromUTF8(e.what());
+        CString message;
+        message.Format(L"An error occurred while writing the file: \"%s\": \"%s\".", 
+            dlg.paths().front(), error);
+        AtlMessageBox(*this, message.GetString(), nullptr, MB_ICONERROR);
+        return;
+    }
+
+    AtlMessageBox(*this, L"File converted successfully.", nullptr, MB_ICONINFORMATION);
 }
 
 void MainFrame::OnClose()
@@ -496,7 +603,7 @@ void MainFrame::RenameFile(const CString& oldname, const CString& newname)
     }
 }
 
-BOOL MainFrame::FolderIsOpen() const
+BOOL MainFrame::IsFolderOpen() const
 {
     if (!m_folderView.IsWindow()) {
         return FALSE;
@@ -506,6 +613,26 @@ BOOL MainFrame::FolderIsOpen() const
     return !root.IsNull();
 }
 
+BOOL MainFrame::IsXmlSelected() const
+{
+    if (!m_folderView.IsWindow()) {
+        return FALSE;
+    }
+
+    auto hItem = m_folderView.GetSelectedItem();
+    if (hItem.IsNull()) {
+        return FALSE;
+    }
+
+    auto* data = std::bit_cast<TreeItemData*>(hItem.GetData());
+    if (data == nullptr) {
+        return FALSE;
+    }
+
+    CString ext = PathFindExtension(data->path);
+    return ext.CompareNoCase(L".xml") == 0;
+}
+
 void MainFrame::UpdateTitle()
 {
     CString strTitle;
@@ -513,7 +640,7 @@ void MainFrame::UpdateTitle()
     auto* title = AtlGetStringPtr(IDR_MAINFRAME);
     ATLASSERT(title != nullptr);
 
-    if (FolderIsOpen()) {
+    if (IsFolderOpen()) {
         auto root = m_folderView.GetRootItem();
         ATLASSERT(root.m_hTreeItem != nullptr);
         auto data = std::bit_cast<TreeItemData*>(root.GetData());
@@ -627,9 +754,10 @@ void MainFrame::OnViewOutput()
 
 BOOL MainFrame::OnIdle()
 {
-    UIEnable(ID_FILE_NEW, FolderIsOpen());
-    UIEnable(ID_FILE_CLOSE, FolderIsOpen());
-    UIEnable(ID_FILE_PACKAGE, FolderIsOpen());
+    UIEnable(ID_FILE_NEW, IsFolderOpen());
+    UIEnable(ID_FILE_CLOSE, IsFolderOpen());
+    UIEnable(ID_FILE_PACKAGE, IsFolderOpen());
+    UIEnable(ID_FILE_GLOBE, IsXmlSelected());
 
     if (m_hSplitter.IsWindow()) {
         UISetCheck(ID_VIEW_OUTPUT, m_hSplitter.GetSinglePaneMode() == SPLIT_PANE_NONE);

@@ -176,6 +176,8 @@ ID_FILE_PACKAGE         BITMAP                  "package.bmp"
 
 ID_APP_ABOUT            BITMAP                  "about.bmp"
 
+ID_FILE_GLOBE           BITMAP                  "globe.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

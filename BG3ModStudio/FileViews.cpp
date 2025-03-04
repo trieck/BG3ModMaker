@@ -17,7 +17,7 @@ LRESULT FilesView::OnCreate(LPCREATESTRUCT pcs)
 
     LOGFONT lf{};
     lf.lfCharSet = DEFAULT_CHARSET;
-    lf.lfHeight = 17;
+    lf.lfHeight = 16;
     lf.lfWeight = FW_SEMIBOLD;
     Checked::tcsncpy_s(lf.lfFaceName, _countof(lf.lfFaceName), _T("Tahoma"), _TRUNCATE);
 
@@ -146,7 +146,6 @@ PVOID FilesView::GetData(int index) const
         return nullptr;
     }
 
-    // FIXME:!!! WHAT???
     auto hItem = GetPageData(index);
 
     return hItem;
@@ -305,6 +304,11 @@ BOOL FilesView::SaveFile(const IFileView::Ptr& fileView)
             L"Text Files(*.txt)\0 * .txt\0\0";
 
         FileDialogEx dlg(FileDialogEx::Save, *this, nullptr, path, 0, filter);
+        auto hr = dlg.Construct();
+        if (FAILED(hr)) {
+            return FALSE;
+        }
+
         if (dlg.DoModal() != IDOK) {
             return FALSE;
         }

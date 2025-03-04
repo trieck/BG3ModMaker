@@ -36,6 +36,8 @@ public:
     HTREEITEM FindFile(const CString& filename);
     HTREEITEM RenameFile(const CString& oldname, const CString& newname);
     CString GetRootPath() const;
+    CString GetItemPath(HTREEITEM hItem) const;
+    TreeItemType GetItemType(HTREEITEM hItem) const;
 
 private:
     HTREEITEM InsertFile(HTREEITEM hRoot, const CString& filename, std::deque<CString>& components);

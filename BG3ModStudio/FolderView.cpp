@@ -471,3 +471,23 @@ CString FolderView::GetRootPath() const
 
     return data->path;
 }
+
+CString FolderView::GetItemPath(HTREEITEM hItem) const
+{
+    auto data = std::bit_cast<LPTREEITEMDATA>(GetItemData(hItem));
+    if (!data) {
+        return CString();
+    }
+
+    return data->path;
+}
+
+TreeItemType FolderView::GetItemType(HTREEITEM hItem) const
+{
+    auto data = std::bit_cast<LPTREEITEMDATA>(GetItemData(hItem));
+    if (!data) {
+        return TIT_UNKNOWN;
+    }
+
+    return data->type;
+}

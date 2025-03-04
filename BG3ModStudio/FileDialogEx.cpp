@@ -41,27 +41,56 @@ FileDialogEx::FileDialogEx(DialogType type, HWND hWndParent, LPCTSTR lpszDefExt,
 {
 }
 
-INT_PTR FileDialogEx::DoModal()
+HRESULT FileDialogEx::Construct()
 {
-    CComPtr<IFileDialog> pfd;
-
     HRESULT hr;
-    DWORD dwOptions;
 
     if (m_type == Open || m_type == Folder) {
-        hr = CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pfd));
+        hr = CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&m_pfd));
     } else if (m_type == Save) {
-        hr = CoCreateInstance(CLSID_FileSaveDialog, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pfd));
+        hr = CoCreateInstance(CLSID_FileSaveDialog, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&m_pfd));
     } else {
-        hr = CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pfd));
+        hr = CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&m_pfd));
     }
 
     if (FAILED(hr)) {
         ATLTRACE("Unable to create file dialog.\n");
-        return -1;
     }
 
-    hr = pfd->GetOptions(&dwOptions);
+    return hr;
+}
+
+HRESULT FileDialogEx::SetFolder(const CString &folder)
+{
+    CComPtr<IShellItem> psi;
+
+    if (m_pfd == nullptr) {
+        return E_POINTER;
+    }
+
+    auto hr = SHCreateItemFromParsingName(folder, nullptr, IID_PPV_ARGS(&psi));
+    if (FAILED(hr)) {
+        ATLTRACE("Unable to create shell item from folder.\n");
+        return hr;
+    }
+
+    hr = m_pfd->SetFolder(psi);
+    if (FAILED(hr)) {
+        ATLTRACE("Unable to set file dialog folder.\n");
+    }
+
+    return hr;
+}
+
+INT_PTR FileDialogEx::DoModal()
+{
+    if (m_pfd == nullptr) {
+        return IDCANCEL;
+    }
+    
+    DWORD dwOptions;
+
+    auto hr = m_pfd->GetOptions(&dwOptions);
     if (FAILED(hr)) {
         ATLTRACE("Unable to get file dialog options.\n");
         return -1;
@@ -80,14 +109,14 @@ INT_PTR FileDialogEx::DoModal()
         dwOptions |= FOS_OVERWRITEPROMPT;
     }
 
-    hr = pfd->SetOptions(dwOptions);
+    hr = m_pfd->SetOptions(dwOptions);
     if (FAILED(hr)) {
         ATLTRACE("Unable to set file dialog options.\n");
         return -1;
     }
 
     if (!m_strDefExt.IsEmpty()) {
-        hr = pfd->SetDefaultExtension(m_strDefExt);
+        hr = m_pfd->SetDefaultExtension(m_strDefExt);
         if (FAILED(hr)) {
             ATLTRACE("Unable to set file dialog default extension.\n");
             return -1;
@@ -95,7 +124,7 @@ INT_PTR FileDialogEx::DoModal()
     }
 
     if (!m_strFilename.IsEmpty() && m_type == Save) {
-        hr = pfd->SetFileName(m_strFilename);
+        hr = m_pfd->SetFileName(m_strFilename);
         if (FAILED(hr)) {
             ATLTRACE("Unable to set file dialog filename.\n");
             return -1;
@@ -103,20 +132,20 @@ INT_PTR FileDialogEx::DoModal()
     }
 
     if (!m_filters.empty()) {
-        hr = pfd->SetFileTypes(static_cast<UINT>(m_filters.size()), m_filters.data());
+        hr = m_pfd->SetFileTypes(static_cast<UINT>(m_filters.size()), m_filters.data());
         if (FAILED(hr)) {
             ATLTRACE("Unable to set file dialog filters.\n");
             return -1;
         }
 
-        hr = pfd->SetFileTypeIndex(1); // Set the default file type index to the first (one-based) filter.
+        hr = m_pfd->SetFileTypeIndex(1); // Set the default file type index to the first (one-based) filter.
         if (FAILED(hr)) {
             ATLTRACE("Unable to set file dialog file type index.\n");
             return -1;
         }
     }
 
-    hr = pfd->Show(m_hWndParent);
+    hr = m_pfd->Show(m_hWndParent);
     if (hr == HRESULT_FROM_WIN32(ERROR_CANCELLED)) {
         return IDCANCEL;
     }
@@ -130,7 +159,7 @@ INT_PTR FileDialogEx::DoModal()
 
     if (m_dwFlags & FOS_ALLOWMULTISELECT) {
         CComPtr<IFileOpenDialog> pfo;
-        hr = pfd->QueryInterface(IID_PPV_ARGS(&pfo));
+        hr = m_pfd->QueryInterface(IID_PPV_ARGS(&pfo));
         if (FAILED(hr)) {
             ATLTRACE("Unable to get IFileOpenDialog interface.\n");
             return -1;
@@ -172,7 +201,7 @@ INT_PTR FileDialogEx::DoModal()
     }
 
     CComPtr<IShellItem> psi;
-    hr = pfd->GetResult(&psi);
+    hr = m_pfd->GetResult(&psi);
     if (FAILED(hr)) {
         ATLTRACE("Unable to get file dialog result.\n");
         return -1;

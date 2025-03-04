@@ -16,6 +16,9 @@ public:
         DWORD dwFlags = 0,
         LPCTSTR lpszFilter = nullptr);
 
+    HRESULT Construct();
+    HRESULT SetFolder(const CString& folder);
+
     INT_PTR DoModal();
     const std::vector<CString>& paths() const
     {
@@ -23,6 +26,7 @@ public:
     }
 
 private:
+    CComPtr<IFileDialog> m_pfd;
     DialogType m_type;
     CString m_strDefExt, m_strFilename;
     std::vector<CString> m_strPaths;

@@ -19,18 +19,19 @@ public:
     BOOL DefCreate();
 
     LRESULT OnCreate(LPCREATESTRUCT pcs);
-    void OnViewStatusBar();
-    void OnViewOutput();
-    void OnFolderOpen();
-    void OnFolderClose();
-    void OnFolderPack();
+    void OnClose();
+    void OnConvertLoca();
+    void OnDeleteFile();
+    void OnFileExit();
     void OnFileSave();
     void OnFileSaveAll();
-    void OnFileExit();
-    void OnDeleteFile();
+    void OnFolderClose();
+    void OnFolderOpen();
+    void OnFolderPack();
     void OnNewFile();
     void OnNewFileHere();
-    void OnClose();
+    void OnViewOutput();
+    void OnViewStatusBar();
 
     LRESULT OnTVSelChanged(LPNMHDR pnmhdr);
     LRESULT OnTVDelete(LPNMHDR pnmhdr);
@@ -50,6 +51,7 @@ public:
         UPDATE_ELEMENT(ID_FILE_PACKAGE, UPDUI_MENUPOPUP)
         UPDATE_ELEMENT(ID_FILE_SAVE, UPDUI_MENUPOPUP)
         UPDATE_ELEMENT(ID_FILE_SAVE_ALL, UPDUI_MENUPOPUP)
+        UPDATE_ELEMENT(ID_FILE_GLOBE, UPDUI_MENUPOPUP)
     END_UPDATE_UI_MAP()
 
     BEGIN_MSG_MAP(MainFrame)
@@ -57,17 +59,18 @@ public:
         MSG_WM_CLOSE(OnClose)
         MESSAGE_HANDLER(WM_FILE_CHANGED, OnFileChanged)
 
-        COMMAND_ID_HANDLER3(ID_VIEW_STATUS_BAR, OnViewStatusBar)
-        COMMAND_ID_HANDLER3(ID_VIEW_OUTPUT, OnViewOutput)
+        COMMAND_ID_HANDLER3(ID_APP_EXIT, OnFileExit)
+        COMMAND_ID_HANDLER3(ID_FILE_CLOSE, OnFolderClose)
+        COMMAND_ID_HANDLER3(ID_FILE_GLOBE, OnConvertLoca)
         COMMAND_ID_HANDLER3(ID_FILE_NEW, OnNewFile)
         COMMAND_ID_HANDLER3(ID_FILE_OPEN, OnFolderOpen)
-        COMMAND_ID_HANDLER3(ID_FILE_CLOSE, OnFolderClose)
         COMMAND_ID_HANDLER3(ID_FILE_PACKAGE, OnFolderPack)
-        COMMAND_ID_HANDLER3(ID_APP_EXIT, OnFileExit)
         COMMAND_ID_HANDLER3(ID_FILE_SAVE, OnFileSave)
         COMMAND_ID_HANDLER3(ID_FILE_SAVE_ALL, OnFileSaveAll)
         COMMAND_ID_HANDLER3(ID_TREE_DELETE_FILE, OnDeleteFile)
         COMMAND_ID_HANDLER3(ID_TREE_NEWFILEHERE, OnNewFileHere)
+        COMMAND_ID_HANDLER3(ID_VIEW_OUTPUT, OnViewOutput)
+        COMMAND_ID_HANDLER3(ID_VIEW_STATUS_BAR, OnViewStatusBar)
 
         REFLECT_NOTIFY_CODE(TVN_ITEMEXPANDING)
         NOTIFY_CODE_HANDLER_EX(TVN_DELETEITEM, OnTVDelete)
@@ -81,17 +84,18 @@ public:
 private:
     using FileCallback = std::function<void(const CStringW& filePath)>;
 
-    void ProcessFileChange(UINT action, const CString& filename);
+    BOOL IsFolderOpen() const;
+    BOOL IsXmlSelected() const;
     void AddFile(const CString& filename);
-    void RemoveFile(const CString& filename);
-    void RenameFile(const CString& oldname, const CString& newname);
-    BOOL FolderIsOpen() const;
-    void UpdateTitle();
-    void UpdateEncodingStatus(FileEncoding encoding);
     void IterateFiles(HTREEITEM hItem, const FileCallback& callback);
+    void LogMessage(const CString& message);
     void PreloadTree();
     void PreloadTree(HTREEITEM hItem);
-    void LogMessage(const CString& message);
+    void ProcessFileChange(UINT action, const CString& filename);
+    void RemoveFile(const CString& filename);
+    void RenameFile(const CString& oldname, const CString& newname);
+    void UpdateEncodingStatus(FileEncoding encoding);
+    void UpdateTitle();
 
     CHorSplitterWindow m_hSplitter;
     CSplitterWindow m_vSplitter;
