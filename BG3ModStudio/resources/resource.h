@@ -25,6 +25,8 @@
 #define ID_TAB_CLOSE_OTHERS             40009
 #define ID_TREE_NEWFILEHERE             40010
 #define ID_TREE_DELETE_FILE             40011
+#define ID_TREE_MAKELSFHERE             40017
+#define ID_TREE_DELETE_FOLDER           40018
 #define ATL_IDS_IDLEMESSAGE             0xE001
 #define ID_FILE_NEW                     0xE100
 #define ID_FILE_OPEN                    0xE101
@@ -132,7 +134,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        115
-#define _APS_NEXT_COMMAND_VALUE         40017
+#define _APS_NEXT_COMMAND_VALUE         40019
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

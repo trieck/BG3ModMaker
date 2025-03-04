@@ -6,6 +6,8 @@
 
 CAppModule _Module;
 
+CComCriticalSection g_csFile; // Global critical section
+
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                       _In_opt_ HINSTANCE hPrevInstance,
                       _In_ LPWSTR    lpCmdLine,
@@ -22,6 +24,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 BG3ModStudio::~BG3ModStudio()
 {
+    (void)g_csFile.Term();
+
     if (m_hInstRich != nullptr) {
         FreeLibrary(m_hInstRich);
     }
@@ -33,6 +37,12 @@ BOOL BG3ModStudio::init()
     auto hr = CoInitialize(nullptr);
     if (FAILED(hr)) {
         ATLTRACE(_T("Cannot initialize COM libraries.\n"));
+        return FALSE;
+    }
+
+    hr = g_csFile.Init();
+    if (FAILED(hr)) {
+        ATLTRACE(_T("Cannot initialize global critical section.\n"));
         return FALSE;
     }
 

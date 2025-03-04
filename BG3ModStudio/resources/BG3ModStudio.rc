@@ -137,8 +137,10 @@ IDR_TREE_CONTEXT MENU
 BEGIN
     POPUP "TREE_CONTEXT"
     BEGIN
-        MENUITEM "Delete file",                 ID_TREE_DELETE_FILE
         MENUITEM "New File Here",               ID_TREE_NEWFILEHERE
+        MENUITEM "Make LSF Here",               ID_TREE_MAKELSFHERE
+        MENUITEM "Delete File",                 ID_TREE_DELETE_FILE
+        MENUITEM "Delete Folder",               ID_TREE_DELETE_FOLDER
     END
 END
 

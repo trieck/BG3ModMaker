@@ -24,7 +24,7 @@ LRESULT FolderView::OnCreate(LPCREATESTRUCT)
     SetImageList(m_ImageList, TVSIL_NORMAL);
 
     auto style = TVS_HASBUTTONS | TVS_HASLINES | TVS_FULLROWSELECT | TVS_INFOTIP
-        | TVS_LINESATROOT | TVS_SHOWSELALWAYS;
+        | TVS_LINESATROOT | TVS_SHOWSELALWAYS | TVS_EDITLABELS;
 
     ModifyStyle(0, style);
 
@@ -329,6 +329,7 @@ HTREEITEM FolderView::InsertSubpath(HTREEITEM hRoot, const CString& subpath, con
         HTREEITEM hNext = GetNextItem(hChild, TVGN_NEXT);
         pData = reinterpret_cast<LPTREEITEMDATA>(GetItemData(hChild));
         if (!pData) {
+            hChild = hNext;
             continue;
         }
 

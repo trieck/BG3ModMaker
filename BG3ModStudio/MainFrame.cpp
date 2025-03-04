@@ -9,6 +9,7 @@
 #include "PAKWriter.h"
 #include "StringHelper.h"
 
+extern CComCriticalSection g_csFile; 
 static constexpr auto FOLDER_MONITOR_WAIT_TIME = 50;
 
 BOOL MainFrame::DefCreate()
@@ -252,6 +253,8 @@ void MainFrame::OnDeleteFile()
     auto data = std::bit_cast<TreeItemData*>(item.GetData());
     CString filename = data ? data->path : CString();
     if (filename.IsEmpty()) {
+        m_folderView.DeleteItem(item);
+        m_folderView.RedrawWindow();
         return;
     }
 
@@ -298,13 +301,19 @@ void MainFrame::OnNewFile()
 
 void MainFrame::OnNewFileHere()
 {
-    FileDialogEx dlg(FileDialogEx::Save, *this, L"*.*", nullptr, 0, L"*.*");
-    auto hr = dlg.Construct();
-    if (FAILED(hr)) {
+    auto item = m_folderView.GetSelectedItem();
+    if (item.IsNull()) {
         return;
     }
 
-    dlg.DoModal();
+    auto type = m_folderView.GetItemType(item);
+    ATLASSERT(type == TIT_FOLDER);
+
+    auto newItem = m_folderView.InsertItem(L"New File", 1, 1, item, TVI_LAST);
+
+    m_folderView.EnsureVisible(newItem);
+
+    m_folderView.EditLabel(newItem);
 }
 
 void MainFrame::OnConvertLoca()
@@ -413,6 +422,79 @@ LRESULT MainFrame::OnTVDelete(LPNMHDR pnmhdr)
     return 0;
 }
 
+LRESULT MainFrame::OnTVBeginLabelEdit(LPNMHDR pnmhdr)
+{
+    NMTVDISPINFO* pDispInfo = reinterpret_cast<NMTVDISPINFO*>(pnmhdr);
+
+    auto editCtrl = m_folderView.GetEditControl();
+    if (editCtrl.IsWindow()) {
+        editCtrl.SetLimitText(MAX_PATH);
+        editCtrl.SetWindowText(pDispInfo->item.pszText);
+    }
+
+    return FALSE;
+}
+
+LRESULT MainFrame::OnTVEndLabelEdit(LPNMHDR pnmhdr)
+{
+    NMTVDISPINFO* pDispInfo = reinterpret_cast<NMTVDISPINFO*>(pnmhdr);
+
+    if (pDispInfo->item.pszText == nullptr || wcslen(pDispInfo->item.pszText) == 0) {
+        return FALSE;
+    }
+
+    CString newName = pDispInfo->item.pszText;
+
+    static constexpr WCHAR INVALID_CHARS[] = L"\\/:*?\"<>|";
+    if (newName.FindOneOf(INVALID_CHARS) != -1) {
+        MessageBox(L"Invalid filename. Do not use: \\ / : * ? \" < > |", L"Error", MB_ICONERROR);
+        ::PostMessage(m_folderView.m_hWnd, TVM_EDITLABEL, 0, reinterpret_cast<LPARAM>(pDispInfo->item.hItem));
+        return FALSE;
+    }
+
+    auto hItem = pDispInfo->item.hItem;
+    auto hParent = m_folderView.GetParentItem(hItem);
+    if (hParent.IsNull()) {
+        return FALSE;
+    }
+
+    if (m_folderView.GetItemType(hParent) != TIT_FOLDER) {
+        return FALSE;
+    }
+
+    auto path = m_folderView.GetItemPath(hParent);
+    if (path.IsEmpty()) {
+        return FALSE;
+    }
+
+    WCHAR fullPath[MAX_PATH]{};
+    PathCombine(fullPath, path, newName);
+
+    if (PathFileExists(fullPath)) {
+        MessageBox(L"A file with this name already exists.", L"Error", MB_ICONERROR);
+        ::PostMessage(m_folderView.m_hWnd, TVM_EDITLABEL, 0, reinterpret_cast<LPARAM>(pDispInfo->item.hItem));
+        return FALSE; // Reject rename
+    }
+
+    CComCritSecLock lock(g_csFile); // lock the critical section to ensure the folder monitor does not notify us
+
+    auto hFile = CreateFile(fullPath, GENERIC_WRITE, 0, nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
+    if (hFile == INVALID_HANDLE_VALUE) {
+        MessageBox(L"Failed to create the file.", L"Error", MB_ICONERROR);
+        return FALSE;
+    }
+
+    auto* data = new TreeItemData{ .type = TIT_FILE, .path = fullPath };
+
+     m_folderView.SetItemData(hItem, reinterpret_cast<DWORD_PTR>(data));
+
+    pDispInfo->item.lParam = reinterpret_cast<LPARAM>(data);
+
+    CloseHandle(hFile);
+
+    return TRUE;
+}
+
 LRESULT MainFrame::OnTVSelChanged(LPNMHDR /*pnmhdr*/)
 {
     auto item = m_folderView.GetSelectedItem();
@@ -518,15 +600,6 @@ LRESULT MainFrame::OnRClick(LPNMHDR pnmh)
     CPoint pt;
     GetCursorPos(&pt);
 
-    auto data = std::bit_cast<TreeItemData*>(item.GetData());
-    auto isFolder = data && data->type == TIT_FOLDER;
-
-    if (isFolder) {
-        popup.ModifyMenu(ID_TREE_DELETE_FILE, MF_BYCOMMAND | MF_ENABLED, ID_TREE_DELETE_FILE, L"Delete Folder");
-    } else {
-        popup.EnableMenuItem(ID_TREE_NEWFILEHERE, MF_GRAYED);
-    }
-
     popup.TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_VERTICAL, pt.x, pt.y, *this);
 
     return 0;
@@ -613,6 +686,21 @@ BOOL MainFrame::IsFolderOpen() const
     return !root.IsNull();
 }
 
+BOOL MainFrame::IsFolderSelected() const
+{
+    if (!m_folderView.IsWindow()) {
+        return FALSE;
+    }
+    auto hItem = m_folderView.GetSelectedItem();
+    if (hItem.IsNull()) {
+        return FALSE;
+    }
+
+    auto type = m_folderView.GetItemType(hItem);
+
+    return type == TIT_FOLDER;
+}
+
 BOOL MainFrame::IsXmlSelected() const
 {
     if (!m_folderView.IsWindow()) {
@@ -624,13 +712,27 @@ BOOL MainFrame::IsXmlSelected() const
         return FALSE;
     }
 
-    auto* data = std::bit_cast<TreeItemData*>(hItem.GetData());
-    if (data == nullptr) {
+    auto path = m_folderView.GetItemPath(hItem);
+
+    CString ext = PathFindExtension(path);
+    return ext.CompareNoCase(L".xml") == 0;
+}
+
+BOOL MainFrame::IsLSXSelected() const
+{
+    if (!m_folderView.IsWindow()) {
         return FALSE;
     }
 
-    CString ext = PathFindExtension(data->path);
-    return ext.CompareNoCase(L".xml") == 0;
+    auto hItem = m_folderView.GetSelectedItem();
+    if (hItem.IsNull()) {
+        return FALSE;
+    }
+
+    auto path = m_folderView.GetItemPath(hItem);
+
+    CString ext = PathFindExtension(path);
+    return ext.CompareNoCase(L".lsx") == 0;
 }
 
 void MainFrame::UpdateTitle()
@@ -758,6 +860,10 @@ BOOL MainFrame::OnIdle()
     UIEnable(ID_FILE_CLOSE, IsFolderOpen());
     UIEnable(ID_FILE_PACKAGE, IsFolderOpen());
     UIEnable(ID_FILE_GLOBE, IsXmlSelected());
+    UIEnable(ID_TREE_NEWFILEHERE, IsFolderSelected());
+    UIEnable(ID_TREE_DELETE_FILE, !IsFolderSelected());
+    UIEnable(ID_TREE_DELETE_FOLDER, IsFolderSelected());
+    UIEnable(ID_TREE_MAKELSFHERE, IsLSXSelected());
 
     if (m_hSplitter.IsWindow()) {
         UISetCheck(ID_VIEW_OUTPUT, m_hSplitter.GetSinglePaneMode() == SPLIT_PANE_NONE);

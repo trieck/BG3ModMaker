@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "FolderMonitor.h"
 
+extern CComCriticalSection g_csFile;
+
 FolderMonitor::FolderMonitor(HWND hWndTarget, const CString& directory) :
     m_hWndTarget(hWndTarget),
     m_directory(directory),
@@ -81,6 +83,8 @@ void FolderMonitor::Monitor()
         if (result != WAIT_OBJECT_0) {  // if not a directory change event then keep waiting
             continue;
         }
+
+        CComCritSecLock lock(g_csFile); // wait to acquire the lock to ensure UI is not being updated
 
         DWORD bytesTransferred = 0;
         if (!GetOverlappedResult(hDir, &ov, &bytesTransferred, FALSE)) {

@@ -34,6 +34,8 @@ public:
     void OnViewStatusBar();
 
     LRESULT OnTVSelChanged(LPNMHDR pnmhdr);
+    LRESULT OnTVBeginLabelEdit(LPNMHDR pnmhdr);
+    LRESULT OnTVEndLabelEdit(LPNMHDR pnmhdr);
     LRESULT OnTVDelete(LPNMHDR pnmhdr);
     LRESULT OnTabActivated(LPNMHDR pnmhdr);
     LRESULT OnTabContextMenu(LPNMHDR pnmh);
@@ -52,6 +54,10 @@ public:
         UPDATE_ELEMENT(ID_FILE_SAVE, UPDUI_MENUPOPUP)
         UPDATE_ELEMENT(ID_FILE_SAVE_ALL, UPDUI_MENUPOPUP)
         UPDATE_ELEMENT(ID_FILE_GLOBE, UPDUI_MENUPOPUP)
+        UPDATE_ELEMENT(ID_TREE_NEWFILEHERE, UPDUI_MENUPOPUP)
+        UPDATE_ELEMENT(ID_TREE_DELETE_FILE, UPDUI_MENUPOPUP)
+        UPDATE_ELEMENT(ID_TREE_DELETE_FOLDER, UPDUI_MENUPOPUP)
+        UPDATE_ELEMENT(ID_TREE_MAKELSFHERE, UPDUI_MENUPOPUP)
     END_UPDATE_UI_MAP()
 
     BEGIN_MSG_MAP(MainFrame)
@@ -75,6 +81,8 @@ public:
         REFLECT_NOTIFY_CODE(TVN_ITEMEXPANDING)
         NOTIFY_CODE_HANDLER_EX(TVN_DELETEITEM, OnTVDelete)
         NOTIFY_CODE_HANDLER_EX(TVN_SELCHANGED, OnTVSelChanged)
+        NOTIFY_CODE_HANDLER_EX(TVN_BEGINLABELEDIT, OnTVBeginLabelEdit)
+        NOTIFY_CODE_HANDLER_EX(TVN_ENDLABELEDIT, OnTVEndLabelEdit)
         NOTIFY_CODE_HANDLER_EX(TBVN_PAGEACTIVATED, OnTabActivated)
         NOTIFY_CODE_HANDLER_EX(TBVN_CONTEXTMENU, OnTabContextMenu)
         NOTIFY_CODE_HANDLER_EX(NM_RCLICK, OnRClick)
@@ -85,7 +93,9 @@ private:
     using FileCallback = std::function<void(const CStringW& filePath)>;
 
     BOOL IsFolderOpen() const;
+    BOOL IsFolderSelected() const;
     BOOL IsXmlSelected() const;
+    BOOL IsLSXSelected() const;
     void AddFile(const CString& filename);
     void IterateFiles(HTREEITEM hItem, const FileCallback& callback);
     void LogMessage(const CString& message);
