@@ -73,5 +73,5 @@ XmlWrapper Resource::toXml() const
         addRegion(root, *val);
     }
 
-    return doc;
+    return XmlWrapper(doc);
 }

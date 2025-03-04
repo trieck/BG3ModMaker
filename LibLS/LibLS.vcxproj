@@ -169,6 +169,7 @@
     <ClInclude Include="Exception.h" />
     <ClInclude Include="FileStream.h" />
     <ClInclude Include="Indexer.h" />
+    <ClInclude Include="Localization.h" />
     <ClInclude Include="StreamBase.h" />
     <ClInclude Include="LSCommon.h" />
     <ClInclude Include="LSFCommon.h" />
@@ -210,6 +211,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Indexer.cpp" />
+    <ClCompile Include="Localization.cpp" />
     <ClCompile Include="LSFCommon.cpp" />
     <ClCompile Include="LSFReader.cpp" />
     <ClCompile Include="LZ4Codec.cpp" />
