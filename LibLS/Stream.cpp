@@ -79,30 +79,31 @@ size_t Stream::write(const char* buf, size_t size)
 
 void Stream::seek(int64_t offset, SeekMode mode)
 {
+    int64_t newPos;
+
     switch (mode) {
     case SeekMode::Begin:
-        if (offset >= 0 && static_cast<size_t>(offset) < m_size) {
+        if (offset >= 0 && static_cast<size_t>(offset) <= m_size) {
             m_pos = offset;
         } else {
-            throw Exception("Invalid seek");
+            throw Exception("Invalid seek (Begin)");
         }
         break;
     case SeekMode::Current:
-        if (offset > 0 && m_pos + offset < m_size) {
-            m_pos += offset;
-        } else if (offset < 0 && static_cast<size_t>(-offset) <= m_pos) {
-            m_pos += offset;
-        } else {
-            throw Exception("Invalid seek");
+        newPos = static_cast<int64_t>(m_pos) + offset;
+        if (newPos < 0 || static_cast<size_t>(newPos) > m_size) {
+            throw Exception("Invalid seek (Current)");
         }
-
+        m_pos = newPos;
         break;
     case SeekMode::End:
-        if (offset > 0 || static_cast<size_t>(-offset) > m_size) {
-            throw Exception("Invalid seek");
+        if (offset > 0) {
+            m_pos = m_size; // clamp
+        } else if (static_cast<size_t>(-offset) > m_size) {
+            throw Exception("Invalid seek (End)");
+        } else {
+            m_pos = m_size + offset;
         }
-
-        m_pos = m_size + offset;
         break;
     }
 }
@@ -138,13 +139,13 @@ size_t Stream::size() const
 Stream Stream::makeStream(uint8Ptr&& ptr, size_t size)
 {
     Stream stream;
-    stream.attach({ std::move(ptr), size });
+    stream.attach({std::move(ptr), size});
     return stream;
 }
 
 Stream Stream::makeStream(const char* buf, size_t size)
 {
-    return { buf, size };
+    return {buf, size};
 }
 
 Stream Stream::makeStream(const ByteBuffer& buf)
@@ -165,7 +166,7 @@ Stream Stream::read(size_t bytes)
 
     read(buf.get(), bytes);
 
-    return { buf.get(), bytes };
+    return {buf.get(), bytes};
 }
 
 std::string Stream::str() const
@@ -195,7 +196,7 @@ void Stream::attach(ByteBuffer buffer)
 
 ByteBuffer Stream::detach()
 {
-    ByteBuffer buffer {std::move(m_bytes), m_size};
+    ByteBuffer buffer{std::move(m_bytes), m_size};
 
     m_pos = 0;
     m_size = 0;
@@ -225,4 +226,3 @@ Stream& Stream::operator=(Stream&& rhs) noexcept
 
     return *this;
 }
-
