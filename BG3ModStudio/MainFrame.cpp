@@ -250,6 +250,12 @@ void MainFrame::OnDeleteFile()
         return;
     }
 
+    auto root = m_folderView.GetRootItem();
+    if (item == root) {
+        AtlMessageBox(*this, L"Cannot delete the root folder.", nullptr, MB_ICONEXCLAMATION);
+        return;
+    }
+
     auto data = std::bit_cast<TreeItemData*>(item.GetData());
     CString filename = data ? data->path : CString();
     if (filename.IsEmpty()) {
@@ -280,6 +286,8 @@ void MainFrame::OnDeleteFile()
     }
 
     CWaitCursor wait;
+    CComCritSecLock lock(g_csFile); // acquire the lock until deletion completes
+        
     hr = op.DeleteItem(filename);
     if (FAILED(hr)) {
         CoMessageBox(*this, hr, nullptr, MB_ICONERROR);
@@ -287,8 +295,11 @@ void MainFrame::OnDeleteFile()
     }
 
     auto hItem = item.m_hTreeItem;
+    auto hParent = m_folderView.GetParentItem(hItem);
 
     m_folderView.DeleteItem(hItem);
+    m_folderView.SelectItem(hParent);
+    m_folderView.EnsureVisible(hParent);
     m_folderView.RedrawWindow();
 }
 
