@@ -74,7 +74,7 @@ struct LSPKHeader16 {
 
     PAKHeader commonHeader() const;
 
-    static PAKHeader fromCommon(const PackageHeaderCommon& h);
+    static LSPKHeader16 fromCommon(const PackageHeaderCommon& h);
 };
 
 struct FileEntry18 {
@@ -115,6 +115,12 @@ struct PackagedFileInfo : PackagedFileInfoCommon
     }
 };
 
+struct PackageBuildInputFile
+{
+    std::string filename;
+    std::string name;
+};
+
 struct PackageBuildData final
 {
     PackageVersion version{PackageHeaderCommon::currentVersion };
@@ -123,7 +129,7 @@ struct PackageBuildData final
     PackageFlags flags{0};
     bool hash{false};
 
-    std::vector<std::string> files;
+    std::vector<PackageBuildInputFile> files;
     bool excludeHidden{true};
     uint8_t priority{0};
 };

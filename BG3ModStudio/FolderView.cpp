@@ -456,3 +456,18 @@ HTREEITEM FolderView::RenameFile(const CString& oldname, const CString& newname)
 
     return hItem;
 }
+
+CString FolderView::GetRootPath() const
+{
+    auto root = GetRootItem();
+    if (root.IsNull()) {
+        return CString();
+    }
+
+    auto data = reinterpret_cast<LPTREEITEMDATA>(GetItemData(root));
+    if (!data) {
+        return CString();
+    }
+
+    return data->path;
+}

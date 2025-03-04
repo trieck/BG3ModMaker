@@ -21,7 +21,7 @@ void PAKWriter::write()
     m_stream.write<uint32_t>(PAK_MAGIC);
 
     auto header = LSPKHeader16::fromCommon(m_metadata);
-    m_stream.write<PAKHeader>(header);
+    m_stream.write<LSPKHeader16>(header);
 
     auto writtenFiles = packFiles();
 
@@ -42,7 +42,7 @@ void PAKWriter::write()
     m_stream.seek(4, SeekMode::Begin);
 
     header = LSPKHeader16::fromCommon(m_metadata);
-    m_stream.write<PAKHeader>(header);
+    m_stream.write<LSPKHeader16>(header);
 }
 
 void PAKWriter::writeCompressedFileList(const std::vector<PackagedFileInfoCommon>& files)
@@ -56,10 +56,10 @@ void PAKWriter::writeCompressedFileList(const std::vector<PackagedFileInfoCommon
 
     auto compressedFileList = LZ4Codec::encode(fileList, 0, fileList.size());
 
-    m_stream.write<size_t>(files.size());
+    m_stream.write<uint32_t>(static_cast<uint32_t>(files.size()));
 
     if (m_build.version > PackageVersion::V13) {
-        m_stream.write<size_t>(compressedFileList.size());
+        m_stream.write<uint32_t>(static_cast<uint32_t>(compressedFileList.size()));
     } else {
         m_metadata.fileListSize = static_cast<uint32_t>(compressedFileList.size() + 4);
     }
@@ -72,17 +72,17 @@ void PAKWriter::writeCompressedFileList(const std::vector<PackagedFileInfoCommon
 void PAKWriter::archiveHash(uint8_t digest[16])
 {
     // MD5 is computed over the contents of all files in an alphabetically sorted order
-    std::ranges::sort(m_build.files, [](const std::string& a, const std::string& b)
+    std::ranges::sort(m_build.files, [](const PackageBuildInputFile& a, const PackageBuildInputFile& b)
     {
-        return std::ranges::lexicographical_compare(a, b);
+        return std::ranges::lexicographical_compare(a.name, b.name);
     });
 
     MD5 md5;
     for (const auto& file : m_build.files) {
         FileStream input;
-        input.open(file.c_str(), "rb");
+        input.open(file.filename.c_str(), "rb");
 
-        auto buffer = input.read(file.size()).detach();
+        auto buffer = input.read(input.size()).detach();
         md5.update(buffer.first.get(), static_cast<uint32_t>(buffer.second));
     }
 
@@ -126,10 +126,10 @@ void PAKWriter::writePadding()
     }
 }
 
-PackagedFileInfoCommon PAKWriter::writeFile(const std::string& filename)
+PackagedFileInfoCommon PAKWriter::writeFile(const PackageBuildInputFile& inputFile)
 {
     FileStream input;
-    input.open(filename.c_str(), "rb");
+    input.open(inputFile.filename.c_str(), "rb");
 
     auto method = CompressionMethod::NONE;
     auto level = LSCompressionLevel::FAST;
@@ -138,7 +138,7 @@ PackagedFileInfoCommon PAKWriter::writeFile(const std::string& filename)
     auto data = input.read(size).detach();
 
     PackagedFileInfoCommon packaged{};
-    packaged.name = filename;
+    packaged.name = inputFile.name;
     packaged.uncompressedSize = static_cast<uint32_t>(size);
     packaged.sizeOnDisk = static_cast<uint32_t>(size);
     packaged.archivePart = 0;

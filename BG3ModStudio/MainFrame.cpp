@@ -162,12 +162,18 @@ void MainFrame::OnFolderPack()
 {
     CWaitCursor wait;
 
+    auto rootPath = m_folderView.GetRootPath();
+    if (rootPath.IsEmpty()) {
+        AtlMessageBox(*this, L"Please open a folder first.", nullptr, MB_ICONEXCLAMATION);
+        return;
+    }
+
+    PreloadTree();
+
     PackageBuildData build{};
     build.version = PackageHeaderCommon::currentVersion;
     build.compression = CompressionMethod::NONE;
     build.compressionLevel = LSCompressionLevel::DEFAULT;
-
-    PreloadTree();
 
     IterateFiles(m_folderView.GetRootItem(), [&](const CString& filePath)
     {
@@ -175,8 +181,14 @@ void MainFrame::OnFolderPack()
         message.Format(L"Adding file:\"%s\" to PAK...", filePath);
         LogMessage(message);
 
-        auto utf8Path = StringHelper::toUTF8(filePath);
-        build.files.emplace_back(utf8Path.GetString());
+        auto relativePath = filePath.Mid(rootPath.GetLength() + 1);
+        relativePath.Replace(_T("\\"), _T("/"));
+
+        PackageBuildInputFile input;
+        input.filename = StringHelper::toUTF8(filePath);
+        input.name = StringHelper::toUTF8(relativePath);
+
+        build.files.emplace_back(input);
     });
 
     PAKWriter writer(build, "d:\\tmp\\test.pak");

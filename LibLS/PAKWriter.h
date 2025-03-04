@@ -14,7 +14,7 @@ public:
 private:
     std::vector<PackagedFileInfoCommon> packFiles();
     void writePadding();
-    PackagedFileInfoCommon writeFile(const std::string& filename);
+    PackagedFileInfoCommon writeFile(const PackageBuildInputFile& inputFile);
     void writeCompressedFileList(const std::vector<PackagedFileInfoCommon>& files);
     void archiveHash(uint8_t digest[16]);
 

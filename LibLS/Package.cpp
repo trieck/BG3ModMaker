@@ -16,16 +16,15 @@ PAKHeader LSPKHeader16::commonHeader() const
     return header;
 }
 
-PAKHeader LSPKHeader16::fromCommon(const PackageHeaderCommon& h)
+LSPKHeader16 LSPKHeader16::fromCommon(const PackageHeaderCommon& h)
 {
-    PAKHeader header{};
+    LSPKHeader16 header{};
     header.version = static_cast<uint32_t>(PackageHeaderCommon::currentVersion);
-    header.dataOffset = h.dataOffset;
     header.fileListOffset = h.fileListOffset;
     header.fileListSize = h.fileListSize;
-    header.numParts = 1;
-    header.flags = h.flags;
+    header.flags = static_cast<uint8_t>(h.flags);
     header.priority = h.priority;
+    header.numParts = static_cast<uint16_t>(h.numParts);
     return header;
 }
 
