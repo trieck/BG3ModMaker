@@ -15,4 +15,3 @@ private:
     DECLARE_HANDLE(HMD5);
     HMD5 m_hMD5{};
 };
-

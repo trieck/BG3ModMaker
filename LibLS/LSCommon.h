@@ -19,10 +19,10 @@ struct PackedVersion
 
     static PackedVersion fromInt64(int64_t packed) {
         return {
-            static_cast<uint32_t>(packed >> 55) & 0x7F,
-            static_cast<uint32_t>((packed >> 47) & 0xFF),
-            static_cast<uint32_t>((packed >> 31) & 0xFFFF),
-            static_cast<uint32_t>(packed & 0x7FFFFFFF)
+            .major= static_cast<uint32_t>(packed >> 55) & 0x7F,
+            .minor= static_cast<uint32_t>((packed >> 47) & 0xFF),
+            .revision= static_cast<uint32_t>((packed >> 31) & 0xFFFF),
+            .build= static_cast<uint32_t>(packed & 0x7FFFFFFF)
         };
     }
 };

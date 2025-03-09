@@ -1,11 +1,11 @@
-
 #include "pch.h"
+
+#include <lz4.h>
 
 #include "Compress.h"
 #include "Exception.h"
 #include "LZ4Codec.h"
 #include "LZ4FrameCompressor.h"
-#include <lz4.h>
 
 bool decompressData(CompressionMethod method, const uint8_t* compressedData, uint32_t compressedSize,
                     uint8Ptr& decompressedData, uint32_t decompressedSize)

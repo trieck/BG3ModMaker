@@ -1,6 +1,5 @@
-
 #include "stdafx.h"
-#include <iostream>
+
 #include <xapian.h>
 
 #include "Indexer.h"

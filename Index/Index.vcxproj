@@ -87,15 +87,14 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>$(SolutionDir)\LibLS</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)LibLS;$(SolutionDir)Utility</AdditionalIncludeDirectories>
       <AdditionalOptions>/wd4996</AdditionalOptions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);Rpcrt4.lib;
-Shlwapi.lib;Ws2_32.lib;Rpcrt4.lib;lz4.lib;%(AdditionalDependencies);Ws2_32.lib;Rpcrt4.lib;LibLS.lib</AdditionalDependencies>
+      <AdditionalDependencies>lz4.lib;%(AdditionalDependencies);Ws2_32.lib;Rpcrt4.lib;LibLS.lib;Utility.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(VcpkgManifestRoot)\vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\lib;$(SolutionDir)$(IntDir)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -108,7 +107,7 @@ Shlwapi.lib;Ws2_32.lib;Rpcrt4.lib;lz4.lib;%(AdditionalDependencies);Ws2_32.lib;R
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>$(SolutionDir)\LibLS</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)LibLS;$(SolutionDir)Utility</AdditionalIncludeDirectories>
       <AdditionalOptions>/wd4996</AdditionalOptions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
@@ -117,8 +116,7 @@ Shlwapi.lib;Ws2_32.lib;Rpcrt4.lib;lz4.lib;%(AdditionalDependencies);Ws2_32.lib;R
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);Rpcrt4.lib;
-Shlwapi.lib;Ws2_32.lib;Rpcrt4.lib;lz4.lib;%(AdditionalDependencies);Ws2_32.lib;Rpcrt4.lib;LibLS.lib</AdditionalDependencies>
+      <AdditionalDependencies>lz4.lib;%(AdditionalDependencies);Ws2_32.lib;Rpcrt4.lib;LibLS.lib;Utility.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(VcpkgManifestRoot)\vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\lib;$(SolutionDir)$(IntDir)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -128,7 +126,7 @@ Shlwapi.lib;Ws2_32.lib;Rpcrt4.lib;lz4.lib;%(AdditionalDependencies);Ws2_32.lib;R
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)\LibLS</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)LibLS;$(SolutionDir)Utility</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -138,7 +136,7 @@ Shlwapi.lib;Ws2_32.lib;Rpcrt4.lib;lz4.lib;%(AdditionalDependencies);Ws2_32.lib;R
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(VcpkgManifestRoot)\vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\lib;$(SolutionDir)$(IntDir)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>lz4.lib;%(AdditionalDependencies);Ws2_32.lib;Rpcrt4.lib;LibLS.lib</AdditionalDependencies>
+      <AdditionalDependencies>lz4.lib;%(AdditionalDependencies);Ws2_32.lib;Rpcrt4.lib;LibLS.lib;Utility.lib</AdditionalDependencies>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
@@ -152,7 +150,7 @@ Shlwapi.lib;Ws2_32.lib;Rpcrt4.lib;lz4.lib;%(AdditionalDependencies);Ws2_32.lib;R
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)\LibLS</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)LibLS;$(SolutionDir)Utility</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -164,7 +162,7 @@ Shlwapi.lib;Ws2_32.lib;Rpcrt4.lib;lz4.lib;%(AdditionalDependencies);Ws2_32.lib;R
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(VcpkgManifestRoot)\vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\lib;$(SolutionDir)$(IntDir)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>lz4.lib;%(AdditionalDependencies);Ws2_32.lib;Rpcrt4.lib;LibLS.lib;lz4.lib;%(AdditionalDependencies);Ws2_32.lib;Rpcrt4.lib;LibLS.lib</AdditionalDependencies>
+      <AdditionalDependencies>lz4.lib;%(AdditionalDependencies);Ws2_32.lib;Rpcrt4.lib;LibLS.lib;Utility.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -187,6 +185,9 @@ Shlwapi.lib;Ws2_32.lib;Rpcrt4.lib;lz4.lib;%(AdditionalDependencies);Ws2_32.lib;R
   <ItemGroup>
     <ProjectReference Include="..\LibLS\LibLS.vcxproj">
       <Project>{af1b8ff5-237d-4829-ae3d-528e05a309dc}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Utility\Utility.vcxproj">
+      <Project>{85ecd5e2-d1ac-4ffb-ae62-aa629f6f7109}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

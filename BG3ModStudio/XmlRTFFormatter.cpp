@@ -1,54 +1,40 @@
 #include "stdafx.h"
+#include "XmlFormat.h"
 #include "XmlRTFFormatter.h"
 
 namespace { // anonymous
 
-    enum XmlColor {
-        COLOR_TEXT = 1,       // Default text
-        COLOR_TAG,            // <tag>
-        COLOR_ATTRIBUTE,      // attribute_name=
-        COLOR_VALUE,          // "attribute_value"
-        COLOR_COMMENT,        // <!-- comment -->
-        COLOR_CDATA,          // <![CDATA[...]]>
-        COLOR_DOCTYPE         // <!DOCTYPE ...>
-    };
-
-
-    XmlColor GetColor(XmlTokenType type)
-    {
-        switch (type) {
-        case XmlTokenType::TT_TAG_NAME:
-            return COLOR_TAG;
-        case XmlTokenType::TT_ATTRIBUTE_NAME:
-            return COLOR_ATTRIBUTE;
-        case XmlTokenType::TT_ATTRIBUTE_VALUE:
-            return COLOR_VALUE;
-        case XmlTokenType::TT_COMMENT:
-            return COLOR_COMMENT;
-        case XmlTokenType::TT_CDATA:
-            return COLOR_CDATA;
-        case XmlTokenType::TT_DOCTYPE:
-            return COLOR_DOCTYPE;
-        default:
-            return COLOR_TEXT;
-        }
-    };
+CStringA GetXmlRTFColor(XmlColor type)
+{
+    auto color = XmlToColorRef(type);
+    return RTFStreamFormatter::GetRTFColor(color);
+}
 
 }  // anonymous
 
+CStringA XmlRTFFormatter::GetDefaultFormat() const
+{
+    CStringA output;
+
+    output.Format("{\\rtf\\ansi\\deff0{\\fonttbl{\\f0 Cascadia Mono;\\f1 Courier New;}}"
+        "{\\colortbl;"
+        "%s;%s;%s;%s;%s;%s;%s"
+        ";}\r\n"
+        "\\cf1\r\n", 
+        GetXmlRTFColor(COLOR_TEXT),
+        GetXmlRTFColor(COLOR_TAG),
+        GetXmlRTFColor(COLOR_ATTRIBUTE),
+        GetXmlRTFColor(COLOR_VALUE),
+        GetXmlRTFColor(COLOR_COMMENT),
+        GetXmlRTFColor(COLOR_CDATA),
+        GetXmlRTFColor(COLOR_DOCTYPE));
+
+    return output;
+}
+
 CStringA XmlRTFFormatter::Format(UTF8Stream& stream)
 {
-    CStringA output("{\\rtf\\ansi\\deff0{\\fonttbl{\\f0 Cascadia Mono;\\f1 Courier New;}}"
-        "{\\colortbl;"
-        "\\red0\\green0\\blue0;"      // COLOR_TEXT (black)
-        "\\red0\\green0\\blue200;"    // COLOR_TAG (blue)
-        "\\red200\\green0\\blue0;"    // COLOR_ATTRIBUTE (red)
-        "\\red0\\green128\\blue0;"    // COLOR_VALUE (green)
-        "\\red128\\green128\\blue128;"// COLOR_COMMENT (gray)
-        "\\red200\\green0\\blue200;"  // COLOR_CDATA (purple)
-        "\\red128\\green0\\blue0;"    // COLOR_DOCTYPE (dark red)
-        ";}\r\n"
-        "\\cf1\r\n");
+    CStringA output = GetDefaultFormat();
 
     auto strText = stream.ReadString();
 
@@ -56,8 +42,13 @@ CStringA XmlRTFFormatter::Format(UTF8Stream& stream)
 
     COLORREF lastColor = COLOR_TEXT;
 
-    while (auto token = m_tokenizer.GetNextToken()) {
-        auto color = GetColor(token->GetType());
+    for (;;) {
+        auto token = m_tokenizer.GetNextToken();
+        if (token.GetType() == XmlTokenType::TT_EMPTY) {
+            break;
+        }
+
+        auto color = XmlGetColor(token.GetType());
 
         if (lastColor != color) {
             CStringW strColor;
@@ -65,7 +56,7 @@ CStringA XmlRTFFormatter::Format(UTF8Stream& stream)
             output += strColor;
         }
 
-        output += EscapeRTF(token->GetValue());
+        output += EscapeRTF(token.GetValue());
 
         lastColor = color;
     }

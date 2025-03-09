@@ -1,8 +1,6 @@
 #include "pch.h"
-#include "Stream.h"
-
-#include <algorithm>
 #include "Exception.h"
+#include "Stream.h"
 
 static auto constexpr DEFAULT_BUFFER_SIZE = 4096;
 

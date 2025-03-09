@@ -12,11 +12,6 @@ static constexpr auto TITLE_BAR_PADDING = 8;
 
 LRESULT OutputWindow::OnCreate(LPCREATESTRUCT)
 {
-    (void)SetWindowTheme(m_hWnd, L"explorer", nullptr);
-
-    BOOL disable = FALSE;
-    (void)DwmSetWindowAttribute(m_hWnd, DWMWA_WINDOW_CORNER_PREFERENCE, &disable, sizeof(disable));
-
     if (!m_listView.Create(*this, rcDefault, nullptr,
                            WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | LVS_REPORT |
                            LVS_SINGLESEL | LVS_SORTASCENDING | LVS_NOSORTHEADER,

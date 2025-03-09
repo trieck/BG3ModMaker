@@ -1,8 +1,7 @@
 #include "stdafx.h"
 #include "FolderView.h"
-
-#include "ShellHelper.h"
 #include "resources/resource.h"
+#include "ShellHelper.h"
 
 LRESULT FolderView::OnCreate(LPCREATESTRUCT)
 {

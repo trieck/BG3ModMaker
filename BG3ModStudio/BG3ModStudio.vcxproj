@@ -79,7 +79,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)\LibLS;$(ProjectDir)TabView\TabViewLib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\LibLS;$(ProjectDir)TabView\TabViewLib;$(SolutionDir)\Utility</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalUsingDirectories>%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
@@ -90,7 +90,7 @@
       <AdditionalLibraryDirectories>$(VcpkgManifestRoot)\vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\lib;$(SolutionDir)$(IntDir);$(ProjectDir)TabView\$(ProcessorArchitecture)\$(Configuration)</AdditionalLibraryDirectories>
       <AdditionalManifestDependencies>
       </AdditionalManifestDependencies>
-      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);;TabViewLib.lib;TabViewLib.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);lz4.lib;%(AdditionalDependencies);Ws2_32.lib;Rpcrt4.lib;LibLS.lib;TabViewLib.lib;TabViewLib.lib;LibLS.lib;Utility.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -101,7 +101,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)\LibLS;$(ProjectDir)TabView\TabViewLib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\LibLS;$(ProjectDir)TabView\TabViewLib;$(SolutionDir)\Utility</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalUsingDirectories>%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
@@ -114,7 +114,7 @@
       <AdditionalLibraryDirectories>$(VcpkgManifestRoot)\vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\lib;$(SolutionDir)$(IntDir);$(ProjectDir)TabView\$(ProcessorArchitecture)\$(Configuration)</AdditionalLibraryDirectories>
       <AdditionalManifestDependencies>
       </AdditionalManifestDependencies>
-      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);;TabViewLib.lib;TabViewLib.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);lz4.lib;%(AdditionalDependencies);Ws2_32.lib;Rpcrt4.lib;LibLS.lib;TabViewLib.lib;TabViewLib.lib;LibLS.lib;Utility.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -123,7 +123,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)\LibLS;$(ProjectDir)TabView\TabViewLib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\LibLS;$(ProjectDir)TabView\TabViewLib;$(SolutionDir)\Utility</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalUsingDirectories>%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
@@ -131,7 +131,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);lz4.lib;%(AdditionalDependencies);Ws2_32.lib;Rpcrt4.lib;LibLS.lib;TabViewLib.lib;TabViewLib.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);lz4.lib;%(AdditionalDependencies);Ws2_32.lib;Rpcrt4.lib;LibLS.lib;TabViewLib.lib;TabViewLib.lib;LibLS.lib;Utility.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(VcpkgManifestRoot)\vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\lib;$(SolutionDir)$(IntDir);$(ProjectDir)TabView\$(ProcessorArchitecture)\$(Configuration)</AdditionalLibraryDirectories>
       <AdditionalManifestDependencies>
       </AdditionalManifestDependencies>
@@ -145,7 +145,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)\LibLS;$(ProjectDir)TabView\TabViewLib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\LibLS;$(ProjectDir)TabView\TabViewLib;$(SolutionDir)\Utility</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalUsingDirectories>%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
@@ -155,7 +155,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);lz4.lib;Ws2_32.lib;Rpcrt4.lib;LibLS.lib;TabViewLib.lib;TabViewLib.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);lz4.lib;%(AdditionalDependencies);Ws2_32.lib;Rpcrt4.lib;LibLS.lib;TabViewLib.lib;TabViewLib.lib;LibLS.lib;Utility.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(VcpkgManifestRoot)\vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\lib;$(SolutionDir)$(IntDir);$(ProjectDir)TabView\$(ProcessorArchitecture)\$(Configuration)</AdditionalLibraryDirectories>
       <AdditionalManifestDependencies>
       </AdditionalManifestDependencies>
@@ -167,6 +167,7 @@
     <ClInclude Include="COMError.h" />
     <ClInclude Include="FileOperation.h" />
     <ClInclude Include="FolderMonitor.h" />
+    <ClInclude Include="FormatToken.h" />
     <ClInclude Include="OutputWindow.h" />
     <ClInclude Include="SelectObject.h" />
     <ClInclude Include="DefaultRTFFormatter.h" />
@@ -193,7 +194,10 @@
     <ClInclude Include="TextTokenizer.h" />
     <ClInclude Include="UTF8Stream.h" />
     <ClInclude Include="Util.h" />
+    <ClInclude Include="XmlFormat.h" />
+    <ClInclude Include="XmlLineFormatter.h" />
     <ClInclude Include="XmlRTFFormatter.h" />
+    <ClInclude Include="XmlToken.h" />
     <ClInclude Include="XmlTokenizer.h" />
   </ItemGroup>
   <ItemGroup>
@@ -227,12 +231,18 @@
     <ClCompile Include="TextTokenizer.cpp" />
     <ClCompile Include="UTF8Stream.cpp" />
     <ClCompile Include="Util.cpp" />
+    <ClCompile Include="XmlFormat.cpp" />
+    <ClCompile Include="XmlLineFormatter.cpp" />
     <ClCompile Include="XmlRTFFormatter.cpp" />
+    <ClCompile Include="XmlToken.cpp" />
     <ClCompile Include="XmlTokenizer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\LibLS\LibLS.vcxproj">
       <Project>{af1b8ff5-237d-4829-ae3d-528e05a309dc}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Utility\Utility.vcxproj">
+      <Project>{85ecd5e2-d1ac-4ffb-ae62-aa629f6f7109}</Project>
     </ProjectReference>
     <ProjectReference Include="TabView\TabViewLib\TabViewLib.vcxproj">
       <Project>{bfd0fb0e-6477-4bb4-91b3-c372d43ac8c8}</Project>

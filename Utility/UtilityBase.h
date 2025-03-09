@@ -2,7 +2,9 @@
 
 #include <array>
 #include <cstdint>
+#include <exception>
 #include <filesystem>
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <ranges>

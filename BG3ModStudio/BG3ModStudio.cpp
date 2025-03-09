@@ -1,6 +1,6 @@
 #include "stdafx.h"
-#include "MainFrame.h"
 #include "BG3ModStudio.h"
+#include "MainFrame.h"
 #include "MessageLoopEx.h"
 #include "TabView.h"
 

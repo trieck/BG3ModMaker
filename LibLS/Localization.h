@@ -1,7 +1,5 @@
 #pragma once
 
-#include "XmlWrapper.h"
-
 static auto constexpr LOCA_SIGNATURE = 0x41434F4C; // LOCA
 
 #pragma pack(push, 1)
@@ -21,8 +19,6 @@ struct LocaEntry
 };
 
 #pragma pack(pop)
-
-// TODO: KeyString ??
 
 struct LocalizedText
 {

@@ -10,7 +10,9 @@ LSFReader::~LSFReader()
 = default;
 
 namespace { // anonymous namespace
-    constexpr char LSF_MAGIC[4] = {'L', 'S', 'O', 'F'};
+
+constexpr char LSF_MAGIC[4] = {'L', 'S', 'O', 'F'};
+
 } // anonymous namespace
 
 Resource::Ptr LSFReader::read(const ByteBuffer& info)
@@ -87,7 +89,7 @@ void LSFReader::readHeader()
 
         // Workaround for merged LSF files with missing engine version number
         if (m_gameVersion.major == 0) {
-            m_gameVersion = { .major = 4, .minor = 0, .revision = 9, .build = 0 };
+            m_gameVersion = {.major = 4, .minor = 0, .revision = 9, .build = 0};
         }
     }
 
@@ -484,7 +486,7 @@ NodeAttribute LSFReader::readAttribute(AttributeType type, Stream& reader)
     return attr;
 }
 
-void LSFReader::readNode(const LSFNodeInfo& defn, Node& node, Stream& attributeReader)
+void LSFReader::readNode(const LSFNodeInfo& defn, RBNode& node, Stream& attributeReader)
 {
     node.name = m_names[defn.nameIndex][defn.nameOffset];
 
@@ -520,7 +522,7 @@ void LSFReader::readRegions(const Resource::Ptr& resource)
             region->regionName = region->name;
             resource->regions[region->regionName] = std::move(region);
         } else {
-            auto node = std::make_shared<Node>();
+            auto node = std::make_shared<RBNode>();
             readNode(defn, *node, attrReader);
             node->keyAttribute = defn.keyAttribute;
             node->parent = m_nodeInstances[defn.parentIndex];
@@ -531,7 +533,7 @@ void LSFReader::readRegions(const Resource::Ptr& resource)
 }
 
 Stream LSFReader::decompress(uint32_t sizeOnDisk, uint32_t uncompressedSize, std::string debugDumpTo,
-                                  bool allowChunked)
+                             bool allowChunked)
 {
     if (sizeOnDisk == 0 && uncompressedSize != 0) {
         auto stream = m_stream.read(uncompressedSize);

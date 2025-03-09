@@ -1,5 +1,5 @@
 #pragma once
-#include "framework.h"
+#include "UtilityBase.h"
 
 /////////////////////////////////////////////////////////////////////////////
 class ATL_NO_VTABLE UTF8Stream : public CComObjectRoot, public IStream

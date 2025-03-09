@@ -45,4 +45,3 @@ private:
     LPCSTR m_current;
     bool m_isEnd;
 };
-

@@ -1,8 +1,8 @@
 #include "pch.h"
 
 #include <nlohmann/json.hpp>
-#include <unordered_set>
 #include <regex>
+#include <unordered_set>
 #include <xapian.h>
 
 #include "Indexer.h"
@@ -164,7 +164,7 @@ void Indexer::indexLSXFile(const PackagedFileInfo& file)
     }
 }
 
-void Indexer::indexNode(const std::string& filename, const Node::Ptr& node)
+void Indexer::indexNode(const std::string& filename, const RBNode::Ptr& node)
 {
     std::unordered_set<std::string> terms;
 
@@ -207,7 +207,7 @@ void Indexer::indexNode(const std::string& filename, const Node::Ptr& node)
     m_db->add_document(xdoc);
 }
 
-void Indexer::indexNodes(const std::string& filename, const std::vector<Node::Ptr>& nodes)
+void Indexer::indexNodes(const std::string& filename, const std::vector<RBNode::Ptr>& nodes)
 {
     for (const auto& node : nodes) {
         indexNode(filename, node);

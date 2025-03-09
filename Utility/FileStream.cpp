@@ -148,5 +148,3 @@ bool FileStream::isOpen() const
 {
     return m_file != INVALID_HANDLE_VALUE;
 }
-
-

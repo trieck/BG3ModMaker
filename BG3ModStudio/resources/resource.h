@@ -15,6 +15,7 @@
 #define IDI_NOBOM                       109
 #define IDI_BOM                         110
 #define ID_FILE_GLOBE                   114
+#define IDC_RICHEDIT                    115
 #define ATL_IDC_TAB_CONTROL             0x3020
 #define ID_APPLY_NOW                    0x3021
 #define ID_WIZBACK                      0x3023

@@ -197,7 +197,7 @@ struct LSFAttributeInfo
     int32_t nextAttributeIndex;     // index of the next attribute of the node, -1 if last
 };
 
-struct Region : Node
+struct Region : RBNode
 {
     std::string regionName;
     using Ptr = std::shared_ptr<Region>;

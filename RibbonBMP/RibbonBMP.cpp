@@ -1,6 +1,5 @@
 #include <windows.h>
 #include <gdiplus.h>
-#include <cstdio>
 #include <iostream>
 
 #include "Exception.h"

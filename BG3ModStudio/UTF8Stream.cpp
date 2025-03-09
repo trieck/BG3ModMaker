@@ -1,7 +1,6 @@
 #include "stdafx.h"
-#include "UTF8Stream.h"
-
 #include "StringHelper.h"
+#include "UTF8Stream.h"
 
 HRESULT UTF8Stream::Reset() const
 {

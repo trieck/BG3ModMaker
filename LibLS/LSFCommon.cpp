@@ -1,14 +1,13 @@
 #include "pch.h"
 
 #include <pugixml.hpp>
-#include <ranges>
 
 #include "LSFCommon.h"
 
 namespace { // anonymous namespace
-    void addNodes(pugi::xml_node xmlNode, const std::vector<Node::Ptr>& nodes);
+    void addNodes(pugi::xml_node xmlNode, const std::vector<RBNode::Ptr>& nodes);
 
-    void addNode(pugi::xml_node xmlNode, const Node::Ptr& node)
+    void addNode(pugi::xml_node xmlNode, const RBNode::Ptr& node)
     {
         auto nodeNode = xmlNode.append_child("node");
         nodeNode.append_attribute("id") = node->name.c_str();
@@ -28,7 +27,7 @@ namespace { // anonymous namespace
         }
     }
 
-    void addNodes(pugi::xml_node xmlNode, const std::vector<Node::Ptr>& nodes)
+    void addNodes(pugi::xml_node xmlNode, const std::vector<RBNode::Ptr>& nodes)
     {
         for (const auto& node : nodes) {
             addNode(xmlNode, node);

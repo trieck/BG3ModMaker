@@ -1,12 +1,12 @@
 #pragma once
 
 #include "IFileView.h"
+#include "RTFFormatterRegistry.h"
 #include "StreamBase.h"
 #include "UTF8Stream.h"
+#include "XmlLineFormatter.h"
 
-class TextFileView :
-    public CWindowImpl<TextFileView, CRichEditCtrl>,
-    public IFileView
+class TextFileView : public CWindowImpl<TextFileView>, public IFileView
 {
 public:
     using Base = CWindowImpl;
@@ -14,11 +14,22 @@ public:
 
     BEGIN_MSG_MAP(TextFileView)
         MSG_WM_CREATE(OnCreate)
+        MSG_WM_SIZE(OnSize)
+        MSG_WM_TIMER(OnTimer)
+        COMMAND_CODE_HANDLER(EN_CHANGE, OnEditChange)
+        ALT_MSG_MAP(1)
     END_MSG_MAP()
 
-    DECLARE_WND_SUPERCLASS(NULL, CRichEditCtrl::GetWndClassName())
+    DECLARE_WND_SUPERCLASS(L"BG3_TextFileView", nullptr)
+
+    TextFileView() : m_richEdit(this, 1)
+    {
+    }
 
     LRESULT OnCreate(LPCREATESTRUCT pcs);
+    LRESULT OnEditChange(UINT uNotifyCode, int nID, CWindow wndCtl, BOOL& bHandled);
+    void OnSize(UINT nType, CSize size);
+    void OnTimer(UINT_PTR nIDEvent);
 
     // IFileView
     BOOL Create(HWND parent, _U_RECT rect = nullptr, DWORD dwStyle = 0, DWORD dwStyleEx = 0) override;
@@ -40,8 +51,12 @@ private:
     static BOOL SkipBOM(LPSTR& str, size_t size);
     BOOL WriteBOM(StreamBase& stream) const;
     BOOL Flush();
+    void ApplySyntaxHighlight();
 
     CString m_path;
-    FileEncoding m_encoding{ UNKNOWN };
+    FileEncoding m_encoding{UNKNOWN};
     CComObjectStack<UTF8Stream> m_stream;
+    CContainedWindowT<CRichEditCtrl> m_richEdit;
+    RTFStreamFormatter::Ptr m_formatter;
+    XmlLineFormatter m_lineFormatter;   // This is temporary
 };

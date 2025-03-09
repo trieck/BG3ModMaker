@@ -29,6 +29,7 @@
 #include <atlwin.h>
 #include <comdef.h>
 
+#include <array>
 #include <bit>
 #include <deque>
 #include <functional>
@@ -39,12 +40,6 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-
-#ifdef _UNICODE
-using tstring = std::wstring;
-#else
-using tstring = std::string;
-#endif
 
 #define MAKE_TREEITEM(n, t) \
     CTreeItem(((LPNMTREEVIEW)(n))->itemNew.hItem, t)
@@ -83,8 +78,6 @@ extern CAppModule _Module;
 
 #if defined _M_IX86
 #pragma comment(linker, "/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")
-#elif defined _M_IA64
-#pragma comment(linker, "/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='ia64' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #elif defined _M_X64
 #pragma comment(linker, "/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='amd64' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #else

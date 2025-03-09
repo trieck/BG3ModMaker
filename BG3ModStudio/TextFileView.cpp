@@ -2,81 +2,129 @@
 
 #include "Exception.h"
 #include "FileStream.h"
-#include "RTFFormatterRegistry.h"
+#include "resources/resource.h"
+#include "ScopeGuard.h"
 #include "TextFileView.h"
 #include "UTF8Stream.h"
+#include "XmlLineFormatter.h"
 
 namespace { // anonymous
 
-    DWORD CALLBACK StreamInCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG* pcb)
-    {
-        auto** pptext = reinterpret_cast<LPCSTR*>(dwCookie);
+constexpr auto EDIT_TIMER_ID = 0xFEED;
+constexpr auto EDIT_TIMER_DELAY = 50;
+constexpr auto EDIT_TIMER_AUTO_KILL_ID = 0xDEAD;
+constexpr auto EDIT_TIMER_AUTO_KILL = 5000;
 
-        if (pptext == nullptr || *pptext == nullptr) {
-            return E_POINTER;
-        }
+DWORD CALLBACK StreamInCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG* pcb)
+{
+    auto** pptext = reinterpret_cast<LPCSTR*>(dwCookie);
 
-        auto strSize = strlen(*pptext);
+    if (pptext == nullptr || *pptext == nullptr) {
+        return E_POINTER;
+    }
 
-        if (strSize == 0) {
-            *pcb = 0;
-            return 0;
-        }
+    auto strSize = strlen(*pptext);
 
-        auto sz = std::min<LONG>(static_cast<LONG>(strSize), cb);
-
-        memcpy(pbBuff, *pptext, sz);
-
-        *pptext += sz;
-
-        *pcb = sz;
-
+    if (strSize == 0) {
+        *pcb = 0;
         return 0;
     }
 
-    DWORD CALLBACK StreamOutCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG* pcb)
-    {
-        auto** ppStream = reinterpret_cast<IStream**>(dwCookie);
+    auto sz = std::min<LONG>(static_cast<LONG>(strSize), cb);
 
-        if (ppStream == nullptr || *ppStream == nullptr) {
-            return E_POINTER;
-        }
+    memcpy(pbBuff, *pptext, sz);
 
-        if (cb == 0) {
-            *pcb = 0;
-            return 0;
-        }
+    *pptext += sz;
 
-        auto hr = (*ppStream)->Write(pbBuff, cb, reinterpret_cast<ULONG*>(pcb));
-        if (FAILED(hr)) {
-            return hr;
-        }
+    *pcb = sz;
 
-        if (*pcb == 0) {
-            return E_FAIL;
-        }
+    return 0;
+}
 
+DWORD CALLBACK StreamOutCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG* pcb)
+{
+    auto** ppStream = reinterpret_cast<IStream**>(dwCookie);
+
+    if (ppStream == nullptr || *ppStream == nullptr) {
+        return E_POINTER;
+    }
+
+    if (cb == 0) {
+        *pcb = 0;
         return 0;
     }
 
-    auto constexpr BUFFER_SIZE = 4096;
+    auto hr = (*ppStream)->Write(pbBuff, cb, reinterpret_cast<ULONG*>(pcb));
+    if (FAILED(hr)) {
+        return hr;
+    }
 
-}   // namespace
+    if (*pcb == 0) {
+        return E_FAIL;
+    }
+
+    return 0;
+}
+
+auto constexpr BUFFER_SIZE = 4096;
+} // namespace
 
 LRESULT TextFileView::OnCreate(LPCREATESTRUCT pcs)
 {
-    auto lRet = DefWindowProc();
+    DWORD dwStyle = WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_HSCROLL |
+        ES_AUTOHSCROLL | ES_AUTOVSCROLL | ES_MULTILINE
+        | ES_NOOLEDRAGDROP;
 
-    SetModify(FALSE);
+    if (!m_richEdit.Create(*(this), rcDefault, nullptr, dwStyle, 0, IDC_RICHEDIT)) {
+        ATLTRACE("Unable to create rich edit control.\n");
+        return -1;
+    }
 
-    return lRet;
+    m_richEdit.SendMessage(EM_SETEVENTMASK, 0, ENM_CHANGE);
+
+    return 0;
+}
+
+LRESULT TextFileView::OnEditChange(UINT uNotifyCode, int nID, CWindow wndCtl, BOOL& bHandled)
+{
+    ATLASSERT(nID == IDC_RICHEDIT);
+    ATLASSERT(wndCtl == m_richEdit);
+
+    KillTimer(EDIT_TIMER_ID);
+    SetTimer(EDIT_TIMER_ID, EDIT_TIMER_DELAY);
+
+    KillTimer(EDIT_TIMER_AUTO_KILL_ID);
+    SetTimer(EDIT_TIMER_AUTO_KILL_ID, EDIT_TIMER_AUTO_KILL, nullptr);
+
+    return 0;
+}
+
+void TextFileView::OnSize(UINT nType, CSize size)
+{
+    if (m_richEdit.IsWindow()) {
+        m_richEdit.MoveWindow(0, 0, size.cx, size.cy, TRUE);
+    }
+}
+
+void TextFileView::OnTimer(UINT_PTR nIDEvent)
+{
+    switch (nIDEvent) {
+    case EDIT_TIMER_ID:
+        KillTimer(EDIT_TIMER_ID);
+        ApplySyntaxHighlight();
+        break;
+    case EDIT_TIMER_AUTO_KILL_ID:
+        KillTimer(EDIT_TIMER_ID);
+        KillTimer(EDIT_TIMER_AUTO_KILL_ID);
+        break;
+    default:
+        break;
+    }
 }
 
 BOOL TextFileView::Create(HWND parent, _U_RECT rect, DWORD dwStyle, DWORD dwStyleEx)
 {
-    dwStyle |= WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_HSCROLL |
-        ES_AUTOHSCROLL | ES_AUTOVSCROLL | ES_MULTILINE
-        | ES_NOOLEDRAGDROP;
+    dwStyle |= WS_CHILD | WS_VISIBLE;
 
     auto hWnd = Base::Create(parent, rect, nullptr, dwStyle, dwStyleEx);
 
@@ -109,7 +157,7 @@ BOOL TextFileView::LoadFile(const CString& path)
         read -= 3;
         m_encoding = UTF8BOM;
     } else {
-        m_encoding = UTF8;    // nothing else supported for now
+        m_encoding = UTF8; // nothing else supported for now
     }
 
     Write(pb, read);
@@ -123,9 +171,11 @@ BOOL TextFileView::LoadFile(const CString& path)
         Write(buf, read);
     }
 
+    m_formatter = RTFFormatterRegistry::GetInstance().GetFormatter(path);
+
     Flush();
 
-    SetModify(FALSE);
+    m_richEdit.SetModify(FALSE);
 
     return TRUE;
 }
@@ -140,7 +190,7 @@ BOOL TextFileView::SaveFile()
         return FALSE;
     }
 
-    SetModify(FALSE);
+    m_richEdit.SetModify(FALSE);
 
     return TRUE;
 }
@@ -154,7 +204,7 @@ BOOL TextFileView::SaveFileAs(const CString& path)
     es.dwCookie = reinterpret_cast<DWORD_PTR>(&pStream);
     es.pfnCallback = StreamOutCallback;
 
-    StreamOut((CP_UTF8 << 16) | SF_USECODEPAGE | SF_TEXT, es);
+    m_richEdit.StreamOut((CP_UTF8 << 16) | SF_USECODEPAGE | SF_TEXT, es);
 
     if (es.dwError != NOERROR) {
         ATLTRACE("Failed to stream in text.\n");
@@ -172,11 +222,11 @@ BOOL TextFileView::SaveFileAs(const CString& path)
 
     FileStream file;
     try {
-        file.open(strPath, "wb");   
+        file.open(strPath, "wb");
     } catch (const Exception& e) {
         ATLTRACE("Failed to open file: %s\n", e.what());
         return FALSE;
-    }    
+    }
 
     WriteBOM(file);
 
@@ -209,7 +259,7 @@ BOOL TextFileView::Destroy()
 
 BOOL TextFileView::IsDirty() const
 {
-    return GetModify();
+    return m_richEdit.GetModify();
 }
 
 const CString& TextFileView::GetPath() const
@@ -287,9 +337,7 @@ BOOL TextFileView::WriteBOM(StreamBase& stream) const
 
 BOOL TextFileView::Flush()
 {
-    auto formatter = RTFFormatterRegistry::GetInstance().GetFormatter(m_path);
-
-    auto str = formatter->Format(m_stream);
+    auto str = m_formatter->Format(m_stream);
 
     LPCSTR pStr = str.GetString();
 
@@ -297,16 +345,137 @@ BOOL TextFileView::Flush()
     es.dwCookie = reinterpret_cast<DWORD_PTR>(&pStr);
     es.pfnCallback = StreamInCallback;
 
-    StreamIn((CP_UTF8 << 16) | SF_USECODEPAGE | SF_RTF, es);
+    m_richEdit.StreamIn((CP_UTF8 << 16) | SF_USECODEPAGE | SF_RTF, es);
     if (es.dwError != NOERROR) {
         ATLTRACE("Failed to stream in text.\n");
         return FALSE;
     }
 
     CPoint origin;
-    SetScrollPos(&origin);
+    m_richEdit.SetScrollPos(&origin);
 
     auto hr = m_stream.Reset();
 
     return SUCCEEDED(hr);
+}
+
+
+void TextFileView::ApplySyntaxHighlight()
+{
+    CString text;
+    m_richEdit.GetWindowText(text);
+
+    BOOL isDirty;
+    ScopeGuardSimple modifyGuard(
+        [&]() { isDirty = m_richEdit.GetModify(); },
+        [&]() { m_richEdit.SetModify(isDirty); });
+
+    DWORD prevMask = m_richEdit.GetEventMask();
+
+    ScopeGuard maskGuard(m_richEdit, 
+        &CRichEditCtrl::SetEventMask, 
+        &CRichEditCtrl::SetEventMask,
+        std::make_tuple(prevMask & ~ENM_CHANGE),
+        std::make_tuple(prevMask));
+
+    ScopeGuard redraw(m_richEdit,
+        &CRichEditCtrl::SetRedraw,
+        &CRichEditCtrl::SetRedraw,
+        std::make_tuple(FALSE),
+        std::make_tuple(TRUE));
+ 
+    if (text.IsEmpty()) {
+        auto format = m_formatter->GetDefaultFormat();
+        auto pFormat = format.GetString();
+        EDITSTREAM es{};
+        es.dwCookie = reinterpret_cast<DWORD_PTR>(&pFormat);
+        es.pfnCallback = StreamInCallback;
+        m_richEdit.StreamIn((CP_UTF8 << 16) | SF_USECODEPAGE | SF_RTF, es);
+        m_lineFormatter.Reset();
+        return;
+    }
+
+    CHARRANGE prevSel;
+    m_richEdit.GetSel(prevSel); // Get cursor position
+
+    LONG lineIndex = m_richEdit.LineFromChar(prevSel.cpMin);
+    LONG lineStart = m_richEdit.LineIndex(lineIndex);
+    LONG lineLength = m_richEdit.LineLength(lineStart);
+
+    if (lineLength == 0) {
+        return;
+    }
+
+    CString line;
+    LPTSTR pline = line.GetBufferSetLength(lineLength + 1);
+
+    auto len = m_richEdit.GetLine(lineIndex, pline, lineLength);
+    line.ReleaseBuffer(len);
+
+    if (len == 0) {
+        return;
+    }
+
+    uint32_t state = 0;
+
+    PARAFORMAT2 pf{};
+    pf.cbSize = sizeof(PARAFORMAT2);
+    pf.dwMask = PFM_OFFSET;
+
+    if (lineIndex > 0) {
+        auto preLineIndex = lineIndex - 1;
+        auto prevLineStart = m_richEdit.LineIndex(preLineIndex);
+        auto prevLineLength = m_richEdit.LineLength(prevLineStart);
+        auto prevLineEnd = prevLineStart + prevLineLength;
+
+        m_richEdit.HideSelection(TRUE, FALSE);
+        m_richEdit.SetSel(prevLineStart, prevLineEnd);
+        m_richEdit.GetParaFormat(pf);
+        m_richEdit.SetSel(prevSel);
+        m_richEdit.HideSelection(FALSE, FALSE);
+
+        //state = static_cast<uint32_t>(pf.dxOffset);
+
+        ATLTRACE("Previous line %d has state %d\n", preLineIndex, state);
+    }
+
+    m_lineFormatter.SetState(state);
+
+    // Just use XML for this example for everything
+    auto tokens = m_lineFormatter.Format(line);
+
+    while (!tokens.empty()) {
+        auto token = tokens.back();
+        tokens.pop_back();
+
+        CHARRANGE cr{};
+        cr.cpMin = lineStart + token.start;
+        cr.cpMax = lineStart + token.end;
+
+        m_richEdit.SetSel(cr);
+
+        CHARFORMAT2 cf{};
+        cf.cbSize = sizeof(cf);
+        cf.dwMask = CFM_ALL;
+
+        m_richEdit.GetSelectionCharFormat(cf);
+
+        cf.dwMask = CFM_COLOR;
+        cf.crTextColor = token.color;
+        m_richEdit.SetSelectionCharFormat(cf);
+    }
+
+    // Store parser state of the current line in the para format
+    m_richEdit.HideSelection(TRUE, FALSE);
+    m_richEdit.SetSel(lineIndex, lineIndex + lineLength);
+
+    ATLTRACE("Setting state %d for line %d\n", m_lineFormatter.GetState(), lineIndex);
+
+    pf.dxOffset = m_lineFormatter.GetState();
+    m_richEdit.SetParaFormat(pf);
+
+    m_richEdit.SetSel(prevSel); // Restore cursor position
+    m_richEdit.HideSelection(FALSE, FALSE);
+
+    Invalidate();
 }

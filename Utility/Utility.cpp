@@ -8,4 +8,3 @@ std::string comma(int64_t i)
     oss << std::fixed << i;
     return oss.str();
 }
-

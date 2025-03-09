@@ -14,8 +14,6 @@ FolderMonitor::FolderMonitor(HWND hWndTarget, const CString& directory) :
 
 FolderMonitor::~FolderMonitor()
 {
-    Stop(100);
-
     if (m_hStopEvent != nullptr) {
         CloseHandle(m_hStopEvent);
     }

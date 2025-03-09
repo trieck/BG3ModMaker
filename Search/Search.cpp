@@ -1,4 +1,3 @@
-
 #include "stdafx.h"
 #include <nlohmann/json.hpp>
 #include <iostream>

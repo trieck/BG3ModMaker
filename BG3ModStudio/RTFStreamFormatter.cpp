@@ -13,3 +13,10 @@ CStringA RTFStreamFormatter::EscapeRTF(const CStringA& input)
 
     return output;
 }
+
+CStringA RTFStreamFormatter::GetRTFColor(COLORREF color)
+{
+    CStringA output;
+    output.Format(R"(\red%d\green%d\blue%d)", GetRValue(color), GetGValue(color), GetBValue(color));
+    return output;
+}

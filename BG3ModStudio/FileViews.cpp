@@ -1,8 +1,7 @@
 #include "stdafx.h"
-#include "FileViews.h"
-
 #include "FileDialogEx.h"
 #include "FileViewFactory.h"
+#include "FileViews.h"
 #include "resources/resource.h"
 
 LRESULT FilesView::OnCreate(LPCREATESTRUCT pcs)

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <unordered_map>
 #include "Package.h"
 
 class PAKReader final

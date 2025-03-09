@@ -10,4 +10,3 @@ public:
 
     static Xapian::MSet search(const char* dbName, const char* query);
 };
-

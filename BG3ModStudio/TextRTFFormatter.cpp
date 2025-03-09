@@ -28,7 +28,7 @@ TextColor GetColor(TextTokenType type)
 
 } // anonymous
 
-CStringA TextRTFFormatter::Format(UTF8Stream& stream)
+CStringA TextRTFFormatter::GetDefaultFormat() const
 {
     CStringA output("{\\rtf\\ansi\\deff0{\\fonttbl{\\f0 Cascadia Mono;\\f1 Courier New;}}"
         "{\\colortbl;"
@@ -38,6 +38,13 @@ CStringA TextRTFFormatter::Format(UTF8Stream& stream)
         "\\red255\\green0\\blue0;"  // COLOR_QUOTED_STRING (Red)
         ";}\r\n"
         "\\cf1\r\n");
+
+    return output;
+}
+
+CStringA TextRTFFormatter::Format(UTF8Stream& stream)
+{
+    CStringA output = GetDefaultFormat();
 
     auto strText = stream.ReadString();
 

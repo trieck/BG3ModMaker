@@ -1,13 +1,13 @@
 #pragma once
 
-#include <unordered_map>
-
 #include "NodeAttribute.h"
 
-struct Node : std::enable_shared_from_this<Node>
+// TODO: this has to be renamed as it conflicts with the red-black tree
+
+struct RBNode : std::enable_shared_from_this<RBNode>
 {
-    using Ptr = std::shared_ptr<Node>;
-    using WeakPtr = std::weak_ptr<Node>;
+    using Ptr = std::shared_ptr<RBNode>;
+    using WeakPtr = std::weak_ptr<RBNode>;
 
     int32_t childCount() const;
     int32_t totalChildCount() const;

@@ -3,9 +3,7 @@
 #include <numeric>
 #include "Node.h"
 
-#include <ranges>
-
-int32_t Node::childCount() const
+int32_t RBNode::childCount() const
 {
     int32_t sum = std::accumulate(children.begin(), children.end(), 0,
         [](int32_t acc, const std::pair<std::string, std::vector<Ptr>>& p) {
@@ -15,7 +13,7 @@ int32_t Node::childCount() const
     return sum;
 }
 
-int32_t Node::totalChildCount() const
+int32_t RBNode::totalChildCount() const
 {
     int32_t sum = 0;
 
@@ -29,11 +27,10 @@ int32_t Node::totalChildCount() const
     return sum;
 }
 
-void Node::appendChild(const Ptr& child)
+void RBNode::appendChild(const Ptr& child)
 {
     child->parent = shared_from_this();
 
     auto [it, inserted] = children.try_emplace(child->name, std::vector<Ptr>{});
     it->second.push_back(child);
 }
-

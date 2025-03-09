@@ -16,7 +16,6 @@ public:
         MSG_WM_NCMOUSEMOVE(OnNcMouseMove)
         MSG_WM_NCMOUSELEAVE(OnNcMouseLeave)
         ALT_MSG_MAP(1)
-        //REFLECTED_NOTIFY_CODE_HANDLER(LVN_GETDISPINFO, OnGetDispInfo)
     END_MSG_MAP()
 
     OutputWindow() : m_bMsgHandled(FALSE), m_listView(this, 1) {
@@ -44,4 +43,3 @@ private:
     CFont m_font;
     int m_cxChar{}, m_cyChar{}, m_titleBarHeight{};
 };
-

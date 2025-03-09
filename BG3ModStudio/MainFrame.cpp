@@ -3,13 +3,12 @@
 #include "COMError.h"
 #include "FileDialogEx.h"
 #include "FileOperation.h"
-#include "MainFrame.h"
-
 #include "Localization.h"
+#include "MainFrame.h"
 #include "PAKWriter.h"
 #include "StringHelper.h"
 
-extern CComCriticalSection g_csFile; 
+extern CComCriticalSection g_csFile;
 static constexpr auto FOLDER_MONITOR_WAIT_TIME = 50;
 
 BOOL MainFrame::DefCreate()
@@ -92,7 +91,7 @@ LRESULT MainFrame::OnCreate(LPCREATESTRUCT pcs)
     }
 
     if (!m_output.Create(m_hSplitter, rcDefault, nullptr,
-                        WS_CAPTION | WS_SYSMENU | WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS)) {
+                         WS_CAPTION | WS_SYSMENU | WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS)) {
         ATLTRACE("Unable to create output window.\n");
         return -1;
     }
@@ -197,7 +196,8 @@ void MainFrame::OnFolderPack()
     build.compression = CompressionMethod::NONE;
     build.compressionLevel = LSCompressionLevel::DEFAULT;
 
-    IterateFiles(m_folderView.GetRootItem(), [&](const CString& filePath) {
+    IterateFiles(m_folderView.GetRootItem(), [&](const CString& filePath)
+    {
         CString message;
         message.Format(L"Adding file:\"%s\" to PAK...", filePath);
         LogMessage(message);
@@ -287,7 +287,7 @@ void MainFrame::OnDeleteFile()
 
     CWaitCursor wait;
     CComCritSecLock lock(g_csFile); // acquire the lock until deletion completes
-        
+
     hr = op.DeleteItem(filename);
     if (FAILED(hr)) {
         CoMessageBox(*this, hr, nullptr, MB_ICONERROR);
@@ -381,8 +381,8 @@ void MainFrame::OnConvertLoca()
     } catch (const std::exception& e) {
         CString error = StringHelper::fromUTF8(e.what());
         CString message;
-        message.Format(L"An error occurred while reading the file: \"%s\": \"%s\".", 
-            path, error);
+        message.Format(L"An error occurred while reading the file: \"%s\": \"%s\".",
+                       path, error);
         AtlMessageBox(*this, message.GetString(), nullptr, MB_ICONERROR);
         return;
     }
@@ -392,8 +392,8 @@ void MainFrame::OnConvertLoca()
     } catch (const std::exception& e) {
         CString error = StringHelper::fromUTF8(e.what());
         CString message;
-        message.Format(L"An error occurred while writing the file: \"%s\": \"%s\".", 
-            dlg.paths().front(), error);
+        message.Format(L"An error occurred while writing the file: \"%s\": \"%s\".",
+                       dlg.paths().front(), error);
         AtlMessageBox(*this, message.GetString(), nullptr, MB_ICONERROR);
         return;
     }
@@ -495,9 +495,9 @@ LRESULT MainFrame::OnTVEndLabelEdit(LPNMHDR pnmhdr)
         return FALSE;
     }
 
-    auto* data = new TreeItemData{ .type = TIT_FILE, .path = fullPath };
+    auto* data = new TreeItemData{.type = TIT_FILE, .path = fullPath};
 
-     m_folderView.SetItemData(hItem, reinterpret_cast<DWORD_PTR>(data));
+    m_folderView.SetItemData(hItem, reinterpret_cast<DWORD_PTR>(data));
 
     pDispInfo->item.lParam = reinterpret_cast<LPARAM>(data);
 
@@ -810,8 +810,7 @@ void MainFrame::IterateFiles(HTREEITEM hItem, const FileCallback& callback)
         }
 
         hItem = m_folderView.GetNextSiblingItem(hItem);
-    }
-    while (hItem);
+    } while (hItem);
 }
 
 void MainFrame::PreloadTree()

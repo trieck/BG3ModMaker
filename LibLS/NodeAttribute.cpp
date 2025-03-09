@@ -1,7 +1,7 @@
 #include "pch.h"
-#include "NodeAttribute.h"
 
 #include "Exception.h"
+#include "NodeAttribute.h"
 
 NodeAttribute::NodeAttribute() : m_type(None)
 {

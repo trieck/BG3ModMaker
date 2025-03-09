@@ -16,4 +16,3 @@ private:
     std::unordered_map<std::string, RTFStreamFormatter::Ptr> m_formatters;
     RTFStreamFormatter::Ptr m_defaultFormatter;
 };
-

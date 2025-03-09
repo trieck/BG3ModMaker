@@ -49,7 +49,7 @@ void COMError::SetErrorMessage(HRESULT hr, LPUNKNOWN pUnknown, const IID& iid)
 
 /////////////////////////////////////////////////////////////////////////////
 int CoMessageBox(HWND hWndOwner, HRESULT hr, LPUNKNOWN pUnknown,
-    ATL::_U_STRINGorID title, UINT uType)
+    _U_STRINGorID title, UINT uType)
 {
     auto message = COM_ERROR_DESC(hr, pUnknown);
 

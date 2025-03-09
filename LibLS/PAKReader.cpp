@@ -1,113 +1,113 @@
 #include "pch.h"
 #include "Compress.h"
+#include "Exception.h"
 #include "PAKReader.h"
 #include "Stream.h"
-#include "Exception.h"
 
-// anonymous namespace
-namespace {
+namespace { // anonymous namespace
 
-    template <typename TFile>
-    bool readStructs(Stream& stream, std::vector<TFile>& entries, uint32_t numFiles)
-    {
-        entries.resize(numFiles);
+template <typename TFile>
+bool readStructs(Stream& stream, std::vector<TFile>& entries, uint32_t numFiles)
+{
+    entries.resize(numFiles);
 
-        for (uint32_t i = 0; i < numFiles; ++i) {
-            entries[i] = stream.read<TFile>();
-        }
-
-        return true;
+    for (uint32_t i = 0; i < numFiles; ++i) {
+        entries[i] = stream.read<TFile>();
     }
 
-    template <typename TFileEntry>
-    PackagedFileInfo createFromEntry(Package& package, const TFileEntry& entry)
-    {
-        PackagedFileInfo info;
+    return true;
+}
 
-        info.name = entry.name;
-        info.archivePart = entry.archivePart;
-        info.crc = 0;
-        info.flags = static_cast<CompressionFlags>(entry.flags);
-        info.offsetInFile = entry.offsetInFile1 | (static_cast<uint64_t>(entry.offsetInFile2) << 32);
-        info.sizeOnDisk = entry.sizeOnDisk;
-        info.uncompressedSize = entry.uncompressedSize;
+template <typename TFileEntry>
+PackagedFileInfo createFromEntry(Package& package, const TFileEntry& entry)
+{
+    PackagedFileInfo info;
 
-        return info;
+    info.name = entry.name;
+    info.archivePart = entry.archivePart;
+    info.crc = 0;
+    info.flags = static_cast<CompressionFlags>(entry.flags);
+    info.offsetInFile = entry.offsetInFile1 | (static_cast<uint64_t>(entry.offsetInFile2) << 32);
+    info.sizeOnDisk = entry.sizeOnDisk;
+    info.uncompressedSize = entry.uncompressedSize;
+
+    return info;
+}
+
+template <typename TFileEntry>
+void readCompressedFileList(PAKReader& reader, int64_t offset)
+{
+    auto& package = reader.package();
+
+    package.seek(offset, SeekMode::Begin);
+    auto numFiles = package.read<uint32_t>();
+
+    uint8Ptr compressed;
+    uint32_t compressedSize;
+
+    if (reader.package().m_header.version > 13) {
+        package.seek(offset + 4, SeekMode::Begin);
+        compressedSize = package.read<uint32_t>();
+
+        compressed = std::make_unique<uint8_t[]>(compressedSize);
+
+        package.read(compressed.get(), compressedSize);
+    } else {
+        compressedSize = reader.package().m_header.fileListSize - 4;
+        compressed = std::make_unique<uint8_t[]>(compressedSize);
+
+        package.read(compressed.get(), compressedSize);
     }
 
-    template <typename TFileEntry>
-    void readCompressedFileList(PAKReader& reader, int64_t offset)
-    {
-        auto& package = reader.package();
+    const uint32_t fileBufferSize = sizeof(TFileEntry) * numFiles;
 
-        package.seek(offset, SeekMode::Begin);
-        auto numFiles = package.read<uint32_t>();
-
-        uint8Ptr compressed;
-        uint32_t compressedSize;
-
-        if (reader.package().m_header.version > 13) {
-            package.seek(offset + 4, SeekMode::Begin);
-            compressedSize = package.read<uint32_t>();
-
-            compressed = std::make_unique<uint8_t[]>(compressedSize);
-
-            package.read(compressed.get(), compressedSize);
-        } else {
-            compressedSize = reader.package().m_header.fileListSize - 4;
-            compressed = std::make_unique<uint8_t[]>(compressedSize);
-
-            package.read(compressed.get(), compressedSize);
-        }
-
-        const uint32_t fileBufferSize = sizeof(TFileEntry) * numFiles;
-
-        uint8Ptr decompressed;
-        auto result = decompressData(CompressionMethod::LZ4, compressed.get(), compressedSize, decompressed,
-                                     fileBufferSize);
-        if (!result) {
-            throw Exception("Failed to decompress file list.");
-        }
-
-        std::vector<TFileEntry> entries(numFiles);
-        Stream stream(reinterpret_cast<char*>(decompressed.get()), fileBufferSize);
-
-        result = readStructs<TFileEntry>(stream, entries, numFiles);
-        if (!result) {
-            throw Exception("Failed to read file list.");
-        }
-
-        for (const auto& entry : entries) {
-            // TODO: handle archive parts, whatever they are
-            auto info = createFromEntry<TFileEntry>(package, entry);
-            package.addFile(info);
-        }
+    uint8Ptr decompressed;
+    auto result = decompressData(CompressionMethod::LZ4, compressed.get(), compressedSize, decompressed,
+                                 fileBufferSize);
+    if (!result) {
+        throw Exception("Failed to decompress file list.");
     }
 
-    template <typename THeader, typename TFileEntry>
-    bool readHeader(PAKReader& pakReader, int64_t offset)
-    {
-        auto& package = pakReader.package();
+    std::vector<TFileEntry> entries(numFiles);
+    Stream stream(reinterpret_cast<char*>(decompressed.get()), fileBufferSize);
 
-        // Seek to the header
-        package.seek(offset, SeekMode::Begin);
-
-        // Read the header
-        THeader header = package.read<THeader>();
-
-        package.m_header = header.commonHeader();
-
-        pakReader.openStreams(header.numParts);
-
-        if (header.version > 10) {
-            package.m_header.dataOffset = static_cast<uint32_t>(offset) + sizeof(THeader);
-            readCompressedFileList<TFileEntry>(pakReader, package.m_header.fileListOffset);
-        } else {
-            return false;
-        }
-
-        return true;
+    result = readStructs<TFileEntry>(stream, entries, numFiles);
+    if (!result) {
+        throw Exception("Failed to read file list.");
     }
+
+    for (const auto& entry : entries) {
+        // TODO: handle archive parts, whatever they are
+        auto info = createFromEntry<TFileEntry>(package, entry);
+        package.addFile(info);
+    }
+}
+
+template <typename THeader, typename TFileEntry>
+bool readHeader(PAKReader& pakReader, int64_t offset)
+{
+    auto& package = pakReader.package();
+
+    // Seek to the header
+    package.seek(offset, SeekMode::Begin);
+
+    // Read the header
+    THeader header = package.read<THeader>();
+
+    package.m_header = header.commonHeader();
+
+    pakReader.openStreams(header.numParts);
+
+    if (header.version > 10) {
+        package.m_header.dataOffset = static_cast<uint32_t>(offset) + sizeof(THeader);
+        readCompressedFileList<TFileEntry>(pakReader, package.m_header.fileListOffset);
+    } else {
+        return false;
+    }
+
+    return true;
+}
+
 } // anonymous namespace
 
 PAKReader::PAKReader()
@@ -205,7 +205,7 @@ ByteBuffer PAKReader::readFile(const std::string& name)
         fileData = std::move(decompressed);
     }
 
-    return { std::move(fileData), file.size() };
+    return {std::move(fileData), file.size()};
 }
 
 bool PAKReader::extractFile(const PackagedFileInfo& file, const char* path)

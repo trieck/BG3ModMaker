@@ -1,7 +1,5 @@
 #include "stdafx.h"
 
-#include <array>
-
 #include "BinaryFileView.h"
 #include "Exception.h"
 #include "FileStream.h"

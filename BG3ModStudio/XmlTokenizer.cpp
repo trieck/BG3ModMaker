@@ -1,102 +1,166 @@
 #include "stdafx.h"
 #include "XmlTokenizer.h"
 
-CStringA XmlToken::GetValue() const
-{
-    return value;
-}
-
-XmlTokenType XmlToken::GetType() const
-{
-    return type;
-}
-
-CStringA XmlToken::GetTypeAsString() const
-{
-    switch (type) {
-    case XmlTokenType::TT_EMPTY:
-        return "Empty";
-    case XmlTokenType::TT_TAG_START:
-        return "Tag Start";
-    case XmlTokenType::TT_TAG_END:
-        return "Tag End";
-    case XmlTokenType::TT_TAG_SELF_CLOSE:
-        return "Tag Self Close";
-    case XmlTokenType::TT_TAG_NAME:
-        return "Tag Name";
-    case XmlTokenType::TT_ATTRIBUTE_NAME:
-        return "Attribute Name";
-    case XmlTokenType::TT_ATTRIBUTE_VALUE:
-        return "Attribute Value";
-    case XmlTokenType::TT_TEXT:
-        return "Text";
-    case XmlTokenType::TT_COMMENT:
-        return "Comment";
-    case XmlTokenType::TT_CDATA:
-        return "CDATA";
-    case XmlTokenType::TT_DOCTYPE:
-        return "DOCTYPE";
-    case XmlTokenType::TT_INSTRUCTION_START:
-        return "Instruction Start";
-    case XmlTokenType::TT_INSTRUCTION_END:
-        return "Instruction End";
-    case XmlTokenType::TT_WHITESPACE:
-        return "Whitespace";
-    case XmlTokenType::TT_QUOTE:
-        return "Quote";
-    case XmlTokenType::TT_EQUAL:
-        return "Equal";
-    case XmlTokenType::TT_ERROR:
-        return "Error";
-    default:
-        return "Unknown";
-    }
-}
-
-XmlTokenizer::XmlTokenizer() : m_input(nullptr), m_current(nullptr), m_isEnd(false), m_inTag(false),
-                               m_inDoubleQuotes(false), m_inSingleQuotes(false)
+XmlTokenizer::XmlTokenizer() : m_input(nullptr), m_current(nullptr)
 {
 }
 
-XmlTokenizer::XmlTokenizer(LPCSTR input) : m_input(input), m_current(input), m_isEnd(false), m_inTag(false),
-                                            m_inDoubleQuotes(false), m_inSingleQuotes(false)
+XmlTokenizer::XmlTokenizer(LPCSTR input) : m_input(input), m_current(input)
 {
+}
+
+uint32_t XmlTokenizer::GetState() const
+{
+    return m_state;
+}
+
+void XmlTokenizer::SetState(uint32_t state)
+{
+    ATLTRACE("SetState() called! Previous state: %d -> New state: %d\n", m_state, state);
+    m_state = state;
 }
 
 void XmlTokenizer::SetInput(LPCSTR input)
 {
     m_input = input;
     m_current = input;
-    m_isEnd = false;
-    m_inTag = false;
-    m_inSingleQuotes = false;
-    m_inDoubleQuotes = false;
 }
 
-XmlToken::Ptr XmlTokenizer::GetNextToken()
+XmlToken XmlTokenizer::GetNextToken()
 {
-    if (m_isEnd) {
-        return nullptr;
+    return GetToken(&m_current);
+}
+
+void XmlTokenizer::ResetState()
+{
+    ATLTRACE("ResetState() called! Previous state: %d\n", m_state);
+    m_state = static_cast<uint32_t>(State::reset);
+}
+
+uint32_t XmlTokenizer::Recover()
+{
+    // This algorithm is designed to recover from an unknown state
+    // and return to a known state. We need to be able to start parsing
+    // in an unknown state, in the middle of an XML fragment and
+    // recover to a known state.
+
+    // This has MAJOR flaws as it cannot recover in the middle of a comment
+    // When we encounter a normal state changing sequence, we fail to recover
+    // properly if we are actually in a comment.
+
+    // I see now what we must do!  We must REWIND to the first occurence of a start tag!
+    // Reset to start tag state and move forward until we return back at our original input...
+    // but it breaks down if start tags are inside comments! So...
+
+    m_state = static_cast<uint32_t>(State::reset);
+
+    m_current = m_input + strlen(m_input) - 1;
+
+    auto* pin = m_current;
+
+    while (pin > m_input) {
+        switch (*pin) {
+        case '\0':
+            break;
+        case '<':
+            SetState(State::inTag); // start of tag
+            break;
+        case '>':   // end of tag, comment, CDATA, etc.
+            SetState(State::reset);
+            break;
+        case '-':
+            if (pin - 3 < m_input) {
+                continue;   // not enough characters to check for comment
+            }            
+            if (strncmp(pin - 3, "<!-", 3) == 0) {  // in a comment
+                SetState(State::inComment);
+                pin -= 3;
+                break;
+            }
+            break;
+        case '[':
+            if (pin - 6 < m_input) {
+                continue;   // not enough characters to check for CDATA
+            }
+            if (strncmp(pin - 9, "<![CDATA[", 9) == 0) {  // in CDATA
+                SetState(State::inCDATA);
+                pin -= 9;
+                break;
+            }
+            break;
+        case '?':
+            if (pin - 2 < m_input) {
+                continue;   // not enough characters to check for processing instruction
+            }
+            if (strncmp(pin - 2, "<?", 2) == 0) {  // in processing instruction
+                SetState(State::inProcInstr);
+                pin -= 2;
+                break;
+            }
+            break;
+            // !DOCTYPE
+        case 'E':
+            if (pin - 8 < m_input) {
+                continue;   // not enough characters to check for DOCTYPE
+            }
+            if (strncmp(pin - 8, "<!DOCTYPE", 8) == 0) {  // in DOCTYPE
+                SetState(State::inDocType);
+                pin -= 8;
+                break;
+            }
+            break;
+        case '"':
+            // TODO:
+            break;
+        case '\'':
+            // TODO:
+            break;
+        case '=':
+            // TODO:
+            break;
+        default:
+            break;
+        }
     }
 
-    auto tok = GetToken(&m_current);
-    if (tok.type == XmlTokenType::TT_EMPTY) {
-        m_isEnd = true;
-        return nullptr;
-    }
+    m_current = pin;
 
-    return std::make_unique<XmlToken>(tok);
+    return m_state;
 }
 
-void XmlTokenizer::Reset()
+BOOL XmlTokenizer::HasState(uint32_t state) const
 {
-    m_current = m_input;
-    m_isEnd = false;
+    return (m_state & state) != 0;
 }
 
-bool XmlTokenizer::IsEnd() const
+BOOL XmlTokenizer::HasState(State state) const
 {
-    return m_isEnd;
+    return HasState(static_cast<uint32_t>(state));
+}
+
+void XmlTokenizer::AddState(uint32_t state)
+{
+    m_state |= state;
+}
+
+void XmlTokenizer::AddState(State state)
+{
+    AddState(static_cast<uint32_t>(state));
+}
+
+void XmlTokenizer::RemoveState(uint32_t state)
+{
+    m_state &= ~state;
+}
+
+void XmlTokenizer::RemoveState(State state)
+{
+    RemoveState(static_cast<uint32_t>(state));
+}
+
+void XmlTokenizer::SetState(State state)
+{
+    SetState(static_cast<uint32_t>(state));
 }
 
 XmlToken XmlTokenizer::GetToken(LPCSTR* ppin)
@@ -104,19 +168,88 @@ XmlToken XmlTokenizer::GetToken(LPCSTR* ppin)
     XmlToken tok;
 
     for (;;) {
+        if (**ppin == '\0') {
+            tok.type = XmlTokenType::TT_EMPTY;
+            //reset();
+            return tok;
+        }
+        if (HasState(State::inComment)) {
+            tok.type = XmlTokenType::TT_COMMENT;
+
+            // Read until "-->"
+            while (**ppin && strncmp(*ppin, "-->", 3) != 0) {
+                tok.value += *(*ppin)++;
+            }
+
+            if (**ppin) {
+                tok.value += "-->";
+                ATLTRACE("Comment2 ended! : %s\n", tok.value.GetString());
+                ResetState();
+                *ppin += 3;
+            }
+
+            return tok;
+        }
+        if (HasState(State::inCDATA)) {
+            tok.type = XmlTokenType::TT_CDATA;
+
+            // Read until "]]>"
+            while (**ppin && strncmp(*ppin, "]]>", 3) != 0) {
+                tok.value += *(*ppin)++;
+            }
+
+            if (**ppin) {
+                tok.value += "]]>";
+                ResetState();
+                *ppin += 3;
+            }
+
+            return tok;
+        }
+        if (HasState(State::inDocType)) {
+            tok.type = XmlTokenType::TT_DOCTYPE;
+
+            // Read until ">"
+            while (**ppin && strncmp(*ppin, ">", 1) != 0) {
+                tok.value += *(*ppin)++;
+            }
+
+            if (**ppin) {
+                tok.value += ">";
+                ResetState();
+                *ppin += 1;
+            }
+
+            return tok;
+        }
+
+        if (HasState(State::inProcInstr)) {
+            tok.type = XmlTokenType::TT_INSTRUCTION_START;
+            if (strncmp(*ppin, "?>", 2) == 0) {
+                tok.type = XmlTokenType::TT_INSTRUCTION_END;
+                ResetState();
+                tok.value = "?>";
+                *ppin += 2;
+                return tok;
+            }
+            tok.value += *(*ppin)++;
+            return tok;
+        }
+
         switch (**ppin) {
         case '\0':
             tok.type = XmlTokenType::TT_EMPTY;
             return tok;
         case '<':
-            m_inTag = true;
+            SetState(State::inTag);
             if (*(*ppin + 1) == '/') {
                 tok.type = XmlTokenType::TT_TAG_END;
                 tok.value = "</";
                 *ppin += 2;
                 return tok;
             }
-            if (strcmp((*ppin) + 1, "!--") == 0) {
+            if (strncmp((*ppin) + 1, "!--", 3) == 0) {
+                SetState(State::inComment);
                 tok.type = XmlTokenType::TT_COMMENT;
                 tok.value = "<!--";
                 *ppin += 4;
@@ -128,12 +261,15 @@ XmlToken XmlTokenizer::GetToken(LPCSTR* ppin)
 
                 if (**ppin) {
                     tok.value += "-->";
+                    ATLTRACE("Comment1 ended! : %s\n", tok.value.GetString());
+                    ResetState();
                     *ppin += 3;
                 }
 
-                return tok;
+                 return tok;
             }
-            if (strcmp((*ppin) + 1, "![CDATA[") == 0) {
+            if (strncmp((*ppin) + 1, "![CDATA[", 8) == 0) {
+                AddState(State::inCDATA);
                 tok.type = XmlTokenType::TT_CDATA;
                 tok.value = "<![CDATA[";
                 *ppin += 9;
@@ -145,18 +281,21 @@ XmlToken XmlTokenizer::GetToken(LPCSTR* ppin)
 
                 if (**ppin) {
                     tok.value += "]]>";
+                    ResetState();
                     *ppin += 3;
                 }
 
                 return tok;
             }
-            if (*(*ppin + 1) == '?') {
+            if (*((*ppin) + 1) == '?') {
+                AddState(State::inProcInstr);
                 tok.type = XmlTokenType::TT_INSTRUCTION_START;
                 tok.value = "<?";
                 *ppin += 2;
                 return tok;
             }
-            if (strncmp((*ppin) + 1, "!DOCTYPE", 9) == 0) {
+            if (strncmp((*ppin) + 1, "!DOCTYPE", 8) == 0) {
+                AddState(State::inDocType);
                 tok.type = XmlTokenType::TT_DOCTYPE;
                 tok.value = "<!DOCTYPE";
                 *ppin += 9;
@@ -167,14 +306,14 @@ XmlToken XmlTokenizer::GetToken(LPCSTR* ppin)
             *ppin += 1;
             return tok;
         case '>':
-            m_inTag = false;
+            ResetState();
             tok.type = XmlTokenType::TT_TAG_END;
             tok.value = ">";
             (*ppin)++;
             return tok;
         case '/':
-            if (*(*ppin + 1) == '>') {
-                m_inTag = false;
+            if (*((*ppin) + 1) == '>') {
+                ResetState();
                 tok.type = XmlTokenType::TT_TAG_SELF_CLOSE;
                 tok.value = "/>";
                 *ppin += 2;
@@ -189,11 +328,22 @@ XmlToken XmlTokenizer::GetToken(LPCSTR* ppin)
             (*ppin)++;
             return tok;
         case '?':
-            if (*(*ppin + 1) == '>') {
-                m_inTag = false;
+            if (*((*ppin) + 1) == '>') {
+                ResetState();
                 tok.type = XmlTokenType::TT_INSTRUCTION_END;
                 tok.value = "?>";
                 *ppin += 2;
+                return tok;
+            }
+            tok.type = XmlTokenType::TT_UNKNOWN;
+            tok.value = *(*ppin)++;
+            return tok;
+        case '-':
+            if (strncmp(*ppin, "-->", 3) == 0) {
+                ResetState();
+                tok.type = XmlTokenType::TT_COMMENT;
+                tok.value = "-->";
+                *ppin += 3;
                 return tok;
             }
             tok.type = XmlTokenType::TT_UNKNOWN;
@@ -208,11 +358,11 @@ XmlToken XmlTokenizer::GetToken(LPCSTR* ppin)
                 return tok;
             }
             if (**ppin == '"') {
-                if (m_inDoubleQuotes) {
-                    m_inDoubleQuotes = false;
+                if (HasState(State::inDQuote)) {
+                    ResetState();
                     tok.type = XmlTokenType::TT_QUOTE;
-                } else if (m_inTag && !m_inSingleQuotes) {
-                    m_inDoubleQuotes = true;
+                } else if (HasState(State::inTag) && !HasState(State::inSQuote)) {
+                    AddState(State::inDQuote);
                     tok.type = XmlTokenType::TT_QUOTE;
                 } else {
                     tok.type = XmlTokenType::TT_TEXT;
@@ -223,11 +373,11 @@ XmlToken XmlTokenizer::GetToken(LPCSTR* ppin)
             }
 
             if (**ppin == '\'') {
-                if (m_inSingleQuotes) {
-                    m_inSingleQuotes = false;
+                if (HasState(State::inSQuote)) {
+                    RemoveState(State::inSQuote);
                     tok.type = XmlTokenType::TT_QUOTE;
-                } else if (m_inTag && !m_inDoubleQuotes) {
-                    m_inSingleQuotes = true;
+                } else if (HasState(State::inTag) && !HasState(State::inDQuote)) {
+                    AddState(State::inSQuote);
                     tok.type = XmlTokenType::TT_QUOTE;
                 } else {
                     tok.type = XmlTokenType::TT_TEXT;
@@ -245,9 +395,11 @@ XmlToken XmlTokenizer::GetToken(LPCSTR* ppin)
 
                 if (**ppin == '=') {
                     tok.type = XmlTokenType::TT_ATTRIBUTE_NAME;
-                } else if (m_inSingleQuotes || m_inDoubleQuotes) {
+                } else if (HasState(State::inSQuote) && !HasState(State::inDQuote)) {
                     tok.type = XmlTokenType::TT_ATTRIBUTE_VALUE;
-                } else if (m_inTag) {
+                } else if (HasState(State::inDQuote) && !HasState(State::inSQuote)) {
+                    tok.type = XmlTokenType::TT_ATTRIBUTE_VALUE;
+                } else if (HasState(State::inTag)) {
                     tok.type = XmlTokenType::TT_TAG_NAME;
                 } else {
                     tok.type = XmlTokenType::TT_TEXT;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "StreamBase.h"
-#include "framework.h"
+#include "UtilityBase.h"
 
 class Stream : public StreamBase
 {

@@ -3,6 +3,7 @@
 #include "Exception.h"
 #include "FileStream.h"
 #include "Localization.h"
+#include "XmlWrapper.h"
 
 LocaResource LocaReader::Read(const std::string& path)
 {

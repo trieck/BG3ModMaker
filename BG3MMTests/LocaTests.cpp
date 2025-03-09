@@ -2,8 +2,6 @@
 
 #include <filesystem>
 #include <CppUnitTest.h>
-
-#include "framework.h"
 #include "Localization.h"
 
 namespace fs = std::filesystem;

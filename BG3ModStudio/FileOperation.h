@@ -14,4 +14,3 @@ public:
 private:
     CComPtr<IFileOperation> fileOperation;
 };
-

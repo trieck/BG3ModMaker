@@ -1,6 +1,5 @@
 #pragma once
 
-
 class StringHelper
 {
 public:
@@ -12,4 +11,3 @@ public:
     static CStringA toUTF8(const CStringW& input);
     static CStringA toUTF8(const WCHAR* input, size_t len);
 };
-

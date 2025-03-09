@@ -63,6 +63,7 @@ public:
     BEGIN_MSG_MAP(MainFrame)
         MSG_WM_CREATE(OnCreate)
         MSG_WM_CLOSE(OnClose)
+
         MESSAGE_HANDLER(WM_FILE_CHANGED, OnFileChanged)
 
         COMMAND_ID_HANDLER3(ID_APP_EXIT, OnFileExit)
@@ -87,6 +88,7 @@ public:
         NOTIFY_CODE_HANDLER_EX(TBVN_PAGEACTIVATED, OnTabActivated)
         NOTIFY_CODE_HANDLER_EX(TBVN_CONTEXTMENU, OnTabContextMenu)
         NOTIFY_CODE_HANDLER_EX(NM_RCLICK, OnRClick)
+
         CHAIN_MSG_MAP(CRibbonFrameWindowImpl)
     END_MSG_MAP()
 

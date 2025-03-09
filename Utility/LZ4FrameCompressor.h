@@ -10,4 +10,3 @@ public:
 
     static Stream decompress(Stream& stream, size_t decompressedSize);
 };
-

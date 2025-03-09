@@ -17,4 +17,3 @@ public:
     static Stream encode(Stream& stream,
         uint32_t inputOffset, size_t inputSize);
 };
-

@@ -1,41 +1,6 @@
 #pragma once
 
-enum class XmlTokenType
-{
-    TT_UNKNOWN = -1,
-    TT_EMPTY,
-    TT_TAG_START,
-    TT_TAG_END,
-    TT_TAG_SELF_CLOSE,
-    TT_TAG_NAME,
-    TT_ATTRIBUTE_NAME,
-    TT_ATTRIBUTE_VALUE,
-    TT_TEXT,
-    TT_COMMENT,
-    TT_CDATA,
-    TT_DOCTYPE,
-    TT_INSTRUCTION_START,
-    TT_INSTRUCTION_END,
-    TT_WHITESPACE,
-    TT_QUOTE,
-    TT_EQUAL,
-    TT_ERROR
-};
-
-struct XmlToken
-{
-    XmlToken() = default;
-    XmlToken(const XmlToken&) = default;
-
-    using Ptr = std::unique_ptr<XmlToken>;
-
-    CStringA GetValue() const;
-    XmlTokenType GetType() const;
-    CStringA GetTypeAsString() const;
-
-    XmlTokenType type{ XmlTokenType::TT_EMPTY };
-    CStringA value;
-};
+#include "XmlToken.h"
 
 class XmlTokenizer
 {
@@ -44,18 +9,43 @@ public:
     explicit XmlTokenizer(LPCSTR input);
     ~XmlTokenizer() = default;
 
-    void SetInput(LPCSTR input);
+    enum class State : uint32_t
+    {
+        reset = 0x00,
+        inTag = 0x01,
+        inAttrName = 0x02,
+        inAtrrVal = 0x04,
+        inDQuote = 0x8,
+        inSQuote = 0x10,
+        inComment = 0x20,
+        inCDATA = 0x40,
+        inProcInstr = 0x80,
+        inDocType = 0x100,
+    };
 
-    XmlToken::Ptr GetNextToken();
-    void Reset() ;
-    bool IsEnd() const;
+    uint32_t GetState() const;
+    void SetState(uint32_t state);
+    void SetInput(LPCSTR input);
+    XmlToken GetNextToken();
+    void ResetState();
+    uint32_t Recover();
 
 private:
+    
+    BOOL HasState(uint32_t state) const;
+    BOOL HasState(State state) const;
+
+    void AddState(uint32_t state);
+    void AddState(State state);
+
+    void RemoveState(uint32_t state);
+    void RemoveState(State state);
+
+    void SetState(State state);
+
     XmlToken GetToken(LPCSTR* ppin);
 
+    uint32_t m_state{0};
     LPCSTR m_input;
     LPCSTR m_current;
-    bool m_isEnd, m_inTag, m_inDoubleQuotes, m_inSingleQuotes;
 };
-
-

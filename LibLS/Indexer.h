@@ -13,8 +13,8 @@ public:
 
 private:
     void indexLSXFile(const PackagedFileInfo& file);
-    void indexNode(const std::string& filename, const Node::Ptr& node);
-    void indexNodes(const std::string& filename, const std::vector<Node::Ptr>& nodes);
+    void indexNode(const std::string& filename, const RBNode::Ptr& node);
+    void indexNodes(const std::string& filename, const std::vector<RBNode::Ptr>& nodes);
     void indexRegion(const std::string& fileName, const Region::Ptr &region);
     void indexLSFFile(const PackagedFileInfo& file);
 
