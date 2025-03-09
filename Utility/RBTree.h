@@ -1,65 +1,5 @@
 #pragma once
 
-/*
-==========================================
- Red-Black Tree (RBTree) Node Constraints
-==========================================
-
-1) Node Structure Constraints:
---------------------------------
-- Each node must store a key (`T data`) that is comparable (<, >),
-  trivially constructible and movable
-- Each node must maintain references to:
-  - Left and Right children (`std::shared_ptr<RBNode<T>>`).
-  - Parent (`RBNode* parent;`).
-- Each node must store its color (`NodeColor color`).
-  - Colors are either RED or BLACK.
-
-2) Red-Black Tree Properties:
--------------------------------
-- Every node is either RED or BLACK.
-- The root node is always BLACK.
-- No two consecutive RED nodes exist (No RED parent-child pairs).
-- Every path from the root to a leaf (`nullptr`) contains the same number
-  of BLACK nodes (Black Height Property).
-- Newly inserted nodes must always start as RED (before rebalancing).
-
-3) Parent Pointer Constraints:
---------------------------------
-- Parent pointers must always be updated correctly during:
-  - Insertions
-  - Rotations (Left/Right)
-  - Deletions
-- The root node must always have `parent = nullptr`.
-- Parent pointers must never be left dangling after modifications.
-
-4) Rotation Requirements (for Balancing):
--------------------------------------------
-- Rotate Left & Rotate Right must:
-  - Correctly update parent and child pointers.
-  - Ensure the new root of the rotated subtree replaces the old root.
-  - Maintain the Red-Black properties after rotation.
-
-5) Insert & Delete Constraints:
---------------------------------
-- Insertions must maintain Red-Black properties.
-  - Fix any RED-RED violations using rotations and recoloring.
-- Deletions must maintain the Black Height Property.
-  - If a BLACK node is removed, rebalancing is required.
-
-6) Ordering & Search Constraints:
------------------------------------
-- Nodes must follow Binary Search Tree (BST) ordering:
-  - Left child < Parent < Right child.
-- Search operations must run in O(log n).
-  - If ordering is broken, search efficiency degrades.
-
-------------------------------------------
- This comment serves as a reference guide
- for maintaining RBTree correctness.
-==========================================
-*/
-
 enum class NodeColor
 {
     RED,
@@ -67,30 +7,38 @@ enum class NodeColor
 };
 
 template <typename T>
-concept RBType = requires(T a, T b)
+concept RBKey = requires(T a, T b)
 {
     std::movable<T>;
     std::default_initializable<T>;
     { a < b } -> std::convertible_to<bool>;
-    { a > b } -> std::convertible_to<bool>;
 };
 
-template <RBType T>
+template <typename T>
+concept RBValue = requires
+{
+    std::movable<T>;
+    std::default_initializable<T>;
+};
+
+template <RBKey K, RBValue V>
 struct RBNode
 {
     RBNode();
-    explicit RBNode(T data);
+    explicit RBNode(K k, V v);
 
-    using Ptr = std::shared_ptr<RBNode>;
+    using Ptr = RBNode*;
 
-    T data{};
+    K key{};
+    V value{};
+
     Ptr left, right;
-    RBNode* parent;
+    Ptr parent;
     NodeColor color;
 };
 
-template <RBType T>
-RBNode<T>::RBNode()
+template <RBKey K, RBValue V>
+RBNode<K, V>::RBNode()
 {
     left = nullptr;
     right = nullptr;
@@ -98,57 +46,65 @@ RBNode<T>::RBNode()
     color = NodeColor::RED;
 }
 
-template <RBType T>
-RBNode<T>::RBNode(T data) : data(std::move(data)), parent(nullptr), color(NodeColor::RED)
+template <RBKey K, RBValue V>
+RBNode<K, V>::RBNode(K k, V v) : key(std::move(k)), value(std::move(v)), left(nullptr), right(nullptr), parent(nullptr),
+                                 color(NodeColor::RED)
 {
 }
 
-template <RBType T>
+template <RBKey K, RBValue V>
 class RBTree
 {
 public:
-    using PNode = typename RBNode<T>::Ptr;
+    using PNode = typename RBNode<K, V>::Ptr;
 
     RBTree();
     ~RBTree();
-    void insert(const T& data);
-    void remove(const T& data);
-    T find(const T& key) const;
+    void insert(K key, V value);
+    void remove(const K& key);
+    void removeAll();
+    bool find(const K& key, V& value) const;
+    bool exists(const K& key) const;
+    void traverse(std::function<void(const K& key, const V& value)> callback) const;
+    bool isEmpty() const;
+    PNode root() const;
 
 private:
     void fixInsert(PNode& node);
     void fixDelete(PNode& node);
-    void rotateLeft(RBNode<T>* node);
-    void rotateRight(RBNode<T>* node);
-    void swapColor(RBNode<T>* left, RBNode<T>* right);
-    void transplant(PNode& u, PNode& v);
-    PNode minValueNode(PNode& node);
+    void rotateLeft(PNode node);
+    void rotateRight(PNode node);
+    void swapColor(PNode left, PNode right);
+    void transplant(PNode u, PNode v);
+    PNode minValueNode(PNode node);
+    void deleteTree(PNode node);
 
     PNode m_root = nullptr;
 };
 
-template <RBType T>
-RBTree<T>::RBTree() : m_root(nullptr)
+template <RBKey K, RBValue V>
+RBTree<K, V>::RBTree() : m_root(nullptr)
 {
 }
 
-template <RBType T>
-RBTree<T>::~RBTree()
+template <RBKey K, RBValue V>
+RBTree<K, V>::~RBTree()
 {
+    removeAll();
 }
 
-template <RBType T>
-void RBTree<T>::insert(const T& data)
+template <RBKey K, RBValue V>
+void RBTree<K, V>::insert(K key, V value)
 {
-    auto node = std::make_shared<RBNode<T>>(data);
+    auto node = new RBNode<K, V>(std::move(key), std::move(value));
 
-    RBNode<T>* parent = nullptr;
+    PNode parent = nullptr;
 
     auto current = m_root;
 
     while (current != nullptr) {
-        parent = current.get();
-        if (node->data < current->data) {
+        parent = current;
+        if (node->key < current->key) {
             current = current->left;
         } else {
             current = current->right;
@@ -158,7 +114,7 @@ void RBTree<T>::insert(const T& data)
     node->parent = parent;
     if (parent == nullptr) {
         m_root = node;
-    } else if (node->data < parent->data) {
+    } else if (node->key < parent->key) {
         parent->left = node;
     } else {
         parent->right = node;
@@ -167,18 +123,20 @@ void RBTree<T>::insert(const T& data)
     fixInsert(node);
 }
 
-template <RBType T>
-void RBTree<T>::remove(const T& data)
+template <RBKey K, RBValue V>
+void RBTree<K, V>::remove(const K& key)
 {
     auto node = m_root;
-    PNode x, y, z;
+    PNode x = nullptr;
+    PNode y = nullptr;
+    PNode z = nullptr;
 
     while (node != nullptr) {
-        if (node->data == data) {
+        if (node->key == key) {
             z = node;
         }
 
-        if (node->data <= data) {
+        if (node->key <= key) {
             node = node->right;
         } else {
             node = node->left;
@@ -203,49 +161,104 @@ void RBTree<T>::remove(const T& data)
         y = minValueNode(z->right);
         yOriginalColor = y->color;
         x = y->right;
-        if (y->parent == z.get()) {
+        if (y->parent == z) {
             if (x != nullptr) {
-                x->parent = y.get();
+                x->parent = y;
             }
         } else {
             transplant(y, y->right);
             y->right = z->right;
-            y->right->parent = y.get();
+            y->right->parent = y;
         }
         transplant(z, y);
         y->left = z->left;
-        y->left->parent = y.get();
+        y->left->parent = y;
         y->color = z->color;
+    }
 
-        if (yOriginalColor == NodeColor::BLACK) {
-            fixDelete(x);
-        }
+    delete z;
+
+    if (x != nullptr && yOriginalColor == NodeColor::BLACK) {
+        fixDelete(x);
     }
 }
 
-template <RBType T>
-T RBTree<T>::find(const T& key) const
+template <RBKey K, RBValue V>
+void RBTree<K, V>::removeAll()
+{
+    deleteTree(m_root);
+    m_root = nullptr;
+}
+
+template <RBKey K, RBValue V>
+bool RBTree<K, V>::find(const K& key, V& value) const
 {
     auto current = m_root;
 
     while (current != nullptr) {
-        if (key < current->data) {
+        if (key < current->key) {
             current = current->left;
-        } else if (key > current->data) {
+        } else if (current->key < key) {
             current = current->right;
         } else {
-            return current->data;
+            value = current->value;
+            return true;
         }
     }
 
-    return T();
+    return false;
 }
 
-template <RBType T>
-void RBTree<T>::fixInsert(PNode& node)
+template <RBKey K, RBValue V>
+bool RBTree<K, V>::exists(const K& key) const
 {
-    RBNode<T>* parent = nullptr;
-    RBNode<T>* grandparent = nullptr;
+    auto current = m_root;
+
+    while (current != nullptr) {
+        if (key < current->key) {
+            current = current->left;
+        } else if (current->key < key) {
+            current = current->right;
+        } else {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+template <RBKey K, RBValue V>
+void RBTree<K, V>::traverse(std::function<void(const K& key, const V& value)> callback) const
+{
+    std::function<void(PNode)> inOrder = [&](PNode node)
+    {
+        if (node == nullptr) {
+            return;
+        }
+        inOrder(node->left);
+        callback(node->key, node->value);
+        inOrder(node->right);
+    };
+    inOrder(m_root);
+}
+
+template <RBKey K, RBValue V>
+bool RBTree<K, V>::isEmpty() const
+{
+    return m_root == nullptr;
+}
+
+template <RBKey K, RBValue V>
+typename RBTree<K, V>::PNode RBTree<K, V>::root() const
+{
+    return m_root;
+}
+
+template <RBKey K, RBValue V>
+void RBTree<K, V>::fixInsert(PNode& node)
+{
+    PNode parent = nullptr;
+    PNode grandparent = nullptr;
 
     while (node != m_root && node->color == NodeColor::RED) {
         if (node->parent == nullptr || node->parent->color == NodeColor::BLACK) {
@@ -255,22 +268,22 @@ void RBTree<T>::fixInsert(PNode& node)
         parent = node->parent;
         grandparent = parent->parent;
 
-        if (parent == grandparent->left.get()) {
+        if (parent == grandparent->left) {
             auto uncle = grandparent->right;
             if (uncle != nullptr && uncle->color == NodeColor::RED) {
                 grandparent->color = NodeColor::RED;
                 parent->color = NodeColor::BLACK;
                 uncle->color = NodeColor::BLACK;
-                node.reset(grandparent);
+                node = grandparent;
             } else {
                 if (node == parent->right) {
                     rotateLeft(parent);
-                    node.reset(parent);
+                    node = parent;
                     parent = node->parent;
                 }
                 rotateRight(grandparent);
                 swapColor(parent, grandparent);
-                node.reset(parent);
+                node = parent;
             }
         } else {
             auto uncle = grandparent->left;
@@ -278,16 +291,16 @@ void RBTree<T>::fixInsert(PNode& node)
                 grandparent->color = NodeColor::RED;
                 parent->color = NodeColor::BLACK;
                 uncle->color = NodeColor::BLACK;
-                node.reset(grandparent);
+                node = grandparent;
             } else {
                 if (node == parent->left) {
                     rotateRight(parent);
-                    node.reset(parent);
+                    node = parent;
                     parent = node->parent;
                 }
                 rotateLeft(grandparent);
                 swapColor(parent, grandparent);
-                node.reset(parent);
+                node = parent;
             }
         }
     }
@@ -295,8 +308,8 @@ void RBTree<T>::fixInsert(PNode& node)
     m_root->color = NodeColor::BLACK;
 }
 
-template <RBType T>
-void RBTree<T>::fixDelete(PNode& node)
+template <RBKey K, RBValue V>
+void RBTree<K, V>::fixDelete(PNode& node)
 {
     while (node != m_root && node->color == NodeColor::BLACK) {
         if (node == node->parent->left) {
@@ -308,16 +321,16 @@ void RBTree<T>::fixDelete(PNode& node)
                 sibling = node->parent->right;
             }
             if (sibling->left == nullptr || sibling->left->color == NodeColor::BLACK &&
-                (sibling->right  == nullptr || sibling->right->color == NodeColor::BLACK)) {
+                (sibling->right == nullptr || sibling->right->color == NodeColor::BLACK)) {
                 sibling->color = NodeColor::RED;
-                node.reset(node->parent);
+                node = node->parent;
             } else {
                 if (sibling->right == nullptr || sibling->right->color == NodeColor::BLACK) {
                     if (sibling->left != nullptr) {
                         sibling->left->color = NodeColor::BLACK;
                     }
                     sibling->color = NodeColor::RED;
-                    rotateRight(sibling.get());
+                    rotateRight(sibling);
                     sibling = node->parent->right;
                 }
                 sibling->color = node->parent->color;
@@ -339,7 +352,7 @@ void RBTree<T>::fixDelete(PNode& node)
             if ((sibling->left == nullptr || sibling->left->color == NodeColor::BLACK) && (sibling->right == nullptr ||
                 sibling->right->color == NodeColor::BLACK)) {
                 sibling->color = NodeColor::RED;
-                rotateLeft(sibling.get());
+                rotateLeft(sibling);
                 sibling = node->parent->left;
             }
             sibling->color = node->parent->color;
@@ -354,8 +367,8 @@ void RBTree<T>::fixDelete(PNode& node)
     node->color = NodeColor::BLACK;
 }
 
-template <RBType T>
-void RBTree<T>::rotateLeft(RBNode<T>* node)
+template <RBKey K, RBValue V>
+void RBTree<K, V>::rotateLeft(PNode node)
 {
     auto child = node->right;
     node->right = node->left;
@@ -367,18 +380,18 @@ void RBTree<T>::rotateLeft(RBNode<T>* node)
     child->parent = node->parent;
     if (node->parent == nullptr) {
         m_root = child;
-    } else if (node == node->parent->left.get()) {
+    } else if (node == node->parent->left) {
         node->parent->left = child;
     } else {
         node->parent->right = child;
     }
 
-    child->left.reset(node);
-    node->parent = child.get();
+    child->left = node;
+    node->parent = child;
 }
 
-template <RBType T>
-void RBTree<T>::rotateRight(RBNode<T>* node)
+template <RBKey K, RBValue V>
+void RBTree<K, V>::rotateRight(PNode node)
 {
     auto child = node->left;
     node->left = child->right;
@@ -390,27 +403,27 @@ void RBTree<T>::rotateRight(RBNode<T>* node)
 
     if (node->parent == nullptr) {
         m_root = child;
-    } else if (node == node->parent->left.get()) {
+    } else if (node == node->parent->left) {
         node->parent->left = child;
     } else {
         node->parent->right = child;
     }
 
-    child->right.reset(node);
+    child->right = node;
 
-    node->parent = child.get();
+    node->parent = child;
 }
 
-template <RBType T>
-void RBTree<T>::swapColor(RBNode<T>* left, RBNode<T>* right)
+template <RBKey K, RBValue V>
+void RBTree<K, V>::swapColor(PNode left, PNode right)
 {
     auto temp = left->color;
     left->color = right->color;
     right->color = temp;
 }
 
-template <RBType T>
-void RBTree<T>::transplant(PNode& u, PNode& v)
+template <RBKey K, RBValue V>
+void RBTree<K, V>::transplant(PNode u, PNode v)
 {
     if (u->parent == nullptr) {
         m_root = v;
@@ -425,8 +438,8 @@ void RBTree<T>::transplant(PNode& u, PNode& v)
     }
 }
 
-template <RBType T>
-typename RBTree<T>::PNode RBTree<T>::minValueNode(PNode& node)
+template <RBKey K, RBValue V>
+typename RBTree<K, V>::PNode RBTree<K, V>::minValueNode(PNode node)
 {
     auto current = node;
     while (current->left != nullptr) {
@@ -434,4 +447,17 @@ typename RBTree<T>::PNode RBTree<T>::minValueNode(PNode& node)
     }
 
     return current;
+}
+
+template <RBKey K, RBValue V>
+void RBTree<K, V>::deleteTree(PNode node)
+{
+    if (node == nullptr) {
+        return;
+    }
+
+    deleteTree(node->left);
+    deleteTree(node->right);
+
+    delete node;
 }

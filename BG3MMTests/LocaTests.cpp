@@ -26,7 +26,6 @@ public:
     TEST_METHOD(TestFirstEntry)
     {
         Assert::AreEqual(std::string("h5eec0cb422f845c8a1abe70393d59838"), m_resource.entries[0].key);
-
     }
 
     TEST_METHOD(TestWriteLocalization)
