@@ -148,7 +148,9 @@
   <ItemGroup>
     <ClInclude Include="CRC32.h" />
     <ClInclude Include="Exception.h" />
+    <ClInclude Include="FibTree.h" />
     <ClInclude Include="FileStream.h" />
+    <ClInclude Include="Rope.h" />
     <ClInclude Include="Utility.h" />
     <ClInclude Include="UtilityBase.h" />
     <ClInclude Include="LZ4Codec.h" />
@@ -174,6 +176,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Rope.cpp" />
     <ClCompile Include="Stream.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Utility.cpp" />

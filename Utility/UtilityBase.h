@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <functional>
 #include <iostream>
+#include <fstream>
 #include <memory>
 #include <ranges>
 #include <sstream>
@@ -19,5 +20,14 @@
 
 #include <Windows.h>
 
-using uint8Ptr = std::unique_ptr<uint8_t[]>;
-using ByteBuffer = std::pair<uint8Ptr, size_t>;
+#ifndef ASSERT
+#ifdef _DEBUG
+#include <crtdbg.h>
+#define ASSERT(expr) _ASSERT(expr)
+#else
+#define ASSERT(expr)
+#endif // _DEBUG
+#endif // ASSERT 
+
+using UInt8Ptr = std::unique_ptr<uint8_t[]>;
+using ByteBuffer = std::pair<UInt8Ptr, size_t>;

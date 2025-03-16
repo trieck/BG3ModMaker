@@ -42,7 +42,7 @@ void readCompressedFileList(PAKReader& reader, int64_t offset)
     package.seek(offset, SeekMode::Begin);
     auto numFiles = package.read<uint32_t>();
 
-    uint8Ptr compressed;
+    UInt8Ptr compressed;
     uint32_t compressedSize;
 
     if (reader.package().m_header.version > 13) {
@@ -61,7 +61,7 @@ void readCompressedFileList(PAKReader& reader, int64_t offset)
 
     const uint32_t fileBufferSize = sizeof(TFileEntry) * numFiles;
 
-    uint8Ptr decompressed;
+    UInt8Ptr decompressed;
     auto result = decompressData(CompressionMethod::LZ4, compressed.get(), compressedSize, decompressed,
                                  fileBufferSize);
     if (!result) {
@@ -196,7 +196,7 @@ ByteBuffer PAKReader::readFile(const std::string& name)
     m_package.read(fileData.get(), file.sizeOnDisk);
 
     if (file.method() != CompressionMethod::NONE) {
-        uint8Ptr decompressed;
+        UInt8Ptr decompressed;
         if (auto result = decompressData(file.method(), fileData.get(),
                                          file.sizeOnDisk, decompressed, file.uncompressedSize); !result) {
             throw Exception("Failed to decompress file.");

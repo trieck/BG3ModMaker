@@ -134,7 +134,7 @@ size_t Stream::size() const
     return m_size;
 }
 
-Stream Stream::makeStream(uint8Ptr&& ptr, size_t size)
+Stream Stream::makeStream(UInt8Ptr&& ptr, size_t size)
 {
     Stream stream;
     stream.attach({std::move(ptr), size});

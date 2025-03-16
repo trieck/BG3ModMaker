@@ -22,7 +22,7 @@ enum class LSCompressionLevel
 };
 
 bool decompressData(CompressionMethod method, const uint8_t* compressedData, uint32_t compressedSize,
-    uint8Ptr& decompressedData, uint32_t decompressedSize);
+    UInt8Ptr& decompressedData, uint32_t decompressedSize);
 
 Stream decompressStream(CompressionMethod method, Stream& stream, uint32_t decompressedSize, bool chunked = false);
 

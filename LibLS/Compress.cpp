@@ -8,7 +8,7 @@
 #include "LZ4FrameCompressor.h"
 
 bool decompressData(CompressionMethod method, const uint8_t* compressedData, uint32_t compressedSize,
-                    uint8Ptr& decompressedData, uint32_t decompressedSize)
+                    UInt8Ptr& decompressedData, uint32_t decompressedSize)
 {
     if (method != CompressionMethod::LZ4) {
         throw Exception("Unsupported compression method");

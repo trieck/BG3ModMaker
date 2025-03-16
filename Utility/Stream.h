@@ -28,7 +28,7 @@ public:
     size_t tell() const override;
     size_t size() const override;
 
-    static Stream makeStream(uint8Ptr&& ptr, size_t size);
+    static Stream makeStream(UInt8Ptr&& ptr, size_t size);
     static Stream makeStream(const char* buf, size_t size);
     static Stream makeStream(const ByteBuffer& buf);
     static Stream makeStream(const std::string& str);
@@ -46,5 +46,5 @@ private:
     void realloc(size_t size);
 
     std::size_t m_pos, m_size, m_capacity;
-    uint8Ptr m_bytes;
+    UInt8Ptr m_bytes;
 };

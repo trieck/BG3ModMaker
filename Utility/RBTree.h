@@ -56,7 +56,10 @@ template <RBKey K, RBValue V>
 class RBTree
 {
 public:
-    using PNode = typename RBNode<K, V>::Ptr;
+    using NodeType = RBNode<K, V>;
+    using PNode = typename NodeType::Ptr;
+    using KeyType = K;
+    using ValueType = V;
 
     RBTree();
     ~RBTree();
@@ -69,11 +72,14 @@ public:
     bool isEmpty() const;
     PNode root() const;
 
-private:
+protected:
+    void setRoot(PNode node);
     void fixInsert(PNode& node);
     void fixDelete(PNode& node);
     void rotateLeft(PNode node);
     void rotateRight(PNode node);
+
+private:
     void swapColor(PNode left, PNode right);
     void transplant(PNode u, PNode v);
     PNode minValueNode(PNode node);
@@ -134,6 +140,7 @@ void RBTree<K, V>::remove(const K& key)
     while (node != nullptr) {
         if (node->key == key) {
             z = node;
+            break;
         }
 
         if (node->key <= key) {
@@ -239,6 +246,7 @@ void RBTree<K, V>::traverse(std::function<void(const K& key, const V& value)> ca
         callback(node->key, node->value);
         inOrder(node->right);
     };
+
     inOrder(m_root);
 }
 
@@ -252,6 +260,13 @@ template <RBKey K, RBValue V>
 typename RBTree<K, V>::PNode RBTree<K, V>::root() const
 {
     return m_root;
+}
+
+template <RBKey K, RBValue V>
+void RBTree<K, V>::setRoot(PNode node)
+{
+    node->color = NodeColor::BLACK;
+    m_root = node;
 }
 
 template <RBKey K, RBValue V>
