@@ -10,7 +10,6 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 TEST_CLASS(LocaTests)
 {
-private:
     LocaResource m_resource;
 
 public:

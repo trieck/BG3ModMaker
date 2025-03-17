@@ -4,8 +4,8 @@
     "lz4",
     "nlohmann-json",
     "pugixml",
-    "xapian",
-    "wtl"
+    "wtl",
+    "xapian"
   ],
   "name": "bg3modmaker",
   "version": "0.1.0"

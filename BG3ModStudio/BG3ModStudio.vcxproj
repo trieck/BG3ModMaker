@@ -164,7 +164,6 @@
   <ItemGroup>
     <ClInclude Include="BG3ModStudio.h" />
     <ClInclude Include="BinaryFileView.h" />
-    <ClInclude Include="COMError.h" />
     <ClInclude Include="FileOperation.h" />
     <ClInclude Include="FolderMonitor.h" />
     <ClInclude Include="FormatToken.h" />
@@ -179,7 +178,6 @@
     <ClInclude Include="JsonRTFFormatter.h" />
     <ClInclude Include="JsonTokenizer.h" />
     <ClInclude Include="MainFrame.h" />
-    <ClInclude Include="MessageLoopEx.h" />
     <ClInclude Include="resources\resource.h" />
     <ClInclude Include="RTFFormatterRegistry.h" />
     <ClInclude Include="RTFStreamFormatter.h" />
@@ -203,7 +201,6 @@
   <ItemGroup>
     <ClCompile Include="BG3ModStudio.cpp" />
     <ClCompile Include="BinaryFileView.cpp" />
-    <ClCompile Include="COMError.cpp" />
     <ClCompile Include="FileOperation.cpp" />
     <ClCompile Include="FolderMonitor.cpp" />
     <ClCompile Include="OutputWindow.cpp" />
@@ -215,7 +212,6 @@
     <ClCompile Include="JsonRTFFormatter.cpp" />
     <ClCompile Include="JsonTokenizer.cpp" />
     <ClCompile Include="MainFrame.cpp" />
-    <ClCompile Include="MessageLoopEx.cpp" />
     <ClCompile Include="RTFFormatterRegistry.cpp" />
     <ClCompile Include="RTFStreamFormatter.cpp" />
     <ClCompile Include="ShellHelper.cpp" />

@@ -63,6 +63,12 @@
     <ClInclude Include="Rope.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="COMError.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MessageLoopEx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -96,6 +102,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Rope.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="COMError.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MessageLoopEx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

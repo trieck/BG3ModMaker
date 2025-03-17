@@ -1,15 +1,21 @@
 #include "pch.h"
 #include <CppUnitTest.h>
+#include <filesystem>
 #include <functional>
 #include <iostream>
 
 #include "Rope.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+namespace fs = std::filesystem;
 
 TEST_CLASS(RopeTests)
 {
 public:
+    TEST_METHOD_INITIALIZE(Setup)
+    {        // Any setup code can go here
+    }
+
     TEST_METHOD(TestBasicInsertion)
     {
         Rope rope;
@@ -44,6 +50,12 @@ public:
         rope.insert(0, "World");
         rope.insert(0, "Hello, ");
         rope.insert(7, "Big ");
+
+        fs::path exePath = fs::current_path();
+        fs::path outPath = exePath / "rope.dot";
+
+        rope.exportDOT(outPath.string());
+        
         Assert::AreEqual(std::string("Hello, Big World"), rope.str());
     }
 
@@ -54,5 +66,20 @@ public:
         rope.insert(0, longText);
 
         Assert::AreEqual(longText, rope.str());
+    }
+
+    TEST_METHOD(TestBalance)
+    {
+        Rope rope;
+        rope.insert(0, "A");
+        rope.insert(1, "B");
+        rope.insert(2, "C");
+        rope.insert(3, "D");
+
+        fs::path exePath = fs::current_path();
+        fs::path outPath = exePath / "rope.dot";
+        rope.exportDOT(outPath.string());
+
+        Assert::IsTrue(rope.isBalanced());
     }
 };

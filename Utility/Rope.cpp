@@ -26,17 +26,7 @@ bool RopeValue::isInternal() const
 
 bool RopeValue::isLeaf() const
 {
-    return type == RopeNodeType::LeftLeaf || type == RopeNodeType::RightLeaf;
-}
-
-bool RopeValue::isLeftLeaf() const
-{
-    return type == RopeNodeType::LeftLeaf;
-}
-
-bool RopeValue::isRightLeaf() const
-{
-    return type == RopeNodeType::RightLeaf;
+    return type == RopeNodeType::Leaf;
 }
 
 void Rope::insert(size_t offset, const std::string& text)
@@ -44,7 +34,7 @@ void Rope::insert(size_t offset, const std::string& text)
     PNode leaf;
 
     if (isEmpty()) { // no tree
-        leaf = makeLeftLeaf({});
+        leaf = makeLeaf({});
         setRoot(leaf);
     } else {
         leaf = leafAt(offset);
@@ -93,7 +83,7 @@ Rope::PNode Rope::leafInsert(PNode& leaf, size_t offset, const std::string& text
     return split(leaf, rightText);
 }
 
-Rope::PNode Rope::insertText(PNode& node, size_t offset, const std::string& text)
+Rope::PNode Rope::insertText(const PNode& node, size_t offset, const std::string& text)
 {
     ASSERT(node && !node->value.isFrozen);
     ASSERT(node->value.isLeaf());
@@ -155,16 +145,20 @@ void Rope::printDOT(const PNode& node, std::ostream& os) const
     MD5 md5;
     auto nodeId = md5.digestString(std::to_string(reinterpret_cast<uintptr_t>(node))).substr(0, 4);
 
-    bool isInternal = node->value.isInternal();
+    auto isInternal = node->value.isInternal();
+    auto isFrozen = node->value.isFrozen;
+    auto isLeaf = node->value.isLeaf();
 
-    std::string text = isInternal ? "[int]" : "\\\"" + node->value.text.substr(0, 5) + "\\\"";
+    std::string text = isInternal ? "" : "\\\"" + node->value.text.substr(0, 10) + "\\\"";
 
-    std::string fillColor = isInternal ? "darkred" : "darkgreen";
+    std::string fillColor = isInternal ? "darkred" : isFrozen ? "lightblue" : "darkgreen";
+    std::string fontColor = isFrozen && isLeaf ? "black" : "white";
+
     std::string shape = "circle";
 
     os << "\"" << nodeId << "\" [shape=" << shape
-        << ", style=filled, fillcolor=" << fillColor
-        << ", fontcolor=white, fontname=\"Segoe UI Semibold\""
+        << ", style=filled, fillcolor=\"" << fillColor << "\""
+        << ", fontcolor=" << fontColor << ", fontname=\"Segoe UI Semibold\""
         << ", label=\"" << nodeId
         << "\\nW:" << node->key.weight
         << " | S:" << node->size
@@ -201,6 +195,12 @@ void Rope::exportDOT(const std::string& filename) const
     ofs.close();
 }
 
+bool Rope::isBalanced() const
+{
+    // TODO: Implement a proper balance check for the rope
+    return true;
+}
+
 void Rope::printTree(const PNode& node, size_t level, std::ostream& os) const
 {
     if (!node) {
@@ -220,10 +220,8 @@ void Rope::printTree(const PNode& node, size_t level, std::ostream& os) const
 
     if (node->value.isInternal()) {
         os << "(Internal)";
-    } else if (node->value.isLeftLeaf()) {
-        os << "(LeftLeaf) ";
-    } else if (node->value.isRightLeaf()) {
-        os << "(RightLeaf) ";
+    } else {
+        os << "(Leaf)";
     }
 
     if (!node->value.text.empty()) {
@@ -240,6 +238,32 @@ void Rope::printTree(const PNode& node, size_t level, std::ostream& os) const
     printTree(node->right, level + 1, os);
 }
 
+void Rope::rebalance(PNode node)
+{
+    // TODO: do this ALL in the rope now
+    // and then move the core logic to the FibTree class
+
+    while (node) {
+        auto leftSize = nodeSize(node->left);
+        auto rightSize = nodeSize(node->right);
+        if (leftSize > 2 * rightSize) { // TODO: use Fibonacci tree balancing
+            // Left heavy, rotate right
+            //rotateRight(node);
+             break;
+        }
+
+        if (rightSize > 2 * leftSize) {
+            // Right heavy, rotate left
+            //rotateLeft(node);
+            break;
+        }
+
+
+        //updateSizes(node); // Update sizes after rotation
+
+        node = node->parent;
+    }
+}
 
 std::string Rope::str() const
 {
@@ -290,8 +314,8 @@ Rope::PNode Rope::split(PNode& node, const std::string& text)
 
     auto parent = split(node);
 
-    ASSERT(parent->left->value.isLeftLeaf());
-    ASSERT(parent->right->value.isRightLeaf());
+    ASSERT(parent->left->value.isLeaf());
+    ASSERT(parent->right->value.isLeaf());
 
     ASSERT(parent->left->value.text.size() == MAX_TEXT_SIZE);
     ASSERT(parent->left->key.weight == MAX_TEXT_SIZE);
@@ -354,8 +378,8 @@ Rope::PNode Rope::split(PNode& node, size_t offset)
     auto leftString = node->value.text.substr(0, offset);
     auto rightString = node->value.text.substr(offset, length);
 
-    auto leftNode = makeLeftLeaf(leftString);
-    auto rightNode = makeRightLeaf(rightString);
+    auto leftNode = makeLeaf(leftString);
+    auto rightNode = makeLeaf(rightString);
 
     if (isFull(leftNode)) {
         leftNode->value.isFrozen = true; // freeze the left node
@@ -388,7 +412,7 @@ Rope::PNode Rope::split(PNode& node, size_t offset)
 
     // We have inserted a new subtree into the tree,
     // We must ensure the tree remains balanced and the sizes are correct.
-    // TODO: rebalance(newParent);
+    rebalance(newParent);
 
     return newParent;
 }
@@ -423,20 +447,16 @@ Rope::PNode Rope::leafAt(size_t& offset) const
     auto node = root();
 
     while (node) {
+        if (node->value.isLeaf()) {
+            break;  // found a leaf node even if out of range
+        }
+
         auto weight = node->key.weight;
 
         if (offset < weight) {
-            if (node->value.isLeaf()) {
-                // Found the leaf node at offset
-                break;
-            }
             node = node->left;
         } else if (offset >= weight) {
             offset -= weight;
-            if (node->value.isLeaf()) {
-                // Found the leaf node at offset
-                break;
-            }
             node = node->right;
         }
     }
@@ -461,6 +481,41 @@ void Rope::updateWeights(PNode node, int addedChars)
     }
 }
 
+void Rope::rotateLeft(PNode node)
+{
+    if (!node || !node->right) {
+        return;
+    }
+
+    auto newRoot = node->right;
+    node->right = newRoot->left;
+
+    if (node->right) {
+        node->right->parent = node;
+    }
+
+    newRoot->left = node;
+    newRoot->parent = node->parent;
+
+    if (node->parent) {
+        if (node->parent->left == node) {
+            node->parent->left = newRoot;
+        } else {
+            node->parent->right = newRoot;
+        }
+    } else {
+        setRoot(newRoot); // new root of the tree
+    }
+
+
+    // updateSizeAndWeight(node);
+    // updateSizeAndWeight(newRoot);
+}
+
+void Rope::rotateRight(PNode node)
+{
+}
+
 bool Rope::isFull(const PNode& node) const
 {
     if (!node) {
@@ -480,16 +535,9 @@ bool Rope::isFull(const PNode& node) const
     return true;
 }
 
-Rope::PNode Rope::makeLeftLeaf(const std::string& text)
+Rope::PNode Rope::makeLeaf(const std::string& text)
 {
-    RopeValue value(RopeNodeType::LeftLeaf, false, text);
-
-    return new NodeType(RopeKey(text.size()), std::move(value));
-}
-
-Rope::PNode Rope::makeRightLeaf(const std::string& text)
-{
-    RopeValue value(RopeNodeType::RightLeaf, false, text);
+    RopeValue value(RopeNodeType::Leaf, false, text);
 
     return new NodeType(RopeKey(text.size()), std::move(value));
 }

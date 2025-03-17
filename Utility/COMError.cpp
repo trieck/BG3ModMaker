@@ -1,5 +1,9 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "COMError.h"
+
+#include <atlapp.h>
+#include <atluser.h>
+#include <comdef.h>
 
 COMError::COMError(HRESULT hr, LPUNKNOWN pUnknown, REFIID iid)
 {
@@ -53,6 +57,6 @@ int CoMessageBox(HWND hWndOwner, HRESULT hr, LPUNKNOWN pUnknown,
 {
     auto message = COM_ERROR_DESC(hr, pUnknown);
 
-    return AtlMessageBox(hWndOwner, static_cast<LPCTSTR>(message), title,
-        uType);
+    return WTL::AtlMessageBox(hWndOwner, static_cast<LPCTSTR>(message), title,
+                              uType);
 }

@@ -1,5 +1,8 @@
 #pragma once
 
+#include <atlstr.h>
+#include <atlwin.h>
+
 class COMError
 {
 public:

@@ -1,5 +1,7 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "MessageLoopEx.h"
+
+#include <atltrace.h>
 
 int MessageLoopEx::Run()
 {

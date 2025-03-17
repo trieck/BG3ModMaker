@@ -94,14 +94,14 @@ public:
     void traverse(std::function<void(const K& key, const V& value)> callback) const;
 
 protected:
-    PNode minValueNode(PNode node);
-    void deleteTree(PNode node);
-    void rebalance(PNode node);
-    void setRoot(PNode node);
-    void transplant(PNode u, PNode v);
     bool isBalanced(PNode node) const;
-    void split(PNode node);
+    PNode minValueNode(PNode node);
+    virtual void rebalance(PNode node);
+    void deleteTree(PNode node);
     void merge(PNode node);
+    void setRoot(PNode node);
+    void split(PNode node);
+    void transplant(PNode u, PNode v);
 
 private:
     PNode m_root = nullptr;
@@ -359,6 +359,12 @@ void FibTree<K, V>::merge(PNode node)
 }
 
 template <FibKey K, FibValue V>
+void FibTree<K, V>::rebalance(PNode node)
+{
+    // TODO: placeholder
+}
+
+template <FibKey K, FibValue V>
 typename FibTree<K, V>::PNode FibTree<K, V>::minValueNode(PNode node)
 {
     auto current = node;
@@ -379,37 +385,4 @@ void FibTree<K, V>::deleteTree(PNode node)
     deleteTree(node->right);
 
     delete node;
-}
-
-template <FibKey K, FibValue V>
-void FibTree<K, V>::rebalance(PNode node)
-{
-    // After an insertion or deletion, we need to rebalance the tree
-    // to ensure that the Fibonacci ratios are maintained.
-
-    if (!node) {
-        return;
-    }
-
-    //while (node) { // work our way up to the root
-    //    if (isBalanced(node)) {
-    //        node = node->parent;
-    //        continue;
-    //    }
-
-    //    auto leftSize = node->left ? node->left->size : 0;
-    //    auto rightSize = node->right ? node->right->size : 0;
-    //    auto totalSize = node->size;
-
-    //    auto fib1 = closestFibonacci(totalSize);
-    //    auto fib2 = totalSize - fib1;
-
-    //    if (leftSize > rightSize) {
-    //        split(node->left);
-    //    } else if (rightSize > fib2) {
-    //        split(node->right);
-    //    } else if (leftSize < fib1 || rightSize < fib2) {
-    //        merge(node->left);
-    //    }
-    //}
 }

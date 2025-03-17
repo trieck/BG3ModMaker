@@ -19,8 +19,7 @@ struct RopeKey
 
 enum class RopeNodeType {
     Internal,
-    LeftLeaf,
-    RightLeaf
+    Leaf
 };
 
 struct RopeValue
@@ -36,8 +35,6 @@ struct RopeValue
 
     bool isInternal() const;
     bool isLeaf() const;
-    bool isLeftLeaf() const;
-    bool isRightLeaf() const;
 
     RopeNodeType type = RopeNodeType::Internal;
     bool isFrozen = false;
@@ -48,22 +45,22 @@ class Rope : public FibTree<RopeKey, RopeValue>
 {
 public:
     Rope() = default;
-    ~Rope() = default;
+    virtual ~Rope() = default;
 
     std::string str() const;
     std::string::value_type find(size_t offset) const;
     void insert(size_t offset, const std::string& text);
     void printTree(std::ostream& os) const;
     void exportDOT(const std::string& filename) const;
+    bool isBalanced() const;
 
 private:
     bool isFull(const PNode& node) const;
-    PNode insertText(PNode& node, size_t offset, const std::string& text);
+    PNode insertText(const PNode& node, size_t offset, const std::string& text);
     PNode leafAt(size_t& offset) const;
     PNode leafInsert(PNode& leaf, size_t offset, const std::string& text);
     PNode makeInternal(PNode left, PNode right);
-    PNode makeLeftLeaf(const std::string& text);
-    PNode makeRightLeaf(const std::string& text);
+    PNode makeLeaf(const std::string& text);
     PNode split(PNode& node);
     PNode split(PNode& node, const std::string& text);
     PNode split(PNode& node, size_t offset);
@@ -72,6 +69,9 @@ private:
     std::string::value_type find(const PNode& node, size_t offset) const;
     void printDOT(const PNode& node, std::ostream& os) const;
     void printTree(const PNode& node, size_t level, std::ostream& os) const;
+    void rebalance(PNode node) override;
+    void rotateLeft(PNode node);
+    void rotateRight(PNode node);
     void stream(PNode node, std::ostream& oss) const;
     void updateSizes(PNode node);
     void updateWeights(PNode node, int addedChars);
