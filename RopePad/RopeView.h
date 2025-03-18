@@ -33,12 +33,12 @@ public:
     void OnTimer(UINT_PTR nIDEvent);
 
 private:
+    BOOL InsertChar(UINT nChar);
+    BOOL CanAddChar(UINT nChar);
     void DiscardDevResources();
     HRESULT CreateDevResources();
     HRESULT DrawD2DText();
     void UpdateCaretPos();
-    void UpdateCaretPosX();
-    void UpdateCaretPosY();
 
     RopePad* m_pApp;
     CStringW m_text;
@@ -54,4 +54,3 @@ private:
     CComPtr<ID2D1SolidColorBrush> m_pTextBrush;
     CComPtr<IDWriteTextFormat> m_pTextFormat;
 };
-

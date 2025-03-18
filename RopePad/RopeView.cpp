@@ -10,7 +10,6 @@ static constexpr auto MARGIN_SIZE = 15;
 static constexpr auto CARET_START_X = 17.0f;
 static constexpr auto CARET_START_Y = 20.0f;
 static constexpr auto FONT_SIZE = 20.f;
-static constexpr auto OVERHANG_WIDTH = 2.0f;
 
 RopeView::RopeView(RopePad* pApp) : m_pApp(pApp)
 {
@@ -38,15 +37,14 @@ LRESULT RopeView::OnCreate(LPCREATESTRUCT pcs)
 void RopeView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
     if (nChar == VK_RETURN) {
-        m_text.Insert(m_insertPos++, L"\n");
+        if (!InsertChar(L'\n')) {
+            return; // Ignore if insertion fails
+        }
         m_lineNum++;
     } else if (nChar >= 32 && nChar <= 127) { // Ignore control characters
-
-        // FIXME: Move care to new line if it exceeds the width of the window
-
-
-
-        m_text.Insert(m_insertPos++, static_cast<WCHAR>(nChar));
+        if (!InsertChar(nChar)) {
+            return; // Ignore if insertion fails
+        }
     } else if (nChar == VK_BACK && m_insertPos > 0) {
         if (m_text[m_insertPos - 1] == L'\n') {
             m_lineNum--;
@@ -61,6 +59,75 @@ void RopeView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
     UpdateCaretPos();
 
     (void)DrawD2DText();
+}
+
+BOOL RopeView::InsertChar(UINT nChar)
+{
+    if (!CanAddChar(nChar)) {
+        return FALSE; // Cannot add character if it exceeds the view
+    }
+
+    m_text.Insert(m_insertPos++, static_cast<WCHAR>(nChar));
+
+    return TRUE;
+}
+
+BOOL RopeView::CanAddChar(UINT nChar)
+{
+    if (!(m_pApp && m_pTextFormat)) {
+        return FALSE;
+    }
+
+    auto pWriteFactory = m_pApp->GetDWriteFactory();
+    if (!pWriteFactory) {
+        ATLTRACE(_T("Failed to get DWrite factory\n"));
+        return FALSE;
+    }
+
+    CRect rc;
+    GetClientRect(&rc);
+    InflateRect(&rc, -MARGIN_SIZE, -MARGIN_SIZE);
+
+    CStringW text = m_text + static_cast<WCHAR>(nChar);
+
+    CComPtr<IDWriteTextLayout> pTextLayout;
+    auto hr = pWriteFactory->CreateTextLayout(
+        text.GetString(),
+        text.GetLength(),
+        m_pTextFormat,
+        static_cast<FLOAT>(rc.Width()),
+        static_cast<FLOAT>(rc.Height()),
+        &pTextLayout);
+
+    if (FAILED(hr)) {
+        ATLTRACE(_T("Failed to create text layout\n"));
+        return FALSE;
+    }
+
+    D2D1_POINT_2F caret;
+
+    DWRITE_HIT_TEST_METRICS hm{};
+    hr = pTextLayout->HitTestTextPosition(
+        m_insertPos,
+        FALSE,
+        &caret.x,
+        &caret.y,
+        &hm
+    );
+
+    if (FAILED(hr)) {
+        ATLTRACE(_T("Failed to hit test text position\n"));
+        return FALSE;
+    }
+
+    auto limit = caret.y + CARET_START_Y;
+    if (nChar == L'\n') {
+        limit += hm.height; // Account for new line height
+    }
+
+    auto result = limit < static_cast<float>(rc.bottom);
+
+    return result;
 }
 
 void RopeView::OnDestroy()
@@ -142,6 +209,8 @@ void RopeView::OnSize(UINT nType, CSize size)
     if (FAILED(hr)) {
         ATLTRACE(_T("Failed to resize render target\n"));
     }
+
+    UpdateCaretPos();
 }
 
 HRESULT RopeView::CreateDevResources()
@@ -251,44 +320,7 @@ HRESULT RopeView::DrawD2DText()
 
 void RopeView::UpdateCaretPos()
 {
-    UpdateCaretPosX();
-    UpdateCaretPosY();
-}
-
-void RopeView::UpdateCaretPosX()
-{
-    m_caretX = CARET_START_X;
-
-    if (!m_pRenderTarget) {
-        return; // Render target not created
-    }
-
     if (!(m_pApp && m_pTextFormat)) {
-        return;
-    }
-
-    auto pos = std::max(0, m_insertPos - 1);
-
-    LPCWSTR start = m_text;
-    LPCWSTR end = start + pos;
-
-    while (end > start && *end != L'\n') {
-        --end; // Move back to the start of the line
-    }
-
-    if (*end == L'\n') {
-        ++end; // Move past the newline character
-    }
-
-    auto lineStart = static_cast<int32_t>(end - start);
-
-    auto lineLength = std::max(m_insertPos - lineStart, 0);
-    if (lineLength == 0) {
-        return;
-    }
-
-    auto text = m_text.Mid(lineStart, lineLength);
-    if (text.IsEmpty()) {
         return;
     }
 
@@ -298,83 +330,47 @@ void RopeView::UpdateCaretPosX()
         return;
     }
 
-    CComPtr<IDWriteTextLayout> pTextLayout;
-
-    auto hr = pWriteFactory->CreateTextLayout(
-        text.GetString(), text.GetLength(),
-        m_pTextFormat, 1000.0f, 1000.0f, &pTextLayout);
-    if (FAILED(hr)) {
-        ATLTRACE(_T("Failed to create text layout\n"));
-        return;
-    }
-
-    DWRITE_TEXT_METRICS tm;
-    hr = pTextLayout->GetMetrics(&tm);
-    if (FAILED(hr)) {
-        ATLTRACE(_T("Failed to get text metrics\n"));
-        return;
-    }
-
-    m_caretX = std::max(CARET_START_X, CARET_START_X + tm.width - OVERHANG_WIDTH);
-}
-
-void RopeView::UpdateCaretPosY()
-{
-    m_caretY = CARET_START_Y;
-
-    if (!m_pRenderTarget) {
-        return; // Render target not created
-    }
-
-    if (!(m_pApp && m_pTextFormat)) {
-        return;
-    }
-
-    if (m_lineNum <= 0) {
-        return;
-    }
-
-    auto pWriteFactory = m_pApp->GetDWriteFactory();
-    if (!pWriteFactory) {
-        ATLTRACE(_T("Failed to get DWrite factory\n"));
-        return;
-    }
+    CRect rc;
+    GetClientRect(&rc);
+    InflateRect(&rc, -MARGIN_SIZE, -MARGIN_SIZE);
 
     CComPtr<IDWriteTextLayout> pTextLayout;
-
     auto hr = pWriteFactory->CreateTextLayout(
-        m_text.GetString(), // Full text
+        m_text.GetString(),
         m_text.GetLength(),
         m_pTextFormat,
-        1000.0f, 1000.0f, // Large enough layout box
+        static_cast<FLOAT>(rc.Width()),
+        static_cast<FLOAT>(rc.Height()),
         &pTextLayout);
-
     if (FAILED(hr)) {
         ATLTRACE(_T("Failed to create text layout\n"));
         return;
     }
 
-    uint32_t lineCount = 0;
-    hr = pTextLayout->GetLineMetrics(nullptr, 0, &lineCount);
+    D2D1_POINT_2F caret;
 
-    if (FAILED(hr) && hr != HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER)) {
-        ATLTRACE(_T("Failed to retrieve line count\n"));
-        return;
-    }
+    DWRITE_HIT_TEST_METRICS hm{};
+    hr = pTextLayout->HitTestTextPosition(
+        m_insertPos,
+        FALSE,
+        &caret.x,
+        &caret.y,
+        &hm
+    );
 
-    std::vector<DWRITE_LINE_METRICS> lineMetrics(lineCount);
-    hr = pTextLayout->GetLineMetrics(lineMetrics.data(), lineCount, &lineCount);
     if (FAILED(hr)) {
-        ATLTRACE(_T("Failed to get line metrics\n"));
+        ATLTRACE(_T("Failed to hit test text position\n"));
         return;
     }
 
-    if (m_lineNum >= static_cast<int32_t>(lineCount)) {
-        m_lineNum = static_cast<int32_t>(lineCount) - 1;
-    }
-
-    for (auto i = 0; i < m_lineNum; ++i) {
-        m_caretY += lineMetrics[i].height;
+    if (caret.x + CARET_START_X >= static_cast<float>(rc.right)) {
+        if (CARET_START_Y + caret.y + hm.height < static_cast<float>(rc.bottom)) {
+            m_caretX = CARET_START_X;
+            m_caretY = CARET_START_Y + caret.y + hm.height;
+        }
+    } else if (caret.y + CARET_START_Y < static_cast<float>(rc.bottom)) {
+        m_caretX = CARET_START_X + caret.x;
+        m_caretY = CARET_START_Y + caret.y;
     }
 }
 
