@@ -35,14 +35,17 @@ public:
 private:
     void DiscardDevResources();
     HRESULT CreateDevResources();
-    HRESULT UpdateTextWidth();
     HRESULT DrawD2DText();
+    void UpdateCaretPos();
+    void UpdateCaretPosX();
+    void UpdateCaretPosY();
 
     RopePad* m_pApp;
     CStringW m_text;
-    int32_t m_caretPos = 0;
-    float m_textWidth = 0.f;
-
+    float m_caretX = 0;
+    float m_caretY = 0;
+    int32_t m_insertPos = 0;
+    int32_t m_lineNum = 0;
     BOOL m_showCaret = FALSE;
 
     CComPtr<ID2D1Factory> m_pD2DFactory;

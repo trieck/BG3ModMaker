@@ -21,6 +21,8 @@ public:
         MSG_WM_CREATE(OnCreate)
         MSG_WM_CLOSE(OnClose)
         MSG_WM_SIZE(OnSize)
+        COMMAND_ID_HANDLER3(ID_APP_EXIT, OnFileExit)
+        COMMAND_ID_HANDLER3(ID_HELP_ABOUT, OnAbout)
         CHAIN_MSG_MAP(CFrameWindowImpl)
     END_MSG_MAP()
 
@@ -31,10 +33,16 @@ public:
     BOOL OnIdle() override;
     void OnClose();
     void OnSize(UINT nType, const CSize& size);
+    void OnFileExit();
+    void OnAbout();
 
     BOOL DefCreate();
 
 private:
+    void SetMenuBitmap(UINT nResourceID);
+    void SetMenuBitmaps();
+
     RopePad* m_pApp;
     RopeView m_view;
+    CStatusBarCtrl m_statusBar;
 };

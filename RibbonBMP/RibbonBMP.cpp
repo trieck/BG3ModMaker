@@ -10,14 +10,14 @@
 
 using namespace Gdiplus;
 
-static void makeRibbonBMP(wchar_t* inputImage, wchar_t* outputImage);
+static void makeRibbonBMP(wchar_t* inputImage, wchar_t* outputImage, int size);
 
 static GDIPlus gdiplus;
 
 int wmain(int argc, wchar_t* argv[])
 {
-    if (argc != 3) {
-        wprintf(L"usage: %s <input-image> <output.bmp>\n", argv[0]);
+    if (argc < 3) {
+        wprintf(L"usage: %s <input-image> <output.bmp> [size]\n", argv[0]);
         return 1;
     }
     
@@ -26,8 +26,17 @@ int wmain(int argc, wchar_t* argv[])
         return 1;
     }
 
+    int size = 32; // Default size
+    if (argc == 4) {
+        size = _wtoi(argv[3]);
+        if (size <= 0) {
+            std::wcerr << L"invalid size specified." << std::endl;
+            return 1;
+        }
+    }
+
     try {
-        makeRibbonBMP(argv[1], argv[2]);
+        makeRibbonBMP(argv[1], argv[2], size);
     } catch (Exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
         return 1;
@@ -36,14 +45,14 @@ int wmain(int argc, wchar_t* argv[])
     return 0;
 }
 
-void makeRibbonBMP(wchar_t* inputImage, wchar_t* outputImage)
+void makeRibbonBMP(wchar_t* inputImage, wchar_t* outputImage, int size)
 {
     std::unique_ptr<Bitmap> bmp;
     
     // If the input is an ICO file, extract the best 32x32 icon
     if (wcsstr(inputImage, L".ico") != nullptr) {
         HICON hIcon;
-        auto extracted = PrivateExtractIconsW(inputImage, 0, 32, 32, &hIcon, nullptr, 1, LR_LOADTRANSPARENT);
+        auto extracted = PrivateExtractIconsW(inputImage, 0, size, size, &hIcon, nullptr, 1, LR_LOADTRANSPARENT);
         if (extracted == 0 || hIcon == nullptr) {
             throw Exception("Failed to extract icon.");
         }
@@ -64,11 +73,10 @@ void makeRibbonBMP(wchar_t* inputImage, wchar_t* outputImage)
         throw Exception("Failed to load BMP.");
     }
 
-    // Ensure it is 32x32
-    Bitmap resized(32, 32, PixelFormat32bppARGB);
+    Bitmap resized(size, size, PixelFormat32bppARGB);
     Graphics g(&resized);
     g.SetInterpolationMode(InterpolationModeHighQualityBicubic);
-    g.DrawImage(bmp.get(), 0, 0, 32, 32);
+    g.DrawImage(bmp.get(), 0, 0, size, size);
 
     // Fix transparency: Set all pure black pixels (0,0,0) to transparent
     BitmapData bmpData;

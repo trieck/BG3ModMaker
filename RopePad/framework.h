@@ -20,6 +20,17 @@
 #include <atlwin.h>
 #include <comdef.h>
 
+#ifndef MSG_WM_PAINT2
+#define MSG_WM_PAINT2(func) \
+    if (uMsg == WM_PAINT) { \
+        this->SetMsgHandled(TRUE); \
+        func(CPaintDC(*this)); \
+        lResult = 0; \
+        if(this->IsMsgHandled()) \
+            return TRUE; \
+    }
+#endif  // MSG_WM_PAINT2
+
 #ifndef MSG_WM_DIRECT2DPAINT
 #define MSG_WM_DIRECT2DPAINT(func) \
     if (uMsg == WM_PAINT) { \
@@ -31,3 +42,11 @@
     }
 
 #endif  // MSG_WM_DIRECT2DPAINT
+
+#ifndef COMMAND_ID_HANDLER3
+#define COMMAND_ID_HANDLER3(id, func) \
+    if(uMsg == WM_COMMAND && (id) == LOWORD(wParam)) { \
+        func(); \
+    }
+#endif  // COMMAND_ID_HANDLER3
+

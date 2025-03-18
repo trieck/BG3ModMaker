@@ -1,12 +1,15 @@
 #include "stdafx.h"
 #include "RopeView.h"
+
+#include <algorithm>
 #include "RopePad.h"
 #include "ScopeGuard.h"
 
 static constexpr auto BLINK_TIMER_ID = 0xBABE;
 static constexpr auto MARGIN_SIZE = 15;
-static constexpr auto CARET_START = 20;
-static constexpr auto FONT_SIZE = 24.0f;
+static constexpr auto CARET_START_X = 17.0f;
+static constexpr auto CARET_START_Y = 20.0f;
+static constexpr auto FONT_SIZE = 20.f;
 static constexpr auto OVERHANG_WIDTH = 2.0f;
 
 RopeView::RopeView(RopePad* pApp) : m_pApp(pApp)
@@ -24,12 +27,7 @@ LRESULT RopeView::OnCreate(LPCREATESTRUCT pcs)
 
     ATLASSERT(IsWindow());
 
-    auto blinkRate = GetCaretBlinkTime();
-    if (blinkRate == 0) {
-        blinkRate = 500; // Default blink rate if system setting is zero
-    }
-
-    if (!SetTimer(BLINK_TIMER_ID, blinkRate, nullptr)) {
+    if (!SetTimer(BLINK_TIMER_ID, 200, nullptr)) {
         ATLTRACE(_T("Failed to set timer\n"));
         return -1; // Fail the creation
     }
@@ -39,35 +37,49 @@ LRESULT RopeView::OnCreate(LPCREATESTRUCT pcs)
 
 void RopeView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-    if (nChar >= 32 && nChar != 127) { // Ignore control characters
-        // Insert character at caret position
-        m_text.Insert(m_caretPos, static_cast<WCHAR>(nChar));
-        (void)UpdateTextWidth();
-        m_caretPos++;
-        (void)DrawD2DText();
-    } else if (nChar == VK_BACK && m_caretPos > 0) {
-        // Remove character before caret position
-        m_text.Delete(m_caretPos - 1);
-        (void)UpdateTextWidth();
-        m_caretPos--;
-        (void)DrawD2DText();
-    }    
+    if (nChar == VK_RETURN) {
+        m_text.Insert(m_insertPos++, L"\n");
+        m_lineNum++;
+    } else if (nChar >= 32 && nChar <= 127) { // Ignore control characters
+
+        // FIXME: Move care to new line if it exceeds the width of the window
+
+
+
+        m_text.Insert(m_insertPos++, static_cast<WCHAR>(nChar));
+    } else if (nChar == VK_BACK && m_insertPos > 0) {
+        if (m_text[m_insertPos - 1] == L'\n') {
+            m_lineNum--;
+            m_text.Delete(--m_insertPos);
+        }
+
+        if (m_insertPos > 0) {
+            m_text.Delete(--m_insertPos);
+        }
+    }
+
+    UpdateCaretPos();
+
+    (void)DrawD2DText();
 }
 
 void RopeView::OnDestroy()
 {
     KillTimer(BLINK_TIMER_ID);
 
-    DiscardDevResources();    
+    DiscardDevResources();
 }
 
 void RopeView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-    if (nChar == VK_LEFT && m_caretPos > 0) {
-        m_caretPos--;
-    } else if (nChar == VK_RIGHT && m_caretPos < m_text.GetLength()) {
-        m_caretPos++;
+    if (nChar == VK_LEFT && m_insertPos > 0) {
+        m_insertPos--;
+    } else if (nChar == VK_RIGHT && m_insertPos < m_text.GetLength()) {
+        m_insertPos++;
     }
+
+    UpdateCaretPos();
+    Invalidate();
 }
 
 void RopeView::OnTimer(UINT_PTR nIDEvent)
@@ -84,22 +96,16 @@ void RopeView::OnTimer(UINT_PTR nIDEvent)
 
     m_pRenderTarget->BeginDraw();
 
-    auto caretX = static_cast<float>(CARET_START + m_textWidth);
-    auto caretY = static_cast<float>(CARET_START);
+    float caretX = std::max(CARET_START_X, m_caretX);
+    float caretY = std::max(CARET_START_Y, m_caretY);
 
-    if (m_showCaret) {
-        // Draw caret
-        m_pRenderTarget->DrawLine(
-            D2D1::Point2F(caretX, caretY),
-            D2D1::Point2F(caretX, caretY + FONT_SIZE),
-            m_pTextBrush, 2.0f);
-    } else {
-        // Erase caret by drawing over it
-        m_pRenderTarget->DrawLine(
-            D2D1::Point2F(caretX, caretY),
-            D2D1::Point2F(caretX, caretY + FONT_SIZE),
-            m_pBkgndBrush, 2.0f); // Use background brush to erase
-    }
+    auto pBrush = m_showCaret ? m_pTextBrush : m_pBkgndBrush; // Use text brush if caret is shown, else background brush
+
+    // Draw caret
+    m_pRenderTarget->DrawLine(
+        D2D1::Point2F(caretX, caretY),
+        D2D1::Point2F(caretX, caretY + FONT_SIZE),
+        pBrush, 2.0f);
 
     HRESULT hr = m_pRenderTarget->EndDraw();
     if (FAILED(hr)) {
@@ -111,13 +117,9 @@ void RopeView::OnPaint()
 {
     PAINTSTRUCT ps;
     ScopeGuardSimple guard(
-        [&]() { BeginPaint(&ps); },
-        [&]() { EndPaint(&ps); }
+        [&] { BeginPaint(&ps); },
+        [&] { EndPaint(&ps); }
     );
-
-    if (!(m_pRenderTarget && m_pBkgndBrush && m_pTextBrush && m_pTextFormat)) {
-        return;
-    }
 
     auto hr = DrawD2DText();
     if (FAILED(hr)) {
@@ -205,46 +207,6 @@ HRESULT RopeView::CreateDevResources()
     return hr;
 }
 
-HRESULT RopeView::UpdateTextWidth()
-{
-    if (!m_pApp) {
-        ATLTRACE(_T("RopeView::UpdateTextWidth: m_pApp is null\n"));
-        return E_FAIL;
-    }
-
-    auto pDWriteFactory = m_pApp->GetDWriteFactory();
-    if (!pDWriteFactory) {
-        ATLTRACE(_T("Failed to get DWrite factory\n"));
-        return E_FAIL;
-    }
-
-    CComPtr<IDWriteTextLayout> pTextLayout;
-    auto hr = pDWriteFactory->CreateTextLayout(
-        m_text.GetString(),
-        m_text.GetLength(),
-        m_pTextFormat,
-        1000.0f, // Arbitrary width
-        100.0f,  // Arbitrary height
-        &pTextLayout
-    );
-
-    if (FAILED(hr)) {
-        ATLTRACE(_T("Failed to create text layout\n"));
-        return hr;
-    }
-
-    DWRITE_TEXT_METRICS textMetrics;
-    hr = pTextLayout->GetMetrics(&textMetrics);
-    if (FAILED(hr)) {
-        ATLTRACE(_T("Failed to get text metrics\n"));
-        return hr;
-    }
-
-    m_textWidth = textMetrics.width - OVERHANG_WIDTH;
-
-    return S_OK;
-}
-
 HRESULT RopeView::DrawD2DText()
 {
     if (!m_pRenderTarget || !m_pBkgndBrush || !m_pTextBrush || !m_pTextFormat) {
@@ -272,7 +234,9 @@ HRESULT RopeView::DrawD2DText()
         m_text.GetLength(),
         m_pTextFormat,
         &clipRect,
-        m_pTextBrush
+        m_pTextBrush,
+        D2D1_DRAW_TEXT_OPTIONS_CLIP,
+        DWRITE_MEASURING_MODE_NATURAL
     );
 
     auto hr = m_pRenderTarget->EndDraw();
@@ -283,6 +247,135 @@ HRESULT RopeView::DrawD2DText()
     }
 
     return hr;
+}
+
+void RopeView::UpdateCaretPos()
+{
+    UpdateCaretPosX();
+    UpdateCaretPosY();
+}
+
+void RopeView::UpdateCaretPosX()
+{
+    m_caretX = CARET_START_X;
+
+    if (!m_pRenderTarget) {
+        return; // Render target not created
+    }
+
+    if (!(m_pApp && m_pTextFormat)) {
+        return;
+    }
+
+    auto pos = std::max(0, m_insertPos - 1);
+
+    LPCWSTR start = m_text;
+    LPCWSTR end = start + pos;
+
+    while (end > start && *end != L'\n') {
+        --end; // Move back to the start of the line
+    }
+
+    if (*end == L'\n') {
+        ++end; // Move past the newline character
+    }
+
+    auto lineStart = static_cast<int32_t>(end - start);
+
+    auto lineLength = std::max(m_insertPos - lineStart, 0);
+    if (lineLength == 0) {
+        return;
+    }
+
+    auto text = m_text.Mid(lineStart, lineLength);
+    if (text.IsEmpty()) {
+        return;
+    }
+
+    auto pWriteFactory = m_pApp->GetDWriteFactory();
+    if (!pWriteFactory) {
+        ATLTRACE(_T("Failed to get DWrite factory\n"));
+        return;
+    }
+
+    CComPtr<IDWriteTextLayout> pTextLayout;
+
+    auto hr = pWriteFactory->CreateTextLayout(
+        text.GetString(), text.GetLength(),
+        m_pTextFormat, 1000.0f, 1000.0f, &pTextLayout);
+    if (FAILED(hr)) {
+        ATLTRACE(_T("Failed to create text layout\n"));
+        return;
+    }
+
+    DWRITE_TEXT_METRICS tm;
+    hr = pTextLayout->GetMetrics(&tm);
+    if (FAILED(hr)) {
+        ATLTRACE(_T("Failed to get text metrics\n"));
+        return;
+    }
+
+    m_caretX = std::max(CARET_START_X, CARET_START_X + tm.width - OVERHANG_WIDTH);
+}
+
+void RopeView::UpdateCaretPosY()
+{
+    m_caretY = CARET_START_Y;
+
+    if (!m_pRenderTarget) {
+        return; // Render target not created
+    }
+
+    if (!(m_pApp && m_pTextFormat)) {
+        return;
+    }
+
+    if (m_lineNum <= 0) {
+        return;
+    }
+
+    auto pWriteFactory = m_pApp->GetDWriteFactory();
+    if (!pWriteFactory) {
+        ATLTRACE(_T("Failed to get DWrite factory\n"));
+        return;
+    }
+
+    CComPtr<IDWriteTextLayout> pTextLayout;
+
+    auto hr = pWriteFactory->CreateTextLayout(
+        m_text.GetString(), // Full text
+        m_text.GetLength(),
+        m_pTextFormat,
+        1000.0f, 1000.0f, // Large enough layout box
+        &pTextLayout);
+
+    if (FAILED(hr)) {
+        ATLTRACE(_T("Failed to create text layout\n"));
+        return;
+    }
+
+    uint32_t lineCount = 0;
+    hr = pTextLayout->GetLineMetrics(nullptr, 0, &lineCount);
+
+    if (FAILED(hr) && hr != HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER)) {
+        ATLTRACE(_T("Failed to retrieve line count\n"));
+        return;
+    }
+
+    std::vector<DWRITE_LINE_METRICS> lineMetrics(lineCount);
+    hr = pTextLayout->GetLineMetrics(lineMetrics.data(), lineCount, &lineCount);
+    if (FAILED(hr)) {
+        ATLTRACE(_T("Failed to get line metrics\n"));
+        return;
+    }
+
+    if (m_lineNum >= static_cast<int32_t>(lineCount)) {
+        m_lineNum = static_cast<int32_t>(lineCount) - 1;
+    }
+
+    for (auto i = 0; i < m_lineNum; ++i) {
+        m_caretY += lineMetrics[i].height;
+    }
 }
 
 void RopeView::DiscardDevResources()

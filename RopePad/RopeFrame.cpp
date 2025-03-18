@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "RopeFrame.h"
 
+#include "AboutDlg.h"
+
 extern CAppModule _Module;
 
 RopeFrame::RopeFrame(RopePad* pApp) : m_pApp(pApp), m_view(pApp)
@@ -15,6 +17,7 @@ BOOL RopeFrame::PreTranslateMessage(MSG* pMsg)
 
 LRESULT RopeFrame::OnCreate(LPCREATESTRUCT pcs)
 {
+    SetMenuBitmaps();
     UpdateLayout();
     CenterWindow();
 
@@ -26,6 +29,14 @@ LRESULT RopeFrame::OnCreate(LPCREATESTRUCT pcs)
         ATLTRACE(_T("Unable to create view window.\n"));
         return -1; // Fail the creation
     }
+
+    if (!CreateSimpleStatusBar()) {
+        ATLTRACE("Unable to create status bar.\n");
+        return -1;
+    }
+
+    ATLASSERT(::IsWindow(m_hWndStatusBar));
+    m_statusBar.Attach(m_hWndStatusBar);
 
     // register object for message filtering and idle updates
     auto pLoop = _Module.GetMessageLoop();
@@ -48,9 +59,18 @@ void RopeFrame::OnClose()
 
 void RopeFrame::OnSize(UINT nType, const CSize& size)
 {
-    if (m_view.IsWindow()) {
-        m_view.SetWindowPos(nullptr, 0, 0, size.cx, size.cy, SWP_NOZORDER);
-    }
+    UpdateLayout();
+}
+
+void RopeFrame::OnFileExit()
+{
+    PostMessage(WM_CLOSE);
+}
+
+void RopeFrame::OnAbout()
+{
+    AboutDlg dlg;
+    dlg.DoModal();
 }
 
 BOOL RopeFrame::DefCreate()
@@ -63,4 +83,21 @@ BOOL RopeFrame::DefCreate()
     }
 
     return TRUE;
+}
+
+void RopeFrame::SetMenuBitmap(UINT nResourceID)
+{
+    auto hBmp = ::LoadBitmap(_Module.GetResourceInstance(), MAKEINTRESOURCE(nResourceID));
+    ATLASSERT(hBmp != nullptr);
+    if (hBmp != nullptr) {
+        CMenuHandle menu = GetMenu();
+        ATLASSERT(menu.m_hMenu != nullptr);
+        menu.SetMenuItemBitmaps(nResourceID, MF_BYCOMMAND, hBmp, hBmp);
+    }
+}
+
+void RopeFrame::SetMenuBitmaps()
+{
+    SetMenuBitmap(ID_APP_EXIT);
+    SetMenuBitmap(ID_HELP_ABOUT);
 }
