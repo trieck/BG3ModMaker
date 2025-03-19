@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "RopeFrame.h"
-
 #include "AboutDlg.h"
 
 extern CAppModule _Module;

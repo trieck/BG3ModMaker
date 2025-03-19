@@ -1,7 +1,5 @@
 #include "stdafx.h"
 #include "RopeView.h"
-
-#include <algorithm>
 #include "RopePad.h"
 #include "ScopeGuard.h"
 
@@ -37,14 +35,18 @@ LRESULT RopeView::OnCreate(LPCREATESTRUCT pcs)
 void RopeView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
     if (nChar == VK_RETURN) {
-        if (!InsertChar(L'\n')) {
-            return; // Ignore if insertion fails
-        }
+        InsertChar(L'\n');
         m_lineNum++;
-    } else if (nChar >= 32 && nChar <= 127) { // Ignore control characters
-        if (!InsertChar(nChar)) {
-            return; // Ignore if insertion fails
+
+        float visibleBottom = m_scrollY + GetViewHeight();
+        if (m_caretY > visibleBottom) {
+            m_scrollY += LineHeight(); // Scroll down if caret is out of view
+            m_scrollY = std::min(m_scrollY, m_textMetrics.height - GetViewHeight());
+            Invalidate();
         }
+
+    } else if (nChar >= 32 && nChar <= 127) { // Ignore control characters
+        InsertChar(nChar);
     } else if (nChar == VK_BACK && m_insertPos > 0) {
         if (m_text[m_insertPos - 1] == L'\n') {
             m_lineNum--;
@@ -61,73 +63,19 @@ void RopeView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
     (void)DrawD2DText();
 }
 
-BOOL RopeView::InsertChar(UINT nChar)
+FLOAT RopeView::GetViewHeight() const
 {
-    if (!CanAddChar(nChar)) {
-        return FALSE; // Cannot add character if it exceeds the view
-    }
+    D2D1_RECT_F rc;
+    GetViewRect(rc);
 
-    m_text.Insert(m_insertPos++, static_cast<WCHAR>(nChar));
-
-    return TRUE;
+    return rc.bottom - rc.top;
 }
 
-BOOL RopeView::CanAddChar(UINT nChar)
+void RopeView::InsertChar(UINT nChar)
 {
-    if (!(m_pApp && m_pTextFormat)) {
-        return FALSE;
-    }
+    m_text.Insert(m_insertPos++, static_cast<WCHAR>(nChar));
 
-    auto pWriteFactory = m_pApp->GetDWriteFactory();
-    if (!pWriteFactory) {
-        ATLTRACE(_T("Failed to get DWrite factory\n"));
-        return FALSE;
-    }
-
-    CRect rc;
-    GetClientRect(&rc);
-    InflateRect(&rc, -MARGIN_SIZE, -MARGIN_SIZE);
-
-    CStringW text = m_text + static_cast<WCHAR>(nChar);
-
-    CComPtr<IDWriteTextLayout> pTextLayout;
-    auto hr = pWriteFactory->CreateTextLayout(
-        text.GetString(),
-        text.GetLength(),
-        m_pTextFormat,
-        static_cast<FLOAT>(rc.Width()),
-        static_cast<FLOAT>(rc.Height()),
-        &pTextLayout);
-
-    if (FAILED(hr)) {
-        ATLTRACE(_T("Failed to create text layout\n"));
-        return FALSE;
-    }
-
-    D2D1_POINT_2F caret;
-
-    DWRITE_HIT_TEST_METRICS hm{};
-    hr = pTextLayout->HitTestTextPosition(
-        m_insertPos,
-        FALSE,
-        &caret.x,
-        &caret.y,
-        &hm
-    );
-
-    if (FAILED(hr)) {
-        ATLTRACE(_T("Failed to hit test text position\n"));
-        return FALSE;
-    }
-
-    auto limit = caret.y + CARET_START_Y;
-    if (nChar == L'\n') {
-        limit += hm.height; // Account for new line height
-    }
-
-    auto result = limit < static_cast<float>(rc.bottom);
-
-    return result;
+    (void)UpdateLayout();
 }
 
 void RopeView::OnDestroy()
@@ -149,6 +97,19 @@ void RopeView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
     Invalidate();
 }
 
+LRESULT RopeView::OnMouseWheel(UINT nFlags, short zDelta, const CPoint& pt)
+{
+    auto scrollAmount = zDelta > 0 ? -FONT_SIZE : FONT_SIZE;
+
+    auto maxScroll = std::max(0.f, m_textMetrics.height - GetViewHeight());
+
+    m_scrollY = std::clamp(m_scrollY + scrollAmount, 0.f, maxScroll);
+
+    Invalidate();
+
+    return 0;
+}
+
 void RopeView::OnTimer(UINT_PTR nIDEvent)
 {
     if (nIDEvent != BLINK_TIMER_ID) {
@@ -163,6 +124,9 @@ void RopeView::OnTimer(UINT_PTR nIDEvent)
 
     m_pRenderTarget->BeginDraw();
 
+    auto translation = D2D1::Matrix3x2F::Translation(0, -m_scrollY);
+    m_pRenderTarget->SetTransform(translation);
+
     float caretX = std::max(CARET_START_X, m_caretX);
     float caretY = std::max(CARET_START_Y, m_caretY);
 
@@ -174,10 +138,35 @@ void RopeView::OnTimer(UINT_PTR nIDEvent)
         D2D1::Point2F(caretX, caretY + FONT_SIZE),
         pBrush, 2.0f);
 
+    m_pRenderTarget->SetTransform(D2D1::Matrix3x2F::Identity());
+
     HRESULT hr = m_pRenderTarget->EndDraw();
     if (FAILED(hr)) {
         m_pRenderTarget.Release();
     }
+}
+
+void RopeView::GetViewRect(D2D1_RECT_F& rc) const
+{
+    CRect clientRect;
+    GetClientRect(&clientRect);
+
+    InflateRect(&clientRect, -MARGIN_SIZE, -MARGIN_SIZE);
+
+    if (clientRect.Width() < 0) {
+        clientRect.left = 0;
+        clientRect.right = 0;
+    }
+
+    if (clientRect.Height() < 0) {
+        clientRect.top = 0;
+        clientRect.bottom = 0;
+    }
+
+    rc.left = static_cast<FLOAT>(clientRect.left);
+    rc.top = static_cast<FLOAT>(clientRect.top);
+    rc.right = static_cast<FLOAT>(clientRect.right);
+    rc.bottom = static_cast<FLOAT>(clientRect.bottom);
 }
 
 void RopeView::OnPaint()
@@ -210,7 +199,7 @@ void RopeView::OnSize(UINT nType, CSize size)
         ATLTRACE(_T("Failed to resize render target\n"));
     }
 
-    UpdateCaretPos();
+    (void)UpdateLayout();
 }
 
 HRESULT RopeView::CreateDevResources()
@@ -223,7 +212,7 @@ HRESULT RopeView::CreateDevResources()
 
     DiscardDevResources();
 
-    RECT rc;
+    CRect rc;
     GetClientRect(&rc);
 
     auto hwndProps = D2D1::HwndRenderTargetProperties(m_hWnd, D2D1::SizeU(rc.right, rc.bottom));
@@ -273,6 +262,12 @@ HRESULT RopeView::CreateDevResources()
         ATLTRACE(_T("Failed to create text brush\n"));
     }
 
+    hr = UpdateLayout();
+    if (FAILED(hr)) {
+        ATLTRACE(_T("Failed to update layout\n"));
+        return hr;
+    }
+
     return hr;
 }
 
@@ -282,31 +277,28 @@ HRESULT RopeView::DrawD2DText()
         return E_FAIL; // Ensure all resources are available
     }
 
-    CRect rc;
-    GetClientRect(&rc);
-
-    InflateRect(&rc, -MARGIN_SIZE, -MARGIN_SIZE);
-
-    D2D1_RECT_F clipRect = D2D1::RectF(
-        static_cast<FLOAT>(rc.left),
-        static_cast<FLOAT>(rc.top),
-        static_cast<FLOAT>(rc.right),
-        static_cast<FLOAT>(rc.bottom));
+    D2D1_RECT_F rc;
+    GetViewRect(rc);
 
     m_pRenderTarget->BeginDraw();
 
     m_pRenderTarget->Clear(D2D1::ColorF(0x600000));
-    m_pRenderTarget->FillRectangle(clipRect, m_pBkgndBrush);
+    m_pRenderTarget->FillRectangle(rc, m_pBkgndBrush);
+
+    auto translation = D2D1::Matrix3x2F::Translation(0, -m_scrollY);
+    m_pRenderTarget->SetTransform(translation);
 
     m_pRenderTarget->DrawText(
         m_text.GetString(),
         m_text.GetLength(),
         m_pTextFormat,
-        &clipRect,
+        &rc,
         m_pTextBrush,
         D2D1_DRAW_TEXT_OPTIONS_CLIP,
         DWRITE_MEASURING_MODE_NATURAL
     );
+
+    m_pRenderTarget->SetTransform(D2D1::Matrix3x2F::Identity());
 
     auto hr = m_pRenderTarget->EndDraw();
     if (hr == D2DERR_RECREATE_TARGET) {
@@ -318,39 +310,60 @@ HRESULT RopeView::DrawD2DText()
     return hr;
 }
 
-void RopeView::UpdateCaretPos()
+HRESULT RopeView::UpdateLayout()
 {
     if (!(m_pApp && m_pTextFormat)) {
-        return;
+        return E_FAIL;
     }
 
     auto pWriteFactory = m_pApp->GetDWriteFactory();
     if (!pWriteFactory) {
         ATLTRACE(_T("Failed to get DWrite factory\n"));
-        return;
+        return E_FAIL;
     }
 
-    CRect rc;
-    GetClientRect(&rc);
-    InflateRect(&rc, -MARGIN_SIZE, -MARGIN_SIZE);
+    D2D1_RECT_F rc;
+    GetViewRect(rc);
 
-    CComPtr<IDWriteTextLayout> pTextLayout;
+    auto width = rc.right - rc.left;
+    auto height = rc.bottom - rc.top;
+
+    m_pTextLayout.Release();
+
     auto hr = pWriteFactory->CreateTextLayout(
         m_text.GetString(),
         m_text.GetLength(),
         m_pTextFormat,
-        static_cast<FLOAT>(rc.Width()),
-        static_cast<FLOAT>(rc.Height()),
-        &pTextLayout);
+        width,
+        height,
+        &m_pTextLayout);
+
     if (FAILED(hr)) {
         ATLTRACE(_T("Failed to create text layout\n"));
+        return hr;
+    }
+
+    hr = m_pTextLayout->GetMetrics(&m_textMetrics);
+    if (FAILED(hr)) {
+        ATLTRACE(_T("Failed to get text metrics\n"));
+        return hr;
+    }
+
+    UpdateCaretPos();
+
+    return hr;
+}
+
+void RopeView::UpdateCaretPos()
+{
+    if (!m_pTextLayout) {
         return;
     }
 
     D2D1_POINT_2F caret;
-
     DWRITE_HIT_TEST_METRICS hm{};
-    hr = pTextLayout->HitTestTextPosition(
+
+    auto hr = m_pTextLayout->HitTestTextPosition(
         m_insertPos,
         FALSE,
         &caret.x,
@@ -363,15 +376,25 @@ void RopeView::UpdateCaretPos()
         return;
     }
 
-    if (caret.x + CARET_START_X >= static_cast<float>(rc.right)) {
-        if (CARET_START_Y + caret.y + hm.height < static_cast<float>(rc.bottom)) {
-            m_caretX = CARET_START_X;
-            m_caretY = CARET_START_Y + caret.y + hm.height;
-        }
-    } else if (caret.y + CARET_START_Y < static_cast<float>(rc.bottom)) {
+    D2D1_RECT_F rc;
+    GetViewRect(rc);
+
+    if (caret.x + CARET_START_X >= rc.right) {
+        m_caretX = CARET_START_X;
+        m_caretY = CARET_START_Y + caret.y + hm.height/* - m_scrollY*/;
+    } else {
         m_caretX = CARET_START_X + caret.x;
-        m_caretY = CARET_START_Y + caret.y;
+        m_caretY = CARET_START_Y + caret.y/* - m_scrollY*/;
     }
+}
+
+FLOAT RopeView::LineHeight() const
+{
+    if (m_textMetrics.lineCount == 0) {
+        return 0.0f;
+    }
+
+    return m_textMetrics.height / static_cast<FLOAT>(m_textMetrics.lineCount);
 }
 
 void RopeView::DiscardDevResources()
@@ -386,6 +409,10 @@ void RopeView::DiscardDevResources()
 
     if (m_pTextBrush) {
         m_pTextBrush.Release();
+    }
+
+    if (m_pTextLayout) {
+        m_pTextLayout.Release();
     }
 
     if (m_pTextFormat) {
