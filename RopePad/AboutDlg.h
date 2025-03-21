@@ -16,7 +16,6 @@ public:
     void OnClose();
 
 private:
-    CTabCtrl m_tabCtrl;
-    CStatic m_static;
+    CFont m_font;
 };
 

@@ -5,17 +5,28 @@ extern CAppModule _Module;
 
 BOOL AboutDlg::OnInitDialog(HWND, LPARAM)
 {
-    m_tabCtrl = GetDlgItem(IDC_TAB_ABOUT);
-    //m_static = GetDlgItem(IDC_ABOUT_TEXT);
-
-    if (m_tabCtrl.IsWindow()) {
+    CTabCtrl tabCtrl;
+    tabCtrl.Attach(GetDlgItem(IDC_TAB_ABOUT));
+    if (tabCtrl.IsWindow()) {
         // Set the tab control to have a single tab
         TCITEM tie;
         tie.mask = TCIF_TEXT;
         tie.pszText = const_cast<LPSTR>("RopePad");
         tie.cchTextMax = 256;
-        m_tabCtrl.InsertItem(0, &tie);
+        tabCtrl.InsertItem(0, &tie);
     }
+
+    CStatic aboutText;
+    aboutText.Attach(GetDlgItem(IDC_ABOUT_TEXT));
+
+    LOGFONT lf{};
+    lf.lfCharSet = DEFAULT_CHARSET;
+    lf.lfHeight = 16;
+    lf.lfWeight = FW_SEMIBOLD;
+    Checked::tcsncpy_s(lf.lfFaceName, _countof(lf.lfFaceName), _T("Segoe UI"), _TRUNCATE);
+
+    m_font.CreateFontIndirect(&lf);
+    aboutText.SetFont(m_font);
 
     auto hWnd = GetDlgItem(IDC_ABOUT_IMG);
     if (hWnd) {

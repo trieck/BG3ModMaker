@@ -33,17 +33,18 @@ public:
     void OnPaint();
     void OnSize(UINT nType, CSize size);
     void OnTimer(UINT_PTR nIDEvent);
-    void GetViewRect(D2D1_RECT_F& rc) const;
+    
+private:
     FLOAT GetViewHeight() const;
 
-private:
-    void InsertChar(UINT nChar);
+    FLOAT LineHeight() const;
     HRESULT CreateDevResources();
     HRESULT DrawD2DText();
     HRESULT UpdateLayout();
     void DiscardDevResources();
+    void GetViewRect(D2D1_RECT_F& rc) const;
+    FLOAT GetViewBottom();
     void UpdateCaretPos();
-    FLOAT LineHeight() const;
 
     RopePad* m_pApp;
     int32_t m_insertPos = 0;

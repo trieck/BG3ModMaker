@@ -35,21 +35,17 @@ LRESULT RopeView::OnCreate(LPCREATESTRUCT pcs)
 void RopeView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
     if (nChar == VK_RETURN) {
-        InsertChar(L'\n');
-        m_lineNum++;
+        m_text.Insert(m_insertPos++, static_cast<WCHAR>(nChar));
+        (void)UpdateLayout();
 
-        float visibleBottom = m_scrollY + GetViewHeight();
-        if (m_caretY > visibleBottom) {
-            m_scrollY += LineHeight(); // Scroll down if caret is out of view
-            m_scrollY = std::min(m_scrollY, m_textMetrics.height - GetViewHeight());
-            Invalidate();
-        }
-
+        auto lineHeight = LineHeight();
+        auto viewHeight = GetViewHeight();
+        auto maxScroll = std::max(0.f, m_textMetrics.height - viewHeight);
+        m_scrollY = std::clamp(m_scrollY + lineHeight, 0.f, maxScroll);
     } else if (nChar >= 32 && nChar <= 127) { // Ignore control characters
-        InsertChar(nChar);
+        m_text.Insert(m_insertPos++, static_cast<WCHAR>(nChar));
     } else if (nChar == VK_BACK && m_insertPos > 0) {
         if (m_text[m_insertPos - 1] == L'\n') {
-            m_lineNum--;
             m_text.Delete(--m_insertPos);
         }
 
@@ -58,8 +54,7 @@ void RopeView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
         }
     }
 
-    UpdateCaretPos();
-
+    (void)UpdateLayout();
     (void)DrawD2DText();
 }
 
@@ -69,13 +64,6 @@ FLOAT RopeView::GetViewHeight() const
     GetViewRect(rc);
 
     return rc.bottom - rc.top;
-}
-
-void RopeView::InsertChar(UINT nChar)
-{
-    m_text.Insert(m_insertPos++, static_cast<WCHAR>(nChar));
-
-    (void)UpdateLayout();
 }
 
 void RopeView::OnDestroy()
@@ -99,12 +87,15 @@ void RopeView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 LRESULT RopeView::OnMouseWheel(UINT nFlags, short zDelta, const CPoint& pt)
 {
-    auto scrollAmount = zDelta > 0 ? -FONT_SIZE : FONT_SIZE;
+    auto lineHeight = LineHeight();
+
+    auto scrollAmount = zDelta > 0 ? -lineHeight : lineHeight;
 
     auto maxScroll = std::max(0.f, m_textMetrics.height - GetViewHeight());
 
     m_scrollY = std::clamp(m_scrollY + scrollAmount, 0.f, maxScroll);
 
+    UpdateCaretPos();
     Invalidate();
 
     return 0;
@@ -153,20 +144,22 @@ void RopeView::GetViewRect(D2D1_RECT_F& rc) const
 
     InflateRect(&clientRect, -MARGIN_SIZE, -MARGIN_SIZE);
 
-    if (clientRect.Width() < 0) {
-        clientRect.left = 0;
-        clientRect.right = 0;
-    }
-
-    if (clientRect.Height() < 0) {
-        clientRect.top = 0;
-        clientRect.bottom = 0;
-    }
+    clientRect.left = std::max<LONG>(0, clientRect.left);
+    clientRect.top = std::max<LONG>(0, clientRect.top);
+    clientRect.right = std::max(clientRect.left, clientRect.right);
+    clientRect.bottom = std::max(clientRect.top, clientRect.bottom);
 
     rc.left = static_cast<FLOAT>(clientRect.left);
     rc.top = static_cast<FLOAT>(clientRect.top);
     rc.right = static_cast<FLOAT>(clientRect.right);
     rc.bottom = static_cast<FLOAT>(clientRect.bottom);
+}
+
+FLOAT RopeView::GetViewBottom()
+{
+    D2D1_RECT_F rc;
+    GetViewRect(rc);
+    return rc.bottom;
 }
 
 void RopeView::OnPaint()
@@ -288,16 +281,22 @@ HRESULT RopeView::DrawD2DText()
     auto translation = D2D1::Matrix3x2F::Translation(0, -m_scrollY);
     m_pRenderTarget->SetTransform(translation);
 
+    D2D1_RECT_F clipRect = rc;
+    clipRect.bottom += m_scrollY; // Adjust the clip rect for scrolling
+
+    m_pRenderTarget->PushAxisAlignedClip(clipRect, D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+
     m_pRenderTarget->DrawText(
         m_text.GetString(),
         m_text.GetLength(),
         m_pTextFormat,
-        &rc,
+        &clipRect,
         m_pTextBrush,
         D2D1_DRAW_TEXT_OPTIONS_CLIP,
         DWRITE_MEASURING_MODE_NATURAL
     );
 
+    m_pRenderTarget->PopAxisAlignedClip();
     m_pRenderTarget->SetTransform(D2D1::Matrix3x2F::Identity());
 
     auto hr = m_pRenderTarget->EndDraw();
@@ -326,7 +325,9 @@ HRESULT RopeView::UpdateLayout()
     GetViewRect(rc);
 
     auto width = rc.right - rc.left;
-    auto height = rc.bottom - rc.top;
+    auto viewHeight = rc.bottom - rc.top;
+
+    auto totalHeight = std::max(viewHeight + m_scrollY, m_textMetrics.height);
 
     m_pTextLayout.Release();
 
@@ -335,7 +336,7 @@ HRESULT RopeView::UpdateLayout()
         m_text.GetLength(),
         m_pTextFormat,
         width,
-        height,
+        totalHeight,
         &m_pTextLayout);
 
     if (FAILED(hr)) {
@@ -379,13 +380,22 @@ void RopeView::UpdateCaretPos()
     D2D1_RECT_F rc;
     GetViewRect(rc);
 
+    float newCaretX, newCaretY;
     if (caret.x + CARET_START_X >= rc.right) {
-        m_caretX = CARET_START_X;
-        m_caretY = CARET_START_Y + caret.y + hm.height/* - m_scrollY*/;
+        newCaretX = CARET_START_X;
+        newCaretY = CARET_START_Y + caret.y + hm.height + m_scrollY;
     } else {
-        m_caretX = CARET_START_X + caret.x;
-        m_caretY = CARET_START_Y + caret.y/* - m_scrollY*/;
+        newCaretX = CARET_START_X + caret.x;
+        newCaretY = CARET_START_Y + caret.y + m_scrollY;
     }
+
+    auto maxX = std::max(CARET_START_X, rc.right);
+    auto maxY = std::max(CARET_START_Y, rc.bottom - hm.height + m_scrollY);
+
+    m_caretX = std::clamp(newCaretX, CARET_START_X, maxX);
+    m_caretY = std::clamp(newCaretY, CARET_START_Y, maxY);
+
+    Invalidate();
 }
 
 FLOAT RopeView::LineHeight() const
