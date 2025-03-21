@@ -45,7 +45,7 @@ void RopeView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
     } else if (nChar >= 32 && nChar <= 127) { // Ignore control characters
         m_text.Insert(m_insertPos++, static_cast<WCHAR>(nChar));
     } else if (nChar == VK_BACK && m_insertPos > 0) {
-        if (m_text[m_insertPos - 1] == L'\n') {
+        if (m_text[m_insertPos - 1] == L'\n' || m_text[m_insertPos - 1] == L'\r') {
             m_text.Delete(--m_insertPos);
         }
 
@@ -349,6 +349,8 @@ HRESULT RopeView::UpdateLayout()
         ATLTRACE(_T("Failed to get text metrics\n"));
         return hr;
     }
+
+    m_scrollY = std::clamp(m_scrollY, 0.f, std::max(0.f, m_textMetrics.height - GetViewHeight()));
 
     UpdateCaretPos();
 

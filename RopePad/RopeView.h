@@ -36,7 +36,6 @@ public:
     
 private:
     FLOAT GetViewHeight() const;
-
     FLOAT LineHeight() const;
     HRESULT CreateDevResources();
     HRESULT DrawD2DText();

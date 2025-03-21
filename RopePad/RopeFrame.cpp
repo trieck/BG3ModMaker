@@ -74,7 +74,7 @@ void RopeFrame::OnAbout()
 
 BOOL RopeFrame::DefCreate()
 {
-    RECT rect = {0, 0, 400, 500};
+    RECT rect = {0, 0, 600, 400};
     auto hWnd = CreateEx(nullptr, rect);
     if (hWnd == nullptr) {
         ATLTRACE(_T("Unable to create frame window.\n"));
