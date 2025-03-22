@@ -102,25 +102,56 @@ public:
         Assert::IsTrue(rope.isBalanced());
         Assert::AreEqual(std::string("Hello World"), rope.str());
     }
-
-    TEST_METHOD(InsertAtEveryOffset)
+    
+    TEST_METHOD(TestInsertEverywhere)
     {
-        const std::string base = "ABCDEFG";
+        const std::string base(30, 'A');
 
         for (auto i = 0u; i <= base.size(); ++i) {
             Rope rope;
             rope.insert(0, base);
             rope.exportDOT(ropeDOT);
 
-            // Insert "x" at every possible offset from 0 to base.size()
+            auto expected = base;
+            expected.insert(i, "x");
+
             rope.insert(i, "x");
             rope.exportDOT(ropeDOT);
 
-            std::string expected = base.substr(0, i) + "x" + base.substr(i);
-            std::string actual = rope.str();
-
-            Assert::AreEqual(expected, actual, L"Insert at offset failed");
+            auto actual = rope.str();
+            Assert::AreEqual(expected, actual, std::wstring(L"Mismatch at offset " + std::to_wstring(i)).c_str());
         }
+    }
+
+    TEST_METHOD(TestMultipleInsertsAtSameOffset)
+    {
+        Rope rope;
+        rope.insert(0, "Hello");
+
+        rope.insert(3, "x");
+        rope.insert(3, "y");
+        rope.insert(3, "z");
+
+        std::string expected = "Helzyxlo";
+        std::string actual = rope.str();
+
+        Assert::AreEqual(expected, actual);
+    }
+
+    TEST_METHOD(TestInsertAtSplitBoundary)
+    {
+        Rope rope;
+
+        // Fill one leaf to capacity (if MAX_TEXT_SIZE is 3)
+        rope.insert(0, "ABC"); // "ABC"
+
+        // Insert at the split boundary
+        rope.insert(3, "x");    // Expect: "ABCx"
+
+        std::string expected = "ABCx";
+        auto actual = rope.str();
+
+        Assert::AreEqual(expected, actual);
     }
 };
 
