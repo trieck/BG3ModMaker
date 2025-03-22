@@ -105,18 +105,16 @@ public:
 
     TEST_METHOD(InsertAtEveryOffset)
     {
-        std::string base = "ABCDEFG";
+        const std::string base = "ABCDEFG";
 
-        for (size_t i = 6; i <= base.size(); ++i) {
+        for (auto i = 0u; i <= base.size(); ++i) {
             Rope rope;
             rope.insert(0, base);
             rope.exportDOT(ropeDOT);
 
             // Insert "x" at every possible offset from 0 to base.size()
             rope.insert(i, "x");
-
             rope.exportDOT(ropeDOT);
-
 
             std::string expected = base.substr(0, i) + "x" + base.substr(i);
             std::string actual = rope.str();

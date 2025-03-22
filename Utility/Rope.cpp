@@ -459,7 +459,7 @@ Rope::PNode Rope::split(PNode& node, size_t offset, const std::string& text)
     ASSERT(leaf->key.weight <= MAX_TEXT_SIZE);
     ASSERT(leaf->value.text.size() <= MAX_TEXT_SIZE);
 
-    return leafInsert(leaf, 0, text); // insert the new text into the leaf
+    return leafInsert(leaf, offset, text); // insert the new text into the leaf
 }
 
 Rope::PNode Rope::leafAt(size_t& offset) const
