@@ -2,7 +2,6 @@
 #include "MD5.h"
 #include "Rope.h"
 
-#include <numbers>
 
 RopeKey::RopeKey(size_t w) : weight(w)
 {
@@ -74,9 +73,7 @@ Rope::PNode Rope::leafInsert(PNode& leaf, size_t offset, const std::string& text
     auto leftText = text.substr(0, leftTextLen);
     auto rightText = text.substr(text.size() - rightTextLen);
 
-    auto localOffset = offset - leaf->key.weight;
-
-    insertText(leaf, localOffset, leftText);
+    insertText(leaf, offset, leftText);
 
     if (rightText.empty()) {
         return leaf;
@@ -89,10 +86,12 @@ Rope::PNode Rope::insertText(const PNode& node, size_t offset, const std::string
 {
     ASSERT(node && !node->value.isFrozen);
     ASSERT(node->value.isLeaf());
-    ASSERT(offset <= node->value.text.size());
-    ASSERT(offset <= MAX_TEXT_SIZE);
     ASSERT(node->key.weight + text.size() <= MAX_TEXT_SIZE);
     ASSERT(node->value.text.size() + text.size() <= MAX_TEXT_SIZE);
+
+    offset = std::min(offset, node->value.text.size());
+
+    ASSERT(offset <= MAX_TEXT_SIZE);
 
     node->value.text.insert(offset, text);
     updateWeights(node, static_cast<int>(text.size()));
@@ -321,6 +320,15 @@ void Rope::subtractWeightAndSize(PNode node)
     }
 }
 
+size_t Rope::nodeSize(PNode node) const
+{
+    if (!node) {
+        return 0;
+    }
+
+    return node->size;
+}
+
 Rope::PNode Rope::split(PNode& node, const std::string& text)
 {
     // This is the recursive split method for inserting text into a full node.
@@ -359,15 +367,6 @@ Rope::PNode Rope::split(PNode& node, const std::string& text)
     }
 
     return split(leaf, rightText);
-}
-
-size_t Rope::nodeSize(PNode node) const
-{
-    if (!node) {
-        return 0;
-    }
-
-    return node->size;
 }
 
 Rope::PNode Rope::split(PNode& node)

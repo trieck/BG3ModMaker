@@ -1,13 +1,15 @@
 #pragma once
 
+#include <algorithm>
 #include <array>
 #include <cstdint>
 #include <exception>
 #include <filesystem>
+#include <fstream>
 #include <functional>
 #include <iostream>
-#include <fstream>
 #include <memory>
+#include <numbers>
 #include <ranges>
 #include <sstream>
 #include <string_view>

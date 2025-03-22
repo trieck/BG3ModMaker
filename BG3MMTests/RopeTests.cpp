@@ -2,7 +2,6 @@
 #include <CppUnitTest.h>
 #include <filesystem>
 #include <functional>
-#include <iostream>
 
 #include "Rope.h"
 
@@ -51,6 +50,7 @@ public:
         rope.exportDOT(outPath.string());
         
         Assert::AreEqual(std::string("Hello, Big World"), rope.str());
+        Assert::IsTrue(rope.isBalanced());
     }
 
     TEST_METHOD(TestLargeInsertion)
@@ -75,12 +75,28 @@ public:
         rope.insert(6, "Bunny");
         rope.insert(11, "And");
         rope.insert(14, "Bruno");
-        
 
         fs::path exePath = fs::current_path();
         fs::path outPath = exePath / "rope.dot";
         rope.exportDOT(outPath.string());
 
+        Assert::AreEqual(std::string("BigTopBunnyAndBruno"), rope.str());
         Assert::IsTrue(rope.isBalanced());
+    }
+
+    TEST_METHOD(TestFixInsert)
+    {
+        fs::path exePath = fs::current_path();
+        fs::path outPath = exePath / "rope.dot";
+
+        Rope rope;
+        rope.insert(0, "Hello ");
+        rope.exportDOT(outPath.string());
+
+        rope.insert(6, "World");
+        rope.exportDOT(outPath.string());
+
+        Assert::IsTrue(rope.isBalanced());
+        Assert::AreEqual(std::string("Hello World"), rope.str());
     }
 };
