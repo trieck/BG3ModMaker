@@ -11,11 +11,7 @@ namespace fs = std::filesystem;
 
 TEST_CLASS(RopeTests)
 {
-public:
-    TEST_METHOD_INITIALIZE(Setup)
-    {        // Any setup code can go here
-    }
-
+public:    
     TEST_METHOD(TestBasicInsertion)
     {
         Rope rope;
@@ -74,10 +70,12 @@ public:
     TEST_METHOD(TestBalance)
     {
         Rope rope;
-        rope.insert(0, "A");
-        rope.insert(1, "B");
-        rope.insert(2, "C");
-        rope.insert(3, "D");
+        rope.insert(0, "Big");
+        rope.insert(3, "Top");
+        rope.insert(6, "Bunny");
+        rope.insert(11, "And");
+        rope.insert(14, "Bruno");
+        
 
         fs::path exePath = fs::current_path();
         fs::path outPath = exePath / "rope.dot";

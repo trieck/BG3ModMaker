@@ -54,6 +54,7 @@ public:
     bool isBalanced() const;
 
 private:
+    bool isBalanced(PNode node) const;
     bool isFull(const PNode& node) const;
     PNode insertText(const PNode& node, size_t offset, const std::string& text);
     PNode leafAt(size_t& offset) const;
@@ -64,7 +65,7 @@ private:
     PNode split(PNode& node, const std::string& text);
     PNode split(PNode& node, size_t offset);
     PNode split(PNode& node, size_t offset, const std::string& text);
-    size_t nodeSize(PNode node);
+    size_t nodeSize(PNode node) const;
     std::string::value_type find(const PNode& node, size_t offset) const;
     void addWeightAndSize(PNode node);
     void printDOT(const PNode& node, std::ostream& os) const;

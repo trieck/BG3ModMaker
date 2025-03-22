@@ -189,10 +189,34 @@ void Rope::exportDOT(const std::string& filename) const
     ofs.close();
 }
 
+
 bool Rope::isBalanced() const
 {
-    // TODO: Implement a proper balance check for the rope
-    return true;
+    return isBalanced(root());
+}
+
+bool Rope::isBalanced(PNode node) const
+{
+    if (!node) {
+        return true;
+    }
+
+    if (node->value.isLeaf()) {
+        return true; // leaf nodes are balanced
+    }
+
+    auto l = nodeSize(node->left);
+    auto r = nodeSize(node->right);
+
+    if (l <= 3 && r <=3 ) {
+        return true;
+    }
+
+    auto ratio = static_cast<float>(std::max(l, r)) / static_cast<float>(std::min(l, r));
+
+    return ratio <= std::numbers::phi_v<float> &&
+        isBalanced(node->left) &&
+        isBalanced(node->right);
 }
 
 void Rope::rebalance(PNode node)
@@ -337,7 +361,7 @@ Rope::PNode Rope::split(PNode& node, const std::string& text)
     return split(leaf, rightText);
 }
 
-size_t Rope::nodeSize(PNode node)
+size_t Rope::nodeSize(PNode node) const
 {
     if (!node) {
         return 0;
