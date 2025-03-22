@@ -64,7 +64,7 @@ Rope::PNode Rope::leafInsert(PNode& leaf, size_t offset, const std::string& text
 
     auto spaceLeft = MAX_TEXT_SIZE - leaf->key.weight;
     if (spaceLeft >= text.size()) { // text fits in leaf
-        return insertText(leaf, leaf->key.weight, text);
+        return insertText(leaf, offset, text);
     }
 
     auto leftTextLen = std::min(spaceLeft, text.size());
