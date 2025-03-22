@@ -50,7 +50,6 @@ public:
     std::string str() const;
     std::string::value_type find(size_t offset) const;
     void insert(size_t offset, const std::string& text);
-    void printTree(std::ostream& os) const;
     void exportDOT(const std::string& filename) const;
     bool isBalanced() const;
 
@@ -67,12 +66,13 @@ private:
     PNode split(PNode& node, size_t offset, const std::string& text);
     size_t nodeSize(PNode node);
     std::string::value_type find(const PNode& node, size_t offset) const;
+    void addWeightAndSize(PNode node);
     void printDOT(const PNode& node, std::ostream& os) const;
-    void printTree(const PNode& node, size_t level, std::ostream& os) const;
     void rebalance(PNode node) override;
     void rotateLeft(PNode node);
     void rotateRight(PNode node);
     void stream(PNode node, std::ostream& oss) const;
+    void subtractWeightAndSize(PNode node);
     void updateSizes(PNode node);
     void updateWeights(PNode node, int addedChars);
 

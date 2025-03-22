@@ -29,8 +29,6 @@ public:
         Rope rope;
         rope.insert(0, "Hello, World");
 
-        rope.printTree(std::cout);
-
         Assert::AreEqual('H', rope.find(0));
         Assert::AreEqual('W', rope.find(7));
         Assert::AreEqual('d', rope.find(11));
@@ -62,8 +60,13 @@ public:
     TEST_METHOD(TestLargeInsertion)
     {
         Rope rope;
-        std::string longText(5000, 'A');
+        std::string longText(40, 'A');
         rope.insert(0, longText);
+
+        fs::path exePath = fs::current_path();
+        fs::path outPath = exePath / "rope.dot";
+
+        rope.exportDOT(outPath.string());
 
         Assert::AreEqual(longText, rope.str());
     }

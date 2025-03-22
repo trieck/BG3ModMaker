@@ -2,6 +2,8 @@
 #include "MD5.h"
 #include "Rope.h"
 
+#include <numbers>
+
 RopeKey::RopeKey(size_t w) : weight(w)
 {
 }
@@ -128,14 +130,6 @@ std::string::value_type Rope::find(const PNode& node, size_t offset) const
     return find(node->left, offset);
 }
 
-void Rope::printTree(std::ostream& os) const
-{
-    if (isEmpty()) {
-        return;
-    }
-    printTree(root(), 0, os);
-}
-
 void Rope::printDOT(const PNode& node, std::ostream& os) const
 {
     if (!node) {
@@ -201,65 +195,31 @@ bool Rope::isBalanced() const
     return true;
 }
 
-void Rope::printTree(const PNode& node, size_t level, std::ostream& os) const
-{
-    if (!node) {
-        return;
-    }
-
-    MD5 md5;
-
-    auto nodeId = md5.digestString(std::to_string(reinterpret_cast<uintptr_t>(node))).substr(0, 4);
-    auto parentId = node->parent
-                        ? md5.digestString(std::to_string(reinterpret_cast<uintptr_t>(node->parent))).substr(0, 4)
-                        : "null";
-
-    std::string indent = (level > 0) ? std::string((level - 1) * 4, ' ') + "|-- " : "";
-    os << indent << "[H:" << nodeId << " | P:" << parentId
-        << " | W:" << node->key.weight << " | S:" << node->size << "] ";
-
-    if (node->value.isInternal()) {
-        os << "(Internal)";
-    } else {
-        os << "(Leaf)";
-    }
-
-    if (!node->value.text.empty()) {
-        os << "\"" << node->value.text << "\"";
-    }
-
-    if (!node->value.isInternal() && node->value.isFrozen) {
-        os << " [FROZEN]";
-    }
-
-    os << std::endl;
-
-    printTree(node->left, level + 1, os);
-    printTree(node->right, level + 1, os);
-}
-
 void Rope::rebalance(PNode node)
 {
-    // TODO: do this ALL in the rope now
-    // and then move the core logic to the FibTree class
+    constexpr float FIB_RATIO = std::numbers::phi_v<float>;
 
     while (node) {
-        auto leftSize = nodeSize(node->left);
-        auto rightSize = nodeSize(node->right);
-        if (leftSize > 2 * rightSize) { // TODO: use Fibonacci tree balancing
-            // Left heavy, rotate right
-            //rotateRight(node);
-             break;
+        auto leftSize = static_cast<float>(nodeSize(node->left));
+        auto rightSize = static_cast<float>(nodeSize(node->right));
+
+        if (leftSize <= 3 && rightSize <= 3) {
+            node = node->parent;
+            continue; // too small to worry about rebalancing
         }
 
-        if (rightSize > 2 * leftSize) {
+        if (leftSize > FIB_RATIO * rightSize) {
+            // Left heavy, rotate right
+            rotateRight(node);
+        }
+
+        if (rightSize > FIB_RATIO * leftSize) {
             // Right heavy, rotate left
-            //rotateLeft(node);
+            rotateLeft(node);
             break;
         }
 
-
-        //updateSizes(node); // Update sizes after rotation
+        updateSizes(node); // Update sizes after rotation
 
         node = node->parent;
     }
@@ -291,11 +251,49 @@ void Rope::stream(PNode node, std::ostream& oss) const
     }
 }
 
-void Rope::updateSizes(PNode node)
+void Rope::addWeightAndSize(PNode node)
 {
-    while (node) {
-        node->size = 1 + nodeSize(node->left) + nodeSize(node->right);
-        node = node->parent;
+    if (!node) {
+        return;
+    }
+
+    auto w = node->key.weight;
+    auto s = node->size;
+
+    PNode p = node->parent;
+
+    while (p) {
+        if (p->left == node) {
+            p->key.weight += w;
+        }
+
+        p->size += s;
+
+        node = p;
+        p = p->parent;
+    }
+}
+
+void Rope::subtractWeightAndSize(PNode node)
+{
+    if (!node) {
+        return;
+    }
+
+    auto w = node->key.weight;
+    auto s = node->size;
+
+    PNode p = node->parent;
+
+    while (p) {
+        if (p->left == node) {
+            p->key.weight -= w;
+        }
+
+        p->size -= s;
+
+        node = p;
+        p = p->parent;
     }
 }
 
@@ -438,7 +436,6 @@ Rope::PNode Rope::split(PNode& node, size_t offset, const std::string& text)
     ASSERT(leaf->key.weight <= MAX_TEXT_SIZE);
     ASSERT(leaf->value.text.size() <= MAX_TEXT_SIZE);
 
-    // what is offset supposed to mean here???
     return leafInsert(leaf, 0, text); // insert the new text into the leaf
 }
 
@@ -448,7 +445,7 @@ Rope::PNode Rope::leafAt(size_t& offset) const
 
     while (node) {
         if (node->value.isLeaf()) {
-            break;  // found a leaf node even if out of range
+            break; // found a leaf node even if out of range
         }
 
         auto weight = node->key.weight;
@@ -462,6 +459,14 @@ Rope::PNode Rope::leafAt(size_t& offset) const
     }
 
     return node;
+}
+
+void Rope::updateSizes(PNode node)
+{
+    while (node) {
+        node->size = 1 + nodeSize(node->left) + nodeSize(node->right);
+        node = node->parent;
+    }
 }
 
 void Rope::updateWeights(PNode node, int addedChars)
@@ -484,36 +489,108 @@ void Rope::updateWeights(PNode node, int addedChars)
 void Rope::rotateLeft(PNode node)
 {
     if (!node || !node->right) {
-        return;
+        return; // nothing to rotate
     }
 
-    auto newRoot = node->right;
-    node->right = newRoot->left;
+    // Before rotation, the tree looks like this:
+    //      A
+    //     / \
+    //    L   B
+    //       / \
+    //      M   R
 
-    if (node->right) {
-        node->right->parent = node;
-    }
+    // After rotation, it will look like this:
+    //      B
+    //     / \
+    //    A   R
+    //   / \
+    //  L   M
 
-    newRoot->left = node;
-    newRoot->parent = node->parent;
+    auto A = node;
+    auto B = node->right;
+    auto M = B->left;
 
-    if (node->parent) {
-        if (node->parent->left == node) {
-            node->parent->left = newRoot;
+    subtractWeightAndSize(M);
+    subtractWeightAndSize(B);
+    subtractWeightAndSize(A);
+
+    auto grandparent = A->parent;
+    if (grandparent) {
+        if (grandparent->left == A) {
+            grandparent->left = B;
         } else {
-            node->parent->right = newRoot;
+            grandparent->right = B;
         }
     } else {
-        setRoot(newRoot); // new root of the tree
+        setRoot(B);
     }
 
+    B->parent = grandparent;
+    addWeightAndSize(B);
 
-    // updateSizeAndWeight(node);
-    // updateSizeAndWeight(newRoot);
+    A->parent = B;
+    B->left = A;
+    addWeightAndSize(A);
+
+    A->right = M;
+    if (M) {
+        M->parent = A;
+    }
+    addWeightAndSize(M);
 }
 
 void Rope::rotateRight(PNode node)
 {
+    if (!node || !node->left) {
+        return; // nothing to rotate
+    }
+
+    // Before rotation, the tree looks like this:
+    //        A
+    //       / \
+    //      B   R
+    //     / \
+    //    L   M
+
+    // After rotation, it will look like this:
+    //        B
+    //       / \
+    //      L   A
+    //         / \
+    //        M   R
+
+    auto A = node;
+    auto B = node->left;
+    auto M = B->right;
+
+    subtractWeightAndSize(M);
+    subtractWeightAndSize(B);
+    subtractWeightAndSize(A);
+
+    auto grandparent = A->parent;
+    if (grandparent) {
+        if (grandparent->left == A) {
+            grandparent->left = B;
+        } else {
+            grandparent->right = B;
+        }
+    } else {
+        setRoot(B);
+    }
+
+    B->parent = grandparent;
+    addWeightAndSize(B);
+
+    A->parent = B;
+    B->right = A;
+    addWeightAndSize(A);
+
+    A->left = M;
+    if (M) {
+        M->parent = A;
+    }
+
+    addWeightAndSize(M);
 }
 
 bool Rope::isFull(const PNode& node) const
