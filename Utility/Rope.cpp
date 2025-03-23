@@ -2,7 +2,6 @@
 #include "MD5.h"
 #include "Rope.h"
 
-
 RopeKey::RopeKey(size_t w) : weight(w)
 {
 }
@@ -57,7 +56,7 @@ Rope::PNode Rope::leafInsert(PNode& leaf, size_t offset, const std::string& text
     ASSERT(leaf->value.isLeaf());
 
     if (isFull(leaf)) {
-        return split(leaf, offset, text);
+        return splitInsert(leaf, offset, text);
     }
 
     ASSERT(!leaf->value.isFrozen);
@@ -79,7 +78,26 @@ Rope::PNode Rope::leafInsert(PNode& leaf, size_t offset, const std::string& text
         return leaf;
     }
 
-    return split(leaf, rightText);
+    return splitInsert(leaf, rightText);
+}
+
+Rope::PNode Rope::lowestCommonAncestor(PNode a, PNode b) const
+{
+    std::unordered_set<PNode> ancestors;
+
+    while (a) {
+        ancestors.insert(a);
+        a = a->parent;
+    }
+
+    while (b) {
+        if (ancestors.contains(b)) {
+            return b;
+        }
+        b = b->parent;
+    }
+
+    return nullptr;
 }
 
 Rope::PNode Rope::insertText(const PNode& node, size_t offset, const std::string& text)
@@ -97,6 +115,294 @@ Rope::PNode Rope::insertText(const PNode& node, size_t offset, const std::string
     updateWeights(node, static_cast<int>(text.size()));
 
     return node;
+}
+
+void Rope::deleteAll(PNode node)
+{
+    if (!node) {
+        return;
+    }
+
+    deleteAll(node->left);
+    deleteAll(node->right);
+
+    delete node;
+}
+
+void Rope::deleteRange(size_t start, size_t end)
+{
+    if (isEmpty()) {
+        return; // nothing to delete
+    }
+
+    if (start == end) {
+        return; // nothing to delete
+    }
+
+    // ensure start < end
+    if (start > end) {
+        std::swap(start, end);
+    }
+
+    auto left = splitRopeLeft(start);
+    auto right = splitRopeRight(end - start);
+
+    deleteAll();    // goodbye old tree
+
+    if (left && right) {
+        setRoot(makeParent(left, right));
+    } else {
+        setRoot(left ? left : right);
+    }
+
+    rebalance(left);
+    rebalance(right);
+}
+
+void Rope::deleteAll()
+{
+    if (isEmpty()) {
+        return; // nothing to delete
+    }
+
+    deleteAll(root());
+
+    setRoot(nullptr); // clear the root
+}
+
+Rope::PNode Rope::splitRopeLeft(size_t offset)
+{
+    if (isEmpty()) {
+        return nullptr;
+    }
+
+    auto leaf = leafAt(offset);
+    if (!leaf) {
+        return nullptr; // out of range
+    }
+
+    // We split the leaf at the given offset
+    // and return the two new nodes created by the split.
+    // The left node contains the text from the start to the offset,
+    // and the right node contains the text from the offset to the end.
+    // These nodes are not yet connected to the tree.
+    // The leaf has not yet been deleted, so we can still access it.
+    auto [leftNode, rightNode] = splitLeafDel(leaf, offset);
+
+    subtractWeightAndSize(leaf);
+
+    auto parent = leaf->parent;
+    if (parent) {
+        if (parent->left == leaf) {
+            parent->left = leftNode;
+        } else {
+            parent->right = leftNode;
+        }
+
+        if (leftNode) {
+            leftNode->parent = parent;
+        }
+    }
+
+    addWeightAndSize(leftNode);
+
+    delete leaf; // goodbye old leaf
+       
+    if (!parent) { // leaf was root
+        // FIXME : what to with the rightNode?
+        setRoot(leftNode);
+        return leftNode; // return the new root
+    }
+
+    auto firstOffset = 0ull;
+    auto firstLeaf = leafAt(firstOffset);
+    if (!firstLeaf) {
+        return nullptr; // out of range
+    }
+
+    PNode lca;
+    if (leftNode == nullptr) {
+        lca = firstLeaf;
+    } else {
+        lca = lowestCommonAncestor(leftNode, firstLeaf);
+    }
+
+    if (!lca) {
+        return nullptr; // no common ancestor found
+    }
+
+    // We must now "detach" LCA from the tree
+    subtractWeightAndSize(lca);
+
+    auto grandparent = lca->parent;
+    if (grandparent) {
+        if (grandparent->left == lca) {
+            grandparent->left = rightNode;
+        } else {
+            grandparent->right = rightNode;
+        }
+    } else {
+        // FIXME: what to do with left node?
+        setRoot(rightNode); // LCA was root
+    }
+
+    if (rightNode) {
+        rightNode->parent = grandparent;
+    }
+
+    addWeightAndSize(rightNode);
+
+    lca->parent = nullptr; // detached
+
+    return lca;
+}
+
+Rope::PNode Rope::splitRopeRight(size_t offset)
+{
+    if (isEmpty()) {
+        return nullptr;
+    }
+
+    auto leaf = leafAt(offset);
+    if (!leaf) {
+        return nullptr; // out of range
+    }
+        
+    // We split the leaf at the given offset
+    // and return the two new nodes created by the split.
+    // The left node contains the text from the start to the offset,
+    // and the right node contains the text from the offset to the end.
+    // These nodes are not yet connected to the tree.
+    // The leaf has not yet been deleted, so we can still access it.
+    auto [leftNode, rightNode] = splitLeafDel(leaf, offset);
+
+    subtractWeightAndSize(leaf);
+
+    auto parent = leaf->parent;
+    if (parent) {
+        if (parent->left == leaf) {
+            parent->left = rightNode;
+        } else {
+            parent->right = rightNode;
+        }
+
+        if (rightNode) {
+            rightNode->parent = parent;
+        }
+    }
+
+    addWeightAndSize(rightNode);
+
+    delete leaf; // goodbye old leaf
+
+    if (!parent) { // leaf was root
+        // FIXME : what to with the rightNode?
+        setRoot(leftNode);
+        return leftNode; // return the new root
+    }
+
+    auto lastOffset = static_cast<size_t>(-1);
+    auto lastLeaf = leafAt(lastOffset);
+    if (!lastLeaf) {
+        return nullptr; // out of range
+    }
+
+    PNode lca;
+    if (rightNode == nullptr) {
+        lca = lastLeaf;
+    } else {
+        lca = lowestCommonAncestor(rightNode, lastLeaf);
+    }
+
+    if (!lca) {
+        return nullptr; // no common ancestor found
+    }
+
+    // We must now "detach" LCA from the tree
+    subtractWeightAndSize(lca);
+
+    auto grandparent = lca->parent;
+    if (grandparent) {
+        if (grandparent->left == lca) {
+            grandparent->left = leftNode;
+        } else {
+            grandparent->right = leftNode;
+        }
+    } else {
+        // FIXME: what to do with right node?
+        setRoot(leftNode); // LCA was root
+    }
+
+    if (leftNode) {
+        leftNode->parent = grandparent;
+    }
+
+    addWeightAndSize(leftNode);
+
+    lca->parent = nullptr; // detached
+
+    return lca;
+}
+
+Rope::PNodePair Rope::splitLeafDel(PNode node, size_t offset)
+{
+    // This method is an optimization that may be used
+    // for splitting in delete operations.
+    if (offset == 0 || offset >= node->value.text.size()) {
+        auto newNode = makeLeaf(node->value.text);
+        if (isFull(node)) {
+            newNode->value.isFrozen = true;
+        }
+
+        PNode left, right;
+        if (offset == 0) {
+            left = nullptr;
+            right = newNode;
+        } else {
+            left = newNode;
+            right = nullptr;
+        }
+
+        return { left, right };
+    }
+
+    return splitLeaf(node, offset);
+}
+
+Rope::PNodePair Rope::splitLeaf(PNode node, size_t offset)
+{
+    // This method splits a leaf node at a specific offset.
+    // It creates two new leaf nodes, one containing the text to the left of the offset,
+    // and the other containing the text to the right of the offset.
+    // The nodes returned are not connected to the tree yet.
+
+    auto length = node->value.text.size();
+    auto leftString = node->value.text.substr(0, offset);
+    auto rightString = node->value.text.substr(offset, length);
+
+    auto leftNode = makeLeaf(leftString);
+    auto rightNode = makeLeaf(rightString);
+
+    if (isFull(leftNode)) {
+        leftNode->value.isFrozen = true; // freeze the left node
+    }
+
+    if (isFull(rightNode)) {
+        rightNode->value.isFrozen = true; // freeze the right node
+    }
+
+    return { leftNode, rightNode };
+}
+
+
+Rope::PNode Rope::splitAt(size_t offset)
+{
+    auto leaf = leafAt(offset);
+    if (!leaf) {
+        return nullptr; // offset is out of range
+    }
+
+    return split(leaf, offset);
 }
 
 std::string::value_type Rope::find(size_t offset) const
@@ -188,7 +494,6 @@ void Rope::exportDOT(const std::string& filename) const
     ofs.close();
 }
 
-
 bool Rope::isBalanced() const
 {
     return isBalanced(root());
@@ -207,7 +512,7 @@ bool Rope::isBalanced(PNode node) const
     auto l = nodeSize(node->left);
     auto r = nodeSize(node->right);
 
-    if (l <= 3 && r <=3 ) {
+    if (l <= 3 && r <= 3) {
         return true;
     }
 
@@ -329,11 +634,12 @@ size_t Rope::nodeSize(PNode node) const
     return node->size;
 }
 
-Rope::PNode Rope::split(PNode& node, const std::string& text)
+Rope::PNode Rope::splitInsert(PNode& node, const std::string& text)
 {
     // This is the recursive split method for inserting text into a full node.
     // It creates a new internal node with the left child containing the original text,
-    // and a right child that is empty and unfrozen.
+    // and a right child that is empty and unfrozen and recursively splits until
+    // all the text is inserted.
 
     ASSERT(node->value.isLeaf());
     ASSERT(node->value.text.size() == MAX_TEXT_SIZE);
@@ -366,7 +672,7 @@ Rope::PNode Rope::split(PNode& node, const std::string& text)
         return parent;
     }
 
-    return split(leaf, rightText);
+    return splitInsert(leaf, rightText);
 }
 
 Rope::PNode Rope::split(PNode& node)
@@ -386,7 +692,7 @@ Rope::PNode Rope::split(PNode& node, size_t offset)
 
     // The result of the split is two new nodes, one containing the text to the left of the offset,
     // and the other containing the text to the right of the offset.
-    // A new internal node is created to replace the original node in the tree.
+    // A new internal parent node is created to replace the original node in the tree.
     // The original node is deleted.
 
     if (!node || node->value.isInternal()) { // not a leaf node
@@ -395,22 +701,9 @@ Rope::PNode Rope::split(PNode& node, size_t offset)
 
     auto isRoot = node == root();
 
-    auto length = node->value.text.size();
-    auto leftString = node->value.text.substr(0, offset);
-    auto rightString = node->value.text.substr(offset, length);
+    auto [leftNode, rightNode] = splitLeaf(node, offset);
 
-    auto leftNode = makeLeaf(leftString);
-    auto rightNode = makeLeaf(rightString);
-
-    if (isFull(leftNode)) {
-        leftNode->value.isFrozen = true; // freeze the left node
-    }
-
-    if (isFull(rightNode)) {
-        rightNode->value.isFrozen = true; // freeze the right node
-    }
-
-    auto newParent = makeInternal(leftNode, rightNode);
+    auto newParent = makeParent(leftNode, rightNode);
 
     auto grandparent = node->parent;
     if (grandparent != nullptr) {
@@ -438,7 +731,7 @@ Rope::PNode Rope::split(PNode& node, size_t offset)
     return newParent;
 }
 
-Rope::PNode Rope::split(PNode& node, size_t offset, const std::string& text)
+Rope::PNode Rope::splitInsert(PNode& node, size_t offset, const std::string& text)
 {
     ASSERT(node && node->value.isLeaf());
 
@@ -642,7 +935,7 @@ Rope::PNode Rope::makeLeaf(const std::string& text)
     return new NodeType(RopeKey(text.size()), std::move(value));
 }
 
-Rope::PNode Rope::makeInternal(PNode left, PNode right)
+Rope::PNode Rope::makeParent(PNode left, PNode right)
 {
     auto weight = left->key.weight;
 
@@ -651,10 +944,16 @@ Rope::PNode Rope::makeInternal(PNode left, PNode right)
 
     node->left = left;
     node->right = right;
-    left->parent = node;
-    right->parent = node;
 
-    node->size += left->size + right->size;
+    if (left) {
+        left->parent = node;
+    }
+
+    if (right) {
+        right->parent = node;
+    }
+
+    node->size += nodeSize(left) + nodeSize(right);
 
     return node;
 }

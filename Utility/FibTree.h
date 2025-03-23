@@ -82,7 +82,7 @@ public:
     using PNode = typename NodeType::Ptr;
 
     FibTree();
-    ~FibTree();
+    virtual ~FibTree();
 
     bool exists(const K& key) const;
     bool find(const K& key, V& value) const;
@@ -94,7 +94,7 @@ public:
     void traverse(std::function<void(const K& key, const V& value)> callback) const;
 
 protected:
-    bool isBalanced(PNode node) const;
+    virtual bool isBalanced(PNode node) const;
     PNode minValueNode(PNode node);
     virtual void rebalance(PNode node);
     void deleteTree(PNode node);
