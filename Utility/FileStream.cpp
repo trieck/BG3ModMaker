@@ -51,7 +51,7 @@ void FileStream::write(const void* data, size_t size) const
     const auto* buffer = static_cast<const char*>(data);
 
     while (size > 0) {
-        auto chunk = (size > MAXDWORD) ? MAXDWORD : static_cast<DWORD>(size);
+        auto chunk = size > MAXDWORD ? MAXDWORD : static_cast<DWORD>(size);
 
         DWORD written = 0;
         if (!WriteFile(m_file, buffer, chunk, &written, nullptr) || written == 0) {

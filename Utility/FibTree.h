@@ -100,7 +100,6 @@ protected:
     void deleteTree(PNode node);
     void merge(PNode node);
     void setRoot(PNode node);
-    void split(PNode node);
     void transplant(PNode u, PNode v);
 
 private:
@@ -324,18 +323,6 @@ bool FibTree<K, V>::isBalanced(PNode node) const
 
     return (leftSize == fib1 && rightSize == fib2) ||
         (leftSize == fib2 && rightSize == fib1);
-}
-
-template <FibKey K, FibValue V>
-void FibTree<K, V>::split(PNode node)
-{
-    if (!node) {
-        return;
-    }
-
-
-
-
 }
 
 template <FibKey K, FibValue V>

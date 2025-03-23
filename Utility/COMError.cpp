@@ -57,6 +57,6 @@ int CoMessageBox(HWND hWndOwner, HRESULT hr, LPUNKNOWN pUnknown,
 {
     auto message = COM_ERROR_DESC(hr, pUnknown);
 
-    return WTL::AtlMessageBox(hWndOwner, static_cast<LPCTSTR>(message), title,
+    return AtlMessageBox(hWndOwner, static_cast<LPCTSTR>(message), title,
                               uType);
 }

@@ -56,7 +56,7 @@ uint32_t CRC32::compute(const uint8_t* data, size_t length)
     uint32_t crc = 0xFFFFFFFF;
 
     for (auto i = 0ul; i < length; i++) {
-        crc = table[(crc ^ data[i]) & 0xFF] ^ (crc >> 8);
+        crc = table[(crc ^ data[i]) & 0xFF] ^ crc >> 8;
     }
 
     return crc ^ 0xFFFFFFFF;

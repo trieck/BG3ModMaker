@@ -144,8 +144,8 @@ void Rope::deleteRange(size_t start, size_t end)
         std::swap(start, end);
     }
 
+    auto right = splitRopeRight(end);
     auto left = splitRopeLeft(start);
-    auto right = splitRopeRight(end - start);
 
     deleteAll();    // goodbye old tree
 
@@ -178,6 +178,10 @@ Rope::PNode Rope::splitRopeLeft(size_t offset)
 
     auto leaf = leafAt(offset);
     if (!leaf) {
+        return nullptr; // no leaf
+    }
+
+    if (offset >= leaf->value.text.size()) {
         return nullptr; // out of range
     }
 
@@ -209,15 +213,16 @@ Rope::PNode Rope::splitRopeLeft(size_t offset)
     delete leaf; // goodbye old leaf
        
     if (!parent) { // leaf was root
-        // FIXME : what to with the rightNode?
-        setRoot(leftNode);
-        return leftNode; // return the new root
+        setRoot(rightNode);
+        return leftNode;
     }
 
     auto firstOffset = 0ull;
     auto firstLeaf = leafAt(firstOffset);
     if (!firstLeaf) {
-        return nullptr; // out of range
+        delete leftNode;
+        delete rightNode;
+        return nullptr; // no leaf
     }
 
     PNode lca;
@@ -228,6 +233,8 @@ Rope::PNode Rope::splitRopeLeft(size_t offset)
     }
 
     if (!lca) {
+        delete leftNode;
+        delete rightNode;
         return nullptr; // no common ancestor found
     }
 
@@ -242,7 +249,6 @@ Rope::PNode Rope::splitRopeLeft(size_t offset)
             grandparent->right = rightNode;
         }
     } else {
-        // FIXME: what to do with left node?
         setRoot(rightNode); // LCA was root
     }
 
@@ -265,9 +271,13 @@ Rope::PNode Rope::splitRopeRight(size_t offset)
 
     auto leaf = leafAt(offset);
     if (!leaf) {
+        return nullptr; // no leaf found
+    }
+
+    if (offset >= leaf->value.text.size()) {
         return nullptr; // out of range
     }
-        
+
     // We split the leaf at the given offset
     // and return the two new nodes created by the split.
     // The left node contains the text from the start to the offset,
@@ -296,15 +306,16 @@ Rope::PNode Rope::splitRopeRight(size_t offset)
     delete leaf; // goodbye old leaf
 
     if (!parent) { // leaf was root
-        // FIXME : what to with the rightNode?
         setRoot(leftNode);
-        return leftNode; // return the new root
+        return rightNode;
     }
 
     auto lastOffset = static_cast<size_t>(-1);
     auto lastLeaf = leafAt(lastOffset);
     if (!lastLeaf) {
-        return nullptr; // out of range
+        delete leftNode;
+        delete rightNode;
+        return nullptr; // no leaf
     }
 
     PNode lca;
@@ -315,7 +326,9 @@ Rope::PNode Rope::splitRopeRight(size_t offset)
     }
 
     if (!lca) {
-        return nullptr; // no common ancestor found
+        delete leftNode;
+        delete rightNode;
+        return nullptr; // shouldn't happen
     }
 
     // We must now "detach" LCA from the tree
@@ -329,7 +342,6 @@ Rope::PNode Rope::splitRopeRight(size_t offset)
             grandparent->right = leftNode;
         }
     } else {
-        // FIXME: what to do with right node?
         setRoot(leftNode); // LCA was root
     }
 
