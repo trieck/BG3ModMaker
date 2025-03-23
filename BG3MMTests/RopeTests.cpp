@@ -153,6 +153,64 @@ public:
 
         Assert::AreEqual(expected, actual);
     }
+
+    TEST_METHOD(TestDeleteRange)
+    {
+        Rope rope;
+        rope.insert(0, "Hello, World");
+        rope.exportDOT(ropeDOT);
+
+        // Delete "lo..W"
+        rope.deleteRange(3, 8);
+        rope.exportDOT(ropeDOT);
+
+        Assert::AreEqual(std::string("Helorld"), rope.str());
+    }
+
+    TEST_METHOD(TestDeleteFromBeginning)
+    {
+        Rope rope;
+        rope.insert(0, "Hello");
+        rope.exportDOT(ropeDOT);
+
+        // Delete "H"
+        rope.deleteRange(0,1);
+        rope.exportDOT(ropeDOT);
+
+        Assert::AreEqual(std::string("ello"), rope.str());
+    }
+
+    TEST_METHOD(TestDeleteFromEnd)
+    {
+        Rope rope;
+        rope.insert(0, "Hello");
+        rope.exportDOT(ropeDOT);
+
+        // Delete "o"
+        rope.deleteRange(4, 5);
+        rope.exportDOT(ropeDOT);
+        Assert::AreEqual(std::string("Hell"), rope.str());
+    }
+
+    TEST_METHOD(TestDeleteAcrossMultipleLeaves)
+    {
+        Rope rope;
+
+        // With MAX_TEXT_SIZE = 3, this will force at least 4 leaves
+        rope.insert(0, "ABCDEFGHIJK"); // length = 11
+
+        rope.exportDOT(ropeDOT);
+
+        // Delete "CDEFGHI" - spans multiple internal nodes/leaves
+        rope.deleteRange(2, 9);
+
+        rope.exportDOT(ropeDOT);
+
+        std::string expected = "ABJK";
+        std::string actual = rope.str();
+
+        Assert::AreEqual(expected, actual);
+    }
 };
 
 // Static member variable for the DOT file path

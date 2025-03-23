@@ -46,7 +46,7 @@ int GDIPlus::GetEncoderClsid(const WCHAR* format, CLSID* pClsid)
     for (auto i = 0u; i < numEncoders; ++i) {
         if (wcscmp(pImageCodecInfo[i].MimeType, format) == 0) {
             *pClsid = pImageCodecInfo[i].Clsid;
-            return i; // Success
+            return static_cast<int>(i); // Success
         }
     }
 

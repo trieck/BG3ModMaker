@@ -52,7 +52,8 @@ JsonColor GetColor(JsonTokenType type)
     default:
         return COLOR_TEXT; // Whitespace and unknown tokens
     }
-};
+}
+
 } // anonymous
 
 CStringA JSONRTFFormatter::GetDefaultFormat() const

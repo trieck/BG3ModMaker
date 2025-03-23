@@ -26,7 +26,7 @@ private:
     void readNode(const LSFNodeInfo& defn, RBNode& node, Stream& attributeReader);
     void readRegions(const Resource::Ptr& resource);
 
-    Stream decompress(uint32_t sizeOnDisk, uint32_t uncompressedSize, std::string debugDumpTo, bool allowChunked);
+    Stream decompress(uint32_t sizeOnDisk, uint32_t uncompressedSize, const std::string& debugDumpTo, bool allowChunked);
 
     Stream m_stream, m_values;
     PackedVersion m_gameVersion;

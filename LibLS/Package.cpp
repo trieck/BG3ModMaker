@@ -33,7 +33,7 @@ FileEntry18 FileEntry18::fromCommon(const PackagedFileInfoCommon& info)
     FileEntry18 entry{};
     strncpy_s(entry.name, info.name.c_str(), sizeof(entry.name));
     entry.offsetInFile1 = static_cast<uint32_t>(info.offsetInFile & 0xFFFFFFFF);
-    entry.offsetInFile2 = static_cast<uint16_t>((info.offsetInFile >> 32) & 0xFFFF);
+    entry.offsetInFile2 = static_cast<uint16_t>(info.offsetInFile >> 32 & 0xFFFF);
     entry.archivePart = static_cast<uint8_t>(info.archivePart);
     entry.flags = static_cast<uint8_t>(info.flags);
     entry.sizeOnDisk = info.sizeOnDisk;

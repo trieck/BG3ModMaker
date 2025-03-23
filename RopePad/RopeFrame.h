@@ -1,6 +1,5 @@
 #pragma once
 #include <d2d1.h>
-#include <dwrite.h>
 
 #include "Resource.h"
 #include "RopeView.h"

@@ -19,7 +19,7 @@ XmlColor XmlGetColor(XmlTokenType type)
     default:
         return COLOR_TEXT;
     }
-};
+}
 
 COLORREF XmlToColorRef(XmlColor color)
 {

@@ -27,7 +27,7 @@ PackagedFileInfo createFromEntry(Package& package, const TFileEntry& entry)
     info.archivePart = entry.archivePart;
     info.crc = 0;
     info.flags = static_cast<CompressionFlags>(entry.flags);
-    info.offsetInFile = entry.offsetInFile1 | (static_cast<uint64_t>(entry.offsetInFile2) << 32);
+    info.offsetInFile = entry.offsetInFile1 | static_cast<uint64_t>(entry.offsetInFile2) << 32;
     info.sizeOnDisk = entry.sizeOnDisk;
     info.uncompressedSize = entry.uncompressedSize;
 

@@ -21,7 +21,7 @@ namespace {
     {
         text = std::regex_replace(text, std::regex("[^a-zA-Z0-9-]"), " ");
 
-        std::ranges::transform(text, text.begin(), ::tolower);
+        std::ranges::transform(text, text.begin(), tolower);
 
         std::istringstream stream(text);
         std::ostringstream filtered;

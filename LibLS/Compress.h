@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <lz4.h>
 
 #include "LSCommon.h"
 #include "Stream.h"

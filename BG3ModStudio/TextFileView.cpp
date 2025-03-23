@@ -75,7 +75,7 @@ LRESULT TextFileView::OnCreate(LPCREATESTRUCT pcs)
         ES_AUTOHSCROLL | ES_AUTOVSCROLL | ES_MULTILINE
         | ES_NOOLEDRAGDROP;
 
-    if (!m_richEdit.Create(*(this), rcDefault, nullptr, dwStyle, 0, IDC_RICHEDIT)) {
+    if (!m_richEdit.Create(*this, rcDefault, nullptr, dwStyle, 0, IDC_RICHEDIT)) {
         ATLTRACE("Unable to create rich edit control.\n");
         return -1;
     }
@@ -204,7 +204,7 @@ BOOL TextFileView::SaveFileAs(const CString& path)
     es.dwCookie = reinterpret_cast<DWORD_PTR>(&pStream);
     es.pfnCallback = StreamOutCallback;
 
-    m_richEdit.StreamOut((CP_UTF8 << 16) | SF_USECODEPAGE | SF_TEXT, es);
+    m_richEdit.StreamOut(CP_UTF8 << 16 | SF_USECODEPAGE | SF_TEXT, es);
 
     if (es.dwError != NOERROR) {
         ATLTRACE("Failed to stream in text.\n");
@@ -345,7 +345,7 @@ BOOL TextFileView::Flush()
     es.dwCookie = reinterpret_cast<DWORD_PTR>(&pStr);
     es.pfnCallback = StreamInCallback;
 
-    m_richEdit.StreamIn((CP_UTF8 << 16) | SF_USECODEPAGE | SF_RTF, es);
+    m_richEdit.StreamIn(CP_UTF8 << 16 | SF_USECODEPAGE | SF_RTF, es);
     if (es.dwError != NOERROR) {
         ATLTRACE("Failed to stream in text.\n");
         return FALSE;
@@ -367,8 +367,8 @@ void TextFileView::ApplySyntaxHighlight()
 
     BOOL isDirty;
     ScopeGuardSimple modifyGuard(
-        [&]() { isDirty = m_richEdit.GetModify(); },
-        [&]() { m_richEdit.SetModify(isDirty); });
+        [&] { isDirty = m_richEdit.GetModify(); },
+        [&] { m_richEdit.SetModify(isDirty); });
 
     DWORD prevMask = m_richEdit.GetEventMask();
 
@@ -390,7 +390,7 @@ void TextFileView::ApplySyntaxHighlight()
         EDITSTREAM es{};
         es.dwCookie = reinterpret_cast<DWORD_PTR>(&pFormat);
         es.pfnCallback = StreamInCallback;
-        m_richEdit.StreamIn((CP_UTF8 << 16) | SF_USECODEPAGE | SF_RTF, es);
+        m_richEdit.StreamIn(CP_UTF8 << 16 | SF_USECODEPAGE | SF_RTF, es);
         m_lineFormatter.Reset();
         return;
     }
@@ -471,7 +471,7 @@ void TextFileView::ApplySyntaxHighlight()
 
     ATLTRACE("Setting state %d for line %d\n", m_lineFormatter.GetState(), lineIndex);
 
-    pf.dxOffset = m_lineFormatter.GetState();
+    pf.dxOffset = static_cast<LONG>(m_lineFormatter.GetState());
     m_richEdit.SetParaFormat(pf);
 
     m_richEdit.SetSel(prevSel); // Restore cursor position

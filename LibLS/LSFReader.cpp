@@ -532,7 +532,7 @@ void LSFReader::readRegions(const Resource::Ptr& resource)
     }
 }
 
-Stream LSFReader::decompress(uint32_t sizeOnDisk, uint32_t uncompressedSize, std::string debugDumpTo,
+Stream LSFReader::decompress(uint32_t sizeOnDisk, uint32_t uncompressedSize, const std::string& debugDumpTo,
                              bool allowChunked)
 {
     if (sizeOnDisk == 0 && uncompressedSize != 0) {

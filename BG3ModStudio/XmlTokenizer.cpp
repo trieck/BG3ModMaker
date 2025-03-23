@@ -248,7 +248,7 @@ XmlToken XmlTokenizer::GetToken(LPCSTR* ppin)
                 *ppin += 2;
                 return tok;
             }
-            if (strncmp((*ppin) + 1, "!--", 3) == 0) {
+            if (strncmp(*ppin + 1, "!--", 3) == 0) {
                 SetState(State::inComment);
                 tok.type = XmlTokenType::TT_COMMENT;
                 tok.value = "<!--";
@@ -268,7 +268,7 @@ XmlToken XmlTokenizer::GetToken(LPCSTR* ppin)
 
                  return tok;
             }
-            if (strncmp((*ppin) + 1, "![CDATA[", 8) == 0) {
+            if (strncmp(*ppin + 1, "![CDATA[", 8) == 0) {
                 AddState(State::inCDATA);
                 tok.type = XmlTokenType::TT_CDATA;
                 tok.value = "<![CDATA[";
@@ -287,14 +287,14 @@ XmlToken XmlTokenizer::GetToken(LPCSTR* ppin)
 
                 return tok;
             }
-            if (*((*ppin) + 1) == '?') {
+            if (*(*ppin + 1) == '?') {
                 AddState(State::inProcInstr);
                 tok.type = XmlTokenType::TT_INSTRUCTION_START;
                 tok.value = "<?";
                 *ppin += 2;
                 return tok;
             }
-            if (strncmp((*ppin) + 1, "!DOCTYPE", 8) == 0) {
+            if (strncmp(*ppin + 1, "!DOCTYPE", 8) == 0) {
                 AddState(State::inDocType);
                 tok.type = XmlTokenType::TT_DOCTYPE;
                 tok.value = "<!DOCTYPE";
@@ -312,7 +312,7 @@ XmlToken XmlTokenizer::GetToken(LPCSTR* ppin)
             (*ppin)++;
             return tok;
         case '/':
-            if (*((*ppin) + 1) == '>') {
+            if (*(*ppin + 1) == '>') {
                 ResetState();
                 tok.type = XmlTokenType::TT_TAG_SELF_CLOSE;
                 tok.value = "/>";
@@ -328,7 +328,7 @@ XmlToken XmlTokenizer::GetToken(LPCSTR* ppin)
             (*ppin)++;
             return tok;
         case '?':
-            if (*((*ppin) + 1) == '>') {
+            if (*(*ppin + 1) == '>') {
                 ResetState();
                 tok.type = XmlTokenType::TT_INSTRUCTION_END;
                 tok.value = "?>";
