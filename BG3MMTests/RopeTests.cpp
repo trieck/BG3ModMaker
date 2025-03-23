@@ -211,6 +211,22 @@ public:
 
         Assert::AreEqual(expected, actual);
     }
+
+    TEST_METHOD(TestDeleteWholeRope)
+    {
+        Rope rope;
+        rope.insert(0, "Complete destruction!");
+
+        rope.exportDOT(ropeDOT);
+
+        rope.deleteRange(0, rope.str().size());
+
+        rope.exportDOT(ropeDOT);
+
+        std::string actual = rope.str();
+        Assert::AreEqual(std::string(""), actual);
+    }
+
 };
 
 // Static member variable for the DOT file path

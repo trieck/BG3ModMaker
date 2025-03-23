@@ -176,13 +176,13 @@ Rope::PNode Rope::splitRopeLeft(size_t offset)
         return nullptr;
     }
 
+    if (offset == 0) {
+        return nullptr; // out of range
+    }
+
     auto leaf = leafAt(offset);
     if (!leaf) {
         return nullptr; // no leaf
-    }
-
-    if (offset >= leaf->value.text.size()) {
-        return nullptr; // out of range
     }
 
     // We split the leaf at the given offset
