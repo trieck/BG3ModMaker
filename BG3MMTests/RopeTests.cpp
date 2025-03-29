@@ -143,7 +143,7 @@ public:
 
     TEST_METHOD(TestInsertAtSplitBoundary)
     {
-        Rope rope;
+        Rope rope(3);
 
         // Fill one leaf to capacity (if MAX_TEXT_SIZE is 3)
         rope.insert(0, "ABC"); // "ABC"
@@ -197,7 +197,7 @@ public:
 
     TEST_METHOD(TestDeleteAcrossMultipleLeaves)
     {
-        Rope rope;
+        Rope rope(3);
 
         // With MAX_TEXT_SIZE = 3, this will force at least 4 leaves
         rope.insert(0, "ABCDEFGHIJK"); // length = 11
@@ -266,9 +266,39 @@ public:
             Assert::AreEqual(expected, actual, std::wstring(L"Mismatch at offset " + std::to_wstring(i)).c_str());
         }
     }
+
+    TEST_METHOD(TestBackToBackDeletes)
+    {
+        Rope rope;
+        rope.insert(0, "ABCDEFGHIJK");
+
+        rope.deleteRange(2, 5); // Remove "CDE" -> "ABFGHIJK"
+        rope.deleteRange(2, 4); // Remove "FG" -> "ABHIJK"
+
+        std::string expected = "ABHIJK";
+        Assert::AreEqual(expected, rope.str());
+    }
+
+    TEST_METHOD(TestDeleteToEmptyLeaf)
+    {
+        Rope rope(3);
+        rope.insert(0, "ABCDEF");
+
+        // If MAX_TEXT_SIZE = 3, "ABC" in one leaf, "DEF" in another
+        rope.deleteRange(0, 3); // Delete "ABC"
+
+        Assert::AreEqual(std::string("DEF"), rope.str());
+    }
+
+    TEST_METHOD(TestNoOpDelete)
+    {
+        Rope rope;
+        rope.insert(0, "HelloWorld");
+
+        rope.deleteRange(5, 5); // No-op
+        Assert::AreEqual(std::string("HelloWorld"), rope.str());
+    }
 };
-
-
 
 // Static member variable for the DOT file path
 std::string RopeTests::ropeDOT;

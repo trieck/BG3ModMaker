@@ -29,6 +29,10 @@ bool RopeValue::isLeaf() const
     return type == RopeNodeType::Leaf;
 }
 
+Rope::Rope(size_t maxTextSize) : m_maxTextSize(maxTextSize)
+{
+}
+
 void Rope::insert(size_t offset, const std::string& text)
 {
     PNode leaf;
@@ -61,7 +65,7 @@ Rope::PNode Rope::leafInsert(PNode& leaf, size_t offset, const std::string& text
 
     ASSERT(!leaf->value.isFrozen);
 
-    auto spaceLeft = MAX_TEXT_SIZE - leaf->key.weight;
+    auto spaceLeft = m_maxTextSize - leaf->key.weight;
     if (spaceLeft >= text.size()) { // text fits in leaf
         return insertText(leaf, offset, text);
     }
@@ -104,15 +108,16 @@ Rope::PNode Rope::insertText(const PNode& node, size_t offset, const std::string
 {
     ASSERT(node && !node->value.isFrozen);
     ASSERT(node->value.isLeaf());
-    ASSERT(node->key.weight + text.size() <= MAX_TEXT_SIZE);
-    ASSERT(node->value.text.size() + text.size() <= MAX_TEXT_SIZE);
+    ASSERT(node->key.weight + text.size() <= m_maxTextSize);
+    ASSERT(node->value.text.size() + text.size() <= m_maxTextSize);
 
     offset = std::min(offset, node->value.text.size());
 
-    ASSERT(offset <= MAX_TEXT_SIZE);
+    ASSERT(offset <= m_maxTextSize);
 
     node->value.text.insert(offset, text);
-    updateWeights(node, static_cast<int>(text.size()));
+
+    updateMetaUp(node);
 
     return node;
 }
@@ -484,8 +489,8 @@ Rope::PNode Rope::splitInsert(PNode& node, const std::string& text)
     // all the text is inserted.
 
     ASSERT(node->value.isLeaf());
-    ASSERT(node->value.text.size() == MAX_TEXT_SIZE);
-    ASSERT(node->key.weight == MAX_TEXT_SIZE);
+    ASSERT(node->value.text.size() == m_maxTextSize);
+    ASSERT(node->key.weight == m_maxTextSize);
     ASSERT(!node->value.isFrozen);
 
     node->value.isFrozen = true; // freeze the node
@@ -495,13 +500,13 @@ Rope::PNode Rope::splitInsert(PNode& node, const std::string& text)
     ASSERT(parent->left->value.isLeaf());
     ASSERT(parent->right->value.isLeaf());
 
-    ASSERT(parent->left->value.text.size() == MAX_TEXT_SIZE);
-    ASSERT(parent->left->key.weight == MAX_TEXT_SIZE);
+    ASSERT(parent->left->value.text.size() == m_maxTextSize);
+    ASSERT(parent->left->key.weight == m_maxTextSize);
     ASSERT(parent->left->value.isFrozen);
 
     auto leaf = parent->right; // leaf is now the right child of the new parent
 
-    auto spaceLeft = MAX_TEXT_SIZE - leaf->key.weight;
+    auto spaceLeft = m_maxTextSize - leaf->key.weight;
     auto leftTextLen = std::min(spaceLeft, text.size());
     auto rightTextLen = text.size() - leftTextLen;
 
@@ -563,8 +568,8 @@ Rope::PNode Rope::split(PNode& node, size_t offset)
 
     delete node; // goodbye old node
     node = nullptr;
-
-    updateSizes(newParent);
+        
+    updateMetaUp(newParent);
     rebalance(newParent);
 
     return newParent;
@@ -588,8 +593,8 @@ Rope::PNode Rope::splitInsert(PNode& node, size_t offset, const std::string& tex
 
     ASSERT(leaf && leaf->value.isLeaf());
     ASSERT(!leaf->value.isFrozen);
-    ASSERT(leaf->key.weight <= MAX_TEXT_SIZE);
-    ASSERT(leaf->value.text.size() <= MAX_TEXT_SIZE);
+    ASSERT(leaf->key.weight <= m_maxTextSize);
+    ASSERT(leaf->value.text.size() <= m_maxTextSize);
 
     return leafInsert(leaf, offset, text); // insert the new text into the leaf
 }
@@ -616,31 +621,6 @@ Rope::PNode Rope::leafAt(size_t& offset) const
     return node;
 }
 
-void Rope::updateSizes(PNode node)
-{
-    while (node) {
-        node->size = 1 + nodeSize(node->left) + nodeSize(node->right);
-        node = node->parent;
-    }
-}
-
-void Rope::updateWeights(PNode node, int addedChars)
-{
-    if (!node) {
-        return;
-    }
-
-    node->key.weight += addedChars;
-
-    while (node) {
-        auto parent = node->parent;
-        if (parent && parent->left == node) {
-            parent->key.weight += addedChars;
-        }
-        node = node->parent;
-    }
-}
-
 void Rope::updateMeta(PNode node)
 {
     if (!node) {
@@ -649,6 +629,14 @@ void Rope::updateMeta(PNode node)
 
     node->key.weight = totalWeight(node->left);
     node->size = 1 + nodeSize(node->left) + nodeSize(node->right);
+}
+
+void Rope::updateMetaUp(PNode node)
+{
+    while (node) {
+        updateMeta(node);
+        node = node->parent;
+    }
 }
 
 Rope::PNode Rope::rotateLeft(PNode node)
@@ -763,11 +751,11 @@ bool Rope::isFull(const PNode& node) const
         return false;
     }
 
-    if (node->key.weight != MAX_TEXT_SIZE) {
+    if (node->key.weight != m_maxTextSize) {
         return false;
     }
 
-    ASSERT(node->value.text.size() == MAX_TEXT_SIZE);
+    ASSERT(node->value.text.size() == m_maxTextSize);
 
     return true;
 }
@@ -797,7 +785,7 @@ Rope::PNode Rope::makeParent(PNode left, PNode right)
         right->parent = node;
     }
 
-    node->size += nodeSize(left) + nodeSize(right);
+    updateMeta(node);
 
     return node;
 }

@@ -44,7 +44,9 @@ struct RopeValue
 class Rope : public FibTree<RopeKey, RopeValue>
 {
 public:
-    Rope() = default;
+    static constexpr auto DEFAULT_MAX_TEXT_SIZE = 64ull;
+
+    explicit Rope(size_t maxTextSize = DEFAULT_MAX_TEXT_SIZE);
     ~Rope() override = default;
 
     void insert(size_t offset, const std::string& text);
@@ -56,7 +58,6 @@ public:
     bool isBalanced() const;
 
 private:
-    static constexpr auto MAX_TEXT_SIZE = 3;
     using PNodePair = std::pair<PNode, PNode>;
 
     bool isBalanced(PNode node) const override;
@@ -86,7 +87,8 @@ private:
     void printDOT(const PNode& node, std::ostream& os) const;
     void rebalance(PNode node) override;
     void stream(PNode node, std::ostream& oss) const;
-    void updateSizes(PNode node);
-    void updateWeights(PNode node, int addedChars);
     void updateMeta(PNode node);
+    void updateMetaUp(PNode node);
+
+    size_t m_maxTextSize;
 };
