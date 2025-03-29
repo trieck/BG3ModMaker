@@ -32,6 +32,7 @@ public:
     {
         Rope rope;
         rope.insert(0, "Hello, World");
+        rope.exportDOT(ropeDOT);
 
         Assert::AreEqual(std::string("Hello, World"), rope.str());
     }
@@ -51,6 +52,8 @@ public:
     {
         Rope rope;
         rope.insert(0, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+        rope.exportDOT(ropeDOT);        
+
         Assert::AreEqual(std::string("ABCDEFGHIJKLMNOPQRSTUVWXYZ"), rope.str());
     }
 
@@ -227,7 +230,45 @@ public:
         Assert::AreEqual(std::string(""), actual);
     }
 
+    TEST_METHOD(TestDeleteMiddleChunk)
+    {
+        Rope rope;
+        rope.insert(0, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+
+        rope.exportDOT(ropeDOT);
+
+        rope.deleteRange(6, 17);
+
+        rope.exportDOT(ropeDOT);
+
+        std::string expected = "ABCDEFRSTUVWXYZ";
+        std::string actual = rope.str();
+
+        Assert::AreEqual(expected, actual);
+    }
+
+    TEST_METHOD(TestDeleteEverywhere)
+    {
+        const std::string base = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+        for (size_t i = 0; i < base.size(); ++i) {
+            Rope rope;
+            rope.insert(0, base);
+            rope.exportDOT(ropeDOT);
+
+            std::string expected = base;
+            expected.erase(i, 1);
+
+            rope.deleteRange(i, i + 1);
+            rope.exportDOT(ropeDOT);
+
+            auto actual = rope.str();
+            Assert::AreEqual(expected, actual, std::wstring(L"Mismatch at offset " + std::to_wstring(i)).c_str());
+        }
+    }
 };
+
+
 
 // Static member variable for the DOT file path
 std::string RopeTests::ropeDOT;

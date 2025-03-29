@@ -56,6 +56,7 @@ public:
     bool isBalanced() const;
 
 private:
+    static constexpr auto MAX_TEXT_SIZE = 3;
     using PNodePair = std::pair<PNode, PNode>;
 
     bool isBalanced(PNode node) const override;
@@ -66,27 +67,27 @@ private:
     PNode lowestCommonAncestor(PNode a, PNode b) const;
     PNode makeLeaf(const std::string& text);
     PNode makeParent(PNode left, PNode right);
+    PNode rotateLeft(PNode node);
+    PNode rotateRight(PNode node);
     PNode split(PNode& node);
     PNode split(PNode& node, size_t offset);
     PNode splitAt(size_t offset);
     PNode splitInsert(PNode& node, const std::string& text);
     PNode splitInsert(PNode& node, size_t offset, const std::string& text);
-    PNode splitRopeLeft(size_t offset);
-    PNode splitRopeRight(size_t offset);
     PNodePair splitLeaf(PNode node, size_t offset);
     PNodePair splitLeafDel(PNode node, size_t offset);
+    PNodePair splitNode(PNode node, size_t offset);
     size_t nodeSize(PNode node) const;
+    size_t totalWeight(PNode node) const;
+    size_t weightOf(PNode node) const;
     std::string::value_type find(const PNode& node, size_t offset) const;
     void addWeightAndSize(PNode node);
     void deleteAll(PNode node);
+    void exportDOT(const std::string& filename, const PNode& node) const;
     void printDOT(const PNode& node, std::ostream& os) const;
     void rebalance(PNode node) override;
-    void rotateLeft(PNode node);
-    void rotateRight(PNode node);
     void stream(PNode node, std::ostream& oss) const;
     void subtractWeightAndSize(PNode node);
     void updateSizes(PNode node);
     void updateWeights(PNode node, int addedChars);
-
-    static constexpr auto MAX_TEXT_SIZE = 3;
 };

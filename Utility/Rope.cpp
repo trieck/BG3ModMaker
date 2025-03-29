@@ -144,10 +144,10 @@ void Rope::deleteRange(size_t start, size_t end)
         std::swap(start, end);
     }
 
-    auto right = splitRopeRight(end);
-    auto left = splitRopeLeft(start);
+    auto [left, midRight] = splitNode(root(), start);
+    auto [mid, right] = splitNode(midRight, end - start);
 
-    deleteAll();    // goodbye old tree
+    deleteAll(mid);
 
     if (left && right) {
         setRoot(makeParent(left, right));
@@ -170,190 +170,42 @@ void Rope::deleteAll()
     setRoot(nullptr); // clear the root
 }
 
-Rope::PNode Rope::splitRopeLeft(size_t offset)
+Rope::PNodePair Rope::splitNode(PNode node, size_t offset)
 {
-    if (isEmpty()) {
-        return nullptr;
+    if (!node) {
+        return {nullptr, nullptr};
     }
 
-    if (offset == 0) {
-        return nullptr; // out of range
+    if (node->value.isLeaf()) {
+        return splitLeafDel(node, offset);
     }
 
-    auto leaf = leafAt(offset);
-    if (!leaf) {
-        return nullptr; // no leaf
-    }
+    if (offset < node->key.weight) {
+        auto [left, right] = splitNode(node->left, offset);
+        subtractWeightAndSize(node->left);
+        node->left = right;
 
-    // We split the leaf at the given offset
-    // and return the two new nodes created by the split.
-    // The left node contains the text from the start to the offset,
-    // and the right node contains the text from the offset to the end.
-    // These nodes are not yet connected to the tree.
-    // The leaf has not yet been deleted, so we can still access it.
-    auto [leftNode, rightNode] = splitLeafDel(leaf, offset);
-
-    subtractWeightAndSize(leaf);
-
-    auto parent = leaf->parent;
-    if (parent) {
-        if (parent->left == leaf) {
-            parent->left = leftNode;
-        } else {
-            parent->right = leftNode;
+        if (right) {
+            right->parent = node;
         }
 
-        if (leftNode) {
-            leftNode->parent = parent;
-        }
+        addWeightAndSize(node->left);
+
+        return {left, node};
     }
 
-    addWeightAndSize(leftNode);
+    offset = offset - node->key.weight;
+    auto [left, right] = splitNode(node->right, offset);
+    subtractWeightAndSize(node->right);
+    node->right = left;
 
-    delete leaf; // goodbye old leaf
-       
-    if (!parent) { // leaf was root
-        setRoot(rightNode);
-        return leftNode;
+    if (left) {
+        left->parent = node;
     }
 
-    auto firstOffset = 0ull;
-    auto firstLeaf = leafAt(firstOffset);
-    if (!firstLeaf) {
-        delete leftNode;
-        delete rightNode;
-        return nullptr; // no leaf
-    }
+    addWeightAndSize(node->right);
 
-    PNode lca;
-    if (leftNode == nullptr) {
-        lca = firstLeaf;
-    } else {
-        lca = lowestCommonAncestor(leftNode, firstLeaf);
-    }
-
-    if (!lca) {
-        delete leftNode;
-        delete rightNode;
-        return nullptr; // no common ancestor found
-    }
-
-    // We must now "detach" LCA from the tree
-    subtractWeightAndSize(lca);
-
-    auto grandparent = lca->parent;
-    if (grandparent) {
-        if (grandparent->left == lca) {
-            grandparent->left = rightNode;
-        } else {
-            grandparent->right = rightNode;
-        }
-    } else {
-        setRoot(rightNode); // LCA was root
-    }
-
-    if (rightNode) {
-        rightNode->parent = grandparent;
-    }
-
-    addWeightAndSize(rightNode);
-
-    lca->parent = nullptr; // detached
-
-    return lca;
-}
-
-Rope::PNode Rope::splitRopeRight(size_t offset)
-{
-    if (isEmpty()) {
-        return nullptr;
-    }
-
-    auto leaf = leafAt(offset);
-    if (!leaf) {
-        return nullptr; // no leaf found
-    }
-
-    if (offset >= leaf->value.text.size()) {
-        return nullptr; // out of range
-    }
-
-    // We split the leaf at the given offset
-    // and return the two new nodes created by the split.
-    // The left node contains the text from the start to the offset,
-    // and the right node contains the text from the offset to the end.
-    // These nodes are not yet connected to the tree.
-    // The leaf has not yet been deleted, so we can still access it.
-    auto [leftNode, rightNode] = splitLeafDel(leaf, offset);
-
-    subtractWeightAndSize(leaf);
-
-    auto parent = leaf->parent;
-    if (parent) {
-        if (parent->left == leaf) {
-            parent->left = rightNode;
-        } else {
-            parent->right = rightNode;
-        }
-
-        if (rightNode) {
-            rightNode->parent = parent;
-        }
-    }
-
-    addWeightAndSize(rightNode);
-
-    delete leaf; // goodbye old leaf
-
-    if (!parent) { // leaf was root
-        setRoot(leftNode);
-        return rightNode;
-    }
-
-    auto lastOffset = static_cast<size_t>(-1);
-    auto lastLeaf = leafAt(lastOffset);
-    if (!lastLeaf) {
-        delete leftNode;
-        delete rightNode;
-        return nullptr; // no leaf
-    }
-
-    PNode lca;
-    if (rightNode == nullptr) {
-        lca = lastLeaf;
-    } else {
-        lca = lowestCommonAncestor(rightNode, lastLeaf);
-    }
-
-    if (!lca) {
-        delete leftNode;
-        delete rightNode;
-        return nullptr; // shouldn't happen
-    }
-
-    // We must now "detach" LCA from the tree
-    subtractWeightAndSize(lca);
-
-    auto grandparent = lca->parent;
-    if (grandparent) {
-        if (grandparent->left == lca) {
-            grandparent->left = leftNode;
-        } else {
-            grandparent->right = leftNode;
-        }
-    } else {
-        setRoot(leftNode); // LCA was root
-    }
-
-    if (leftNode) {
-        leftNode->parent = grandparent;
-    }
-
-    addWeightAndSize(leftNode);
-
-    lca->parent = nullptr; // detached
-
-    return lca;
+    return {node, right};
 }
 
 Rope::PNodePair Rope::splitLeafDel(PNode node, size_t offset)
@@ -375,7 +227,7 @@ Rope::PNodePair Rope::splitLeafDel(PNode node, size_t offset)
             right = nullptr;
         }
 
-        return { left, right };
+        return {left, right};
     }
 
     return splitLeaf(node, offset);
@@ -403,7 +255,7 @@ Rope::PNodePair Rope::splitLeaf(PNode node, size_t offset)
         rightNode->value.isFrozen = true; // freeze the right node
     }
 
-    return { leftNode, rightNode };
+    return {leftNode, rightNode};
 }
 
 
@@ -490,6 +342,11 @@ void Rope::printDOT(const PNode& node, std::ostream& os) const
 
 void Rope::exportDOT(const std::string& filename) const
 {
+    exportDOT(filename, root());
+}
+
+void Rope::exportDOT(const std::string& filename, const PNode& node) const
+{
     std::ofstream ofs(filename);
     if (!ofs.is_open()) {
         throw std::runtime_error("Failed to open file for writing: " + filename);
@@ -498,7 +355,7 @@ void Rope::exportDOT(const std::string& filename) const
     ofs << "digraph Rope {\n";
 
     std::ostringstream oss;
-    printDOT(root(), oss);
+    printDOT(node, oss);
 
     ofs << oss.str();
     ofs << "}\n";
@@ -539,27 +396,28 @@ void Rope::rebalance(PNode node)
 {
     constexpr float FIB_RATIO = std::numbers::phi_v<float>;
 
+    // Rebalance propagates upward through left-heavy imbalance,
+    // but only performs one left rotation to fix right-heavy skew.
+    // This produces shallower, more stable trees after edits.
+
     while (node) {
-        auto leftSize = static_cast<float>(nodeSize(node->left));
-        auto rightSize = static_cast<float>(nodeSize(node->right));
+        float leftSize = static_cast<float>(nodeSize(node->left));
+        float rightSize = static_cast<float>(nodeSize(node->right));
 
         if (leftSize <= 3 && rightSize <= 3) {
             node = node->parent;
-            continue; // too small to worry about rebalancing
+            continue;
         }
 
         if (leftSize > FIB_RATIO * rightSize) {
-            // Left heavy, rotate right
-            rotateRight(node);
+            node = rotateRight(node);
+            continue; // don't stop
         }
 
         if (rightSize > FIB_RATIO * leftSize) {
-            // Right heavy, rotate left
             rotateLeft(node);
-            break;
+            break; // stop rebalancing
         }
-
-        updateSizes(node); // Update sizes after rotation
 
         node = node->parent;
     }
@@ -644,6 +502,28 @@ size_t Rope::nodeSize(PNode node) const
     }
 
     return node->size;
+}
+
+size_t Rope::weightOf(PNode node) const
+{
+    if (!node) {
+        return 0;
+    }
+
+    return node->key.weight;
+}
+
+size_t Rope::totalWeight(PNode node) const
+{
+    if (!node) {
+        return 0;
+    }
+
+    if (node->value.isLeaf()) {
+        return node->key.weight;
+    }
+
+    return totalWeight(node->left) + totalWeight(node->right);
 }
 
 Rope::PNode Rope::splitInsert(PNode& node, const std::string& text)
@@ -735,9 +615,6 @@ Rope::PNode Rope::split(PNode& node, size_t offset)
     node = nullptr;
 
     updateSizes(newParent);
-
-    // We have inserted a new subtree into the tree,
-    // We must ensure the tree remains balanced and the sizes are correct.
     rebalance(newParent);
 
     return newParent;
@@ -814,10 +691,10 @@ void Rope::updateWeights(PNode node, int addedChars)
     }
 }
 
-void Rope::rotateLeft(PNode node)
+Rope::PNode Rope::rotateLeft(PNode node)
 {
     if (!node || !node->right) {
-        return; // nothing to rotate
+        return node; // nothing to rotate
     }
 
     // Before rotation, the tree looks like this:
@@ -865,12 +742,14 @@ void Rope::rotateLeft(PNode node)
         M->parent = A;
     }
     addWeightAndSize(M);
+
+    return B;
 }
 
-void Rope::rotateRight(PNode node)
+Rope::PNode Rope::rotateRight(PNode node)
 {
     if (!node || !node->left) {
-        return; // nothing to rotate
+        return node; // nothing to rotate
     }
 
     // Before rotation, the tree looks like this:
@@ -919,6 +798,8 @@ void Rope::rotateRight(PNode node)
     }
 
     addWeightAndSize(M);
+
+    return B;
 }
 
 bool Rope::isFull(const PNode& node) const
@@ -949,7 +830,7 @@ Rope::PNode Rope::makeLeaf(const std::string& text)
 
 Rope::PNode Rope::makeParent(PNode left, PNode right)
 {
-    auto weight = left->key.weight;
+    auto weight = weightOf(left);
 
     auto value = RopeValue(RopeNodeType::Internal, true, {});
     auto node = new NodeType(RopeKey(weight), std::move(value));
