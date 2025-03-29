@@ -81,13 +81,12 @@ private:
     size_t totalWeight(PNode node) const;
     size_t weightOf(PNode node) const;
     std::string::value_type find(const PNode& node, size_t offset) const;
-    void addWeightAndSize(PNode node);
     void deleteAll(PNode node);
     void exportDOT(const std::string& filename, const PNode& node) const;
     void printDOT(const PNode& node, std::ostream& os) const;
     void rebalance(PNode node) override;
     void stream(PNode node, std::ostream& oss) const;
-    void subtractWeightAndSize(PNode node);
     void updateSizes(PNode node);
     void updateWeights(PNode node, int addedChars);
+    void updateMeta(PNode node);
 };

@@ -182,28 +182,24 @@ Rope::PNodePair Rope::splitNode(PNode node, size_t offset)
 
     if (offset < node->key.weight) {
         auto [left, right] = splitNode(node->left, offset);
-        subtractWeightAndSize(node->left);
         node->left = right;
-
         if (right) {
             right->parent = node;
         }
 
-        addWeightAndSize(node->left);
-
+        updateMeta(node);
         return {left, node};
     }
 
     offset = offset - node->key.weight;
     auto [left, right] = splitNode(node->right, offset);
-    subtractWeightAndSize(node->right);
     node->right = left;
 
     if (left) {
         left->parent = node;
     }
 
-    addWeightAndSize(node->right);
+    updateMeta(node);
 
     return {node, right};
 }
@@ -449,52 +445,6 @@ void Rope::stream(PNode node, std::ostream& oss) const
     }
 }
 
-void Rope::addWeightAndSize(PNode node)
-{
-    if (!node) {
-        return;
-    }
-
-    auto w = node->key.weight;
-    auto s = node->size;
-
-    PNode p = node->parent;
-
-    while (p) {
-        if (p->left == node) {
-            p->key.weight += w;
-        }
-
-        p->size += s;
-
-        node = p;
-        p = p->parent;
-    }
-}
-
-void Rope::subtractWeightAndSize(PNode node)
-{
-    if (!node) {
-        return;
-    }
-
-    auto w = node->key.weight;
-    auto s = node->size;
-
-    PNode p = node->parent;
-
-    while (p) {
-        if (p->left == node) {
-            p->key.weight -= w;
-        }
-
-        p->size -= s;
-
-        node = p;
-        p = p->parent;
-    }
-}
-
 size_t Rope::nodeSize(PNode node) const
 {
     if (!node) {
@@ -691,6 +641,16 @@ void Rope::updateWeights(PNode node, int addedChars)
     }
 }
 
+void Rope::updateMeta(PNode node)
+{
+    if (!node) {
+        return;
+    }
+
+    node->key.weight = totalWeight(node->left);
+    node->size = 1 + nodeSize(node->left) + nodeSize(node->right);
+}
+
 Rope::PNode Rope::rotateLeft(PNode node)
 {
     if (!node || !node->right) {
@@ -715,10 +675,6 @@ Rope::PNode Rope::rotateLeft(PNode node)
     auto B = node->right;
     auto M = B->left;
 
-    subtractWeightAndSize(M);
-    subtractWeightAndSize(B);
-    subtractWeightAndSize(A);
-
     auto grandparent = A->parent;
     if (grandparent) {
         if (grandparent->left == A) {
@@ -731,17 +687,17 @@ Rope::PNode Rope::rotateLeft(PNode node)
     }
 
     B->parent = grandparent;
-    addWeightAndSize(B);
 
     A->parent = B;
     B->left = A;
-    addWeightAndSize(A);
 
     A->right = M;
     if (M) {
         M->parent = A;
     }
-    addWeightAndSize(M);
+
+    updateMeta(A);
+    updateMeta(B);
 
     return B;
 }
@@ -770,10 +726,6 @@ Rope::PNode Rope::rotateRight(PNode node)
     auto B = node->left;
     auto M = B->right;
 
-    subtractWeightAndSize(M);
-    subtractWeightAndSize(B);
-    subtractWeightAndSize(A);
-
     auto grandparent = A->parent;
     if (grandparent) {
         if (grandparent->left == A) {
@@ -786,18 +738,17 @@ Rope::PNode Rope::rotateRight(PNode node)
     }
 
     B->parent = grandparent;
-    addWeightAndSize(B);
 
     A->parent = B;
     B->right = A;
-    addWeightAndSize(A);
 
     A->left = M;
     if (M) {
         M->parent = A;
     }
 
-    addWeightAndSize(M);
+    updateMeta(A);
+    updateMeta(B);
 
     return B;
 }
