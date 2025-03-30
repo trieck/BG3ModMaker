@@ -2,10 +2,11 @@
 #include "RopePad.h"
 #include "MessageLoopEx.h"
 #include "RopeFrame.h"
+#include "RopeTreeFrame.h"
 
 extern CAppModule _Module;
 
-RopePad::RopePad()
+RopePad::RopePad() : m_treeFrame(this)
 {
 }
 
@@ -44,7 +45,6 @@ BOOL RopePad::Init(HINSTANCE hInstance, LPSTR lpCmdLine)
     if (!InitCommonControlsEx(&iex)) {
         return FALSE;
     }
-
     
     return TRUE;
 }
@@ -62,6 +62,13 @@ int RopePad::Run(int nShowCmd)
     
     frame.ShowWindow(nShowCmd);
 
+    if (!m_treeFrame.DefCreate()) {
+        ATLTRACE(_T("Tree window creation failed\n"));
+        return -1;
+    }
+
+    m_treeFrame.ShowWindow(nShowCmd);
+
     auto result = msgLoop.Run();
 
     _Module.RemoveMessageLoop();
@@ -69,8 +76,12 @@ int RopePad::Run(int nShowCmd)
     return result;
 }
 
-void  RopePad::Term()
+void RopePad::Term()
 {
+    if (m_treeFrame.IsWindow()) {
+        m_treeFrame.DestroyWindow();
+    }
+
     m_direct2D.Terminate();
 
     _Module.Term();
@@ -86,4 +97,13 @@ ID2D1Factory* RopePad::GetD2DFactory() const
 IDWriteFactory* RopePad::GetDWriteFactory() const
 {
     return m_direct2D.GetDWriteFactory();
+}
+
+void RopePad::ToggleTreeView()
+{
+    if (!m_treeFrame.IsWindow()) {
+        return;
+    }
+
+    m_treeFrame.ShowWindow(m_treeFrame.IsWindowVisible() ? SW_HIDE : SW_SHOW);
 }

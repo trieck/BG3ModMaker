@@ -75,6 +75,11 @@ void RopeView::OnDestroy()
 
 void RopeView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
+    if ((nChar == 'T' || nChar == 't') && (GetKeyState(VK_CONTROL) & 0x8000)) {
+        // Ctrl+T detected
+        m_pApp->ToggleTreeView();
+    }
+
     if (nChar == VK_LEFT && m_insertPos > 0) {
         m_insertPos--;
     } else if (nChar == VK_RIGHT && m_insertPos < m_text.GetLength()) {

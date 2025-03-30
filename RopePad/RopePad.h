@@ -1,5 +1,6 @@
 #pragma once
 #include "Direct2D.h"
+#include "RopeTreeFrame.h"
 
 class RopePad
 {
@@ -13,7 +14,10 @@ public:
 
     ID2D1Factory* GetD2DFactory() const;
     IDWriteFactory* GetDWriteFactory() const;
+    void ToggleTreeView();
+
 private:
     Direct2D m_direct2D;
+    RopeTreeFrame m_treeFrame;
 };
 

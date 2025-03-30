@@ -199,13 +199,11 @@ Rope::PNodePair Rope::splitNode(PNode node, size_t offset)
     offset = offset - node->key.weight;
     auto [left, right] = splitNode(node->right, offset);
     node->right = left;
-
     if (left) {
         left->parent = node;
     }
 
     updateMeta(node);
-
     return {node, right};
 }
 

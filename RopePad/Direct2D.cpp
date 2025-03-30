@@ -12,6 +12,7 @@ HRESULT Direct2D::Initialize()
         return S_OK; // Already initialized
     }
 
+
     auto hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_pD2DFactory);
     if (FAILED(hr)) {
         return hr;

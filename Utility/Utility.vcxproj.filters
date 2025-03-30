@@ -69,6 +69,12 @@
     <ClInclude Include="MessageLoopEx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MemStream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CoMemory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -108,6 +114,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MessageLoopEx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MemStream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CoMemory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

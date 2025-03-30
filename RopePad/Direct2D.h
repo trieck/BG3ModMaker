@@ -1,7 +1,8 @@
 #pragma once
 
-#include <d2d1.h>
+
 #include <dwrite.h>
+#include <d2d1_3.h>
 
 class Direct2D
 {
@@ -18,4 +19,3 @@ private:
     CComPtr<ID2D1Factory> m_pD2DFactory;
     CComPtr<IDWriteFactory> m_pDWriteFactory;
 };
-

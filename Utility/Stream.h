@@ -21,7 +21,7 @@ public:
     Stream(Stream&&) noexcept;
     Stream& operator=(Stream&&) noexcept;
 
-    // IStreamBase
+    // StreamBase
     size_t read(char* buf, size_t size) override;
     size_t write(const char* buf, size_t size) override;
     void seek(int64_t offset, SeekMode mode) override;
