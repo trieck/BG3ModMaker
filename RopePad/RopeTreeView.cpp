@@ -2,6 +2,7 @@
 #include "RopeTreeView.h"
 #include "RopePad.h"
 #include "ScopeGuard.h"
+#include "SVG.h"
 
 RopeTreeView::RopeTreeView(RopePad* pApp) : m_pApp(pApp)
 {
@@ -85,13 +86,36 @@ void RopeTreeView::OnSize(UINT nType, CSize size)
 
 HRESULT RopeTreeView::BuildSvgDoc()
 {
-    if (!m_pDeviceContext)
+    if (!m_pDeviceContext) {
         return E_FAIL;
+    }
 
     m_pSvgDoc.Release();
 
-    D2D1_SIZE_F viewportSize = D2D1::SizeF(800, 600);
-    auto hr = m_pDeviceContext->CreateSvgDocument(nullptr, viewportSize, &m_pSvgDoc);
+    SVG svg;
+
+    svg.Begin(800, 600);
+    // Root node
+    svg.Circle(400, 100, 20, RGB(200, 0, 0));
+
+    // Left child
+    svg.Circle(300, 200, 20, RGB(0, 128, 0));
+    svg.Line(400, 100, 300, 200);
+
+    // Right child
+    svg.Circle(500, 200, 20, RGB(0, 0, 200));
+    svg.Line(400, 100, 500, 200);
+
+    // Maybe one more level to test spacing
+    svg.Circle(250, 300, 20, RGB(128, 0, 128));
+    svg.Line(300, 200, 250, 300);
+
+    svg.Circle(350, 300, 20, RGB(128, 0, 128));
+    svg.Line(300, 200, 350, 300);
+
+    svg.End();
+
+    auto hr = svg.Make(m_pDeviceContext, &m_pSvgDoc);
     if (FAILED(hr)) {
         ATLTRACE(_T("Failed to create SVG document\n"));
         return hr;

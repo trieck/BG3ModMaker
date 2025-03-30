@@ -28,6 +28,7 @@ public:
     HRESULT STDMETHODCALLTYPE Stat(STATSTG* pstatstg, DWORD grfStatFlag) override;
     HRESULT STDMETHODCALLTYPE Clone(IStream** ppstm) override;
 
+    HRESULT WriteString(LPCSTR str);
 private:
     explicit MemStream(CoMemory* pData);
     void Alloc(uint64_t size);

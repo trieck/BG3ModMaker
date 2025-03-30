@@ -213,9 +213,15 @@ HRESULT MemStream::Clone(IStream** ppstm)
     clone->m_size = m_size;
 
     clone->AddRef();
+
     *ppstm = clone;
 
     return S_OK;
+}
+
+HRESULT MemStream::WriteString(LPCSTR str)
+{
+    return Write(str, static_cast<ULONG>(strlen(str)), nullptr);
 }
 
 void MemStream::Alloc(uint64_t size)
