@@ -1,6 +1,7 @@
 #include "stdafx.h"
-#include "RopeTreeView.h"
+#include "Rope.h"
 #include "RopePad.h"
+#include "RopeTreeView.h"
 #include "ScopeGuard.h"
 #include "SVG.h"
 
@@ -84,6 +85,27 @@ void RopeTreeView::OnSize(UINT nType, CSize size)
     Invalidate();
 }
 
+void LayoutRope(Rope::PNode node, float depth, float& nextX, SVG& svg, float parentX = -1, float parentY = -1)
+{
+    if (!node) {
+        return;
+    }
+
+    auto x = nextX * 100.0f;
+    auto y = depth * 100.0f;
+    nextX += 1.0f;
+
+    if (parentX >= 0 && parentY >= 0) {
+        svg.Line(parentX, parentY, x, y);
+    }
+
+    COLORREF color = node->value.isLeaf() ? RGB(0, 128, 0) : RGB(200, 0, 0);
+    svg.Circle(x, y, 20.0f, color);
+
+    LayoutRope(node->left, depth + 1.0f, nextX, svg, x, y);
+    LayoutRope(node->right, depth + 1.0f, nextX, svg, x, y);
+}
+
 HRESULT RopeTreeView::BuildSvgDoc()
 {
     if (!m_pDeviceContext) {
@@ -93,26 +115,12 @@ HRESULT RopeTreeView::BuildSvgDoc()
     m_pSvgDoc.Release();
 
     SVG svg;
+    Rope rope(3);
+    rope.insert(0, "ABCDEFGHI");
 
     svg.Begin(800, 600);
-    // Root node
-    svg.Circle(400, 100, 20, RGB(200, 0, 0));
-
-    // Left child
-    svg.Circle(300, 200, 20, RGB(0, 128, 0));
-    svg.Line(400, 100, 300, 200);
-
-    // Right child
-    svg.Circle(500, 200, 20, RGB(0, 0, 200));
-    svg.Line(400, 100, 500, 200);
-
-    // Maybe one more level to test spacing
-    svg.Circle(250, 300, 20, RGB(128, 0, 128));
-    svg.Line(300, 200, 250, 300);
-
-    svg.Circle(350, 300, 20, RGB(128, 0, 128));
-    svg.Line(300, 200, 350, 300);
-
+    float nextX = 1.f;
+    LayoutRope(rope.root(), 0, nextX, svg);
     svg.End();
 
     auto hr = svg.Make(m_pDeviceContext, &m_pSvgDoc);

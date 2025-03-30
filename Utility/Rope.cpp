@@ -625,8 +625,13 @@ void Rope::updateMeta(PNode node)
         return;
     }
 
-    node->key.weight = totalWeight(node->left);
-    node->size = 1 + nodeSize(node->left) + nodeSize(node->right);
+    if (node->value.isLeaf()) {
+        node->key.weight = node->value.text.size();
+        node->size = 1;
+    } else {
+        node->key.weight = totalWeight(node->left);
+        node->size = 1 + nodeSize(node->left) + nodeSize(node->right);
+    }
 }
 
 void Rope::updateMetaUp(PNode node)
