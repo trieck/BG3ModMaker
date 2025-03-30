@@ -1,4 +1,5 @@
 #pragma once
+#include <atlstr.h>
 
 class StringHelper
 {

@@ -135,6 +135,9 @@ HRESULT MemStream::SetSize(ULARGE_INTEGER libNewSize)
         Realloc(libNewSize.QuadPart);
     }
 
+    m_size = libNewSize.QuadPart;
+    m_pos = std::min(m_pos, m_size);
+
     return S_OK;
 }
 

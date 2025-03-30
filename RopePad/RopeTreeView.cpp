@@ -3,7 +3,7 @@
 #include "RopePad.h"
 #include "RopeTreeView.h"
 #include "ScopeGuard.h"
-#include "SVG.h"
+#include "StringHelper.h"
 
 RopeTreeView::RopeTreeView(RopePad* pApp) : m_pApp(pApp), m_zoom(1.0f)
 {
@@ -38,9 +38,9 @@ LRESULT RopeTreeView::OnMouseWheel(UINT nFlags, short zDelta, const CPoint& pt)
         Invalidate();
     } else {
         if (zDelta > 0) {
-            ScrollPageUp();
+            ScrollLineUp();
         } else {
-            ScrollPageDown();
+            ScrollLineDown();
         }
     }
 
@@ -60,7 +60,7 @@ void RopeTreeView::OnPaint()
         [&] { EndPaint(&ps); }
     );
 
-    if (!m_pRenderTarget || !m_pBkgndBrush || !m_pDeviceContext || !m_pSvgDoc) {
+    if (!(m_pRenderTarget && m_pBkgndBrush && m_pWhiteBrush && m_pBlackBrush && m_pDeviceContext && m_pSvgDoc)) {
         return; // Render target not created
     }
 
@@ -70,7 +70,7 @@ void RopeTreeView::OnPaint()
     CPoint ptOffset;
     GetScrollOffset(ptOffset);
 
-    D2D1_SIZE_F offset = { static_cast<FLOAT>(-ptOffset.x), static_cast<FLOAT>(-ptOffset.y) };
+    D2D1_SIZE_F offset = {static_cast<FLOAT>(-ptOffset.x), static_cast<FLOAT>(-ptOffset.y)};
 
     D2D1_RECT_F clipRect = D2D1::RectF(
         static_cast<FLOAT>(rc.left) / m_zoom - offset.width,
@@ -93,6 +93,30 @@ void RopeTreeView::OnPaint()
     m_pRenderTarget->FillRectangle(clipRect, m_pBkgndBrush);
 
     m_pDeviceContext->DrawSvgDocument(m_pSvgDoc);
+
+    auto nodeRadius = RopeLayout::NodeRadius();
+    for (const auto& label : m_layout.GetLabels()) {
+        D2D1_RECT_F rcLabel = {
+            label.pos.x - nodeRadius,
+            label.pos.y - nodeRadius,
+            label.pos.x + nodeRadius,
+            label.pos.y + nodeRadius
+        };
+
+        // Set correct brush
+        ID2D1SolidColorBrush* pBrush = (label.color == "black") ? m_pBlackBrush : m_pWhiteBrush;
+
+        auto wLabel = StringHelper::fromUTF8(label.text.c_str());
+
+        m_pRenderTarget->DrawText(
+            wLabel,
+            static_cast<UINT32>(wLabel.GetLength()),
+            m_pTextFormat, rcLabel,
+            pBrush,
+            D2D1_DRAW_TEXT_OPTIONS_NONE,
+            DWRITE_MEASURING_MODE_NATURAL
+        );
+    }
 
     m_pRenderTarget->PopAxisAlignedClip();
 
@@ -124,34 +148,6 @@ void RopeTreeView::OnSize(UINT nType, CSize size)
     SetScrollSize(static_cast<int>(sizeF.width * m_zoom), static_cast<int>(sizeF.height * m_zoom));
 }
 
-void LayoutRope(Rope::PNode node, int depth, float& nextX, SVG& svg, float parentX = -1, float parentY = -1)
-{
-    if (!node) {
-        return;
-    }
-
-    constexpr auto levelSpacingX = 100.0f;
-    constexpr auto levelSpacingY = 100.0f;
-    constexpr auto nodeRadius = 30.0f;
-    constexpr auto topPadding = nodeRadius + 10.0f;
-
-    auto x = nextX * levelSpacingX;
-    auto y = static_cast<float>(depth) * levelSpacingY + topPadding;
-
-    nextX += 1.0f;
-
-    constexpr auto radius = 30.0f;
-    if (parentX >= 0 && parentY >= 0) {
-        svg.EdgeLine(parentX, parentY, x, y, radius);
-    }
-
-    COLORREF color = node->value.isLeaf() ? RGB(0, 0x80, 0) : RGB(0x80, 0, 0);
-    svg.Circle(x, y, radius, color);
-
-    LayoutRope(node->left, depth + 1, nextX, svg, x, y);
-    LayoutRope(node->right, depth + 1, nextX, svg, x, y);
-}
-
 HRESULT RopeTreeView::BuildSvgDoc()
 {
     if (!m_pDeviceContext) {
@@ -160,16 +156,13 @@ HRESULT RopeTreeView::BuildSvgDoc()
 
     m_pSvgDoc.Release();
 
-    SVG svg;
     Rope rope(3);
     rope.insert(0, "ABCDEFGHI");
 
-    svg.Begin(800, 600);
-    float nextX = 1.f;
-    LayoutRope(rope.root(), 0, nextX, svg);
-    svg.End();
+    m_layout.Reset();
+    m_layout.Layout({800, 600}, rope);
 
-    auto hr = svg.Make(m_pDeviceContext, &m_pSvgDoc);
+    auto hr = m_layout.MakeDoc(m_pDeviceContext, &m_pSvgDoc);
     if (FAILED(hr)) {
         ATLTRACE(_T("Failed to create SVG document\n"));
         return hr;
@@ -207,9 +200,49 @@ HRESULT RopeTreeView::CreateDevResources()
         return hr;
     }
 
+    hr = m_pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), &m_pWhiteBrush);
+    if (FAILED(hr)) {
+        ATLTRACE(_T("Failed to create solid color brush\n"));
+        m_pRenderTarget.Release();
+        return hr;
+    }
+
+    hr = m_pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), &m_pBlackBrush);
+    if (FAILED(hr)) {
+        ATLTRACE(_T("Failed to create solid color brush\n"));
+        m_pRenderTarget.Release();
+        return hr;
+    }
+
     hr = m_pRenderTarget->QueryInterface(&m_pDeviceContext);
     if (FAILED(hr)) {
         ATLTRACE(_T("Failed to get device context\n"));
+        return hr;
+    }
+
+    auto pDWriteFactory = m_pApp->GetDWriteFactory();
+    if (!pDWriteFactory) {
+        ATLTRACE(_T("Failed to get DWrite factory\n"));
+        return E_FAIL;
+    }
+
+    hr = pDWriteFactory->CreateTextFormat(
+        L"Segoe UI", nullptr, DWRITE_FONT_WEIGHT_SEMI_BOLD, DWRITE_FONT_STYLE_NORMAL,
+        DWRITE_FONT_STRETCH_NORMAL, 12.0f, L"en-us", &m_pTextFormat);
+    if (FAILED(hr)) {
+        ATLTRACE(_T("Failed to create text format\n"));
+        return hr;
+    }
+
+    hr = m_pTextFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
+    if (FAILED(hr)) {
+        ATLTRACE(_T("Failed to set text alignment\n"));
+        return hr;
+    }
+
+    hr = m_pTextFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+    if (FAILED(hr)) {
+        ATLTRACE(_T("Failed to set paragraph alignment\n"));
         return hr;
     }
 
@@ -218,17 +251,30 @@ HRESULT RopeTreeView::CreateDevResources()
         ATLTRACE(_T("Failed to build SVG document\n"));
         return hr;
     }
+
     return hr;
 }
 
 void RopeTreeView::DiscardDevResources()
 {
+    if (m_pTextFormat) {
+        m_pTextFormat.Release();
+    }
+
     if (m_pSvgDoc) {
         m_pSvgDoc.Release();
     }
 
     if (m_pDeviceContext) {
         m_pDeviceContext.Release();
+    }
+
+    if (m_pWhiteBrush) {
+        m_pWhiteBrush.Release();
+    }
+
+    if (m_pBlackBrush) {
+        m_pBlackBrush.Release();
     }
 
     if (m_pBkgndBrush) {

@@ -155,6 +155,7 @@
     <ClInclude Include="MemStream.h" />
     <ClInclude Include="MessageLoopEx.h" />
     <ClInclude Include="Rope.h" />
+    <ClInclude Include="StringHelper.h" />
     <ClInclude Include="Utility.h" />
     <ClInclude Include="UtilityBase.h" />
     <ClInclude Include="LZ4Codec.h" />
@@ -186,6 +187,7 @@
     </ClCompile>
     <ClCompile Include="Rope.cpp" />
     <ClCompile Include="Stream.cpp" />
+    <ClCompile Include="StringHelper.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Utility.cpp" />
   </ItemGroup>

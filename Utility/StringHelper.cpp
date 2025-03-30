@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "StringHelper.h"
 
 CStringW StringHelper::fromUTF8(LPCSTR input)

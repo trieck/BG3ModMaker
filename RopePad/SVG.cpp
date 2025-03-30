@@ -52,6 +52,30 @@ void SVG::Circle(float cx, float cy, float r, COLORREF fill)
     WriteF("<circle cx='{}' cy='{}' r='{}' fill='rgb({},{},{})' />\n", cx, cy, r, red, green, blue);
 }
 
+void SVG::Text(float x, float y, const std::string& text, const std::string& fontName,
+               float fontSize, const std::string& fillColor, Align align)
+{
+    WriteF("<text x='{}' y='{}' font-family='{}' font-size='{}' fill='{}' text-anchor='{}' dominant-baseline='middle'>{}</text>\n",
+        x, y, fontName, fontSize, fillColor,
+        align == Align::Center ? "middle" : align == Align::Right ? "end" : "start", EscapeXML(text));
+}
+
+std::string SVG::EscapeXML(const std::string& str)
+{
+    std::string result;
+    for (char ch : str) {
+        switch (ch) {
+        case '&':  result += "&amp;"; break;
+        case '<':  result += "&lt;"; break;
+        case '>':  result += "&gt;"; break;
+        case '"':  result += "&quot;"; break;
+        case '\'': result += "&apos;"; break;
+        default:   result += ch; break;
+        }
+    }
+    return result;
+}
+
 void SVG::End()
 {
     Write("</svg>\n");
@@ -84,4 +108,10 @@ HRESULT SVG::Make(ID2D1DeviceContext5* ctx, ID2D1SvgDocument** out)
     D2D1_SIZE_F viewport = D2D1::SizeF(800.0f, 600.0f);
 
     return ctx->CreateSvgDocument(m_stream, viewport, out);
+}
+
+void SVG::Reset()
+{
+    ULARGE_INTEGER zero{};
+    (void)m_stream->SetSize(zero);
 }

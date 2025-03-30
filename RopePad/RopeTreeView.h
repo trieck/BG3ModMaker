@@ -4,6 +4,8 @@
 #include <d2d1_3.h>
 #include <d2d1svg.h>
 
+#include "RopeLayout.h"
+
 class RopePad;
 
 class RopeTreeView : public CWindowImpl<RopeTreeView>, public CScrollImpl<RopeTreeView>
@@ -35,11 +37,16 @@ private:
     HRESULT CreateDevResources();
     void DiscardDevResources();
 
-    RopePad* m_pApp;
     CComPtr<ID2D1HwndRenderTarget> m_pRenderTarget;
     CComPtr<ID2D1SolidColorBrush> m_pBkgndBrush;
+    CComPtr<ID2D1SolidColorBrush> m_pWhiteBrush;
+    CComPtr<ID2D1SolidColorBrush> m_pBlackBrush;
     CComPtr<ID2D1DeviceContext7> m_pDeviceContext;
     CComPtr<ID2D1SvgDocument> m_pSvgDoc;
+    CComPtr<IDWriteTextFormat> m_pTextFormat;
+
+    RopePad* m_pApp;
+    RopeLayout m_layout;
     float m_zoom;
 };
 
