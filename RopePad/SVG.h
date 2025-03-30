@@ -12,8 +12,8 @@ public:
 
     void Begin(float w, float h);
     void Line(float x1, float y1, float x2, float y2);
+    void EdgeLine(float x1, float y1, float x2, float y2, float radius);
     void Circle(float cx, float cy, float r, COLORREF fill);
-
     void End();
 
     void Write(const char* s);

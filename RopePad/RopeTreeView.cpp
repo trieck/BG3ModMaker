@@ -5,7 +5,7 @@
 #include "ScopeGuard.h"
 #include "SVG.h"
 
-RopeTreeView::RopeTreeView(RopePad* pApp) : m_pApp(pApp)
+RopeTreeView::RopeTreeView(RopePad* pApp) : m_pApp(pApp), m_zoom(1.0f)
 {
 }
 
@@ -27,6 +27,23 @@ LRESULT RopeTreeView::OnCreate(LPCREATESTRUCT pcs)
 
 LRESULT RopeTreeView::OnMouseWheel(UINT nFlags, short zDelta, const CPoint& pt)
 {
+    if (nFlags & MK_CONTROL) {
+        m_zoom += zDelta > 0 ? 0.1f : -0.1f;
+        m_zoom = std::clamp(m_zoom, 0.1f, 10.0f);
+
+        if (m_pSvgDoc) {
+            D2D1_SIZE_F sizeF = m_pSvgDoc->GetViewportSize();
+            SetScrollSize(static_cast<int>(sizeF.width * m_zoom), static_cast<int>(sizeF.height * m_zoom));
+        }
+        Invalidate();
+    } else {
+        if (zDelta > 0) {
+            ScrollPageUp();
+        } else {
+            ScrollPageDown();
+        }
+    }
+
     return 0;
 }
 
@@ -50,18 +67,36 @@ void RopeTreeView::OnPaint()
     CRect rc;
     GetClientRect(&rc);
 
-    D2D1_RECT_F d2rc;
-    d2rc.left = static_cast<FLOAT>(rc.left);
-    d2rc.top = static_cast<FLOAT>(rc.top);
-    d2rc.right = static_cast<FLOAT>(rc.right);
-    d2rc.bottom = static_cast<FLOAT>(rc.bottom);
+    CPoint ptOffset;
+    GetScrollOffset(ptOffset);
+
+    D2D1_SIZE_F offset = { static_cast<FLOAT>(-ptOffset.x), static_cast<FLOAT>(-ptOffset.y) };
+
+    D2D1_RECT_F clipRect = D2D1::RectF(
+        static_cast<FLOAT>(rc.left) / m_zoom - offset.width,
+        static_cast<FLOAT>(rc.top) / m_zoom - offset.height,
+        static_cast<FLOAT>(rc.right) / m_zoom - offset.width,
+        static_cast<FLOAT>(rc.bottom) / m_zoom - offset.height
+    );
 
     m_pRenderTarget->BeginDraw();
 
+    D2D1::Matrix3x2F transform =
+        D2D1::Matrix3x2F::Translation(offset.width, offset.height) *
+        D2D1::Matrix3x2F::Scale(m_zoom, m_zoom);
+
+    m_pRenderTarget->SetTransform(transform);
+
+    m_pRenderTarget->PushAxisAlignedClip(clipRect, D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+
     m_pRenderTarget->Clear(D2D1::ColorF(0x600000));
-    m_pRenderTarget->FillRectangle(d2rc, m_pBkgndBrush);
+    m_pRenderTarget->FillRectangle(clipRect, m_pBkgndBrush);
 
     m_pDeviceContext->DrawSvgDocument(m_pSvgDoc);
+
+    m_pRenderTarget->PopAxisAlignedClip();
+
+    m_pRenderTarget->SetTransform(D2D1::Matrix3x2F::Identity());
 
     auto hr = m_pRenderTarget->EndDraw();
     if (hr == D2DERR_RECREATE_TARGET) {
@@ -73,8 +108,8 @@ void RopeTreeView::OnPaint()
 
 void RopeTreeView::OnSize(UINT nType, CSize size)
 {
-    if (!m_pRenderTarget) {
-        return; // Render target not created
+    if (!m_pRenderTarget || !m_pSvgDoc) {
+        return;
     }
 
     auto hr = m_pRenderTarget->Resize(D2D1::SizeU(size.cx, size.cy));
@@ -82,28 +117,39 @@ void RopeTreeView::OnSize(UINT nType, CSize size)
         ATLTRACE(_T("Failed to resize render target\n"));
     }
 
-    Invalidate();
+    DoSize(size.cx, size.cy);
+
+    D2D1_SIZE_F sizeF = m_pSvgDoc->GetViewportSize();
+
+    SetScrollSize(static_cast<int>(sizeF.width * m_zoom), static_cast<int>(sizeF.height * m_zoom));
 }
 
-void LayoutRope(Rope::PNode node, float depth, float& nextX, SVG& svg, float parentX = -1, float parentY = -1)
+void LayoutRope(Rope::PNode node, int depth, float& nextX, SVG& svg, float parentX = -1, float parentY = -1)
 {
     if (!node) {
         return;
     }
 
-    auto x = nextX * 100.0f;
-    auto y = depth * 100.0f;
+    constexpr auto levelSpacingX = 100.0f;
+    constexpr auto levelSpacingY = 100.0f;
+    constexpr auto nodeRadius = 30.0f;
+    constexpr auto topPadding = nodeRadius + 10.0f;
+
+    auto x = nextX * levelSpacingX;
+    auto y = static_cast<float>(depth) * levelSpacingY + topPadding;
+
     nextX += 1.0f;
 
+    constexpr auto radius = 30.0f;
     if (parentX >= 0 && parentY >= 0) {
-        svg.Line(parentX, parentY, x, y);
+        svg.EdgeLine(parentX, parentY, x, y, radius);
     }
 
-    COLORREF color = node->value.isLeaf() ? RGB(0, 128, 0) : RGB(200, 0, 0);
-    svg.Circle(x, y, 20.0f, color);
+    COLORREF color = node->value.isLeaf() ? RGB(0, 0x80, 0) : RGB(0x80, 0, 0);
+    svg.Circle(x, y, radius, color);
 
-    LayoutRope(node->left, depth + 1.0f, nextX, svg, x, y);
-    LayoutRope(node->right, depth + 1.0f, nextX, svg, x, y);
+    LayoutRope(node->left, depth + 1, nextX, svg, x, y);
+    LayoutRope(node->right, depth + 1, nextX, svg, x, y);
 }
 
 HRESULT RopeTreeView::BuildSvgDoc()

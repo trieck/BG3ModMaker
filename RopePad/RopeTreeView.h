@@ -6,7 +6,7 @@
 
 class RopePad;
 
-class RopeTreeView : public CWindowImpl<RopeTreeView>
+class RopeTreeView : public CWindowImpl<RopeTreeView>, public CScrollImpl<RopeTreeView>
 {
 public:
     DECLARE_WND_CLASS("RopeTreeView")
@@ -18,6 +18,7 @@ public:
         MSG_WM_ERASEBKGND(OnEraseBkgnd)
         MSG_WM_DESTROY(OnDestroy)
         MSG_WM_MOUSEWHEEL(OnMouseWheel)
+        CHAIN_MSG_MAP(CScrollImpl)
     END_MSG_MAP()
 
     explicit RopeTreeView(RopePad* pApp);
@@ -39,5 +40,6 @@ private:
     CComPtr<ID2D1SolidColorBrush> m_pBkgndBrush;
     CComPtr<ID2D1DeviceContext7> m_pDeviceContext;
     CComPtr<ID2D1SvgDocument> m_pSvgDoc;
+    float m_zoom;
 };
 

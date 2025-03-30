@@ -21,6 +21,28 @@ void SVG::Line(float x1, float y1, float x2, float y2)
     WriteF("<line x1='{}' y1='{}' x2='{}' y2='{}' stroke='black' stroke-width='1' />\n", x1, y1, x2, y2);
 }
 
+void SVG::EdgeLine(float x1, float y1, float x2, float y2, float radius)
+{
+    auto dx = x2 - x1;
+    auto dy = y2 - y1;
+    auto len = std::sqrt(dx * dx + dy * dy);
+
+    if (len == 0.00f) {
+        return;
+    }
+
+    auto ux = dx / len;
+    auto uy = dy / len;
+
+    auto sx = x1 + ux * radius;
+    auto sy = y1 + uy * radius;
+    auto ex = x2 - ux * radius;
+    auto ey = y2 - uy * radius;
+
+    WriteF("<line x1='{}' y1='{}' x2='{}' y2='{}' stroke='black'/>\n", sx, sy, ex, ey);
+}
+
+
 void SVG::Circle(float cx, float cy, float r, COLORREF fill)
 {
     auto red = GetRValue(fill);

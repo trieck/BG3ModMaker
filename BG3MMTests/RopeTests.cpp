@@ -30,7 +30,7 @@ public:
 
     TEST_METHOD(TestBasicInsertion)
     {
-        Rope rope;
+        Rope rope(3);
         rope.insert(0, "Hello, World");
         rope.exportDOT(ropeDOT);
 
@@ -39,7 +39,7 @@ public:
 
     TEST_METHOD(TestFindCharacter)
     {
-        Rope rope;
+        Rope rope(3);
         rope.insert(0, "Hello, World");
 
         Assert::AreEqual('H', rope.find(0));
@@ -50,7 +50,7 @@ public:
 
     TEST_METHOD(TestSplitting)
     {
-        Rope rope;
+        Rope rope(3);
         rope.insert(0, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
         rope.exportDOT(ropeDOT);        
 
