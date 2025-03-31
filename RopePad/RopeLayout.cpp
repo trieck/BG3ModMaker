@@ -6,10 +6,11 @@
 #include "ScopeGuard.h"
 #include "StringHelper.h"
 
-static constexpr auto LEVEL_SPACING_X = 100.0f;
-static constexpr auto LEVEL_SPACING_Y = 100.0f;
-static constexpr auto NODE_RADIUS = 30.0f;
+static constexpr auto LEVEL_SPACING_X = 125.0f;
+static constexpr auto LEVEL_SPACING_Y = 125.0f;
+static constexpr auto NODE_RADIUS = 50.0f;
 static constexpr auto TOP_PADDING = NODE_RADIUS + 10.0f;
+static constexpr auto FONT_SIZE = 16.0f;
 
 RopeLayout::RopeLayout()
 {
@@ -67,7 +68,7 @@ HRESULT RopeLayout::InitTextFormat()
 
     auto hr = m_pDWriteFactory->CreateTextFormat(
         L"Segoe UI", nullptr, DWRITE_FONT_WEIGHT_SEMI_BOLD, DWRITE_FONT_STYLE_NORMAL,
-        DWRITE_FONT_STRETCH_NORMAL, 12.0f, L"en-us", &m_pTextFormat);
+        DWRITE_FONT_STRETCH_NORMAL, FONT_SIZE, L"en-us", &m_pTextFormat);
     if (FAILED(hr)) {
         return hr;
     }
@@ -254,30 +255,31 @@ void RopeLayout::Render(const Rope::PNode& node, const D2D_POINT_2F& parent)
         pos.y + NODE_RADIUS
     };
 
-    std::string text;
+    std::ostringstream ss;
+    ss << "W: " << node->key.weight << " | S: " << node->size;
+
+
     if (node->value.isLeaf()) {
         constexpr auto MAX_TEXT_LENGTH = 10;
-        text = node->value.text.substr(0, MAX_TEXT_LENGTH);
+        ss << "\n" << node->value.text.substr(0, MAX_TEXT_LENGTH);
     }
 
     auto textBrush = m_pWhiteTextBrush;
-    if (node->value.isFrozen) {
+    if (node->value.isLeaf() && node->value.isFrozen) {
         textBrush = m_pBlackTextBrush;
     }
 
-    auto wtext = StringHelper::fromUTF8(text.c_str());
-
-    if (!text.empty()) {
-        m_pDeviceContext->DrawText(
-            wtext,
-            static_cast<UINT32>(wtext.GetLength()),
-            m_pTextFormat,
-            textBounds,
-            textBrush,
-            D2D1_DRAW_TEXT_OPTIONS_CLIP,
-            DWRITE_MEASURING_MODE_NATURAL
-        );
-    }
+    auto wtext = StringHelper::fromUTF8(ss.str().c_str());
+    
+    m_pDeviceContext->DrawText(
+        wtext,
+        static_cast<UINT32>(wtext.GetLength()),
+        m_pTextFormat,
+        textBounds,
+        textBrush,
+        D2D1_DRAW_TEXT_OPTIONS_CLIP,
+        DWRITE_MEASURING_MODE_NATURAL
+    );
 
     Render(node->left, pos);
     Render(node->right, pos);
