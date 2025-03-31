@@ -11,8 +11,8 @@ namespace fs = std::filesystem;
 TEST_CLASS(RopeTests)
 {
     static std::string ropeDOT;
-public:
 
+public:
     TEST_CLASS_INITIALIZE(ClassInitialize)
     {
         fs::path exePath = fs::current_path();
@@ -52,7 +52,7 @@ public:
     {
         Rope rope(3);
         rope.insert(0, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-        rope.exportDOT(ropeDOT);        
+        rope.exportDOT(ropeDOT);
 
         Assert::AreEqual(std::string("ABCDEFGHIJKLMNOPQRSTUVWXYZ"), rope.str());
     }
@@ -64,7 +64,7 @@ public:
         rope.insert(0, "Hello, ");
         rope.insert(7, "Big ");
         rope.exportDOT(ropeDOT);
-        
+
         Assert::AreEqual(std::string("Hello, Big World"), rope.str());
         Assert::IsTrue(rope.isBalanced());
     }
@@ -105,7 +105,7 @@ public:
         Assert::IsTrue(rope.isBalanced());
         Assert::AreEqual(std::string("Hello World"), rope.str());
     }
-    
+
     TEST_METHOD(TestInsertEverywhere)
     {
         const std::string base(30, 'A');
@@ -149,7 +149,7 @@ public:
         rope.insert(0, "ABC"); // "ABC"
 
         // Insert at the split boundary
-        rope.insert(3, "x");    // Expect: "ABCx"
+        rope.insert(3, "x"); // Expect: "ABCx"
 
         std::string expected = "ABCx";
         auto actual = rope.str();
@@ -177,7 +177,7 @@ public:
         rope.exportDOT(ropeDOT);
 
         // Delete "H"
-        rope.deleteRange(0,1);
+        rope.deleteRange(0, 1);
         rope.exportDOT(ropeDOT);
 
         Assert::AreEqual(std::string("ello"), rope.str());
@@ -297,6 +297,25 @@ public:
 
         rope.deleteRange(5, 5); // No-op
         Assert::AreEqual(std::string("HelloWorld"), rope.str());
+    }
+
+    TEST_METHOD(TestDeleteNoLeaks)
+    {
+        _CrtMemState before, after, diff;
+        _CrtMemCheckpoint(&before);
+
+        {
+            Rope rope(3);
+            rope.insert(0, "The quick brown fox jumps over the lazy dog.");
+            rope.deleteRange(10, 19); // Deletes "brown fox"
+        }
+
+        _CrtMemCheckpoint(&after);
+        if (_CrtMemDifference(&diff, &before, &after)) {
+            _CrtMemDumpStatistics(&diff);
+            _CrtDumpMemoryLeaks();
+            Assert::Fail(L"Memory leak detected");
+        }
     }
 };
 

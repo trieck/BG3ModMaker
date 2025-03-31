@@ -182,7 +182,9 @@ Rope::PNodePair Rope::splitNode(PNode node, size_t offset)
     }
 
     if (node->value.isLeaf()) {
-        return splitLeafDel(node, offset);
+        auto result = splitLeafDel(node, offset);
+        delete node;
+        return result;
     }
 
     if (offset < node->key.weight) {
