@@ -258,10 +258,9 @@ void RopeLayout::Render(const Rope::PNode& node, const D2D_POINT_2F& parent)
     std::ostringstream ss;
     ss << "W: " << node->key.weight << " | S: " << node->size;
 
-
     if (node->value.isLeaf()) {
         constexpr auto MAX_TEXT_LENGTH = 10;
-        ss << "\n" << node->value.text.substr(0, MAX_TEXT_LENGTH);
+        ss << "\n\"" << node->value.text.substr(0, MAX_TEXT_LENGTH) << "\"";
     }
 
     auto textBrush = m_pWhiteTextBrush;
