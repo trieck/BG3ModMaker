@@ -33,17 +33,15 @@ public:
     void OnSize(UINT nType, CSize size);
 
 private:
-    HRESULT BuildSvgDoc();
     HRESULT CreateDevResources();
+    HRESULT CreateRopeLayout();
     void DiscardDevResources();
 
     CComPtr<ID2D1HwndRenderTarget> m_pRenderTarget;
     CComPtr<ID2D1SolidColorBrush> m_pBkgndBrush;
-    CComPtr<ID2D1SolidColorBrush> m_pWhiteBrush;
-    CComPtr<ID2D1SolidColorBrush> m_pBlackBrush;
     CComPtr<ID2D1DeviceContext7> m_pDeviceContext;
-    CComPtr<ID2D1SvgDocument> m_pSvgDoc;
-    CComPtr<IDWriteTextFormat> m_pTextFormat;
+    CComPtr<IDWriteFactory> m_pDWriteFactory;
+    CComPtr<ID2D1CommandList> m_pCommandList;
 
     RopePad* m_pApp;
     RopeLayout m_layout;

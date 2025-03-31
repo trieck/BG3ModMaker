@@ -1,32 +1,46 @@
 #pragma once
 
 #include "Rope.h"
-#include "SVG.h"
 
-struct NodeLabel {
-    D2D_POINT_2F pos;
-    std::string text;
-    std::string color;
-};
+#include <d2d1_3.h>
 
 class RopeLayout
 {
 public:
     explicit RopeLayout();
-    ~RopeLayout() = default;
+    ~RopeLayout();
 
-    const SVG& GetSVG() const;
-    HRESULT MakeDoc(ID2D1DeviceContext5* ctx, ID2D1SvgDocument** out);
-    static float NodeRadius();
-    std::vector<NodeLabel> GetLabels() const;
-    void Layout(D2D_SIZE_F dims, const Rope& rope);
-    void Reset();
+    HRESULT RenderToCommandList(
+        ID2D1DeviceContext* ctx,
+        IDWriteFactory* pWriteFactory,
+        const Rope& rope,
+        ID2D1CommandList** ppCommandList
+    );
+
+    D2D_SIZE_F GetBounds() const;
+
 private:
     D2D_POINT_2F ComputeLayout(const Rope::PNode& node, int depth, float column);
-    void RenderSVG(const Rope::PNode& node, const D2D_POINT_2F& parent);
+    HRESULT CreateDevResources(ID2D1DeviceContext* ctx, IDWriteFactory* dwriteFactory);
+    HRESULT InitBrushes();
+    HRESULT InitTextFormat();
+    void ComputeBounds();
+    void DiscardDevResources();
+    void DrawEdge(const D2D1_POINT_2F& p1, const D2D1_POINT_2F& p2, float radius);
+    void Render(const Rope& rope);
+    void Render(const Rope::PNode& node, const D2D_POINT_2F& parent);
+
+    CComPtr<ID2D1DeviceContext> m_pDeviceContext;
+    CComPtr<IDWriteFactory> m_pDWriteFactory;
+
+    CComPtr<ID2D1SolidColorBrush> m_pNodeFillBrush;
+    CComPtr<ID2D1SolidColorBrush> m_pLeafFillBrush;
+    CComPtr<ID2D1SolidColorBrush> m_pFrozenLeafFillBrush;
+    CComPtr<ID2D1SolidColorBrush> m_pEdgeBrush;
+    CComPtr<ID2D1SolidColorBrush> m_pWhiteTextBrush;
+    CComPtr<ID2D1SolidColorBrush> m_pBlackTextBrush;
+    CComPtr<IDWriteTextFormat> m_pTextFormat;
 
     std::unordered_map<Rope::PNode, D2D_POINT_2F> m_nodePositions;
-    std::vector<NodeLabel> m_labels;
-    SVG m_svg;
+    D2D_SIZE_F m_bounds{};
 };
-

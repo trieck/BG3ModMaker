@@ -62,7 +62,7 @@ BOOL RopeTreeFrame::OnIdle()
 
 BOOL RopeTreeFrame::DefCreate()
 {
-    RECT rect = { 0, 0, 400, 600 };
+    RECT rect = { 0, 0, 500, 600 };
     auto hWnd = CreateEx(nullptr, rect);
     if (hWnd == nullptr) {
         ATLTRACE(_T("Unable to create tree frame window.\n"));

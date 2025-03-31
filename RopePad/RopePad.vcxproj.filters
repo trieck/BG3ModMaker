@@ -48,9 +48,6 @@
     <ClInclude Include="RopeTreeView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SVG.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="RopeLayout.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -81,9 +78,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RopeTreeView.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SVG.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RopeLayout.cpp">
