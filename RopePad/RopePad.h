@@ -15,6 +15,7 @@ public:
     ID2D1Factory* GetD2DFactory() const;
     IDWriteFactory* GetDWriteFactory() const;
     void ToggleTreeView();
+    void AddChar(UINT nChar);
 
 private:
     Direct2D m_direct2D;

@@ -21,6 +21,17 @@ RopeLayout::~RopeLayout()
     DiscardDevResources();
 }
 
+HRESULT RopeLayout::Init(ID2D1DeviceContext* ctx, IDWriteFactory* pWriteFactory)
+{
+    if (!ctx || !pWriteFactory) {
+        return E_POINTER;
+    }
+
+    auto hr = CreateDevResources(ctx, pWriteFactory);
+
+    return hr;
+}
+
 HRESULT RopeLayout::InitBrushes()
 {
     if (!m_pDeviceContext) {
@@ -83,24 +94,16 @@ HRESULT RopeLayout::InitTextFormat()
     return hr;
 }
 
-HRESULT RopeLayout::RenderToCommandList(ID2D1DeviceContext* ctx, IDWriteFactory* pWriteFactory, const Rope& rope,
-                                        ID2D1CommandList** ppCommandList)
+HRESULT RopeLayout::Render(const Rope& rope, ID2D1CommandList** ppCommandList)
 {
-    if (!ctx || !ppCommandList) {
+    if (!m_pDeviceContext || !m_pDWriteFactory || !ppCommandList) {
         return E_POINTER;
     }
 
-    HRESULT hr = S_OK;
-
-    ScopeGuardSimple guard(
-        [&] { hr = CreateDevResources(ctx, pWriteFactory); },
-        [&] { DiscardDevResources(); });
-    if (FAILED(hr)) {
-        return hr;
-    }
+    Reset();
 
     CComPtr<ID2D1CommandList> cmdList;
-    hr = m_pDeviceContext->CreateCommandList(&cmdList);
+    auto hr = m_pDeviceContext->CreateCommandList(&cmdList);
     if (FAILED(hr)) {
         return hr;
     }
@@ -108,10 +111,10 @@ HRESULT RopeLayout::RenderToCommandList(ID2D1DeviceContext* ctx, IDWriteFactory*
     CComPtr<ID2D1Image> previousTarget;
     ScopeGuardSimple targetGuard(
         [&] {
-            ctx->GetTarget(&previousTarget);
-            ctx->SetTarget(cmdList);
+            m_pDeviceContext->GetTarget(&previousTarget);
+            m_pDeviceContext->SetTarget(cmdList);
         },
-        [&] { ctx->SetTarget(previousTarget); });
+        [&] { m_pDeviceContext->SetTarget(previousTarget); });
 
     m_pDeviceContext->BeginDraw();
 
@@ -243,6 +246,7 @@ void RopeLayout::Render(const Rope::PNode& node, const D2D_POINT_2F& parent)
 
     D2D1_ELLIPSE ellipse = {pos, NODE_RADIUS, NODE_RADIUS};
     m_pDeviceContext->FillEllipse(ellipse, fillBrush);
+    m_pDeviceContext->DrawEllipse(ellipse, m_pEdgeBrush);
 
     if (parent.x >= 0 && parent.y >= 0) {
         DrawEdge(parent, pos, NODE_RADIUS);
@@ -284,9 +288,15 @@ void RopeLayout::Render(const Rope::PNode& node, const D2D_POINT_2F& parent)
     Render(node->right, pos);
 }
 
+void RopeLayout::Reset()
+{
+    m_nodePositions.clear();
+    m_bounds = {};
+}
+
 void RopeLayout::Render(const Rope& rope)
 {
-    if (!m_pDeviceContext) {
+    if (!m_pDeviceContext || !m_pDWriteFactory) {
         return;
     }
 
@@ -303,6 +313,8 @@ HRESULT RopeLayout::CreateDevResources(ID2D1DeviceContext* ctx, IDWriteFactory* 
     if (!ctx || !dwriteFactory) {
         return E_POINTER;
     }
+
+    DiscardDevResources();
 
     m_pDeviceContext = ctx;
     m_pDWriteFactory = dwriteFactory;

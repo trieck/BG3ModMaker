@@ -107,3 +107,10 @@ void RopePad::ToggleTreeView()
 
     m_treeFrame.ShowWindow(m_treeFrame.IsWindowVisible() ? SW_HIDE : SW_SHOW);
 }
+
+void RopePad::AddChar(UINT nChar)
+{
+    if (m_treeFrame.IsWindow()) {
+        m_treeFrame.SendMessage(WM_ADDCHAR, nChar);
+    }
+}

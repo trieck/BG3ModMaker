@@ -2,7 +2,6 @@
 
 #include <d2d1.h>
 #include <d2d1_3.h>
-#include <d2d1svg.h>
 
 #include "RopeLayout.h"
 
@@ -20,6 +19,7 @@ public:
         MSG_WM_ERASEBKGND(OnEraseBkgnd)
         MSG_WM_DESTROY(OnDestroy)
         MSG_WM_MOUSEWHEEL(OnMouseWheel)
+        MSG_WM_ADDCHAR(OnAddChar)
         CHAIN_MSG_MAP(CScrollImpl)
     END_MSG_MAP()
 
@@ -28,14 +28,17 @@ public:
     BOOL OnEraseBkgnd(const CDCHandle& dc);
     LRESULT OnCreate(LPCREATESTRUCT pcs);
     LRESULT OnMouseWheel(UINT nFlags, short zDelta, const CPoint& pt);
+    void OnAddChar(UINT nChar);
     void OnDestroy();
     void OnPaint();
     void OnSize(UINT nType, CSize size);
 
 private:
     HRESULT CreateDevResources();
-    HRESULT CreateRopeLayout();
+    HRESULT InitLayout();
+    HRESULT RecreateLayout();
     void DiscardDevResources();
+    void SetScrollSizes();
 
     CComPtr<ID2D1HwndRenderTarget> m_pRenderTarget;
     CComPtr<ID2D1SolidColorBrush> m_pBkgndBrush;
@@ -45,6 +48,8 @@ private:
 
     RopePad* m_pApp;
     RopeLayout m_layout;
+    Rope m_rope;    // for testing
+    int m_pos;
     float m_zoom;
 };
 

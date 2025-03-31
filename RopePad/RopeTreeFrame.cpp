@@ -40,6 +40,13 @@ LRESULT RopeTreeFrame::OnCreate(LPCREATESTRUCT pcs)
     return 0;
 }
 
+void RopeTreeFrame::OnAddChar(UINT nChar)
+{
+    if (m_view.IsWindow()) {
+        m_view.SendMessage(WM_ADDCHAR, nChar);
+    }
+}
+
 void RopeTreeFrame::OnClose()
 {
     ShowWindow(SW_HIDE);

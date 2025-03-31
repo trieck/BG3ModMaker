@@ -10,14 +10,9 @@ public:
     explicit RopeLayout();
     ~RopeLayout();
 
-    HRESULT RenderToCommandList(
-        ID2D1DeviceContext* ctx,
-        IDWriteFactory* pWriteFactory,
-        const Rope& rope,
-        ID2D1CommandList** ppCommandList
-    );
-
     D2D_SIZE_F GetBounds() const;
+    HRESULT Init(ID2D1DeviceContext* ctx, IDWriteFactory* pWriteFactory);
+    HRESULT Render(const Rope& rope, ID2D1CommandList** ppCommandList);
 
 private:
     D2D_POINT_2F ComputeLayout(const Rope::PNode& node, int depth, float column);
@@ -29,6 +24,7 @@ private:
     void DrawEdge(const D2D1_POINT_2F& p1, const D2D1_POINT_2F& p2, float radius);
     void Render(const Rope& rope);
     void Render(const Rope::PNode& node, const D2D_POINT_2F& parent);
+    void Reset();
 
     CComPtr<ID2D1DeviceContext> m_pDeviceContext;
     CComPtr<IDWriteFactory> m_pDWriteFactory;

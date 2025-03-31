@@ -54,6 +54,8 @@ void RopeView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
         }
     }
 
+    m_pApp->AddChar(nChar);
+
     (void)UpdateLayout();
     (void)DrawD2DText();
 }

@@ -5,7 +5,7 @@
 #include "ScopeGuard.h"
 #include "StringHelper.h"
 
-RopeTreeView::RopeTreeView(RopePad* pApp) : m_pApp(pApp), m_zoom(1.0f)
+RopeTreeView::RopeTreeView(RopePad* pApp) : m_pApp(pApp), m_rope(3), m_pos(0), m_zoom(1.0f)
 {
 }
 
@@ -31,10 +31,7 @@ LRESULT RopeTreeView::OnMouseWheel(UINT nFlags, short zDelta, const CPoint& pt)
         m_zoom += zDelta > 0 ? 0.1f : -0.1f;
         m_zoom = std::clamp(m_zoom, 0.1f, 10.0f);
 
-        auto size = m_layout.GetBounds();
-        SetScrollSize(static_cast<int>(size.width * m_zoom), static_cast<int>(size.height * m_zoom));
-
-        Invalidate();
+        SetScrollSizes();
     } else {
         if (zDelta > 0) {
             ScrollLineUp();
@@ -44,6 +41,16 @@ LRESULT RopeTreeView::OnMouseWheel(UINT nFlags, short zDelta, const CPoint& pt)
     }
 
     return 0;
+}
+
+void RopeTreeView::OnAddChar(UINT nChar)
+{
+    CStringA str;
+    str.Format(_T("%c"), nChar);
+
+    m_rope.insert(m_pos++, str.GetString());
+    (void)RecreateLayout();
+    SetScrollSizes();
 }
 
 void RopeTreeView::OnDestroy()
@@ -91,7 +98,9 @@ void RopeTreeView::OnPaint()
     m_pDeviceContext->Clear(D2D1::ColorF(0x600000));
     m_pDeviceContext->FillRectangle(clipRect, m_pBkgndBrush);
 
-    m_pDeviceContext->DrawImage(m_pCommandList);
+    if (m_pCommandList) {
+        m_pDeviceContext->DrawImage(m_pCommandList);
+    }
 
     m_pDeviceContext->PopAxisAlignedClip();
 
@@ -116,11 +125,7 @@ void RopeTreeView::OnSize(UINT nType, CSize size)
         ATLTRACE(_T("Failed to resize render target\n"));
     }
 
-    DoSize(size.cx, size.cy);
-
-    auto bounds = m_layout.GetBounds();
-
-    SetScrollSize(static_cast<int>(bounds.width * m_zoom), static_cast<int>(bounds.height * m_zoom));
+    SetScrollSizes();
 }
 
 HRESULT RopeTreeView::CreateDevResources()
@@ -163,7 +168,7 @@ HRESULT RopeTreeView::CreateDevResources()
         return E_FAIL;
     }
 
-    hr = CreateRopeLayout();
+    hr = InitLayout();
     if (FAILED(hr)) {
         ATLTRACE(_T("Failed to create rope layout\n"));
         return hr;
@@ -172,22 +177,47 @@ HRESULT RopeTreeView::CreateDevResources()
     return hr;
 }
 
-HRESULT RopeTreeView::CreateRopeLayout()
+HRESULT RopeTreeView::InitLayout()
 {
     if (!m_pDeviceContext || !m_pDWriteFactory) {
         return E_POINTER;
     }
 
-    Rope rope(3);
-    rope.insert(0, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-
-    auto hr = m_layout.RenderToCommandList(m_pDeviceContext, m_pDWriteFactory, rope, &m_pCommandList);
+    auto hr = m_layout.Init(m_pDeviceContext, m_pDWriteFactory);
 
     return hr;
 }
 
+HRESULT RopeTreeView::RecreateLayout()
+{
+    if (!m_pDeviceContext || !m_pDWriteFactory) {
+        return E_POINTER;
+    }
+
+    m_pCommandList.Release();
+    auto hr = m_layout.Render(m_rope, &m_pCommandList);
+
+    return hr;
+}
+
+void RopeTreeView::SetScrollSizes()
+{
+    CRect rc;
+    GetClientRect(&rc);
+
+    DoSize(rc.Width(), rc.Height());
+
+    auto bounds = m_layout.GetBounds();
+    if (bounds.width > 0 && bounds.height > 0) {
+        SetScrollSize(static_cast<int>(bounds.width * m_zoom), static_cast<int>(bounds.height * m_zoom));
+    }
+    
+    Invalidate();
+}
+
 void RopeTreeView::DiscardDevResources()
 {
+    m_pCommandList.Release();
     m_pBkgndBrush.Release();
     m_pDeviceContext.Release();
     m_pRenderTarget.Release();
