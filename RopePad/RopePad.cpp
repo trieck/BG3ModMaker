@@ -6,7 +6,7 @@
 
 extern CAppModule _Module;
 
-RopePad::RopePad() : m_treeFrame(this), m_rope(3), m_pos(0)
+RopePad::RopePad() : m_treeFrame(this), m_rope(3)
 {
 }
 
@@ -115,27 +115,25 @@ void RopePad::ToggleTreeView()
     m_treeFrame.ShowWindow(m_treeFrame.IsWindowVisible() ? SW_HIDE : SW_SHOW);
 }
 
-void RopePad::AddChar(UINT nChar)
+void RopePad::AddChar(int32_t pos, UINT nChar)
 {
     CStringA str;
     str.Format("%c", nChar);
 
-    m_rope.insert(m_pos++, str.GetString());
+    m_rope.insert(pos, str.GetString());
 
     if (m_treeFrame.IsWindow()) {
         m_treeFrame.SendMessage(WM_UPDATELAYOUT, 0, 0);
     }
 }
 
-void RopePad::DeleteChar()
+void RopePad::DeleteChar(int32_t pos)
 {
-    if (m_pos <= 0) {
-        m_pos = 0;
+    if (pos <= 0) {
         return;
     }
 
-    m_rope.deleteRange(m_pos - 1, m_pos);
-    m_pos--;
+    m_rope.deleteRange(pos - 1, pos);
 
     if (m_treeFrame.IsWindow()) {
         m_treeFrame.SendMessage(WM_UPDATELAYOUT, 0, 0);

@@ -14,11 +14,11 @@ public:
 
     BEGIN_MSG_MAP(RopeTreeView)
         MSG_WM_CREATE(OnCreate)
-        MSG_WM_SIZE(OnSize)
+        MSG_WM_DESTROY(OnDestroy)
         MSG_WM_DIRECT2DPAINT(OnPaint)
         MSG_WM_ERASEBKGND(OnEraseBkgnd)
-        MSG_WM_DESTROY(OnDestroy)
         MSG_WM_MOUSEWHEEL(OnMouseWheel)
+        MSG_WM_SIZE(OnSize)
         MSG_WM_UPDATELAYOUT(OnUpdateLayout)
         CHAIN_MSG_MAP(CScrollImpl)
     END_MSG_MAP()

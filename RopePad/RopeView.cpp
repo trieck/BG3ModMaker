@@ -43,21 +43,45 @@ void RopeView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
         auto maxScroll = std::max(0.f, m_textMetrics.height - viewHeight);
         m_scrollY = std::clamp(m_scrollY + lineHeight, 0.f, maxScroll);
     } else if (nChar >= 32 && nChar <= 127) { // Ignore control characters
-        m_text.Insert(m_insertPos++, static_cast<WCHAR>(nChar));
-        m_pApp->AddChar(nChar);
+        m_text.Insert(m_insertPos, static_cast<WCHAR>(nChar));
+        m_pApp->AddChar(m_insertPos++, nChar);
     } else if (nChar == VK_BACK && m_insertPos > 0) {
         if (m_text[m_insertPos - 1] == L'\n' || m_text[m_insertPos - 1] == L'\r') {
+            m_pApp->DeleteChar(m_insertPos);
             m_text.Delete(--m_insertPos);
         }
 
         if (m_insertPos > 0) {
+            m_pApp->DeleteChar(m_insertPos);
             m_text.Delete(--m_insertPos);
-        }
-        m_pApp->DeleteChar();
+        }        
     }
 
     (void)UpdateLayout();
     (void)DrawD2DText();
+}
+
+void RopeView::OnLButtonDown(UINT nFlags, const CPoint& point)
+{
+    if (!m_pTextLayout) {
+        return;
+    }
+
+    D2D1_POINT_2F pt;
+    pt.x = static_cast<FLOAT>(point.x) - CARET_START_X;
+    pt.y = static_cast<FLOAT>(point.y) + m_scrollY - CARET_START_Y;
+
+    BOOL isTrailingHit = FALSE;
+    BOOL isInside = FALSE;
+    DWRITE_HIT_TEST_METRICS metrics;
+
+    auto hr = m_pTextLayout->HitTestPoint(pt.x, pt.y, &isTrailingHit, &isInside, &metrics);
+    if (SUCCEEDED(hr)) {
+        auto pos = isTrailingHit ? static_cast<int32_t>(metrics.textPosition) + 1 : static_cast<int32_t>(metrics.textPosition);
+        m_insertPos = std::clamp(pos, 0, m_text.GetLength());
+        UpdateCaretPos();
+        Invalidate();
+    }
 }
 
 FLOAT RopeView::GetViewHeight() const

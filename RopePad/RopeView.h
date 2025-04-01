@@ -11,15 +11,16 @@ public:
     DECLARE_WND_CLASS("RopeView")
 
     BEGIN_MSG_MAP(RopeView)
+        MSG_WM_CHAR(OnChar)
         MSG_WM_CREATE(OnCreate)
-        MSG_WM_SIZE(OnSize)
-        MSG_WM_TIMER(OnTimer)
+        MSG_WM_DESTROY(OnDestroy)
         MSG_WM_DIRECT2DPAINT(OnPaint)
         MSG_WM_ERASEBKGND(OnEraseBkgnd)
-        MSG_WM_CHAR(OnChar)
         MSG_WM_KEYDOWN(OnKeyDown)
-        MSG_WM_DESTROY(OnDestroy)
+        MSG_WM_LBUTTONDOWN(OnLButtonDown)
         MSG_WM_MOUSEWHEEL(OnMouseWheel)
+        MSG_WM_SIZE(OnSize)
+        MSG_WM_TIMER(OnTimer)
     END_MSG_MAP()
 
     explicit RopeView(RopePad* pApp);
@@ -30,10 +31,11 @@ public:
     void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
     void OnDestroy();
     void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
+    void OnLButtonDown(UINT nFlags, const CPoint& point);
     void OnPaint();
     void OnSize(UINT nType, CSize size);
     void OnTimer(UINT_PTR nIDEvent);
-    
+
 private:
     FLOAT GetViewHeight() const;
     FLOAT LineHeight() const;
