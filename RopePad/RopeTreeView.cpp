@@ -29,7 +29,7 @@ LRESULT RopeTreeView::OnMouseWheel(UINT nFlags, short zDelta, const CPoint& pt)
     if (nFlags & MK_CONTROL) {
         m_zoom += zDelta > 0 ? 0.1f : -0.1f;
         m_zoom = std::clamp(m_zoom, 0.1f, 10.0f);
-
+//
         SetScrollSizes();
     } else {
         if (zDelta > 0) {
@@ -38,7 +38,7 @@ LRESULT RopeTreeView::OnMouseWheel(UINT nFlags, short zDelta, const CPoint& pt)
             ScrollLineDown();
         }
     }
-
+//
     return 0;
 }
 
@@ -212,9 +212,8 @@ void RopeTreeView::SetScrollSizes()
     auto bounds = m_layout.GetBounds();
     if (bounds.width > 0 && bounds.height > 0) {
         SetScrollSize(static_cast<int>(bounds.width * m_zoom), static_cast<int>(bounds.height * m_zoom));
+
     }
-    
-    Invalidate();
 }
 
 void RopeTreeView::DiscardDevResources()

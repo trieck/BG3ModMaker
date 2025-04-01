@@ -80,6 +80,7 @@ void RopeView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
     if ((nChar == 'T' || nChar == 't') && (GetKeyState(VK_CONTROL) & 0x8000)) {
         // Ctrl+T detected
         m_pApp->ToggleTreeView();
+        SetFocus();
     }
 
     if (nChar == VK_LEFT && m_insertPos > 0) {
@@ -139,8 +140,10 @@ void RopeView::OnTimer(UINT_PTR nIDEvent)
     m_pRenderTarget->SetTransform(D2D1::Matrix3x2F::Identity());
 
     HRESULT hr = m_pRenderTarget->EndDraw();
-    if (FAILED(hr)) {
-        m_pRenderTarget.Release();
+    if (hr == D2DERR_RECREATE_TARGET) {
+        (void)CreateDevResources();
+    } else if (FAILED(hr)) {
+        ATLTRACE(_T("Failed to end draw on render target\n"));
     }
 }
 
