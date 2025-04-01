@@ -6,7 +6,7 @@
 
 extern CAppModule _Module;
 
-RopePad::RopePad() : m_treeFrame(this)
+RopePad::RopePad() : m_treeFrame(this), m_rope(3), m_pos(0)
 {
 }
 
@@ -69,6 +69,8 @@ int RopePad::Run(int nShowCmd)
 
     m_treeFrame.ShowWindow(nShowCmd);
 
+    frame.SetFocus();
+
     auto result = msgLoop.Run();
 
     _Module.RemoveMessageLoop();
@@ -99,6 +101,11 @@ IDWriteFactory* RopePad::GetDWriteFactory() const
     return m_direct2D.GetDWriteFactory();
 }
 
+const Rope& RopePad::GetRope() const
+{
+    return m_rope;
+}
+
 void RopePad::ToggleTreeView()
 {
     if (!m_treeFrame.IsWindow()) {
@@ -110,7 +117,28 @@ void RopePad::ToggleTreeView()
 
 void RopePad::AddChar(UINT nChar)
 {
+    CStringA str;
+    str.Format("%c", nChar);
+
+    m_rope.insert(m_pos++, str.GetString());
+
     if (m_treeFrame.IsWindow()) {
-        m_treeFrame.SendMessage(WM_ADDCHAR, nChar);
+        m_treeFrame.SendMessage(WM_UPDATELAYOUT, 0, 0);
     }
 }
+
+void RopePad::DeleteChar()
+{
+    if (m_pos <= 0) {
+        m_pos = 0;
+        return;
+    }
+
+    m_rope.deleteRange(m_pos - 1, m_pos);
+    m_pos--;
+
+    if (m_treeFrame.IsWindow()) {
+        m_treeFrame.SendMessage(WM_UPDATELAYOUT, 0, 0);
+    }
+}
+

@@ -19,7 +19,7 @@ public:
         MSG_WM_ERASEBKGND(OnEraseBkgnd)
         MSG_WM_DESTROY(OnDestroy)
         MSG_WM_MOUSEWHEEL(OnMouseWheel)
-        MSG_WM_ADDCHAR(OnAddChar)
+        MSG_WM_UPDATELAYOUT(OnUpdateLayout)
         CHAIN_MSG_MAP(CScrollImpl)
     END_MSG_MAP()
 
@@ -28,10 +28,10 @@ public:
     BOOL OnEraseBkgnd(const CDCHandle& dc);
     LRESULT OnCreate(LPCREATESTRUCT pcs);
     LRESULT OnMouseWheel(UINT nFlags, short zDelta, const CPoint& pt);
-    void OnAddChar(UINT nChar);
     void OnDestroy();
     void OnPaint();
     void OnSize(UINT nType, CSize size);
+    void OnUpdateLayout();
 
 private:
     HRESULT CreateDevResources();
@@ -48,8 +48,6 @@ private:
 
     RopePad* m_pApp;
     RopeLayout m_layout;
-    Rope m_rope;    // for testing
-    int m_pos;
     float m_zoom;
 };
 

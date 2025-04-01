@@ -20,7 +20,7 @@ public:
         MSG_WM_CLOSE(OnClose)
         MSG_WM_DESTROY(OnDestroy)
         MSG_WM_SIZE(OnSize)
-        MSG_WM_ADDCHAR(OnAddChar)
+        MSG_WM_UPDATELAYOUT(OnUpdateLayout)
         CHAIN_MSG_MAP(CFrameWindowImpl)
     END_MSG_MAP()
 
@@ -29,10 +29,10 @@ public:
 
     BOOL OnIdle() override;
     LRESULT OnCreate(LPCREATESTRUCT pcs);
-    void OnAddChar(UINT nChar);
     void OnClose();
     void OnDestroy();
     void OnSize(UINT nType, CSize size);
+    void OnUpdateLayout();
 
     BOOL DefCreate();
 

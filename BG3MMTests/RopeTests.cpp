@@ -317,6 +317,20 @@ public:
             Assert::Fail(L"Memory leak detected");
         }
     }
+
+    TEST_METHOD(TestDontDangleOnDelete)
+    {
+        Rope rope(3);
+
+        std::string input = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        rope.insert(0, input);
+        rope.exportDOT(ropeDOT);
+
+        for (size_t i = 0; i < input.size(); ++i) {
+            rope.deleteRange(0, 1);
+            rope.exportDOT(ropeDOT);
+        }
+    }
 };
 
 // Static member variable for the DOT file path

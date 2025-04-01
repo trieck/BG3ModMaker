@@ -14,11 +14,15 @@ public:
 
     ID2D1Factory* GetD2DFactory() const;
     IDWriteFactory* GetDWriteFactory() const;
+    const Rope& GetRope() const;
+
     void ToggleTreeView();
     void AddChar(UINT nChar);
+    void DeleteChar();
 
 private:
     Direct2D m_direct2D;
     RopeTreeFrame m_treeFrame;
+    Rope m_rope;
+    int m_pos;
 };
-

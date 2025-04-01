@@ -1,11 +1,10 @@
 #include "stdafx.h"
-#include "Rope.h"
 #include "RopePad.h"
 #include "RopeTreeView.h"
 #include "ScopeGuard.h"
 #include "StringHelper.h"
 
-RopeTreeView::RopeTreeView(RopePad* pApp) : m_pApp(pApp), m_rope(3), m_pos(0), m_zoom(1.0f)
+RopeTreeView::RopeTreeView(RopePad* pApp) : m_pApp(pApp), m_zoom(1.0f)
 {
 }
 
@@ -41,16 +40,6 @@ LRESULT RopeTreeView::OnMouseWheel(UINT nFlags, short zDelta, const CPoint& pt)
     }
 
     return 0;
-}
-
-void RopeTreeView::OnAddChar(UINT nChar)
-{
-    CStringA str;
-    str.Format(_T("%c"), nChar);
-
-    m_rope.insert(m_pos++, str.GetString());
-    (void)RecreateLayout();
-    SetScrollSizes();
 }
 
 void RopeTreeView::OnDestroy()
@@ -128,6 +117,11 @@ void RopeTreeView::OnSize(UINT nType, CSize size)
     SetScrollSizes();
 }
 
+void RopeTreeView::OnUpdateLayout()
+{
+    (void)RecreateLayout();
+}
+
 HRESULT RopeTreeView::CreateDevResources()
 {
     auto pFactory = m_pApp->GetD2DFactory();
@@ -190,12 +184,20 @@ HRESULT RopeTreeView::InitLayout()
 
 HRESULT RopeTreeView::RecreateLayout()
 {
-    if (!m_pDeviceContext || !m_pDWriteFactory) {
+    if (!m_pApp || !m_pDeviceContext || !m_pDWriteFactory) {
         return E_POINTER;
     }
 
+    const auto& rope = m_pApp->GetRope();
+
     m_pCommandList.Release();
-    auto hr = m_layout.Render(m_rope, &m_pCommandList);
+    auto hr = m_layout.Render(rope, &m_pCommandList);
+    if (FAILED(hr)) {
+        ATLTRACE(_T("Failed to render rope layout\n"));
+        return hr;
+    }
+
+    SetScrollSizes();
 
     return hr;
 }

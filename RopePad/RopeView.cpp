@@ -44,6 +44,7 @@ void RopeView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
         m_scrollY = std::clamp(m_scrollY + lineHeight, 0.f, maxScroll);
     } else if (nChar >= 32 && nChar <= 127) { // Ignore control characters
         m_text.Insert(m_insertPos++, static_cast<WCHAR>(nChar));
+        m_pApp->AddChar(nChar);
     } else if (nChar == VK_BACK && m_insertPos > 0) {
         if (m_text[m_insertPos - 1] == L'\n' || m_text[m_insertPos - 1] == L'\r') {
             m_text.Delete(--m_insertPos);
@@ -52,9 +53,8 @@ void RopeView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
         if (m_insertPos > 0) {
             m_text.Delete(--m_insertPos);
         }
+        m_pApp->DeleteChar();
     }
-
-    m_pApp->AddChar(nChar);
 
     (void)UpdateLayout();
     (void)DrawD2DText();

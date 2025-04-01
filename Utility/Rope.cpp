@@ -194,8 +194,11 @@ Rope::PNodePair Rope::splitNode(PNode node, size_t offset)
             right->parent = node;
         }
 
-        updateMeta(node);
-        return {left, node};
+        auto newParent = makeParent(right, node->right);
+        delete node;
+        updateMeta(newParent);
+
+        return {left, newParent};
     }
 
     offset = offset - node->key.weight;
@@ -205,8 +208,11 @@ Rope::PNodePair Rope::splitNode(PNode node, size_t offset)
         left->parent = node;
     }
 
-    updateMeta(node);
-    return {node, right};
+    auto newParent = makeParent(node->left, left);
+    delete node;
+    updateMeta(newParent);
+
+    return {newParent, right};
 }
 
 Rope::PNodePair Rope::splitLeafDel(PNode node, size_t offset)
@@ -568,7 +574,7 @@ Rope::PNode Rope::split(PNode& node, size_t offset)
 
     delete node; // goodbye old node
     node = nullptr;
-        
+
     updateMetaUp(newParent);
     rebalance(newParent);
 
