@@ -28,10 +28,8 @@ public:
     void SetInput(LPCSTR input);
     XmlToken GetNextToken();
     void ResetState();
-    uint32_t Recover();
 
 private:
-    
     BOOL HasState(uint32_t state) const;
     BOOL HasState(State state) const;
 

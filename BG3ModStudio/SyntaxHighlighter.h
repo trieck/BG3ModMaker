@@ -2,12 +2,19 @@
 
 #include "ThreadImpl.h"
 
-typedef struct _HIGHLIGHT_SPAN
+typedef struct
 {
     LONG start;
     LONG end;
     COLORREF color;
-} HIGHLIGHT_SPAN, *LPHILIGHT_SPAN;
+} HIGHLIGHT_RANGE, *LPHILIGHT_RANGE;
+
+typedef struct
+{
+    LONG start;
+    LONG end;
+    LPTSTR lpstrText;
+} TEXT_RANGE, *LPTEXT_RANGE;
 
 class SyntaxHighlighter : public ThreadImpl<SyntaxHighlighter>
 {
@@ -20,7 +27,12 @@ public:
     void Shutdown();
 
 private:
-    void FormatSpan(WPARAM wParam, LPARAM lParam);
+    void HighlightRange(LONG start, LONG end);
+    void FormatRange(LONG start, LONG end);
+    void GetTextRange(LONG start, LONG end);
+    void NormalizeRange(LONG& start, LONG& end);
 
-    HWND m_hwnd;
+    static constexpr auto MAX_TEXT_SIZE = 4096;
+    TCHAR m_buf[MAX_TEXT_SIZE]{};
+    HWND m_hWnd;
 };

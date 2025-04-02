@@ -168,6 +168,7 @@
     <ClInclude Include="FolderMonitor.h" />
     <ClInclude Include="FormatToken.h" />
     <ClInclude Include="OutputWindow.h" />
+    <ClInclude Include="ParserStates.h" />
     <ClInclude Include="SelectObject.h" />
     <ClInclude Include="DefaultRTFFormatter.h" />
     <ClInclude Include="FileDialogEx.h" />
@@ -193,7 +194,6 @@
     <ClInclude Include="UTF8Stream.h" />
     <ClInclude Include="Util.h" />
     <ClInclude Include="XmlFormat.h" />
-    <ClInclude Include="XmlLineFormatter.h" />
     <ClInclude Include="XmlRTFFormatter.h" />
     <ClInclude Include="XmlToken.h" />
     <ClInclude Include="XmlTokenizer.h" />
@@ -212,6 +212,7 @@
     <ClCompile Include="JsonRTFFormatter.cpp" />
     <ClCompile Include="JsonTokenizer.cpp" />
     <ClCompile Include="MainFrame.cpp" />
+    <ClCompile Include="ParserStates.cpp" />
     <ClCompile Include="RTFFormatterRegistry.cpp" />
     <ClCompile Include="RTFStreamFormatter.cpp" />
     <ClCompile Include="ShellHelper.cpp" />
@@ -228,7 +229,6 @@
     <ClCompile Include="UTF8Stream.cpp" />
     <ClCompile Include="Util.cpp" />
     <ClCompile Include="XmlFormat.cpp" />
-    <ClCompile Include="XmlLineFormatter.cpp" />
     <ClCompile Include="XmlRTFFormatter.cpp" />
     <ClCompile Include="XmlToken.cpp" />
     <ClCompile Include="XmlTokenizer.cpp" />

@@ -3,9 +3,8 @@
 #include "Exception.h"
 #include "FileStream.h"
 #include "resources/resource.h"
-#include "TextFileView.h"
-
 #include "ScopeGuard.h"
+#include "TextFileView.h"
 #include "UTF8Stream.h"
 
 namespace { // anonymous
@@ -97,6 +96,10 @@ LRESULT TextFileView::OnEditChange(UINT uNotifyCode, int nID, CWindow wndCtl, BO
         sel.cpMin -= 1;
     }
 
+    if (sel.cpMin == sel.cpMax) {
+        return 0;
+    }
+
     m_highlighter.Enqueue(sel.cpMin, sel.cpMax);
 
     bHandled = TRUE;
@@ -104,9 +107,9 @@ LRESULT TextFileView::OnEditChange(UINT uNotifyCode, int nID, CWindow wndCtl, BO
     return 0;
 }
 
-void TextFileView::OnHighlightReady(LPHILIGHT_SPAN span)
+void TextFileView::OnHighlightReady(LPHILIGHT_RANGE range)
 {
-    ATLASSERT(span != nullptr);
+    ATLASSERT(range != nullptr);
     ATLASSERT(m_richEdit.IsWindow());
 
     BOOL isDirty;
@@ -126,13 +129,13 @@ void TextFileView::OnHighlightReady(LPHILIGHT_SPAN span)
 
     m_richEdit.SetRedraw(FALSE);
 
-    m_richEdit.SetSel(span->start, span->end);
+    m_richEdit.SetSel(range->start, range->end);
 
     CHARFORMAT2 cf = {};
     cf.cbSize = sizeof(cf);
     cf.dwMask = CFM_COLOR;
     cf.dwEffects &= ~CFE_AUTOCOLOR;
-    cf.crTextColor = span->color;
+    cf.crTextColor = range->color;
     m_richEdit.SetSelectionCharFormat(cf);
 
     m_richEdit.SetSel(prevSel); // restore previous selection
@@ -140,6 +143,24 @@ void TextFileView::OnHighlightReady(LPHILIGHT_SPAN span)
     m_richEdit.SetRedraw(TRUE);
     m_richEdit.Invalidate(); // ensure a full redraw
     m_richEdit.UpdateWindow(); // force repaint now
+}
+
+void TextFileView::OnGetTextRange(LPTEXT_RANGE range)
+{
+    ATLASSERT(range != nullptr);
+    ATLASSERT(m_richEdit.IsWindow());
+
+    auto start = range->start;
+    auto end = range->end;
+    if (start < 0 || end < 0) {
+        return;
+    }
+
+    if (end < start) {
+        std::swap(start, end);
+    }
+
+    m_richEdit.GetTextRange(start, end, range->lpstrText);
 }
 
 void TextFileView::OnSize(UINT nType, CSize size)
@@ -322,7 +343,7 @@ void TextFileView::SetDefaultFormat()
     cf.cbSize = sizeof(cf);
     cf.dwMask = CFM_FACE | CFM_SIZE;
     _tcscpy_s(cf.szFaceName, _T("Cascadia Mono"));
-    cf.yHeight = 240; // 12pt
+    cf.yHeight = 280; // 14pt
 
     m_richEdit.SetDefaultCharFormat(cf);
 }

@@ -14,6 +14,7 @@ public:
 
     BEGIN_MSG_MAP(TextFileView)
         MSG_WM_CREATE(OnCreate)
+        MSG_WM_GET_TEXT_RANGE(OnGetTextRange)
         MSG_WM_HIGHLIGHT_READY(OnHighlightReady)
         MSG_WM_SIZE(OnSize)
         COMMAND_CODE_HANDLER(EN_CHANGE, OnEditChange)
@@ -28,7 +29,8 @@ public:
 
     LRESULT OnCreate(LPCREATESTRUCT pcs);
     LRESULT OnEditChange(UINT uNotifyCode, int nID, CWindow wndCtl, BOOL& bHandled);
-    void OnHighlightReady(LPHILIGHT_SPAN span);
+    void OnHighlightReady(LPHILIGHT_RANGE range);
+    void OnGetTextRange(LPTEXT_RANGE range);
     void OnSize(UINT nType, CSize size);
 
     // IFileView

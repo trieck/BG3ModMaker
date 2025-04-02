@@ -41,8 +41,9 @@
 #include <unordered_set>
 #include <vector>
 
-constexpr uint32_t WM_FORMAT_SPAN = WM_APP + 1;
-constexpr uint32_t WM_HIGHLIGHT_READY = WM_APP + 1;
+constexpr uint32_t WM_FORMAT_RANGE = WM_APP + 1;
+constexpr uint32_t WM_HIGHLIGHT_READY = WM_APP + 2;
+constexpr uint32_t WM_GET_TEXT_RANGE = WM_APP + 3;
 
 #define MAKE_TREEITEM(n, t) \
     CTreeItem(((LPNMTREEVIEW)(n))->itemNew.hItem, t)
@@ -80,7 +81,14 @@ constexpr uint32_t WM_HIGHLIGHT_READY = WM_APP + 1;
 #define MSG_WM_HIGHLIGHT_READY(func) \
     if(uMsg == WM_HIGHLIGHT_READY) { \
         this->SetMsgHandled(TRUE); \
-        func(reinterpret_cast<HIGHLIGHT_SPAN*>(lParam)); \
+        func(reinterpret_cast<LPHILIGHT_RANGE>(lParam)); \
+        lResult = 0; \
+    }
+
+#define MSG_WM_GET_TEXT_RANGE(func) \
+    if(uMsg == WM_GET_TEXT_RANGE) { \
+        this->SetMsgHandled(TRUE); \
+        func(reinterpret_cast<LPTEXT_RANGE>(lParam)); \
         lResult = 0; \
     }
 
