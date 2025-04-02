@@ -36,3 +36,8 @@ RTFStreamFormatter::Ptr RTFFormatterRegistry::GetFormatter(const CString& path) 
     return m_defaultFormatter;
 }
 
+RTFStreamFormatter::Ptr RTFFormatterRegistry::GetDefaultFormatter() const
+{
+    return m_defaultFormatter;
+}
+

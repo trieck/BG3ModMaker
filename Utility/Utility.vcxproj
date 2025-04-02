@@ -156,6 +156,7 @@
     <ClInclude Include="MessageLoopEx.h" />
     <ClInclude Include="Rope.h" />
     <ClInclude Include="StringHelper.h" />
+    <ClInclude Include="ThreadImpl.h" />
     <ClInclude Include="Utility.h" />
     <ClInclude Include="UtilityBase.h" />
     <ClInclude Include="LZ4Codec.h" />

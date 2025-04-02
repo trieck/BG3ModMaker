@@ -41,6 +41,9 @@
 #include <unordered_set>
 #include <vector>
 
+constexpr uint32_t WM_FORMAT_SPAN = WM_APP + 1;
+constexpr uint32_t WM_HIGHLIGHT_READY = WM_APP + 1;
+
 #define MAKE_TREEITEM(n, t) \
     CTreeItem(((LPNMTREEVIEW)(n))->itemNew.hItem, t)
 #define MAKE_OLDTREEITEM(n, t) \
@@ -72,6 +75,13 @@
 #define COMMAND_ID_HANDLER3(id, func) \
     if(uMsg == WM_COMMAND && (id) == LOWORD(wParam)) { \
         func(); \
+    }
+
+#define MSG_WM_HIGHLIGHT_READY(func) \
+    if(uMsg == WM_HIGHLIGHT_READY) { \
+        this->SetMsgHandled(TRUE); \
+        func(reinterpret_cast<HIGHLIGHT_SPAN*>(lParam)); \
+        lResult = 0; \
     }
 
 extern CAppModule _Module;

@@ -3,17 +3,12 @@
 #include "Exception.h"
 #include "FileStream.h"
 #include "resources/resource.h"
-#include "ScopeGuard.h"
 #include "TextFileView.h"
+
+#include "ScopeGuard.h"
 #include "UTF8Stream.h"
-#include "XmlLineFormatter.h"
 
 namespace { // anonymous
-
-constexpr auto EDIT_TIMER_ID = 0xFEED;
-constexpr auto EDIT_TIMER_DELAY = 50;
-constexpr auto EDIT_TIMER_AUTO_KILL_ID = 0xDEAD;
-constexpr auto EDIT_TIMER_AUTO_KILL = 5000;
 
 DWORD CALLBACK StreamInCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG* pcb)
 {
@@ -80,7 +75,12 @@ LRESULT TextFileView::OnCreate(LPCREATESTRUCT pcs)
         return -1;
     }
 
+    SetDefaultFormat();
+
     m_richEdit.SendMessage(EM_SETEVENTMASK, 0, ENM_CHANGE);
+
+    m_highlighter.SetHwnd(*this);
+    m_highlighter.Start();
 
     return 0;
 }
@@ -90,13 +90,56 @@ LRESULT TextFileView::OnEditChange(UINT uNotifyCode, int nID, CWindow wndCtl, BO
     ATLASSERT(nID == IDC_RICHEDIT);
     ATLASSERT(wndCtl == m_richEdit);
 
-    KillTimer(EDIT_TIMER_ID);
-    SetTimer(EDIT_TIMER_ID, EDIT_TIMER_DELAY);
+    CHARRANGE sel;
+    m_richEdit.GetSel(sel);
 
-    KillTimer(EDIT_TIMER_AUTO_KILL_ID);
-    SetTimer(EDIT_TIMER_AUTO_KILL_ID, EDIT_TIMER_AUTO_KILL, nullptr);
+    if (sel.cpMin == sel.cpMax && sel.cpMin > 0) {
+        sel.cpMin -= 1;
+    }
+
+    m_highlighter.Enqueue(sel.cpMin, sel.cpMax);
+
+    bHandled = TRUE;
 
     return 0;
+}
+
+void TextFileView::OnHighlightReady(LPHILIGHT_SPAN span)
+{
+    ATLASSERT(span != nullptr);
+    ATLASSERT(m_richEdit.IsWindow());
+
+    BOOL isDirty;
+    ScopeGuardSimple modifyGuard(
+        [&] { isDirty = m_richEdit.GetModify(); },
+        [&] { m_richEdit.SetModify(isDirty); });
+
+    auto prevMask = m_richEdit.GetEventMask();
+    ScopeGuard maskGuard(m_richEdit,
+                         &CRichEditCtrl::SetEventMask,
+                         &CRichEditCtrl::SetEventMask,
+                         std::make_tuple(prevMask & ~ENM_CHANGE),
+                         std::make_tuple(prevMask));
+
+    CHARRANGE prevSel;
+    m_richEdit.GetSel(prevSel);
+
+    m_richEdit.SetRedraw(FALSE);
+
+    m_richEdit.SetSel(span->start, span->end);
+
+    CHARFORMAT2 cf = {};
+    cf.cbSize = sizeof(cf);
+    cf.dwMask = CFM_COLOR;
+    cf.dwEffects &= ~CFE_AUTOCOLOR;
+    cf.crTextColor = span->color;
+    m_richEdit.SetSelectionCharFormat(cf);
+
+    m_richEdit.SetSel(prevSel); // restore previous selection
+
+    m_richEdit.SetRedraw(TRUE);
+    m_richEdit.Invalidate(); // ensure a full redraw
+    m_richEdit.UpdateWindow(); // force repaint now
 }
 
 void TextFileView::OnSize(UINT nType, CSize size)
@@ -106,29 +149,16 @@ void TextFileView::OnSize(UINT nType, CSize size)
     }
 }
 
-void TextFileView::OnTimer(UINT_PTR nIDEvent)
-{
-    switch (nIDEvent) {
-    case EDIT_TIMER_ID:
-        KillTimer(EDIT_TIMER_ID);
-        ApplySyntaxHighlight();
-        break;
-    case EDIT_TIMER_AUTO_KILL_ID:
-        KillTimer(EDIT_TIMER_ID);
-        KillTimer(EDIT_TIMER_AUTO_KILL_ID);
-        break;
-    default:
-        break;
-    }
-}
-
 BOOL TextFileView::Create(HWND parent, _U_RECT rect, DWORD dwStyle, DWORD dwStyleEx)
 {
     dwStyle |= WS_CHILD | WS_VISIBLE;
 
     auto hWnd = Base::Create(parent, rect, nullptr, dwStyle, dwStyleEx);
+    if (!hWnd) {
+        return FALSE;
+    }
 
-    return hWnd != nullptr;
+    return TRUE;
 }
 
 BOOL TextFileView::LoadFile(const CString& path)
@@ -254,6 +284,8 @@ BOOL TextFileView::SaveFileAs(const CString& path)
 
 BOOL TextFileView::Destroy()
 {
+    m_highlighter.Shutdown();
+
     return DestroyWindow();
 }
 
@@ -280,6 +312,19 @@ FileEncoding TextFileView::GetEncoding() const
 TextFileView::operator HWND() const
 {
     return m_hWnd;
+}
+
+void TextFileView::SetDefaultFormat()
+{
+    ASSERT(m_richEdit.IsWindow());
+
+    CHARFORMAT2 cf{};
+    cf.cbSize = sizeof(cf);
+    cf.dwMask = CFM_FACE | CFM_SIZE;
+    _tcscpy_s(cf.szFaceName, _T("Cascadia Mono"));
+    cf.yHeight = 240; // 12pt
+
+    m_richEdit.SetDefaultCharFormat(cf);
 }
 
 BOOL TextFileView::Write(LPCWSTR text) const
@@ -357,125 +402,4 @@ BOOL TextFileView::Flush()
     auto hr = m_stream.Reset();
 
     return SUCCEEDED(hr);
-}
-
-
-void TextFileView::ApplySyntaxHighlight()
-{
-    CString text;
-    m_richEdit.GetWindowText(text);
-
-    BOOL isDirty;
-    ScopeGuardSimple modifyGuard(
-        [&] { isDirty = m_richEdit.GetModify(); },
-        [&] { m_richEdit.SetModify(isDirty); });
-
-    DWORD prevMask = m_richEdit.GetEventMask();
-
-    ScopeGuard maskGuard(m_richEdit, 
-        &CRichEditCtrl::SetEventMask, 
-        &CRichEditCtrl::SetEventMask,
-        std::make_tuple(prevMask & ~ENM_CHANGE),
-        std::make_tuple(prevMask));
-
-    ScopeGuard redraw(m_richEdit,
-        &CRichEditCtrl::SetRedraw,
-        &CRichEditCtrl::SetRedraw,
-        std::make_tuple(FALSE),
-        std::make_tuple(TRUE));
- 
-    if (text.IsEmpty()) {
-        auto format = m_formatter->GetDefaultFormat();
-        auto pFormat = format.GetString();
-        EDITSTREAM es{};
-        es.dwCookie = reinterpret_cast<DWORD_PTR>(&pFormat);
-        es.pfnCallback = StreamInCallback;
-        m_richEdit.StreamIn(CP_UTF8 << 16 | SF_USECODEPAGE | SF_RTF, es);
-        m_lineFormatter.Reset();
-        return;
-    }
-
-    CHARRANGE prevSel;
-    m_richEdit.GetSel(prevSel); // Get cursor position
-
-    LONG lineIndex = m_richEdit.LineFromChar(prevSel.cpMin);
-    LONG lineStart = m_richEdit.LineIndex(lineIndex);
-    LONG lineLength = m_richEdit.LineLength(lineStart);
-
-    if (lineLength == 0) {
-        return;
-    }
-
-    CString line;
-    LPTSTR pline = line.GetBufferSetLength(lineLength + 1);
-
-    auto len = m_richEdit.GetLine(lineIndex, pline, lineLength);
-    line.ReleaseBuffer(len);
-
-    if (len == 0) {
-        return;
-    }
-
-    uint32_t state = 0;
-
-    PARAFORMAT2 pf{};
-    pf.cbSize = sizeof(PARAFORMAT2);
-    pf.dwMask = PFM_OFFSET;
-
-    if (lineIndex > 0) {
-        auto preLineIndex = lineIndex - 1;
-        auto prevLineStart = m_richEdit.LineIndex(preLineIndex);
-        auto prevLineLength = m_richEdit.LineLength(prevLineStart);
-        auto prevLineEnd = prevLineStart + prevLineLength;
-
-        m_richEdit.HideSelection(TRUE, FALSE);
-        m_richEdit.SetSel(prevLineStart, prevLineEnd);
-        m_richEdit.GetParaFormat(pf);
-        m_richEdit.SetSel(prevSel);
-        m_richEdit.HideSelection(FALSE, FALSE);
-
-        //state = static_cast<uint32_t>(pf.dxOffset);
-
-        ATLTRACE("Previous line %d has state %d\n", preLineIndex, state);
-    }
-
-    m_lineFormatter.SetState(state);
-
-    // Just use XML for this example for everything
-    auto tokens = m_lineFormatter.Format(line);
-
-    while (!tokens.empty()) {
-        auto token = tokens.back();
-        tokens.pop_back();
-
-        CHARRANGE cr{};
-        cr.cpMin = lineStart + token.start;
-        cr.cpMax = lineStart + token.end;
-
-        m_richEdit.SetSel(cr);
-
-        CHARFORMAT2 cf{};
-        cf.cbSize = sizeof(cf);
-        cf.dwMask = CFM_ALL;
-
-        m_richEdit.GetSelectionCharFormat(cf);
-
-        cf.dwMask = CFM_COLOR;
-        cf.crTextColor = token.color;
-        m_richEdit.SetSelectionCharFormat(cf);
-    }
-
-    // Store parser state of the current line in the para format
-    m_richEdit.HideSelection(TRUE, FALSE);
-    m_richEdit.SetSel(lineIndex, lineIndex + lineLength);
-
-    ATLTRACE("Setting state %d for line %d\n", m_lineFormatter.GetState(), lineIndex);
-
-    pf.dxOffset = static_cast<LONG>(m_lineFormatter.GetState());
-    m_richEdit.SetParaFormat(pf);
-
-    m_richEdit.SetSel(prevSel); // Restore cursor position
-    m_richEdit.HideSelection(FALSE, FALSE);
-
-    Invalidate();
 }
