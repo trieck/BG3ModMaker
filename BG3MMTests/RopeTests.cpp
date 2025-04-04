@@ -299,6 +299,7 @@ public:
         Assert::AreEqual(std::string("HelloWorld"), rope.str());
     }
 
+#ifdef _DEBUG
     TEST_METHOD(TestDeleteNoLeaks)
     {
         _CrtMemState before, after, diff;
@@ -317,6 +318,7 @@ public:
             Assert::Fail(L"Memory leak detected");
         }
     }
+#endif
 
     TEST_METHOD(TestDontDangleOnDelete)
     {

@@ -26,9 +26,6 @@ BG3ModStudio::~BG3ModStudio()
 {
     (void)g_csFile.Term();
 
-    if (m_hInstRich != nullptr) {
-        FreeLibrary(m_hInstRich);
-    }
     CoUninitialize();
 }
 
@@ -60,12 +57,6 @@ BOOL BG3ModStudio::init()
     DWORD param = FE_FONTSMOOTHINGCLEARTYPE;
     SystemParametersInfo(SPI_SETFONTSMOOTHING, 1, nullptr, 0);
     SystemParametersInfo(SPI_SETFONTSMOOTHINGTYPE, 1, &param, 0);
-
-    m_hInstRich = LoadLibrary(CRichEditCtrl::GetLibraryName());
-    if (m_hInstRich == nullptr) {
-        ATLTRACE(_T("Unable to load rich edit library.\n"));
-        return FALSE;
-    }
 
     if (!InitTabView()) {
         ATLTRACE(_T("Unable to initialize tab view.\n"));

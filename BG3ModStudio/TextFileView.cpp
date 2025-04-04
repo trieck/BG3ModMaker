@@ -2,171 +2,52 @@
 
 #include "Exception.h"
 #include "FileStream.h"
-#include "resources/resource.h"
-#include "ScopeGuard.h"
 #include "TextFileView.h"
 #include "UTF8Stream.h"
 
-namespace { // anonymous
-
-DWORD CALLBACK StreamInCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG* pcb)
-{
-    auto** pptext = reinterpret_cast<LPCSTR*>(dwCookie);
-
-    if (pptext == nullptr || *pptext == nullptr) {
-        return E_POINTER;
-    }
-
-    auto strSize = strlen(*pptext);
-
-    if (strSize == 0) {
-        *pcb = 0;
-        return 0;
-    }
-
-    auto sz = std::min<LONG>(static_cast<LONG>(strSize), cb);
-
-    memcpy(pbBuff, *pptext, sz);
-
-    *pptext += sz;
-
-    *pcb = sz;
-
-    return 0;
-}
-
-DWORD CALLBACK StreamOutCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG* pcb)
-{
-    auto** ppStream = reinterpret_cast<IStream**>(dwCookie);
-
-    if (ppStream == nullptr || *ppStream == nullptr) {
-        return E_POINTER;
-    }
-
-    if (cb == 0) {
-        *pcb = 0;
-        return 0;
-    }
-
-    auto hr = (*ppStream)->Write(pbBuff, cb, reinterpret_cast<ULONG*>(pcb));
-    if (FAILED(hr)) {
-        return hr;
-    }
-
-    if (*pcb == 0) {
-        return E_FAIL;
-    }
-
-    return 0;
-}
-
 auto constexpr BUFFER_SIZE = 4096;
-} // namespace
 
 LRESULT TextFileView::OnCreate(LPCREATESTRUCT pcs)
 {
-    DWORD dwStyle = WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_HSCROLL |
-        ES_AUTOHSCROLL | ES_AUTOVSCROLL | ES_MULTILINE
-        | ES_NOOLEDRAGDROP;
+    /*auto hInstance = LoadLibrary(L"Scintilla.dll");
+    if (!hInstance) {
+        ATLTRACE("Failed to load Scintilla.dll\n");
+        return -1;
+    }*/
 
-    if (!m_richEdit.Create(*this, rcDefault, nullptr, dwStyle, 0, IDC_RICHEDIT)) {
+    if (!m_edit.Create(*this, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_HSCROLL)) {
         ATLTRACE("Unable to create rich edit control.\n");
         return -1;
     }
 
-    SetDefaultFormat();
+    m_edit.SetDefaultFontFace("Cascadia Mono");
+    m_edit.SetDefaultFontSize(12);
 
-    m_richEdit.SendMessage(EM_SETEVENTMASK, 0, ENM_CHANGE);
-
-    m_highlighter.SetHwnd(*this);
-    m_highlighter.Start();
+    m_styler = DocStylerRegistry::GetInstance().GetDefaultStyler();
+    m_styler->Apply(m_edit);
 
     return 0;
 }
 
-LRESULT TextFileView::OnEditChange(UINT uNotifyCode, int nID, CWindow wndCtl, BOOL& bHandled)
+LRESULT TextFileView::OnModified(LPNMHDR pnmh)
 {
-    ATLASSERT(nID == IDC_RICHEDIT);
-    ATLASSERT(wndCtl == m_richEdit);
-
-    CHARRANGE sel;
-    m_richEdit.GetSel(sel);
-
-    if (sel.cpMin == sel.cpMax && sel.cpMin > 0) {
-        sel.cpMin -= 1;
-    }
-
-    if (sel.cpMin == sel.cpMax) {
+    if (pnmh->hwndFrom != m_edit) {
         return 0;
     }
 
-    m_highlighter.Enqueue(sel.cpMin, sel.cpMax);
+    auto scn = reinterpret_cast<SCNotification*>(pnmh);
 
-    bHandled = TRUE;
+    if (scn->modificationType & (SC_MOD_INSERTTEXT | SC_MOD_DELETETEXT)) {
+        m_bDirty = true;
+    }
 
     return 0;
-}
-
-void TextFileView::OnHighlightReady(LPHILIGHT_RANGE range)
-{
-    ATLASSERT(range != nullptr);
-    ATLASSERT(m_richEdit.IsWindow());
-
-    BOOL isDirty;
-    ScopeGuardSimple modifyGuard(
-        [&] { isDirty = m_richEdit.GetModify(); },
-        [&] { m_richEdit.SetModify(isDirty); });
-
-    auto prevMask = m_richEdit.GetEventMask();
-    ScopeGuard maskGuard(m_richEdit,
-                         &CRichEditCtrl::SetEventMask,
-                         &CRichEditCtrl::SetEventMask,
-                         std::make_tuple(prevMask & ~ENM_CHANGE),
-                         std::make_tuple(prevMask));
-
-    CHARRANGE prevSel;
-    m_richEdit.GetSel(prevSel);
-
-    m_richEdit.SetRedraw(FALSE);
-
-    m_richEdit.SetSel(range->start, range->end);
-
-    CHARFORMAT2 cf = {};
-    cf.cbSize = sizeof(cf);
-    cf.dwMask = CFM_COLOR;
-    cf.dwEffects &= ~CFE_AUTOCOLOR;
-    cf.crTextColor = range->color;
-    m_richEdit.SetSelectionCharFormat(cf);
-
-    m_richEdit.SetSel(prevSel); // restore previous selection
-
-    m_richEdit.SetRedraw(TRUE);
-    m_richEdit.Invalidate(); // ensure a full redraw
-    m_richEdit.UpdateWindow(); // force repaint now
-}
-
-void TextFileView::OnGetTextRange(LPTEXT_RANGE range)
-{
-    ATLASSERT(range != nullptr);
-    ATLASSERT(m_richEdit.IsWindow());
-
-    auto start = range->start;
-    auto end = range->end;
-    if (start < 0 || end < 0) {
-        return;
-    }
-
-    if (end < start) {
-        std::swap(start, end);
-    }
-
-    m_richEdit.GetTextRange(start, end, range->lpstrText);
 }
 
 void TextFileView::OnSize(UINT nType, CSize size)
 {
-    if (m_richEdit.IsWindow()) {
-        m_richEdit.MoveWindow(0, 0, size.cx, size.cy, TRUE);
+    if (m_edit.IsWindow()) {
+        m_edit.MoveWindow(0, 0, size.cx, size.cy, TRUE);
     }
 }
 
@@ -222,11 +103,10 @@ BOOL TextFileView::LoadFile(const CString& path)
         Write(buf, read);
     }
 
-    m_formatter = RTFFormatterRegistry::GetInstance().GetFormatter(path);
+    m_styler = DocStylerRegistry::GetInstance().GetStyler(path);
+    m_styler->Apply(m_edit);
 
     Flush();
-
-    m_richEdit.SetModify(FALSE);
 
     return TRUE;
 }
@@ -241,37 +121,17 @@ BOOL TextFileView::SaveFile()
         return FALSE;
     }
 
-    m_richEdit.SetModify(FALSE);
-
     return TRUE;
 }
 
 BOOL TextFileView::SaveFileAs(const CString& path)
 {
-    CComObjectStack<UTF8Stream> stream;
-    IStream* pStream = &stream;
-
-    EDITSTREAM es{};
-    es.dwCookie = reinterpret_cast<DWORD_PTR>(&pStream);
-    es.pfnCallback = StreamOutCallback;
-
-    m_richEdit.StreamOut(CP_UTF8 << 16 | SF_USECODEPAGE | SF_TEXT, es);
-
-    if (es.dwError != NOERROR) {
-        ATLTRACE("Failed to stream in text.\n");
-        return FALSE;
-    }
-
-    LARGE_INTEGER li{};
-    auto hr = pStream->Seek(li, STREAM_SEEK_SET, nullptr);
-    if (FAILED(hr)) {
-        ATLTRACE("Failed to seek stream.\n");
-        return FALSE;
-    }
+    CStringA contents = m_edit.GetText();
 
     CStringA strPath(path);
 
     FileStream file;
+
     try {
         file.open(strPath, "wb");
     } catch (const Exception& e) {
@@ -280,39 +140,23 @@ BOOL TextFileView::SaveFileAs(const CString& path)
     }
 
     WriteBOM(file);
-
-    for (;;) {
-        char buf[BUFFER_SIZE];
-        ULONG read;
-
-        hr = pStream->Read(buf, sizeof(buf), &read);
-        if (FAILED(hr)) {
-            ATLTRACE("Failed to read stream.\n");
-            return FALSE;
-        }
-
-        if (read == 0) {
-            break;
-        }
-
-        file.write(buf, read);
-    }
+    file.write(contents.GetString(), contents.GetLength());
 
     file.close();
+
+    m_bDirty = FALSE;
 
     return TRUE;
 }
 
 BOOL TextFileView::Destroy()
 {
-    m_highlighter.Shutdown();
-
     return DestroyWindow();
 }
 
 BOOL TextFileView::IsDirty() const
 {
-    return m_richEdit.GetModify();
+    return m_bDirty;
 }
 
 const CString& TextFileView::GetPath() const
@@ -333,19 +177,6 @@ FileEncoding TextFileView::GetEncoding() const
 TextFileView::operator HWND() const
 {
     return m_hWnd;
-}
-
-void TextFileView::SetDefaultFormat()
-{
-    ASSERT(m_richEdit.IsWindow());
-
-    CHARFORMAT2 cf{};
-    cf.cbSize = sizeof(cf);
-    cf.dwMask = CFM_FACE | CFM_SIZE;
-    _tcscpy_s(cf.szFaceName, _T("Cascadia Mono"));
-    cf.yHeight = 280; // 14pt
-
-    m_richEdit.SetDefaultCharFormat(cf);
 }
 
 BOOL TextFileView::Write(LPCWSTR text) const
@@ -403,22 +234,15 @@ BOOL TextFileView::WriteBOM(StreamBase& stream) const
 
 BOOL TextFileView::Flush()
 {
-    auto str = m_formatter->Format(m_stream);
-
-    LPCSTR pStr = str.GetString();
-
-    EDITSTREAM es{};
-    es.dwCookie = reinterpret_cast<DWORD_PTR>(&pStr);
-    es.pfnCallback = StreamInCallback;
-
-    m_richEdit.StreamIn(CP_UTF8 << 16 | SF_USECODEPAGE | SF_RTF, es);
-    if (es.dwError != NOERROR) {
-        ATLTRACE("Failed to stream in text.\n");
+    auto str = m_stream.ReadString();
+    if (str.IsEmpty()) {
         return FALSE;
     }
+    LPCSTR pStr = str.GetString();
 
-    CPoint origin;
-    m_richEdit.SetScrollPos(&origin);
+    m_edit.SetText(pStr);
+
+    m_bDirty = FALSE;
 
     auto hr = m_stream.Reset();
 

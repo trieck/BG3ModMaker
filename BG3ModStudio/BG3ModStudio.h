@@ -1,4 +1,5 @@
 #pragma once
+#include "ScintillaLoader.h"
 
 class BG3ModStudio
 {
@@ -10,5 +11,5 @@ public:
     static int run(HINSTANCE hInstance, LPWSTR lpCmdLine, int nShowCmd);
 
 private:
-    HINSTANCE m_hInstRich = nullptr;
+    ScintillaLoader m_scintillaLoader;
 };

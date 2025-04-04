@@ -44,31 +44,7 @@
     <ClInclude Include="UTF8Stream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RTFStreamFormatter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="XmlTokenizer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="XmlRTFFormatter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RTFFormatterRegistry.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DefaultRTFFormatter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="JsonTokenizer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="JsonRTFFormatter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TextTokenizer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TextRTFFormatter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TextFileView.h">
@@ -110,16 +86,13 @@
     <ClInclude Include="FormatToken.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="XmlFormat.h">
+    <ClInclude Include="ScintillaCtrl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="XmlToken.h">
+    <ClInclude Include="DocStyler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SyntaxHighlighter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ParserStates.h">
+    <ClInclude Include="ScintillaLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -143,33 +116,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="UTF8Stream.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="RTFStreamFormatter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="XmlTokenizer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="XmlRTFFormatter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="RTFFormatterRegistry.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DefaultRTFFormatter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="JsonTokenizer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="JsonRTFFormatter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TextTokenizer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TextRTFFormatter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TextFileView.cpp">
@@ -196,16 +142,7 @@
     <ClCompile Include="Util.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="XmlFormat.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="XmlToken.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SyntaxHighlighter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ParserStates.cpp">
+    <ClCompile Include="DocStyler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

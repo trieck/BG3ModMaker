@@ -1,5 +1,7 @@
 #pragma once
 
+#include <optional>
+
 enum class NodeColor
 {
     RED,
@@ -63,14 +65,16 @@ public:
 
     RBTree();
     ~RBTree();
+    bool exists(const K& key) const;
+    bool find(const K& key, V& value) const;
+    bool isEmpty() const;
+    PNode root() const;
+    std::optional<V> find(const K& key) const;
+    uint32_t size() const;
     void insert(K key, V value);
     void remove(const K& key);
     void removeAll();
-    bool find(const K& key, V& value) const;
-    bool exists(const K& key) const;
     void traverse(std::function<void(const K& key, const V& value)> callback) const;
-    bool isEmpty() const;
-    PNode root() const;
 
 protected:
     void setRoot(PNode node);
@@ -86,6 +90,7 @@ private:
     void deleteTree(PNode node);
 
     PNode m_root = nullptr;
+    uint32_t m_size = 0;
 };
 
 template <RBKey K, RBValue V>
@@ -127,6 +132,8 @@ void RBTree<K, V>::insert(K key, V value)
     }
 
     fixInsert(node);
+
+    m_size++;
 }
 
 template <RBKey K, RBValue V>
@@ -188,6 +195,8 @@ void RBTree<K, V>::remove(const K& key)
     if (x != nullptr && yOriginalColor == NodeColor::BLACK) {
         fixDelete(x);
     }
+
+    m_size--;
 }
 
 template <RBKey K, RBValue V>
@@ -195,6 +204,7 @@ void RBTree<K, V>::removeAll()
 {
     deleteTree(m_root);
     m_root = nullptr;
+    m_size = 0;
 }
 
 template <RBKey K, RBValue V>
@@ -214,6 +224,24 @@ bool RBTree<K, V>::find(const K& key, V& value) const
     }
 
     return false;
+}
+
+template <RBKey K, RBValue V>
+std::optional<V> RBTree<K, V>::find(const K& key) const
+{
+    V value;
+
+    if (find(key, value)) {
+        return value;
+    }
+
+    return std::nullopt;
+}
+
+template <RBKey K, RBValue V>
+uint32_t RBTree<K, V>::size() const
+{
+    return m_size;
 }
 
 template <RBKey K, RBValue V>

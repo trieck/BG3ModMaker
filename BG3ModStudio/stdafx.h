@@ -41,9 +41,6 @@
 #include <unordered_set>
 #include <vector>
 
-constexpr uint32_t WM_FORMAT_RANGE = WM_APP + 1;
-constexpr uint32_t WM_HIGHLIGHT_READY = WM_APP + 2;
-constexpr uint32_t WM_GET_TEXT_RANGE = WM_APP + 3;
 
 #define MAKE_TREEITEM(n, t) \
     CTreeItem(((LPNMTREEVIEW)(n))->itemNew.hItem, t)
@@ -60,13 +57,13 @@ constexpr uint32_t WM_GET_TEXT_RANGE = WM_APP + 3;
     }
 
 #define MSG_WM_NCCALCSIZE2(func) \
-	if (uMsg == WM_NCCALCSIZE) \
-	{ \
-		this->SetMsgHandled(TRUE); \
-		lResult = func((BOOL)wParam, (LPNCCALCSIZE_PARAMS)lParam); \
-		if(this->IsMsgHandled()) \
-			return TRUE; \
-	}
+    if (uMsg == WM_NCCALCSIZE) \
+    { \
+        this->SetMsgHandled(TRUE); \
+        lResult = func((BOOL)wParam, (LPNCCALCSIZE_PARAMS)lParam); \
+        if(this->IsMsgHandled()) \
+            return TRUE; \
+    }
 
 #define COMMAND_ID_HANDLER2(id, func) \
     if(uMsg == WM_COMMAND && (id) == LOWORD(wParam)) { \
@@ -85,13 +82,13 @@ constexpr uint32_t WM_GET_TEXT_RANGE = WM_APP + 3;
         lResult = 0; \
     }
 
+
 #define MSG_WM_GET_TEXT_RANGE(func) \
     if(uMsg == WM_GET_TEXT_RANGE) { \
         this->SetMsgHandled(TRUE); \
         func(reinterpret_cast<LPTEXT_RANGE>(lParam)); \
         lResult = 0; \
     }
-
 extern CAppModule _Module;
 
 #if defined _M_IX86
