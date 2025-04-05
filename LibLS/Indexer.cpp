@@ -62,18 +62,17 @@ Indexer::Indexer()
     m_termgen.set_stopper_strategy(Xapian::TermGenerator::STOP_ALL);
 }
 
-void Indexer::index(const char* pakFile, const char* dbName)
+void Indexer::index(const char* pakFile, const char* dbName, bool overwrite)
 {
-    /*std::cout << std::format("Indexing {} into {}\n", pakFile, dbName);
-    std::cout << "   Reading PAK file...";*/
     m_reader.read(pakFile);
-    /*std::cout << "done" << std::endl;*/
 
     if (m_listener) {
         m_listener->onStart(m_reader.files().size());
     }
 
-    m_db = std::make_unique<Xapian::WritableDatabase>(dbName, Xapian::DB_CREATE_OR_OVERWRITE);
+    auto flags = overwrite ? Xapian::DB_CREATE_OR_OVERWRITE : Xapian::DB_CREATE_OR_OPEN;
+
+    m_db = std::make_unique<Xapian::WritableDatabase>(dbName, flags);
 
     auto i = 0;
     for (const auto& file : m_reader.files()) {

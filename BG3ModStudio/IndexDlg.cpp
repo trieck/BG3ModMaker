@@ -23,6 +23,9 @@ BOOL IndexDlg::OnInitDialog(HWND, LPARAM)
     m_indexButton = GetDlgItem(IDOK);
     ATLASSERT(m_indexButton.IsWindow());
 
+    m_overwriteCheckbox = GetDlgItem(IDC_CHK_OVERWRITE);
+    ATLASSERT(m_overwriteCheckbox.IsWindow());
+
     CenterWindow(GetParent());
     return FALSE; // Let the system set the focus
 }
@@ -55,8 +58,28 @@ void IndexDlg::onStart(std::size_t totalEntries)
 
 void IndexDlg::onFinished(std::size_t entries)
 {
+    m_state = IDLE;
     m_progress.SetPos(static_cast<int>(entries));
-    m_progress.SetState(PBST_PAUSED);
+    m_progress.SetState(PBST_NORMAL);
+}
+
+void IndexDlg::onCancel()
+{
+    m_state = CANCELLED;
+    m_progress.SetPos(std::numeric_limits<int>::max());
+    m_progress.SetState(PBST_ERROR);
+    m_indexButton.EnableWindow(TRUE);
+}
+
+void IndexDlg::OnCancelRequested()
+{
+    if (m_state == IDLE || m_state == CANCELLED) {
+        Destroy();
+        return;
+    }
+
+    m_state = CANCELING;
+    AtlMessageBox(*this, _T("Indexing is in progress. Please wait for it to be cancelled."), nullptr, MB_ICONWARNING);
 }
 
 void IndexDlg::onFileIndexing(std::size_t index, const std::string& filename)
@@ -79,7 +102,7 @@ void IndexDlg::onFileIndexing(std::size_t index, const std::string& filename)
 
 bool IndexDlg::isCancelled()
 {
-    return m_cancel;
+    return m_state == CANCELING;
 }
 
 void IndexDlg::OnPakFile()
@@ -152,23 +175,6 @@ void IndexDlg::OnIndex()
     Index(pakFile, indexPath);
 }
 
-void IndexDlg::OnCancelRequested()
-{
-    if (m_cancel) {
-        Destroy();
-    } else {
-        m_cancel = true;
-        AtlMessageBox(*this, _T("Indexing is in progress. Please wait for it to be cancelled."), nullptr, MB_ICONWARNING);
-    }
-}
-
-void IndexDlg::onCancel()
-{
-    m_cancel = true;
-    m_progress.SetState(PBST_PAUSED);
-    m_indexButton.EnableWindow(TRUE);
-}
-
 void IndexDlg::RunModal()
 {
     while (IsWindow()) {
@@ -178,11 +184,14 @@ void IndexDlg::RunModal()
 
 void IndexDlg::Index(const CString& pakFile, const CString& indexPath)
 {
-    m_cancel = false;
+    m_state = INDEXING;
+
     m_progress.SetState(PBST_NORMAL);
 
     auto utf8PakFile = StringHelper::toUTF8(pakFile);
     auto utf8IndexPath = StringHelper::toUTF8(indexPath);
+
+    auto overwrite = m_overwriteCheckbox.GetCheck() == BST_CHECKED;
 
     Indexer indexer;
     indexer.setProgressListener(this);
@@ -190,10 +199,10 @@ void IndexDlg::Index(const CString& pakFile, const CString& indexPath)
     m_indexButton.EnableWindow(FALSE);
 
     try {
-        indexer.index(utf8PakFile.GetString(), utf8IndexPath.GetString());
+        indexer.index(utf8PakFile.GetString(), utf8IndexPath.GetString(), overwrite);
         indexer.compact();
 
-        if (m_cancel) {
+        if (m_state == CANCELLED) {
             AtlMessageBox(*this, _T("Indexing cancelled."), nullptr, MB_ICONWARNING);
         } else {
             AtlMessageBox(*this, _T("Indexing completed successfully."), nullptr, MB_ICONINFORMATION);

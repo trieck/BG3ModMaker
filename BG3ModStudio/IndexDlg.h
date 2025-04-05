@@ -29,11 +29,20 @@ public:
     void onCancel() override;
 
 private:
+    enum State
+    {
+        IDLE,
+        INDEXING,
+        CANCELING,
+        CANCELLED
+    };
+
+    State m_state = IDLE;
     CEdit m_pakFile;
     CEdit m_indexPath;
     CButton m_indexButton;
+    CButton m_overwriteCheckbox;
     CProgressBarCtrl m_progress;
-    bool m_cancel = false;
 
     void OnPakFile();
     void OnIndexPath();

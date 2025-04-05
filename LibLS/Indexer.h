@@ -22,7 +22,7 @@ public:
     Indexer();
     virtual ~Indexer() = default;
 
-    void index(const char* pakFile, const char* dbName);
+    void index(const char* pakFile, const char* dbName, bool overwrite = false);
     void compact() const;
     void setProgressListener(IIndexProgressListener* listener);
 
