@@ -59,7 +59,10 @@ void IndexDlg::onStart(std::size_t totalEntries)
 void IndexDlg::onFinished(std::size_t entries)
 {
     m_state = IDLE;
-    m_progress.SetPos(static_cast<int>(entries));
+
+    int min, max;
+    m_progress.GetRange(min, max);
+    m_progress.SetPos(max);
     m_progress.SetState(PBST_NORMAL);
 }
 
