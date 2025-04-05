@@ -182,6 +182,8 @@ ID_TOOL_LOCA            BITMAP                  "globe.bmp"
 
 ID_TOOL_INDEX           BITMAP                  "index.bmp"
 
+ID_TOOL_SEARCH          BITMAP                  "search.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -206,6 +208,15 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,119,139,50,14
 END
 
+IDD_SEARCH_RESULTS DIALOGEX 0, 0, 302, 169
+STYLE DS_SETFONT | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "Search Results"
+FONT 8, "Tahoma", 400, 0, 0x0
+BEGIN
+    CONTROL         "",IDC_LST_RESULTS,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,7,288,155
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -222,6 +233,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 152
     END
+
+    IDD_SEARCH_RESULTS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 295
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 162
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -232,6 +251,11 @@ END
 //
 
 IDD_INDEX AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_SEARCH_RESULTS AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

@@ -98,6 +98,9 @@
     <ClInclude Include="IndexDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SearchResultsDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BG3ModStudio.cpp">
@@ -149,6 +152,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="IndexDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SearchResultsDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -204,6 +210,10 @@
       <Filter>Resources</Filter>
     </Image>
     <Image Include="multi.bmp" />
+    <Image Include="resources\search.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="search.bmp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\BG3ModStudio.rc">

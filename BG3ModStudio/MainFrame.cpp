@@ -7,6 +7,7 @@
 #include "Localization.h"
 #include "MainFrame.h"
 #include "PAKWriter.h"
+#include "SearchResultsDlg.h"
 #include "StringHelper.h"
 
 extern CComCriticalSection g_csFile;
@@ -244,6 +245,13 @@ void MainFrame::OnIndex()
     dlg.Destroy();
 
     EnableWindow(TRUE);
+    SetFocus();
+}
+
+void MainFrame::OnSearch()
+{
+    SearchResultsDlg dlg;
+    dlg.DoModal();
 }
 
 void MainFrame::OnFileSave()

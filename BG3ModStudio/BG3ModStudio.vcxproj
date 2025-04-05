@@ -176,6 +176,7 @@
     <ClInclude Include="OutputWindow.h" />
     <ClInclude Include="ScintillaCtrl.h" />
     <ClInclude Include="ScintillaLoader.h" />
+    <ClInclude Include="SearchResultsDlg.h" />
     <ClInclude Include="SelectObject.h" />
     <ClInclude Include="FileDialogEx.h" />
     <ClInclude Include="FileViewFactory.h" />
@@ -207,6 +208,7 @@
     <ClCompile Include="FileViews.cpp" />
     <ClCompile Include="FolderView.cpp" />
     <ClCompile Include="MainFrame.cpp" />
+    <ClCompile Include="SearchResultsDlg.cpp" />
     <ClCompile Include="ShellHelper.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -252,6 +254,8 @@
     <Image Include="resources\package.bmp" />
     <Image Include="resources\save.bmp" />
     <Image Include="resources\saveall.bmp" />
+    <Image Include="resources\search.bmp" />
+    <Image Include="search.bmp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\BG3ModStudio.rc" />

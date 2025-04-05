@@ -17,7 +17,6 @@ public:
         COMMAND_ID_HANDLER3(IDCANCEL, OnCancelRequested)
     END_MSG_MAP()
 
-    BOOL OnInitDialog(HWND /* hWnd */, LPARAM /*lParam*/);
     void Destroy();
     void RunModal();
 
@@ -44,10 +43,11 @@ private:
     CButton m_overwriteCheckbox;
     CProgressBarCtrl m_progress;
 
-    void OnPakFile();
-    void OnIndexPath();
-    void OnIndex();
+    BOOL OnInitDialog(HWND /* hWnd */, LPARAM /*lParam*/);
     void OnCancelRequested();
+    void OnIndex();
+    void OnIndexPath();
+    void OnPakFile();
 
     void Index(const CString& pakFile, const CString& indexPath);
     void PumpMessages();
