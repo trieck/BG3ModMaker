@@ -33,7 +33,7 @@ enum AttributeType
     TranslatedString = 28,
     WString = 29,
     LSWString = 30,
-    UUID = 31,
+    Uuid = 31,
     Int64 = 32,
     TranslatedFSString = 33,
     Max = TranslatedFSString // Last supported datatype, always keep this one at the end

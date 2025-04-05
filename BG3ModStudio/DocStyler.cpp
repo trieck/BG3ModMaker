@@ -9,10 +9,12 @@ void XmlStyler::Apply(ScintillaCtrl& ctrl)
     ctrl.SetTabWidth(2);
     ctrl.SetUseTabs(FALSE);
     ctrl.SetScrollWidthTracking(TRUE);
+    ctrl.SetMarginType(0, SC_MARGIN_NUMBER);
+    ctrl.SetMarginWidth(0, 40);
 
-    ctrl.SetForeStyle(SCE_H_TAG, RGB(0, 38, 255));
-    ctrl.SetForeStyle(SCE_H_ATTRIBUTE, RGB(220, 0, 100));
-    ctrl.SetForeStyle(SCE_H_DOUBLESTRING, RGB(127, 0, 127));
+    ctrl.SetForeStyle(SCE_H_TAG, RGB(163, 21, 21));
+    ctrl.SetForeStyle(SCE_H_ATTRIBUTE, RGB(0, 0, 255));
+    ctrl.SetForeStyle(SCE_H_DOUBLESTRING, RGB(163, 21, 21));
     ctrl.SetForeStyle(SCE_H_COMMENT, RGB(0, 128, 0));
 }
 
@@ -23,20 +25,23 @@ void JsonStyler::Apply(ScintillaCtrl& ctrl)
     ctrl.SetTabWidth(2);
     ctrl.SetUseTabs(FALSE);
     ctrl.SetScrollWidthTracking(TRUE);
+    ctrl.SetMarginType(0, SC_MARGIN_NUMBER);
+    ctrl.SetMarginWidth(0, 40);
 
-    ctrl.SetForeStyle(SCE_JSON_PROPERTYNAME, RGB(127, 0, 85));
-    ctrl.SetForeStyle(SCE_JSON_STRING, RGB(42, 150, 0));
-    ctrl.SetForeStyle(SCE_JSON_NUMBER, RGB(0, 0, 255));
+    ctrl.SetForeStyle(SCE_JSON_PROPERTYNAME, RGB(0, 0, 255));
+    ctrl.SetForeStyle(SCE_JSON_STRING, RGB(163, 21, 21));
+    ctrl.SetForeStyle(SCE_JSON_NUMBER, RGB(43, 145, 175));
     ctrl.SetForeStyle(SCE_JSON_OPERATOR, RGB(0, 0, 0));
 }
 
 void PlainTextStyler::Apply(ScintillaCtrl& ctrl)
 {
-    ctrl.SetLexer(nullptr);
     ctrl.SetIndent(2);
     ctrl.SetTabWidth(2);
     ctrl.SetUseTabs(FALSE);
     ctrl.SetScrollWidthTracking(TRUE);
+    ctrl.SetMarginType(0, SC_MARGIN_NUMBER);
+    ctrl.SetMarginWidth(0, 40);
 }
 
 DocStylerRegistry& DocStylerRegistry::GetInstance()
@@ -60,7 +65,6 @@ DocStyler::Ptr DocStylerRegistry::GetStyler(const CString& path) const
     auto extension = ATLPath::FindExtension(path);
 
     CW2AEX<MAX_PATH> ansiExtension(extension);
-
 
     auto it = m_stylers.find(static_cast<LPSTR>(ansiExtension));
 

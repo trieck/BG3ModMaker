@@ -41,7 +41,6 @@
 #include <unordered_set>
 #include <vector>
 
-
 #define MAKE_TREEITEM(n, t) \
     CTreeItem(((LPNMTREEVIEW)(n))->itemNew.hItem, t)
 #define MAKE_OLDTREEITEM(n, t) \
@@ -75,20 +74,6 @@
         func(); \
     }
 
-#define MSG_WM_HIGHLIGHT_READY(func) \
-    if(uMsg == WM_HIGHLIGHT_READY) { \
-        this->SetMsgHandled(TRUE); \
-        func(reinterpret_cast<LPHILIGHT_RANGE>(lParam)); \
-        lResult = 0; \
-    }
-
-
-#define MSG_WM_GET_TEXT_RANGE(func) \
-    if(uMsg == WM_GET_TEXT_RANGE) { \
-        this->SetMsgHandled(TRUE); \
-        func(reinterpret_cast<LPTEXT_RANGE>(lParam)); \
-        lResult = 0; \
-    }
 extern CAppModule _Module;
 
 #if defined _M_IX86

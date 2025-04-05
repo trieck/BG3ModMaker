@@ -83,6 +83,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalUsingDirectories>%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
+      <AdditionalOptions>/wd4996</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -105,6 +106,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalUsingDirectories>%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
+      <AdditionalOptions>/wd4996</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -127,6 +129,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalUsingDirectories>%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
+      <AdditionalOptions>/wd4996</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -149,6 +152,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalUsingDirectories>%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
+      <AdditionalOptions>/wd4996</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -168,6 +172,7 @@
     <ClInclude Include="FileOperation.h" />
     <ClInclude Include="FolderMonitor.h" />
     <ClInclude Include="FormatToken.h" />
+    <ClInclude Include="IndexDlg.h" />
     <ClInclude Include="OutputWindow.h" />
     <ClInclude Include="ScintillaCtrl.h" />
     <ClInclude Include="ScintillaLoader.h" />
@@ -195,6 +200,7 @@
     <ClCompile Include="DocStyler.cpp" />
     <ClCompile Include="FileOperation.cpp" />
     <ClCompile Include="FolderMonitor.cpp" />
+    <ClCompile Include="IndexDlg.cpp" />
     <ClCompile Include="OutputWindow.cpp" />
     <ClCompile Include="FileDialogEx.cpp" />
     <ClCompile Include="FileViewFactory.cpp" />
@@ -230,6 +236,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Image Include="multi.bmp" />
     <Image Include="resources\about.bmp" />
     <Image Include="resources\app.ico" />
     <Image Include="resources\bom.ico" />
@@ -239,6 +246,7 @@
     <Image Include="resources\filenew.bmp" />
     <Image Include="resources\folder.ico" />
     <Image Include="resources\globe.bmp" />
+    <Image Include="resources\index.bmp" />
     <Image Include="resources\nobom.ico" />
     <Image Include="resources\open.bmp" />
     <Image Include="resources\package.bmp" />

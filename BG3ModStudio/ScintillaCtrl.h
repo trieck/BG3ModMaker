@@ -65,6 +65,11 @@ public:
         return SendMessage(this->m_hWnd, SCI_SETILEXER, 0, reinterpret_cast<LPARAM>(CreateLexer(name)));
     }
 
+    LRESULT SetMarginType(int margin /* 0 = line numbers */, int type)
+    {
+        return SendMessage(this->m_hWnd, SCI_SETMARGINTYPEN, margin, type);
+    }
+
     LRESULT SetMarginWidth(int margin /* 0 = line numbers */, int width)
     {
         return SendMessage(this->m_hWnd, SCI_SETMARGINWIDTHN, margin, width);

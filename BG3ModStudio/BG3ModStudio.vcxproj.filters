@@ -95,6 +95,9 @@
     <ClInclude Include="ScintillaLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="IndexDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BG3ModStudio.cpp">
@@ -143,6 +146,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DocStyler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IndexDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -194,6 +200,10 @@
     <Image Include="resources\globe.bmp">
       <Filter>Resources</Filter>
     </Image>
+    <Image Include="resources\index.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="multi.bmp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\BG3ModStudio.rc">

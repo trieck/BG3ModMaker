@@ -7,10 +7,11 @@
 
 #include "Indexer.h"
 #include "LSFReader.h"
-#include "Utility.h"
 #include "XmlWrapper.h"
 
 using json = nlohmann::json;
+
+static constexpr auto COMMIT_SIZE = 1000;
 
 namespace {
     const std::unordered_set<std::string> STOP_WORDS = {
@@ -63,42 +64,61 @@ Indexer::Indexer()
 
 void Indexer::index(const char* pakFile, const char* dbName)
 {
-    std::cout << std::format("Indexing {} into {}\n", pakFile, dbName);
-    std::cout << "   Reading PAK file...";
+    /*std::cout << std::format("Indexing {} into {}\n", pakFile, dbName);
+    std::cout << "   Reading PAK file...";*/
     m_reader.read(pakFile);
-    std::cout << "done" << std::endl;
+    /*std::cout << "done" << std::endl;*/
+
+    if (m_listener) {
+        m_listener->onStart(m_reader.files().size());
+    }
 
     m_db = std::make_unique<Xapian::WritableDatabase>(dbName, Xapian::DB_CREATE_OR_OVERWRITE);
 
     auto i = 0;
     for (const auto& file : m_reader.files()) {
-        if (file.name.ends_with("lsx")) {
-            std::cout << std::format("Indexing {} ({}/{})\n", file.name, i, m_reader.files().size());
-            indexLSXFile(file);
-        } else if (file.name.ends_with("lsf")) {
-            std::cout << std::format("Indexing {} ({}/{})\n", file.name, i, m_reader.files().size());
-            indexLSFFile(file);
-        } else {
-            std::cout << std::format("Skipping {} ({}/{})\n", file.name, i, m_reader.files().size());
+        if (m_listener && m_listener->isCancelled()) {
+            break;
         }
 
-        if (++i % 10000 == 0) {
+        if (file.name.ends_with("lsx") || file.name.ends_with("lsf")) {
+            if (m_listener) {
+                m_listener->onFileIndexing(i, file.name);
+            }
+        }
+
+        if (file.name.ends_with("lsx")) {
+            indexLSXFile(file);
+        } else if (file.name.ends_with("lsf")) {
+            indexLSFFile(file);
+        } 
+
+        if (++i % COMMIT_SIZE == 0) {
             m_db->commit();
         }
     }
 
-    std::cout << "   Committing changes to database...";
     m_db->commit();
-    std::cout << "done" << std::endl;
-
-    std::cout << "   Indexed " << comma(m_db->get_doccount()) << " documents" << std::endl;
+    
+    if (m_listener) {
+        if (m_listener->isCancelled()) {
+            m_listener->onCancel();
+        } else {
+            m_listener->onFinished(m_db->get_doccount());
+        }
+    }
 }
 
 void Indexer::compact() const
 {
     if (m_db) {
-        m_db->compact(Xapian::DBCOMPACT_SINGLE_FILE);
+        //m_db->compact(Xapian::DBCOMPACT_SINGLE_FILE);
     }
+}
+
+void Indexer::setProgressListener(IIndexProgressListener* listener)
+{
+    m_listener = listener;
 }
 
 void Indexer::indexLSXFile(const PackagedFileInfo& file)

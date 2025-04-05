@@ -20,7 +20,7 @@
             <Command.TooltipDescription>Close the Folder</Command.TooltipDescription>
         </Command>
 
-        <Command Name="FILE_PACKAGE" Symbol="ID_FILE_PACKAGE" Id="104" Keytip="O">
+        <Command Name="TOOL_PACKAGE" Symbol="ID_TOOL_PACKAGE" Id="104" Keytip="O">
             <Command.LabelTitle>Create a PAK file...</Command.LabelTitle>
             <Command.TooltipTitle>Create a PAK file(Ctrl+P)</Command.TooltipTitle>
             <Command.TooltipDescription>Create a PAK file</Command.TooltipDescription>
@@ -38,10 +38,16 @@
             <Command.TooltipDescription>Save All File</Command.TooltipDescription>
         </Command>
 
-        <Command Name="FILE_GLOBE" Symbol="ID_FILE_GLOBE" Id="114" Keytip="O">
+        <Command Name="TOOL_LOCA" Symbol="ID_TOOL_LOCA" Id="114" Keytip="O">
             <Command.LabelTitle>Convert to LOCA...</Command.LabelTitle>
             <Command.TooltipTitle>Convert to LOCA(Ctrl+Shift+L)</Command.TooltipTitle>
             <Command.TooltipDescription>Convert to LOCA</Command.TooltipDescription>
+        </Command>        
+        
+        <Command Name="TOOL_INDEX" Symbol="ID_TOOL_INDEX" Id="117" Keytip="O">
+            <Command.LabelTitle>Index PAK File...</Command.LabelTitle>
+            <Command.TooltipTitle>Index PAK File(Ctrl+Shift+I)</Command.TooltipTitle>
+            <Command.TooltipDescription>Index PAK File</Command.TooltipDescription>
         </Command>
 
         <Command Name="APP_ABOUT" Symbol="ID_APP_ABOUT" Id="0xE140" Keytip="O">
@@ -61,9 +67,11 @@
 
         <!-- Tabs -->
         <Command Name="TAB_HOME" Symbol="ID_TAB_HOME" LabelTitle="Home" />
+        <Command Name="TAB_TOOLS" Symbol="ID_TAB_TOOLS" LabelTitle="Tools" />
         <Command Name="TAB_VIEW" Symbol="ID_TAB_VIEW" LabelTitle="View" />
 
         <!-- Groups -->
+        <Command Name="GROUP_HOME" Symbol="ID_GROUP_HOME" LabelTitle="Home" />
         <Command Name="GROUP_TOOLS" Symbol="ID_GROUP_TOOLS" LabelTitle="Tools" />
         <Command Name="GROUP_SHOW" Symbol="ID_GROUP_SHOW" LabelTitle="Show or Hide" />
         <Command Name="GROUP_HELP" Symbol="ID_GROUP_HELP" LabelTitle="Help" />
@@ -84,10 +92,8 @@
                         <Button CommandName="FILE_NEW" />
                         <Button CommandName="FILE_OPEN" />
                         <Button CommandName="FILE_CLOSE" />
-                        <Button CommandName="FILE_PACKAGE" />
                         <Button CommandName="FILE_SAVE" />
                         <Button CommandName="FILE_SAVE_ALL" />
-                        <Button CommandName="FILE_GLOBE" />
                     </MenuGroup>
                     <MenuGroup>
                         <Button CommandName="APP_ABOUT" />
@@ -107,22 +113,20 @@
                     <Tab.ScalingPolicy>
                         <ScalingPolicy>
                             <ScalingPolicy.IdealSizes>
-                                <Scale Group="GROUP_TOOLS" Size="Large" />
+                                <Scale Group="GROUP_HOME" Size="Large" />
                             </ScalingPolicy.IdealSizes>
-                            <Scale Group="GROUP_TOOLS" Size="Small" />
+                            <Scale Group="GROUP_HOME" Size="Small" />
                         </ScalingPolicy>
                     </Tab.ScalingPolicy>
 
-                    <Group CommandName="GROUP_TOOLS">
+                    <Group CommandName="GROUP_HOME">
                         <SizeDefinition>
                             <ControlNameMap>
                                 <ControlNameDefinition Name="FILE_NEW" />
                                 <ControlNameDefinition Name="FILE_OPEN" />
                                 <ControlNameDefinition Name="FILE_CLOSE" />
-                                <ControlNameDefinition Name="FILE_PACKAGE" />
                                 <ControlNameDefinition Name="FILE_SAVE" />
                                 <ControlNameDefinition Name="FILE_SAVE_ALL" />
-                                <ControlNameDefinition Name="FILE_GLOBE" />
                             </ControlNameMap>
                             <GroupSizeDefinition Size="Large">
                                 <ControlSizeDefinition ControlName="FILE_NEW"
@@ -134,16 +138,11 @@
                                 <ControlSizeDefinition ControlName="FILE_CLOSE"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
-                                <ControlSizeDefinition ControlName="FILE_PACKAGE"
-                                                       ImageSize="Large"
-                                                       IsLabelVisible="true" />
+                                IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="FILE_SAVE"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="FILE_SAVE_ALL"
-                                                       ImageSize="Large"
-                                                       IsLabelVisible="true" />
-                                <ControlSizeDefinition ControlName="FILE_GLOBE"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
                             </GroupSizeDefinition>
@@ -157,16 +156,10 @@
                                 <ControlSizeDefinition ControlName="FILE_CLOSE"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
-                                <ControlSizeDefinition ControlName="FILE_PACKAGE"
-                                                       ImageSize="Large"
-                                                       IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="FILE_SAVE"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="FILE_SAVE_ALL"
-                                                       ImageSize="Large"
-                                                       IsLabelVisible="true" />
-                                <ControlSizeDefinition ControlName="FILE_GLOBE"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
                             </GroupSizeDefinition>
@@ -180,16 +173,10 @@
                                 <ControlSizeDefinition ControlName="FILE_CLOSE"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
-                                <ControlSizeDefinition ControlName="FILE_PACKAGE"
-                                                       ImageSize="Large"
-                                                       IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="FILE_SAVE"
                                                        ImageSize="Small"
                                                        IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="FILE_SAVE_ALL"
-                                                       ImageSize="Small"
-                                                       IsLabelVisible="true" />
-                                <ControlSizeDefinition ControlName="FILE_GLOBE"
                                                        ImageSize="Small"
                                                        IsLabelVisible="true" />
                             </GroupSizeDefinition>
@@ -197,10 +184,56 @@
                         <Button CommandName="FILE_NEW" />
                         <Button CommandName="FILE_OPEN" />
                         <Button CommandName="FILE_CLOSE" />
-                        <Button CommandName="FILE_PACKAGE" />
                         <Button CommandName="FILE_SAVE" />
                         <Button CommandName="FILE_SAVE_ALL" />
-                        <Button CommandName="FILE_GLOBE" />
+                    </Group>
+                </Tab>
+
+                <Tab CommandName="TAB_TOOLS">
+                    <Group CommandName="GROUP_TOOLS">
+                        <SizeDefinition>
+                            <ControlNameMap>
+                                <ControlNameDefinition Name="TOOL_PACKAGE" />
+                                <ControlNameDefinition Name="TOOL_LOCA" />
+                                <ControlNameDefinition Name="TOOL_INDEX" />
+                            </ControlNameMap>
+                            <GroupSizeDefinition Size="Large">
+                                <ControlSizeDefinition ControlName="TOOL_PACKAGE"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="TOOL_LOCA"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="TOOL_INDEX"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
+                            </GroupSizeDefinition>
+                            <GroupSizeDefinition Size="Medium">
+                                <ControlSizeDefinition ControlName="TOOL_PACKAGE"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="TOOL_LOCA"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="TOOL_INDEX"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
+                            </GroupSizeDefinition>
+                            <GroupSizeDefinition Size="Small">
+                                <ControlSizeDefinition ControlName="TOOL_PACKAGE"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="TOOL_LOCA"
+                                                       ImageSize="Small"
+                                                       IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="TOOL_INDEX"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
+                            </GroupSizeDefinition>
+                        </SizeDefinition>
+                        <Button CommandName="TOOL_PACKAGE" />
+                        <Button CommandName="TOOL_LOCA" />
+                        <Button CommandName="TOOL_INDEX" />
                     </Group>
                 </Tab>
 

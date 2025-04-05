@@ -1,0 +1,210 @@
+#include "stdafx.h"
+#include "IndexDlg.h"
+#include "FileDialogEx.h"
+#include "Indexer.h"
+#include "StringHelper.h"
+
+BOOL IndexDlg::OnInitDialog(HWND, LPARAM)
+{
+    m_pakFile = GetDlgItem(IDC_E_PAKFILE);
+    ATLASSERT(m_pakFile.IsWindow());
+
+    m_indexPath = GetDlgItem(IDC_E_INDEXPATH);
+    ATLASSERT(m_indexPath.IsWindow());
+
+    m_progress = GetDlgItem(IDC_PROGRESS_INDEX);
+    ATLASSERT(m_progress.IsWindow());
+
+    (void)SetWindowTheme(m_progress, L"", L"");
+
+    m_progress.SetBarColor(RGB(252, 129, 2));    // Fanta orange
+    m_progress.SetBkColor(GetSysColor(COLOR_APPWORKSPACE));
+
+    m_indexButton = GetDlgItem(IDOK);
+    ATLASSERT(m_indexButton.IsWindow());
+
+    CenterWindow(GetParent());
+    return FALSE; // Let the system set the focus
+}
+
+void IndexDlg::PumpMessages()
+{
+    MSG msg;
+    while (::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+        if (!IsWindow() || !IsDialogMessage(&msg)) {
+            ::TranslateMessage(&msg);
+            ::DispatchMessage(&msg);
+        }
+    }
+}
+
+void IndexDlg::Destroy()
+{
+    if (IsWindow()) {
+        DestroyWindow();
+    }
+}
+
+void IndexDlg::onStart(std::size_t totalEntries)
+{
+    m_progress.SetRange32(0, static_cast<int>(totalEntries));
+    m_progress.SetPos(0);
+    m_progress.SetStep(1);
+    m_progress.SetState(PBST_NORMAL);
+}
+
+void IndexDlg::onFinished(std::size_t entries)
+{
+    m_progress.SetPos(static_cast<int>(entries));
+    m_progress.SetState(PBST_PAUSED);
+}
+
+void IndexDlg::onFileIndexing(std::size_t index, const std::string& filename)
+{
+    m_progress.SetPos(static_cast<int>(index));
+    m_progress.SetState(PBST_NORMAL);
+    CString message;
+
+    constexpr auto COMPACT_LEN = 40;
+
+    char szShort[MAX_PATH];
+    PathCompactPathExA(szShort, filename.c_str(), COMPACT_LEN, 0);
+
+    message.Format(_T("Indexing %s..."), StringHelper::fromUTF8(szShort).GetString());
+
+    SetDlgItemText(IDC_INDEX_STATUS, message);
+
+    PumpMessages();
+}
+
+bool IndexDlg::isCancelled()
+{
+    return m_cancel;
+}
+
+void IndexDlg::OnPakFile()
+{
+    FileDialogEx dlg(FileDialogEx::Open, m_hWnd, _T("pak"), nullptr, OFN_HIDEREADONLY,
+                     _T("Pak Files (*.pak)\0*.pak\0All Files (*.*)\0*.*\0"));
+
+    auto hr = dlg.Construct();
+    if (FAILED(hr)) {
+        return;
+    }
+
+    if (dlg.DoModal() != IDOK) {
+        return;
+    }
+
+    const auto& paths = dlg.paths();
+    if (paths.empty()) {
+        return;
+    }
+
+    auto filename = paths.front();
+
+    m_pakFile.SetWindowText(filename);
+}
+
+void IndexDlg::OnIndexPath()
+{
+    FileDialogEx dlg(FileDialogEx::Folder, *this);
+    auto hr = dlg.Construct();
+    if (FAILED(hr)) {
+        return;
+    }
+
+    if (dlg.DoModal() != IDOK) {
+        return;
+    }
+
+    const auto& paths = dlg.paths();
+    if (paths.empty()) {
+        return;
+    }
+
+    auto path = paths.front();
+
+    m_indexPath.SetWindowText(path);
+}
+
+void IndexDlg::OnIndex()
+{
+    CString pakFile;
+    m_pakFile.GetWindowText(pakFile);
+    if (pakFile.IsEmpty()) {
+        MessageBox(_T("Please select a pak file."), _T("Error"), MB_OK | MB_ICONERROR);
+        return;
+    }
+
+    if (!PathFileExists(pakFile)) {
+        MessageBox(_T("The selected pak file does not exist."), _T("Error"), MB_OK | MB_ICONERROR);
+        return;
+    }
+
+    CString indexPath;
+    m_indexPath.GetWindowText(indexPath);
+    if (indexPath.IsEmpty()) {
+        MessageBox(_T("Please select an index path."), _T("Error"), MB_OK | MB_ICONERROR);
+        return;
+    }
+
+    Index(pakFile, indexPath);
+}
+
+void IndexDlg::OnCancelRequested()
+{
+    if (m_cancel) {
+        Destroy();
+    } else {
+        m_cancel = true;
+        AtlMessageBox(*this, _T("Indexing is in progress. Please wait for it to be cancelled."), nullptr, MB_ICONWARNING);
+    }
+}
+
+void IndexDlg::onCancel()
+{
+    m_cancel = true;
+    m_progress.SetState(PBST_PAUSED);
+    m_indexButton.EnableWindow(TRUE);
+}
+
+void IndexDlg::RunModal()
+{
+    while (IsWindow()) {
+        PumpMessages();
+    }
+}
+
+void IndexDlg::Index(const CString& pakFile, const CString& indexPath)
+{
+    m_cancel = false;
+    m_progress.SetState(PBST_NORMAL);
+
+    auto utf8PakFile = StringHelper::toUTF8(pakFile);
+    auto utf8IndexPath = StringHelper::toUTF8(indexPath);
+
+    Indexer indexer;
+    indexer.setProgressListener(this);
+
+    m_indexButton.EnableWindow(FALSE);
+
+    try {
+        indexer.index(utf8PakFile.GetString(), utf8IndexPath.GetString());
+        indexer.compact();
+
+        if (m_cancel) {
+            AtlMessageBox(*this, _T("Indexing cancelled."), nullptr, MB_ICONWARNING);
+        } else {
+            AtlMessageBox(*this, _T("Indexing completed successfully."), nullptr, MB_ICONINFORMATION);
+        }
+    } catch (const std::exception& e) {
+        CString error = StringHelper::fromUTF8(e.what());
+        CString message;
+        message.Format(_T("An error occurred while indexing the file: \"%s\": \"%s\"."),
+            pakFile, error);
+        AtlMessageBox(*this, message.GetString(), nullptr, MB_ICONERROR);
+    }
+
+    m_indexButton.EnableWindow(TRUE);
+}

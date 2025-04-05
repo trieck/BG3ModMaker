@@ -3,6 +3,7 @@
 #include "COMError.h"
 #include "FileDialogEx.h"
 #include "FileOperation.h"
+#include "IndexDlg.h"
 #include "Localization.h"
 #include "MainFrame.h"
 #include "PAKWriter.h"
@@ -223,6 +224,26 @@ void MainFrame::OnFolderPack()
         LogMessage(CString(e.what()));
         AtlMessageBox(*this, L"An error occurred while creating the package.", nullptr, MB_ICONERROR);
     }
+}
+
+void MainFrame::OnIndex()
+{
+    IndexDlg dlg;
+    auto hWnd = dlg.Create(*this);
+    if (hWnd == nullptr) {
+        ATLTRACE(_T("Unable to create index dialog.\n"));
+        return;
+    }
+
+    EnableWindow(FALSE);
+
+    dlg.ShowWindow(SW_SHOWNORMAL);
+    dlg.UpdateWindow();
+
+    dlg.RunModal();
+    dlg.Destroy();
+
+    EnableWindow(TRUE);
 }
 
 void MainFrame::OnFileSave()
@@ -868,8 +889,8 @@ BOOL MainFrame::OnIdle()
 {
     UIEnable(ID_FILE_NEW, IsFolderOpen());
     UIEnable(ID_FILE_CLOSE, IsFolderOpen());
-    UIEnable(ID_FILE_PACKAGE, IsFolderOpen());
-    UIEnable(ID_FILE_GLOBE, IsXmlSelected());
+    UIEnable(ID_TOOL_PACKAGE, IsFolderOpen());
+    UIEnable(ID_TOOL_LOCA, IsXmlSelected());
     UIEnable(ID_TREE_NEWFILEHERE, IsFolderSelected());
     UIEnable(ID_TREE_DELETE_FILE, !IsFolderSelected());
     UIEnable(ID_TREE_DELETE_FOLDER, IsFolderSelected());

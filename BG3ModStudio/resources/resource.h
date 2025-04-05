@@ -8,14 +8,25 @@
 #define IDR_MAINFRAME                   101
 #define IDI_FOLDER                      102
 #define IDI_FILE                        103
-#define ID_FILE_PACKAGE                 104
+#define ID_TOOL_PACKAGE                 104
 #define IDR_TAB_CONTEXT                 106
 #define IDR_TREE_CONTEXT                107
 #define ID_FILE_SAVE_ALL                0x6C
 #define IDI_NOBOM                       109
 #define IDI_BOM                         110
-#define ID_FILE_GLOBE                   114
-#define IDC_RICHEDIT                    115
+#define ID_TOOL_LOCA                    114
+#define IDD_INDEX                       115
+#define ID_TOOL_INDEX                   117
+#define IDC_PROGRESS_INDEX              1000
+#define IDC_INDEXING                    1001
+#define IDC_PAKFILE                     1001
+#define IDC_INDEX_FILE                  1002
+#define IDC_INDEX_STATUS                1003
+#define IDC_E_PAKFILE                   1004
+#define IDC_B_PAKFILE                   1005
+#define IDC_INDEXPATH                   1006
+#define IDC_E_INDEXPATH                 1007
+#define IDC_B_INDEXPATH                 1008
 #define ATL_IDC_TAB_CONTROL             0x3020
 #define ID_APPLY_NOW                    0x3021
 #define ID_WIZBACK                      0x3023
@@ -134,9 +145,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        115
+#define _APS_NEXT_RESOURCE_VALUE        118
 #define _APS_NEXT_COMMAND_VALUE         40019
-#define _APS_NEXT_CONTROL_VALUE         1000
+#define _APS_NEXT_CONTROL_VALUE         1006
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

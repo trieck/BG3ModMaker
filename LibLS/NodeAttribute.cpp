@@ -81,7 +81,7 @@ std::string NodeAttribute::typeStr() const
         return "WString";
     case LSWString:
         return "LSWString";
-    case UUID:
+    case Uuid:
         return "UUID";
     case Int64:
         return "Int64";

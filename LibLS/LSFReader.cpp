@@ -476,7 +476,7 @@ NodeAttribute LSFReader::readAttribute(AttributeType type, Stream& reader)
     case Bool:
         attr.setValue(reader.read<uint8_t>() != 0 ? "true" : "false");
         break;
-    case UUID:
+    case Uuid:
         attr.setValue(readUUID(reader));
         break;
     default:

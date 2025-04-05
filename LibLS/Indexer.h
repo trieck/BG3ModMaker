@@ -1,6 +1,20 @@
 #pragma once
+
+#include <xapian.h>
+
 #include "LSFCommon.h"
 #include "PAKReader.h"
+
+class IIndexProgressListener {
+public:
+    virtual ~IIndexProgressListener() = default;
+
+    virtual void onStart(std::size_t totalEntries) = 0;
+    virtual void onFileIndexing(std::size_t currentIndex, const std::string& filename) = 0;
+    virtual void onFinished(std::size_t indexedEntries) = 0;
+    virtual bool isCancelled() = 0;
+    virtual void onCancel() = 0;
+};
 
 class Indexer
 {
@@ -10,6 +24,7 @@ public:
 
     void index(const char* pakFile, const char* dbName);
     void compact() const;
+    void setProgressListener(IIndexProgressListener* listener);
 
 private:
     void indexLSXFile(const PackagedFileInfo& file);
@@ -24,5 +39,6 @@ private:
     Xapian::TermGenerator m_termgen;
     Xapian::SimpleStopper m_stopper;
     PAKReader m_reader;
+    IIndexProgressListener* m_listener = nullptr;
 };
 
