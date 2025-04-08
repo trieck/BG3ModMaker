@@ -87,12 +87,12 @@ void SearchDlg::OnSearch()
 LRESULT SearchDlg::OnDoubleClick(int idCtrl, LPNMHDR pnmh, BOOL& bHandled)
 {
     auto pia = reinterpret_cast<LPNMITEMACTIVATE>(pnmh);
-    if (!pia || pia->iItem < 0 || pia->iSubItem != 2) {
+    if (!pia || pia->iItem < 0) {
         return 0;
     }
 
     CString text;
-    m_listResults.GetItemText(pia->iItem, pia->iSubItem, text);
+    m_listResults.GetItemText(pia->iItem, 2, text);
 
     AttributeDlg dlg;
     dlg.SetAttributeJson(StringHelper::toUTF8(text).GetString());

@@ -1,7 +1,19 @@
 #include "stdafx.h"
 #include "AttributeDlg.h"
 
-static constexpr auto COLUMN_PADDING = 16;
+static constexpr auto COLUMN_PADDING = 12;
+
+static int CALLBACK AttributeListCompare(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
+{
+    auto* pList = reinterpret_cast<CListViewCtrl*>(lParamSort);
+    ATLASSERT(pList && pList->IsWindow());
+
+    CString text1, text2;
+    pList->GetItemText(static_cast<int>(lParam1), 0, text1);
+    pList->GetItemText(static_cast<int>(lParam2), 0, text2);
+
+    return text1.CompareNoCase(text2);
+}
 
 void AttributeDlg::SetAttributeJson(const std::string& json)
 {
@@ -12,13 +24,12 @@ void AttributeDlg::SetAttributeJson(const std::string& json)
 void AttributeDlg::AutoAdjustColumns()
 {
     CClientDC dc(m_list);
-    CFontHandle hFont = m_list.GetFont();
-    HGDIOBJ hOldFont = dc.SelectFont(hFont);
+    auto hFont = m_list.GetFont();
+    auto hOldFont = dc.SelectFont(hFont);
 
-    CHeaderCtrl header = m_list.GetHeader();
+    auto header = m_list.GetHeader();
 
     for (auto col = 0; col < header.GetItemCount(); ++col) {
-        CString headerText;
         LVCOLUMN lvc{};
         lvc.mask = LVCF_TEXT | LVCF_WIDTH;
 
@@ -26,14 +37,15 @@ void AttributeDlg::AutoAdjustColumns()
         lvc.pszText = textBuf;
         lvc.cchTextMax = _countof(textBuf);
         m_list.GetColumn(col, &lvc);
-        headerText = lvc.pszText;
+
+        CString headerText = lvc.pszText;
 
         CSize sz;
         dc.GetTextExtent(headerText, headerText.GetLength(), &sz);
         auto maxWidth = sz.cx;
 
-        int rowCount = m_list.GetItemCount();
-        for (int row = 0; row < rowCount; ++row) {
+        auto rowCount = m_list.GetItemCount();
+        for (auto row = 0; row < rowCount; ++row) {
             CString cellText;
             m_list.GetItemText(row, col, cellText);
 
@@ -45,7 +57,7 @@ void AttributeDlg::AutoAdjustColumns()
         m_list.SetColumnWidth(col, maxWidth);
     }
 
-    dc.SelectFont(static_cast<HFONT>(hOldFont));
+    dc.SelectFont(hOldFont);
 }
 
 void AttributeDlg::OnClose()
@@ -60,6 +72,35 @@ void AttributeDlg::OnSize(UINT, const CSize& size)
     AutoAdjustColumns();
 }
 
+LRESULT AttributeDlg::OnMouseWheel(UINT nFlags, short zDelta, const CPoint&)
+{
+    if ((GetKeyState(VK_CONTROL) & 0x8000) == 0) {
+        return 1;
+    }
+
+    if (zDelta > 0 && m_fontSize < 48) {
+        m_fontSize++;
+    } else if (zDelta < 0 && m_fontSize > 6) {
+        m_fontSize--;
+    }
+
+    LOGFONT lf = {};
+    lf.lfHeight = -MulDiv(m_fontSize, GetDeviceCaps(GetDC(), LOGPIXELSY), 72);
+    _tcscpy_s(lf.lfFaceName, _T("Tahoma"));
+    lf.lfWeight = FW_NORMAL;
+
+    m_font.DeleteObject();
+    m_font.CreateFontIndirect(&lf);
+
+    m_list.SetFont(m_font);
+
+    AutoAdjustColumns();
+
+    m_list.Invalidate();
+
+    return 1;
+}
+
 BOOL AttributeDlg::OnInitDialog(HWND, LPARAM)
 {
     m_list = GetDlgItem(IDC_LST_ATTRIBUTES);
@@ -68,6 +109,13 @@ BOOL AttributeDlg::OnInitDialog(HWND, LPARAM)
     m_list.ModifyStyle(0, LVS_REPORT);
     m_list.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
+    LOGFONT lf = {};
+    lf.lfHeight = -MulDiv(m_fontSize, GetDeviceCaps(GetDC(), LOGPIXELSY), 72);
+    _tcscpy_s(lf.lfFaceName, _T("Tahoma"));
+    lf.lfWeight = FW_NORMAL;
+
+    m_font.CreateFontIndirect(&lf);
+    m_list.SetFont(m_font);
     m_list.InsertColumn(0, _T("Name"), LVCFMT_LEFT, 150);
     m_list.InsertColumn(1, _T("Value"), LVCFMT_LEFT, 80);
     m_list.InsertColumn(2, _T("Type"), LVCFMT_LEFT);
@@ -84,6 +132,7 @@ BOOL AttributeDlg::OnInitDialog(HWND, LPARAM)
         m_list.SetItemText(row, 2, type);
     }
 
+    m_list.SortItemsEx(AttributeListCompare, reinterpret_cast<LPARAM>(&m_list));
 
     DlgResize_Init();
     AutoAdjustColumns();
