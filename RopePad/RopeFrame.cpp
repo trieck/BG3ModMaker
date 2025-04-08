@@ -21,8 +21,8 @@ LRESULT RopeFrame::OnCreate(LPCREATESTRUCT pcs)
     CenterWindow();
 
     m_hWndClient = m_view.Create(m_hWnd, rcDefault, nullptr,
-        WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
-        WS_EX_CLIENTEDGE);
+                                 WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+                                 WS_EX_CLIENTEDGE);
 
     if (m_hWndClient == nullptr) {
         ATLTRACE(_T("Unable to create view window.\n"));

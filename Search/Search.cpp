@@ -26,7 +26,6 @@ int main(int argc, char* argv[])
 
         std::cout << "   Found: " << comma(results.size()) << " results" << std::endl;
         std::cout << "   Search took: " << timer.str() << std::endl;
-
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
         return 1;

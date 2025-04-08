@@ -98,7 +98,10 @@
     <ClInclude Include="IndexDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SearchResultsDlg.h">
+    <ClInclude Include="SearchDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AttributeDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -154,7 +157,10 @@
     <ClCompile Include="IndexDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SearchResultsDlg.cpp">
+    <ClCompile Include="SearchDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AttributeDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

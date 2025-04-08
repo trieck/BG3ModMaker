@@ -9,7 +9,7 @@ Xapian::MSet Searcher::search(const char* dbName, const char* query)
 
     Xapian::QueryParser parser;
     parser.set_database(db);
-    parser.set_default_op(Xapian::Query::OP_OR);
+    parser.set_default_op(Xapian::Query::OP_AND);
 
     auto xquery = parser.parse_query(query);
     enquire.set_query(xquery);

@@ -18,7 +18,12 @@
 #define IDD_INDEX                       115
 #define ID_TOOL_INDEX                   117
 #define ID_TOOL_SEARCH                  118
-#define IDD_SEARCH_RESULTS              119
+#define IDD_SEARCH                      119
+#define IDC_B_SEARCH                    120
+#define IDC_B_BROWSE                    121
+#define IDC_E_QUERY                     122
+#define IDC_E_FOLDER                    123
+#define IDD_ATTRIBUTES                  125
 #define IDC_PROGRESS_INDEX              1000
 #define IDC_PAKFILE                     1001
 #define IDC_INDEX_FILE                  1002
@@ -30,6 +35,7 @@
 #define IDC_B_INDEXPATH                 1008
 #define IDC_CHK_OVERWRITE               1009
 #define IDC_LST_RESULTS                 1010
+#define IDC_LST_ATTRIBUTES              1011
 #define ATL_IDC_TAB_CONTROL             0x3020
 #define ID_APPLY_NOW                    0x3021
 #define ID_WIZBACK                      0x3023
@@ -148,9 +154,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        121
+#define _APS_NEXT_RESOURCE_VALUE        127
 #define _APS_NEXT_COMMAND_VALUE         40019
-#define _APS_NEXT_CONTROL_VALUE         1011
+#define _APS_NEXT_CONTROL_VALUE         1012
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

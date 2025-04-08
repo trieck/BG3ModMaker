@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "Direct2D.h"
 #include "RopePad.h"
 
 CAppModule _Module;

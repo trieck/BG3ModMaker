@@ -166,6 +166,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AttributeDlg.h" />
     <ClInclude Include="BG3ModStudio.h" />
     <ClInclude Include="BinaryFileView.h" />
     <ClInclude Include="DocStyler.h" />
@@ -176,7 +177,7 @@
     <ClInclude Include="OutputWindow.h" />
     <ClInclude Include="ScintillaCtrl.h" />
     <ClInclude Include="ScintillaLoader.h" />
-    <ClInclude Include="SearchResultsDlg.h" />
+    <ClInclude Include="SearchDlg.h" />
     <ClInclude Include="SelectObject.h" />
     <ClInclude Include="FileDialogEx.h" />
     <ClInclude Include="FileViewFactory.h" />
@@ -196,6 +197,7 @@
     <ClInclude Include="Util.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AttributeDlg.cpp" />
     <ClCompile Include="BG3ModStudio.cpp" />
     <ClCompile Include="BinaryFileView.cpp" />
     <ClCompile Include="DocStyler.cpp" />
@@ -208,7 +210,7 @@
     <ClCompile Include="FileViews.cpp" />
     <ClCompile Include="FolderView.cpp" />
     <ClCompile Include="MainFrame.cpp" />
-    <ClCompile Include="SearchResultsDlg.cpp" />
+    <ClCompile Include="SearchDlg.cpp" />
     <ClCompile Include="ShellHelper.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
