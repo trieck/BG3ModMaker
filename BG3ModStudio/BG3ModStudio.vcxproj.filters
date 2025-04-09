@@ -236,6 +236,9 @@
     <Image Include="resources\gear.bmp">
       <Filter>Resources</Filter>
     </Image>
+    <Image Include="resources\lsf.bmp">
+      <Filter>Resources</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\BG3ModStudio.rc">

@@ -62,6 +62,12 @@
             <Command.TooltipDescription>Settings</Command.TooltipDescription>
         </Command>
 
+        <Command Name="TOOL_LSF" Symbol="ID_TOOL_LSF" Id="131" Keytip="O">
+            <Command.LabelTitle>Convert LSX to LSF...</Command.LabelTitle>
+            <Command.TooltipTitle>Convert LSX to LSF</Command.TooltipTitle>
+            <Command.TooltipDescription>Convert LSX to LSF</Command.TooltipDescription>
+        </Command>
+
         <Command Name="APP_ABOUT" Symbol="ID_APP_ABOUT" Id="0xE140" Keytip="O">
             <Command.LabelTitle>About BG3 Mod Studio...</Command.LabelTitle>
             <Command.TooltipTitle>About BG3 Mod Studio(Ctrl+Shift+A)</Command.TooltipTitle>
@@ -210,6 +216,7 @@
                                 <ControlNameDefinition Name="TOOL_INDEX" />
                                 <ControlNameDefinition Name="TOOL_SEARCH" />
                                 <ControlNameDefinition Name="TOOL_SETTINGS" />
+                                <ControlNameDefinition Name="TOOL_LSF" />
                             </ControlNameMap>
                             <GroupSizeDefinition Size="Large">
                                 <ControlSizeDefinition ControlName="TOOL_PACKAGE"
@@ -225,6 +232,9 @@
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="TOOL_SETTINGS"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="TOOL_LSF"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
                             </GroupSizeDefinition>
@@ -244,6 +254,9 @@
                                 <ControlSizeDefinition ControlName="TOOL_SETTINGS"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="TOOL_LSF"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
                             </GroupSizeDefinition>
                             <GroupSizeDefinition Size="Small">
                                 <ControlSizeDefinition ControlName="TOOL_PACKAGE"
@@ -261,6 +274,9 @@
                                 <ControlSizeDefinition ControlName="TOOL_SETTINGS"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="TOOL_LSF"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
                             </GroupSizeDefinition>
                         </SizeDefinition>
                         <Button CommandName="TOOL_PACKAGE" />
@@ -268,6 +284,7 @@
                         <Button CommandName="TOOL_INDEX" />
                         <Button CommandName="TOOL_SEARCH" />
                         <Button CommandName="TOOL_SETTINGS" />
+                        <Button CommandName="TOOL_LSF" />
                     </Group>
                 </Tab>
 

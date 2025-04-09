@@ -256,6 +256,7 @@
     <Image Include="resources\gear.bmp" />
     <Image Include="resources\globe.bmp" />
     <Image Include="resources\index.bmp" />
+    <Image Include="resources\lsf.bmp" />
     <Image Include="resources\nobom.ico" />
     <Image Include="resources\open.bmp" />
     <Image Include="resources\package.bmp" />

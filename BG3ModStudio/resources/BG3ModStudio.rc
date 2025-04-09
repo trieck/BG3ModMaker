@@ -186,6 +186,8 @@ ID_TOOL_SEARCH          BITMAP                  "search.bmp"
 
 ID_TOOL_SETTINGS        BITMAP                  "gear.bmp"
 
+ID_TOOL_LSF            BITMAP                  "lsf.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

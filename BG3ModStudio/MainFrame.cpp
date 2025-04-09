@@ -451,6 +451,54 @@ void MainFrame::OnConvertLoca()
     AtlMessageBox(*this, L"File converted successfully.", nullptr, MB_ICONINFORMATION);
 }
 
+void MainFrame::OnConvertLSF()
+{
+    auto item = m_folderView.GetSelectedItem();
+    if (item.IsNull()) {
+        return;
+    }
+
+    auto path = m_folderView.GetItemPath(item);
+    if (path.IsEmpty()) {
+        return;
+    }
+
+    TCHAR szPath[MAX_PATH];
+    Checked::tcscpy_s(szPath, _countof(szPath), path.GetString());
+
+    if (PathFindExtension(szPath) && _tcslen(PathFindExtension(szPath)) > 1) {
+        PathRemoveExtension(szPath);
+    }
+
+    PathRemoveExtension(szPath);
+    _tcscat_s(szPath, _T(".lsf"));
+
+    TCHAR szFolder[MAX_PATH];
+    Checked::tcscpy_s(szFolder, _countof(szFolder), path.GetString());
+    PathRemoveFileSpec(szFolder);
+
+    auto filter = L"LSF Files (*.lsf)\0*.lsf\0"
+        L"All Files(*.*)\0*.*\0\0";
+
+    FileDialogEx dlg(FileDialogEx::Save, *this, nullptr, szPath, 0, filter);
+    auto hr = dlg.Construct();
+    if (FAILED(hr)) {
+        return;
+    }
+
+    hr = dlg.SetFolder(szFolder);
+    if (FAILED(hr)) {
+        return;
+    }
+
+    if (dlg.DoModal() != IDOK) {
+        return;
+    }
+
+    auto utf8Path = StringHelper::toUTF8(path);
+    auto utf8LocaPath = StringHelper::toUTF8(dlg.paths().front());
+}
+
 void MainFrame::OnClose()
 {
     if (m_folderMonitor) {
@@ -920,6 +968,7 @@ BOOL MainFrame::OnIdle()
     UIEnable(ID_FILE_CLOSE, IsFolderOpen());
     UIEnable(ID_TOOL_PACKAGE, IsFolderOpen());
     UIEnable(ID_TOOL_LOCA, IsXmlSelected());
+    UIEnable(ID_TOOL_LSF, IsLSXSelected());
     UIEnable(ID_TREE_NEWFILEHERE, IsFolderSelected());
     UIEnable(ID_TREE_DELETE_FILE, !IsFolderSelected());
     UIEnable(ID_TREE_DELETE_FOLDER, IsFolderSelected());
