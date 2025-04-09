@@ -18,6 +18,7 @@ public:
         MSG_WM_SIZE(OnSize)
         MSG_WM_INITDIALOG(OnInitDialog)
         MSG_WM_CLOSE(OnClose)
+        MSG_WM_GETMINMAXINFO(OnGetMinMaxInfo)
         COMMAND_ID_HANDLER3(IDC_B_SEARCH, OnSearch)
         COMMAND_ID_HANDLER3(IDC_B_FIRST, OnFirst)
         COMMAND_ID_HANDLER3(IDC_B_PREV, OnPrev)
@@ -45,15 +46,17 @@ private:
     BOOL OnInitDialog(HWND /* hWnd */, LPARAM /*lParam*/);
     LRESULT OnDoubleClick(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
     void OnClose();
-    void OnSearch();
     void OnFirst();
-    void OnPrev();
-    void OnNext();
+    void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
     void OnLast();
-
+    void OnNext();
+    void OnPrev();
+    void OnSearch();
     void OnSize(UINT /*uMsg*/, const CSize& size);
 
     CListViewCtrl m_listResults;
+    CEdit m_indexPath;
+
     Xapian::MSet m_results;
     int m_nPage = 0;
 };

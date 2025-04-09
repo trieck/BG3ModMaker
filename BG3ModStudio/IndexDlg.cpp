@@ -2,6 +2,7 @@
 #include "IndexDlg.h"
 #include "FileDialogEx.h"
 #include "Indexer.h"
+#include "Settings.h"
 #include "StringHelper.h"
 
 BOOL IndexDlg::OnInitDialog(HWND, LPARAM)
@@ -11,6 +12,10 @@ BOOL IndexDlg::OnInitDialog(HWND, LPARAM)
 
     m_indexPath = GetDlgItem(IDC_E_INDEXPATH);
     ATLASSERT(m_indexPath.IsWindow());
+
+    Settings settings;
+    auto indexPath = settings.GetString(_T("Indexing"), _T("IndexPath"), _T(""));
+    m_indexPath.SetWindowText(indexPath);
 
     m_progress = GetDlgItem(IDC_PROGRESS_INDEX);
     ATLASSERT(m_progress.IsWindow());
@@ -185,12 +190,15 @@ void IndexDlg::Index(const CString& pakFile, const CString& indexPath)
         } else {
             AtlMessageBox(*this, _T("Indexing completed successfully."), nullptr, MB_ICONINFORMATION);
         }
-    } catch (const std::exception& e) {
-        CString error = StringHelper::fromUTF8(e.what());
-        CString message;
-        message.Format(_T("An error occurred while indexing the file: \"%s\": \"%s\"."),
-            pakFile, error);
-        AtlMessageBox(*this, message.GetString(), nullptr, MB_ICONERROR);
+    } catch (const Xapian::Error& e) {
+        m_state = IDLE;
+        CString errorMessage;
+        errorMessage.Format(_T("Error: %s\nContext: %s\nType: %s\nError String: %s"),
+            StringHelper::fromUTF8(e.get_msg().c_str()).GetString(),
+            StringHelper::fromUTF8(e.get_context().c_str()).GetString(),
+            StringHelper::fromUTF8(e.get_type()).GetString(),
+            StringHelper::fromUTF8(e.get_error_string()).GetString());
+        MessageBox(errorMessage, _T("Search Error"), MB_OK | MB_ICONERROR);
     }
 
     m_indexButton.EnableWindow(TRUE);

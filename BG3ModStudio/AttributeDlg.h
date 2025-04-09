@@ -32,6 +32,6 @@ private:
 
     CListViewCtrl m_list;
     CFont m_font;
-    int m_fontSize = 10;
+    int m_fontSize = 8;
     nlohmann::json m_attributes;
 };

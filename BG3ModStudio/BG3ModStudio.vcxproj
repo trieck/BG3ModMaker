@@ -187,6 +187,8 @@
     <ClInclude Include="IFileView.h" />
     <ClInclude Include="MainFrame.h" />
     <ClInclude Include="resources\resource.h" />
+    <ClInclude Include="Settings.h" />
+    <ClInclude Include="SettingsDlg.h" />
     <ClInclude Include="ShellHelper.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="TabViewCtrl.h" />
@@ -212,6 +214,8 @@
     <ClCompile Include="FolderView.cpp" />
     <ClCompile Include="MainFrame.cpp" />
     <ClCompile Include="SearchDlg.cpp" />
+    <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="SettingsDlg.cpp" />
     <ClCompile Include="ShellHelper.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -241,7 +245,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="multi.bmp" />
     <Image Include="resources\about.bmp" />
     <Image Include="resources\app.ico" />
     <Image Include="resources\bom.ico" />
@@ -250,6 +253,7 @@
     <Image Include="resources\file.ico" />
     <Image Include="resources\filenew.bmp" />
     <Image Include="resources\folder.ico" />
+    <Image Include="resources\gear.bmp" />
     <Image Include="resources\globe.bmp" />
     <Image Include="resources\index.bmp" />
     <Image Include="resources\nobom.ico" />
@@ -258,7 +262,6 @@
     <Image Include="resources\save.bmp" />
     <Image Include="resources\saveall.bmp" />
     <Image Include="resources\search.bmp" />
-    <Image Include="search.bmp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\BG3ModStudio.rc" />
@@ -280,7 +283,7 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <None Include="scripts\make-transparent.bat" />
+    <None Include="config\settings.ini" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

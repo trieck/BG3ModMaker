@@ -29,9 +29,10 @@ public:
     void OnFolderOpen();
     void OnFolderPack();
     void OnIndex();
-    void OnSearch();
     void OnNewFile();
     void OnNewFileHere();
+    void OnSearch();
+    void OnSettings();
     void OnViewOutput();
     void OnViewStatusBar();
 
@@ -56,8 +57,6 @@ public:
         UPDATE_ELEMENT(ID_FILE_SAVE, UPDUI_MENUPOPUP)
         UPDATE_ELEMENT(ID_FILE_SAVE_ALL, UPDUI_MENUPOPUP)
         UPDATE_ELEMENT(ID_TOOL_LOCA, UPDUI_MENUPOPUP)
-        UPDATE_ELEMENT(ID_TOOL_INDEX, UPDUI_MENUPOPUP)
-        UPDATE_ELEMENT(ID_TOOL_SEARCH, UPDUI_MENUPOPUP)
         UPDATE_ELEMENT(ID_TREE_NEWFILEHERE, UPDUI_MENUPOPUP)
         UPDATE_ELEMENT(ID_TREE_DELETE_FILE, UPDUI_MENUPOPUP)
         UPDATE_ELEMENT(ID_TREE_DELETE_FOLDER, UPDUI_MENUPOPUP)
@@ -80,6 +79,7 @@ public:
         COMMAND_ID_HANDLER3(ID_TOOL_LOCA, OnConvertLoca)
         COMMAND_ID_HANDLER3(ID_TOOL_PACKAGE, OnFolderPack)
         COMMAND_ID_HANDLER3(ID_TOOL_SEARCH, OnSearch)
+        COMMAND_ID_HANDLER3(ID_TOOL_SETTINGS, OnSettings)
         COMMAND_ID_HANDLER3(ID_TREE_DELETE_FILE, OnDeleteFile)
         COMMAND_ID_HANDLER3(ID_TREE_DELETE_FOLDER, OnDeleteFile)
         COMMAND_ID_HANDLER3(ID_TREE_NEWFILEHERE, OnNewFileHere)

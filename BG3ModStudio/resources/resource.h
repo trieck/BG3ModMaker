@@ -23,7 +23,11 @@
 #define IDC_B_BROWSE                    121
 #define IDC_E_QUERY                     122
 #define IDC_E_FOLDER                    123
+#define IDC_B_BROWSE_INDEX              124
 #define IDD_ATTRIBUTES                  125
+#define ID_TOOL_SETTINGS                127
+#define IDD_SETTINGS                    128
+#define IDC_E_INDEX_FOLDER              129
 #define IDC_PROGRESS_INDEX              1000
 #define IDC_PAKFILE                     1001
 #define IDC_INDEX_FILE                  1002
@@ -158,7 +162,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        127
+#define _APS_NEXT_RESOURCE_VALUE        130
 #define _APS_NEXT_COMMAND_VALUE         40019
 #define _APS_NEXT_CONTROL_VALUE         1013
 #define _APS_NEXT_SYMED_VALUE           101

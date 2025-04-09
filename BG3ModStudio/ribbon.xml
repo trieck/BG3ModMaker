@@ -56,6 +56,12 @@
             <Command.TooltipDescription>Search Index</Command.TooltipDescription>
         </Command>
 
+        <Command Name="TOOL_SETTINGS" Symbol="ID_TOOL_SETTINGS" Id="127" Keytip="O">
+            <Command.LabelTitle>Settings</Command.LabelTitle>
+            <Command.TooltipTitle>Settings(Ctrl+Alt+S)</Command.TooltipTitle>
+            <Command.TooltipDescription>Settings</Command.TooltipDescription>
+        </Command>
+
         <Command Name="APP_ABOUT" Symbol="ID_APP_ABOUT" Id="0xE140" Keytip="O">
             <Command.LabelTitle>About BG3 Mod Studio...</Command.LabelTitle>
             <Command.TooltipTitle>About BG3 Mod Studio(Ctrl+Shift+A)</Command.TooltipTitle>
@@ -203,6 +209,7 @@
                                 <ControlNameDefinition Name="TOOL_LOCA" />
                                 <ControlNameDefinition Name="TOOL_INDEX" />
                                 <ControlNameDefinition Name="TOOL_SEARCH" />
+                                <ControlNameDefinition Name="TOOL_SETTINGS" />
                             </ControlNameMap>
                             <GroupSizeDefinition Size="Large">
                                 <ControlSizeDefinition ControlName="TOOL_PACKAGE"
@@ -215,6 +222,9 @@
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="TOOL_SEARCH"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="TOOL_SETTINGS"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
                             </GroupSizeDefinition>
@@ -231,6 +241,9 @@
                                 <ControlSizeDefinition ControlName="TOOL_SEARCH"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="TOOL_SETTINGS"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
                             </GroupSizeDefinition>
                             <GroupSizeDefinition Size="Small">
                                 <ControlSizeDefinition ControlName="TOOL_PACKAGE"
@@ -245,12 +258,16 @@
                                 <ControlSizeDefinition ControlName="TOOL_SEARCH"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="TOOL_SETTINGS"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
                             </GroupSizeDefinition>
                         </SizeDefinition>
                         <Button CommandName="TOOL_PACKAGE" />
                         <Button CommandName="TOOL_LOCA" />
                         <Button CommandName="TOOL_INDEX" />
                         <Button CommandName="TOOL_SEARCH" />
+                        <Button CommandName="TOOL_SETTINGS" />
                     </Group>
                 </Tab>
 

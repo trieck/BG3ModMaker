@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
     try {
         Timer timer;
 
-        auto results = Searcher::search(argv[1], argv[2]);
+        auto results = Searcher::search(argv[1], argv[2], 0, 1000);
         for (auto it = results.begin(); it != results.end(); ++it) {
             auto doc = json::parse(it.get_document().get_data());
             std::cout << doc.dump(4) << std::endl;

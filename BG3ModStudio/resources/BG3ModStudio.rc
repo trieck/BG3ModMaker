@@ -184,6 +184,8 @@ ID_TOOL_INDEX           BITMAP                  "index.bmp"
 
 ID_TOOL_SEARCH          BITMAP                  "search.bmp"
 
+ID_TOOL_SETTINGS        BITMAP                  "gear.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -236,6 +238,18 @@ BEGIN
     CONTROL         "",IDC_LST_ATTRIBUTES,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,6,8,488,284
 END
 
+IDD_SETTINGS DIALOGEX 0, 0, 300, 70
+STYLE DS_SETFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Settings"
+FONT 8, "Tahoma", 0, 0, 0x0
+BEGIN
+    LTEXT           "Index Directory:",IDC_STATIC,10,12,60,8
+    EDITTEXT        IDC_E_INDEX_FOLDER,65,10,208,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_B_BROWSE_INDEX,274,10,20,14
+    DEFPUSHBUTTON   "OK",IDOK,227,40,32,14
+    PUSHBUTTON      "Cancel",IDCANCEL,262,40,32,14
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -264,6 +278,10 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 291
     END
+
+    IDD_SETTINGS, DIALOG
+    BEGIN
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -289,6 +307,11 @@ BEGIN
 END
 
 IDD_ATTRIBUTES AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_SETTINGS AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

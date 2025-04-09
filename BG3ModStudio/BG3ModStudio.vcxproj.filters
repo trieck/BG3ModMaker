@@ -12,7 +12,7 @@
     <Filter Include="Resources">
       <UniqueIdentifier>{273ab127-ed46-4368-b1b0-cf8a88597b2b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Scripts">
+    <Filter Include="Config">
       <UniqueIdentifier>{c4c3858a-ab2a-4ac6-8303-0c3c42830542}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -107,6 +107,12 @@
     <ClInclude Include="ModelessDialog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SettingsDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Settings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BG3ModStudio.cpp">
@@ -166,6 +172,12 @@
     <ClCompile Include="AttributeDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SettingsDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Settings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="ribbon.xml">
@@ -218,11 +230,12 @@
     <Image Include="resources\index.bmp">
       <Filter>Resources</Filter>
     </Image>
-    <Image Include="multi.bmp" />
     <Image Include="resources\search.bmp">
       <Filter>Resources</Filter>
     </Image>
-    <Image Include="search.bmp" />
+    <Image Include="resources\gear.bmp">
+      <Filter>Resources</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\BG3ModStudio.rc">
@@ -230,8 +243,8 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="scripts\make-transparent.bat">
-      <Filter>Scripts</Filter>
+    <None Include="config\settings.ini">
+      <Filter>Config</Filter>
     </None>
   </ItemGroup>
 </Project>

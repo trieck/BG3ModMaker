@@ -4,6 +4,7 @@
 
 #include "AttributeDlg.h"
 #include "Searcher.h"
+#include "Settings.h"
 #include "StringHelper.h"
 
 static constexpr auto PAGE_SIZE = 25;
@@ -24,7 +25,7 @@ BOOL SearchDlg::OnIdle()
 }
 
 void SearchDlg::AutoAdjustColumns()
-{   
+{
     CRect rcClient;
     m_listResults.GetClientRect(&rcClient);
 
@@ -45,6 +46,13 @@ BOOL SearchDlg::OnInitDialog(HWND, LPARAM)
 {
     m_listResults = GetDlgItem(IDC_LST_RESULTS);
     ATLASSERT(m_listResults.IsWindow());
+
+    m_indexPath = GetDlgItem(IDC_E_FOLDER);
+    ATLASSERT(m_indexPath.IsWindow());
+
+    Settings settings;
+    auto indexPath = settings.GetString(_T("Indexing"), _T("IndexPath"), _T(""));
+    m_indexPath.SetWindowText(indexPath);
 
     m_listResults.ModifyStyle(0, LVS_REPORT);
     m_listResults.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
@@ -96,7 +104,23 @@ void SearchDlg::OnSearch()
 
     auto offset = m_nPage * PAGE_SIZE;
 
-    m_results = Searcher::search(R"(C:\Users\trieck\Desktop\IDX)", utf8Query, offset, PAGE_SIZE);
+    CString indexPath;
+    m_indexPath.GetWindowText(indexPath);
+
+    auto utf8IndexPath = StringHelper::toUTF8(indexPath);
+
+    try {
+        m_results = Searcher::search(utf8IndexPath, utf8Query, offset, PAGE_SIZE);
+    } catch (const Xapian::Error& e) {
+        CString errorMessage;
+        errorMessage.Format(_T("Error: %s\nContext: %s\nType: %s\nError String: %s"),
+                            StringHelper::fromUTF8(e.get_msg().c_str()).GetString(),
+                            StringHelper::fromUTF8(e.get_context().c_str()).GetString(),
+                            StringHelper::fromUTF8(e.get_type()).GetString(),
+                            StringHelper::fromUTF8(e.get_error_string()).GetString());
+        MessageBox(errorMessage, _T("Search Error"), MB_OK | MB_ICONERROR);
+    }
+
     if (m_results.empty()) {
         m_nPage = 0;
     }
@@ -123,6 +147,20 @@ void SearchDlg::OnFirst()
     OnSearch();
 }
 
+void SearchDlg::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
+{
+    ATLASSERT(lpMMI != nullptr);
+
+    // Define size in dialog units
+    constexpr SIZE dlgSizeInDLUs = {500, 100};
+
+    CRect rcPixels(0, 0, dlgSizeInDLUs.cx, dlgSizeInDLUs.cy);
+    MapDialogRect(&rcPixels); // Convert DLUs to pixels based on dialog font
+
+    lpMMI->ptMinTrackSize.x = rcPixels.Width();
+    lpMMI->ptMinTrackSize.y = rcPixels.Height();
+}
+
 void SearchDlg::OnPrev()
 {
     m_nPage = std::max(0, m_nPage - 1);
@@ -138,7 +176,7 @@ void SearchDlg::OnNext()
 
 void SearchDlg::OnLast()
 {
-    m_nPage =static_cast<int>(m_results.get_matches_upper_bound() + PAGE_SIZE - 1) / PAGE_SIZE - 1;
+    m_nPage = static_cast<int>(m_results.get_matches_upper_bound() + PAGE_SIZE - 1) / PAGE_SIZE - 1;
     OnSearch();
 }
 

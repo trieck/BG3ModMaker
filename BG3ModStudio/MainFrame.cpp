@@ -8,6 +8,7 @@
 #include "MainFrame.h"
 #include "PAKWriter.h"
 #include "SearchDlg.h"
+#include "SettingsDlg.h"
 #include "StringHelper.h"
 
 extern CComCriticalSection g_csFile;
@@ -198,8 +199,7 @@ void MainFrame::OnFolderPack()
     build.compression = CompressionMethod::NONE;
     build.compressionLevel = LSCompressionLevel::DEFAULT;
 
-    IterateFiles(m_folderView.GetRootItem(), [&](const CString& filePath)
-    {
+    IterateFiles(m_folderView.GetRootItem(), [&](const CString& filePath) {
         CString message;
         message.Format(L"Adding file:\"%s\" to PAK...", filePath);
         LogMessage(message);
@@ -267,6 +267,12 @@ void MainFrame::OnSearch()
 
     EnableWindow(TRUE);
     SetFocus();
+}
+
+void MainFrame::OnSettings()
+{
+    SettingsDlg dlg;
+    dlg.DoModal();
 }
 
 void MainFrame::OnFileSave()
