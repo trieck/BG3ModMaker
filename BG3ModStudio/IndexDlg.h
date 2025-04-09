@@ -1,9 +1,10 @@
 #pragma once
 
 #include "Indexer.h"
+#include "ModelessDialog.h"
 #include "resources/resource.h"
 
-class IndexDlg : public CDialogImpl<IndexDlg>, public IIndexProgressListener
+class IndexDlg : public ModelessDialog<IndexDlg>, public IIndexProgressListener
 {
 public:
     enum { IDD = IDD_INDEX };
@@ -16,9 +17,6 @@ public:
         COMMAND_ID_HANDLER3(IDOK, OnIndex)
         COMMAND_ID_HANDLER3(IDCANCEL, OnCancelRequested)
     END_MSG_MAP()
-
-    void Destroy();
-    void RunModal();
 
     // IIndexProgressListener
     void onStart(std::size_t totalEntries) override;
@@ -50,5 +48,4 @@ private:
     void OnPakFile();
 
     void Index(const CString& pakFile, const CString& indexPath);
-    void PumpMessages();
 };

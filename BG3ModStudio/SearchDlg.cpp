@@ -6,6 +6,23 @@
 #include "Searcher.h"
 #include "StringHelper.h"
 
+static constexpr auto PAGE_SIZE = 25;
+
+BOOL SearchDlg::OnIdle()
+{
+    int totalResults = static_cast<int>(m_results.get_matches_upper_bound());
+    int pageCount = (totalResults + PAGE_SIZE - 1) / PAGE_SIZE;
+
+    UIEnable(IDC_B_FIRST, m_nPage > 0 && totalResults);
+    UIEnable(IDC_B_PREV, m_nPage > 0 && totalResults);
+    UIEnable(IDC_B_NEXT, m_nPage + 1 < pageCount && totalResults);
+    UIEnable(IDC_B_LAST, m_nPage + 1 < pageCount && totalResults);
+
+    UIUpdateChildWindows(TRUE);
+
+    return FALSE;
+}
+
 void SearchDlg::AutoAdjustColumns()
 {   
     CRect rcClient;
@@ -36,17 +53,27 @@ BOOL SearchDlg::OnInitDialog(HWND, LPARAM)
     m_listResults.InsertColumn(1, _T("Type"), LVCFMT_LEFT, 80);
     m_listResults.InsertColumn(2, _T("Atrributes"), LVCFMT_LEFT);
 
+    UIAddChildWindowContainer(m_hWnd);
+
     DlgResize_Init();
     AutoAdjustColumns();
 
     CenterWindow(GetParent());
+
+    auto* pLoop = _Module.GetMessageLoop();
+    ATLASSERT(pLoop != NULL);
+    pLoop->AddIdleHandler(this);
 
     return FALSE; // Let the system set the focus
 }
 
 void SearchDlg::OnClose()
 {
-    EndDialog(0);
+    auto* pLoop = _Module.GetMessageLoop();
+    ATLASSERT(pLoop != NULL);
+    pLoop->RemoveIdleHandler(this);
+
+    Destroy();
 }
 
 void SearchDlg::OnSize(UINT, const CSize& size)
@@ -67,8 +94,14 @@ void SearchDlg::OnSearch()
 
     CWaitCursor cursor;
 
-    auto results = Searcher::search(R"(C:\Users\trieck\Desktop\IDX)", utf8Query);
-    for (auto it = results.begin(); it != results.end(); ++it) {
+    auto offset = m_nPage * PAGE_SIZE;
+
+    m_results = Searcher::search(R"(C:\Users\trieck\Desktop\IDX)", utf8Query, offset, PAGE_SIZE);
+    if (m_results.empty()) {
+        m_nPage = 0;
+    }
+
+    for (auto it = m_results.begin(); it != m_results.end(); ++it) {
         auto doc = nlohmann::json::parse(it.get_document().get_data());
         auto sourceFile = doc["source_file"].get<std::string>();
         auto type = doc["type"].get<std::string>();
@@ -82,6 +115,31 @@ void SearchDlg::OnSearch()
         m_listResults.SetItemText(index, 1, wType.GetString());
         m_listResults.SetItemText(index, 2, wAttributes.GetString());
     }
+}
+
+void SearchDlg::OnFirst()
+{
+    m_nPage = 0;
+    OnSearch();
+}
+
+void SearchDlg::OnPrev()
+{
+    m_nPage = std::max(0, m_nPage - 1);
+    OnSearch();
+}
+
+void SearchDlg::OnNext()
+{
+    auto lastPage = (m_results.get_matches_upper_bound() + PAGE_SIZE - 1) / PAGE_SIZE;
+    m_nPage = std::min<int>(m_nPage + 1, static_cast<int>(lastPage) - 1);
+    OnSearch();
+}
+
+void SearchDlg::OnLast()
+{
+    m_nPage =static_cast<int>(m_results.get_matches_upper_bound() + PAGE_SIZE - 1) / PAGE_SIZE - 1;
+    OnSearch();
 }
 
 LRESULT SearchDlg::OnDoubleClick(int idCtrl, LPNMHDR pnmh, BOOL& bHandled)

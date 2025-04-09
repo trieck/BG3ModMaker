@@ -174,6 +174,7 @@
     <ClInclude Include="FolderMonitor.h" />
     <ClInclude Include="FormatToken.h" />
     <ClInclude Include="IndexDlg.h" />
+    <ClInclude Include="ModelessDialog.h" />
     <ClInclude Include="OutputWindow.h" />
     <ClInclude Include="ScintillaCtrl.h" />
     <ClInclude Include="ScintillaLoader.h" />

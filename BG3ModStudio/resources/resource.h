@@ -36,6 +36,10 @@
 #define IDC_CHK_OVERWRITE               1009
 #define IDC_LST_RESULTS                 1010
 #define IDC_LST_ATTRIBUTES              1011
+#define IDC_B_FIRST                     1012
+#define IDC_B_PREV                      1013
+#define IDC_B_NEXT                      1014
+#define IDC_B_LAST                      1015
 #define ATL_IDC_TAB_CONTROL             0x3020
 #define ID_APPLY_NOW                    0x3021
 #define ID_WIZBACK                      0x3023
@@ -156,7 +160,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        127
 #define _APS_NEXT_COMMAND_VALUE         40019
-#define _APS_NEXT_CONTROL_VALUE         1012
+#define _APS_NEXT_CONTROL_VALUE         1013
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -1,24 +1,43 @@
 #pragma once
+
+#include <xapian.h>
+
+#include "ModelessDialog.h"
 #include "resources/resource.h"
 
-class SearchDlg : public CDialogImpl<SearchDlg>,
-                  public CDialogResize<SearchDlg>
+class SearchDlg : public ModelessDialog<SearchDlg>,
+                  public CDialogResize<SearchDlg>,
+                  public CUpdateUI<SearchDlg>,
+                  public CIdleHandler
 {
 public:
     enum { IDD = IDD_SEARCH };
 
-    BEGIN_MSG_MAP(IndexDlg)
+    BEGIN_MSG_MAP(SearchDlg)
+        NOTIFY_HANDLER(IDC_LST_RESULTS, NM_DBLCLK, OnDoubleClick)
+        MSG_WM_SIZE(OnSize)
         MSG_WM_INITDIALOG(OnInitDialog)
         MSG_WM_CLOSE(OnClose)
-        MSG_WM_SIZE(OnSize)
         COMMAND_ID_HANDLER3(IDC_B_SEARCH, OnSearch)
-        NOTIFY_HANDLER(IDC_LST_RESULTS, NM_DBLCLK, OnDoubleClick)
+        COMMAND_ID_HANDLER3(IDC_B_FIRST, OnFirst)
+        COMMAND_ID_HANDLER3(IDC_B_PREV, OnPrev)
+        COMMAND_ID_HANDLER3(IDC_B_NEXT, OnNext)
+        COMMAND_ID_HANDLER3(IDC_B_LAST, OnLast)
         CHAIN_MSG_MAP(CDialogResize)
     END_MSG_MAP()
 
-    BEGIN_DLGRESIZE_MAP(SearchResultsDlg)
+    BEGIN_DLGRESIZE_MAP(SearchDlg)
         DLGRESIZE_CONTROL(IDC_LST_RESULTS, DLSZ_SIZE_X | DLSZ_SIZE_Y)
     END_DLGRESIZE_MAP()
+
+    BEGIN_UPDATE_UI_MAP(SearchDlg)
+        UPDATE_ELEMENT(IDC_B_FIRST, UPDUI_CHILDWINDOW)
+        UPDATE_ELEMENT(IDC_B_PREV, UPDUI_CHILDWINDOW)
+        UPDATE_ELEMENT(IDC_B_NEXT, UPDUI_CHILDWINDOW)
+        UPDATE_ELEMENT(IDC_B_LAST, UPDUI_CHILDWINDOW)
+    END_UPDATE_UI_MAP()
+
+    BOOL OnIdle() override;
 
 private:
     void AutoAdjustColumns();
@@ -27,7 +46,14 @@ private:
     LRESULT OnDoubleClick(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
     void OnClose();
     void OnSearch();
+    void OnFirst();
+    void OnPrev();
+    void OnNext();
+    void OnLast();
+
     void OnSize(UINT /*uMsg*/, const CSize& size);
 
     CListViewCtrl m_listResults;
+    Xapian::MSet m_results;
+    int m_nPage = 0;
 };

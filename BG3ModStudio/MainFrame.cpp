@@ -251,7 +251,22 @@ void MainFrame::OnIndex()
 void MainFrame::OnSearch()
 {
     SearchDlg dlg;
-    dlg.DoModal();
+    auto hWnd = dlg.Create(*this);
+    if (hWnd == nullptr) {
+        ATLTRACE(_T("Unable to create search dialog.\n"));
+        return;
+    }
+
+    EnableWindow(FALSE);
+
+    dlg.ShowWindow(SW_SHOWNORMAL);
+    dlg.UpdateWindow();
+
+    dlg.RunModal();
+    dlg.Destroy();
+
+    EnableWindow(TRUE);
+    SetFocus();
 }
 
 void MainFrame::OnFileSave()

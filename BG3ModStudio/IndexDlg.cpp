@@ -30,24 +30,6 @@ BOOL IndexDlg::OnInitDialog(HWND, LPARAM)
     return FALSE; // Let the system set the focus
 }
 
-void IndexDlg::PumpMessages()
-{
-    MSG msg;
-    while (::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
-        if (!IsWindow() || !IsDialogMessage(&msg)) {
-            ::TranslateMessage(&msg);
-            ::DispatchMessage(&msg);
-        }
-    }
-}
-
-void IndexDlg::Destroy()
-{
-    if (IsWindow()) {
-        DestroyWindow();
-    }
-}
-
 void IndexDlg::onStart(std::size_t totalEntries)
 {
     m_progress.SetRange32(0, static_cast<int>(totalEntries));
@@ -176,13 +158,6 @@ void IndexDlg::OnIndex()
     }
 
     Index(pakFile, indexPath);
-}
-
-void IndexDlg::RunModal()
-{
-    while (IsWindow()) {
-        PumpMessages();
-    }
 }
 
 void IndexDlg::Index(const CString& pakFile, const CString& indexPath)

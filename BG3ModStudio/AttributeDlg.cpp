@@ -106,7 +106,6 @@ BOOL AttributeDlg::OnInitDialog(HWND, LPARAM)
     m_list = GetDlgItem(IDC_LST_ATTRIBUTES);
     ATLASSERT(m_list.IsWindow());
 
-    m_list.ModifyStyle(0, LVS_REPORT);
     m_list.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
     LOGFONT lf = {};

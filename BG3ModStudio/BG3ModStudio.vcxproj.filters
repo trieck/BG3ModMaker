@@ -104,6 +104,9 @@
     <ClInclude Include="AttributeDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ModelessDialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BG3ModStudio.cpp">
