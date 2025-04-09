@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include <nlohmann/json.hpp>
-#include "SearchDlg.h"
 
 #include "AttributeDlg.h"
+#include "SearchDlg.h"
 #include "Searcher.h"
 #include "Settings.h"
 #include "StringHelper.h"
@@ -11,13 +11,12 @@ static constexpr auto PAGE_SIZE = 25;
 
 BOOL SearchDlg::OnIdle()
 {
-    int totalResults = static_cast<int>(m_results.get_matches_upper_bound());
-    int pageCount = (totalResults + PAGE_SIZE - 1) / PAGE_SIZE;
+    auto pageCount = GetPageCount();
 
-    UIEnable(IDC_B_FIRST, m_nPage > 0 && totalResults);
-    UIEnable(IDC_B_PREV, m_nPage > 0 && totalResults);
-    UIEnable(IDC_B_NEXT, m_nPage + 1 < pageCount && totalResults);
-    UIEnable(IDC_B_LAST, m_nPage + 1 < pageCount && totalResults);
+    UIEnable(IDC_B_FIRST, m_nPage > 0 && pageCount);
+    UIEnable(IDC_B_PREV, m_nPage > 0 && pageCount);
+    UIEnable(IDC_B_NEXT, m_nPage + 1 < static_cast<int>(pageCount) && pageCount);
+    UIEnable(IDC_B_LAST, m_nPage + 1 < static_cast<int>(pageCount) && pageCount);
 
     UIUpdateChildWindows(TRUE);
 
@@ -93,6 +92,12 @@ void SearchDlg::OnSize(UINT, const CSize& size)
 
 void SearchDlg::OnSearch()
 {
+    auto offset = m_nPage * PAGE_SIZE;
+    Search(offset);
+}
+
+void SearchDlg::Search(uint32_t offset)
+{
     CString query;
     GetDlgItemText(IDC_E_QUERY, query);
 
@@ -101,8 +106,6 @@ void SearchDlg::OnSearch()
     m_listResults.DeleteAllItems();
 
     CWaitCursor cursor;
-
-    auto offset = m_nPage * PAGE_SIZE;
 
     CString indexPath;
     m_indexPath.GetWindowText(indexPath);
@@ -121,8 +124,10 @@ void SearchDlg::OnSearch()
         MessageBox(errorMessage, _T("Search Error"), MB_OK | MB_ICONERROR);
     }
 
-    if (m_results.empty()) {
-        m_nPage = 0;
+    if (m_results.empty() && m_nPage > 1) {
+        m_nPage--;
+        offset = (m_nPage - 1) * PAGE_SIZE;
+        m_results = Searcher::search(utf8IndexPath, utf8Query, offset, PAGE_SIZE);
     }
 
     for (auto it = m_results.begin(); it != m_results.end(); ++it) {
@@ -141,12 +146,6 @@ void SearchDlg::OnSearch()
     }
 }
 
-void SearchDlg::OnFirst()
-{
-    m_nPage = 0;
-    OnSearch();
-}
-
 void SearchDlg::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
 {
     ATLASSERT(lpMMI != nullptr);
@@ -161,6 +160,12 @@ void SearchDlg::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
     lpMMI->ptMinTrackSize.y = rcPixels.Height();
 }
 
+void SearchDlg::OnFirst()
+{
+    m_nPage = 0;
+    OnSearch();
+}
+
 void SearchDlg::OnPrev()
 {
     m_nPage = std::max(0, m_nPage - 1);
@@ -169,15 +174,26 @@ void SearchDlg::OnPrev()
 
 void SearchDlg::OnNext()
 {
-    auto lastPage = (m_results.get_matches_upper_bound() + PAGE_SIZE - 1) / PAGE_SIZE;
-    m_nPage = std::min<int>(m_nPage + 1, static_cast<int>(lastPage) - 1);
+    auto totalPages = GetPageCount();
+    m_nPage = std::min<int>(m_nPage + 1, static_cast<int>(totalPages) - 1);
     OnSearch();
 }
 
 void SearchDlg::OnLast()
 {
-    m_nPage = static_cast<int>(m_results.get_matches_upper_bound() + PAGE_SIZE - 1) / PAGE_SIZE - 1;
+    auto offset = std::numeric_limits<uint32_t>::max();
+    Search(offset);
+
+    auto total = static_cast<int>(m_results.get_matches_lower_bound());
+
+    m_nPage = std::max(0, (total + PAGE_SIZE - 1) / PAGE_SIZE - 1);
+
     OnSearch();
+}
+
+uint32_t SearchDlg::GetPageCount() const
+{
+    return (m_results.get_matches_upper_bound() + PAGE_SIZE - 1) / PAGE_SIZE;
 }
 
 LRESULT SearchDlg::OnDoubleClick(int idCtrl, LPNMHDR pnmh, BOOL& bHandled)

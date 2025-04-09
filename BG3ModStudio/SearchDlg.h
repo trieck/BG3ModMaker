@@ -42,6 +42,8 @@ public:
 
 private:
     void AutoAdjustColumns();
+    void Search(uint32_t offset);
+    uint32_t GetPageCount() const;
 
     BOOL OnInitDialog(HWND /* hWnd */, LPARAM /*lParam*/);
     LRESULT OnDoubleClick(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
