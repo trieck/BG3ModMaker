@@ -36,14 +36,16 @@ public:
         UPDATE_ELEMENT(IDC_B_PREV, UPDUI_CHILDWINDOW)
         UPDATE_ELEMENT(IDC_B_NEXT, UPDUI_CHILDWINDOW)
         UPDATE_ELEMENT(IDC_B_LAST, UPDUI_CHILDWINDOW)
+        UPDATE_ELEMENT(IDC_PAGEINFO, UPDUI_CHILDWINDOW)
     END_UPDATE_UI_MAP()
 
     BOOL OnIdle() override;
 
 private:
+    uint32_t GetPageCount() const;
     void AutoAdjustColumns();
     void Search(uint32_t offset);
-    uint32_t GetPageCount() const;
+    void UpdatePageInfo();
 
     BOOL OnInitDialog(HWND /* hWnd */, LPARAM /*lParam*/);
     LRESULT OnDoubleClick(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
@@ -58,6 +60,7 @@ private:
 
     CListViewCtrl m_listResults;
     CEdit m_indexPath;
+    CStatic m_pageInfo;
 
     Xapian::MSet m_results;
     int m_nPage = 0;

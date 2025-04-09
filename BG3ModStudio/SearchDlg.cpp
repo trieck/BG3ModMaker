@@ -18,6 +18,7 @@ BOOL SearchDlg::OnIdle()
     UIEnable(IDC_B_NEXT, m_nPage + 1 < static_cast<int>(pageCount) && pageCount);
     UIEnable(IDC_B_LAST, m_nPage + 1 < static_cast<int>(pageCount) && pageCount);
 
+    UpdatePageInfo();
     UIUpdateChildWindows(TRUE);
 
     return FALSE;
@@ -48,6 +49,9 @@ BOOL SearchDlg::OnInitDialog(HWND, LPARAM)
 
     m_indexPath = GetDlgItem(IDC_E_FOLDER);
     ATLASSERT(m_indexPath.IsWindow());
+
+    m_pageInfo = GetDlgItem(IDC_PAGEINFO);
+    ATLASSERT(m_pageInfo.IsWindow());
 
     Settings settings;
     auto indexPath = settings.GetString(_T("Indexing"), _T("IndexPath"), _T(""));
@@ -124,10 +128,8 @@ void SearchDlg::Search(uint32_t offset)
         MessageBox(errorMessage, _T("Search Error"), MB_OK | MB_ICONERROR);
     }
 
-    if (m_results.empty() && m_nPage > 1) {
-        m_nPage--;
-        offset = (m_nPage - 1) * PAGE_SIZE;
-        m_results = Searcher::search(utf8IndexPath, utf8Query, offset, PAGE_SIZE);
+    if (m_results.empty()) {
+        m_nPage = 0;
     }
 
     for (auto it = m_results.begin(); it != m_results.end(); ++it) {
@@ -144,6 +146,19 @@ void SearchDlg::Search(uint32_t offset)
         m_listResults.SetItemText(index, 1, wType.GetString());
         m_listResults.SetItemText(index, 2, wAttributes.GetString());
     }
+}
+
+void SearchDlg::UpdatePageInfo()
+{
+    CString pageInfo;
+
+    auto totalPages = GetPageCount();
+
+    if (totalPages > 0) {
+        pageInfo.Format(_T("Page %d of %d"), m_nPage + 1, totalPages);
+    }
+
+    m_pageInfo.SetWindowText(pageInfo);
 }
 
 void SearchDlg::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
