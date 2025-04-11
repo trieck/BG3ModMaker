@@ -38,4 +38,8 @@ struct LSMetadata
     uint32_t buildNumber;
 };
 
-
+enum class LSXVersion : uint32_t
+{
+    V3 = 3,
+    V4 = 4
+};

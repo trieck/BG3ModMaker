@@ -486,7 +486,7 @@ NodeAttribute LSFReader::readAttribute(AttributeType type, Stream& reader)
     return attr;
 }
 
-void LSFReader::readNode(const LSFNodeInfo& defn, RBNode& node, Stream& attributeReader)
+void LSFReader::readNode(const LSFNodeInfo& defn, LSNode& node, Stream& attributeReader)
 {
     node.name = m_names[defn.nameIndex][defn.nameOffset];
 
@@ -522,7 +522,7 @@ void LSFReader::readRegions(const Resource::Ptr& resource)
             region->regionName = region->name;
             resource->regions[region->regionName] = std::move(region);
         } else {
-            auto node = std::make_shared<RBNode>();
+            auto node = std::make_shared<LSNode>();
             readNode(defn, *node, attrReader);
             node->keyAttribute = defn.keyAttribute;
             node->parent = m_nodeInstances[defn.parentIndex];

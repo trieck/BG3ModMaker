@@ -3,7 +3,7 @@
 #include <numeric>
 #include "Node.h"
 
-int32_t RBNode::childCount() const
+int32_t LSNode::childCount() const
 {
     int32_t sum = std::accumulate(children.begin(), children.end(), 0,
         [](int32_t acc, const std::pair<std::string, std::vector<Ptr>>& p) {
@@ -13,7 +13,7 @@ int32_t RBNode::childCount() const
     return sum;
 }
 
-int32_t RBNode::totalChildCount() const
+int32_t LSNode::totalChildCount() const
 {
     int32_t sum = 0;
 
@@ -27,7 +27,7 @@ int32_t RBNode::totalChildCount() const
     return sum;
 }
 
-void RBNode::appendChild(const Ptr& child)
+void LSNode::appendChild(const Ptr& child)
 {
     child->parent = shared_from_this();
 

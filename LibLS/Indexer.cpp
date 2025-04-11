@@ -183,7 +183,7 @@ void Indexer::indexLSXFile(const PackagedFileInfo& file)
     }
 }
 
-void Indexer::indexNode(const std::string& filename, const RBNode::Ptr& node)
+void Indexer::indexNode(const std::string& filename, const LSNode::Ptr& node)
 {
     std::unordered_set<std::string> terms;
 
@@ -226,7 +226,7 @@ void Indexer::indexNode(const std::string& filename, const RBNode::Ptr& node)
     m_db->add_document(xdoc);
 }
 
-void Indexer::indexNodes(const std::string& filename, const std::vector<RBNode::Ptr>& nodes)
+void Indexer::indexNodes(const std::string& filename, const std::vector<LSNode::Ptr>& nodes)
 {
     for (const auto& node : nodes) {
         indexNode(filename, node);

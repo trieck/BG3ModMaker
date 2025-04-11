@@ -24,6 +24,8 @@ public:
         COMMAND_ID_HANDLER3(IDC_B_PREV, OnPrev)
         COMMAND_ID_HANDLER3(IDC_B_NEXT, OnNext)
         COMMAND_ID_HANDLER3(IDC_B_LAST, OnLast)
+        COMMAND_ID_HANDLER3(IDC_B_BROWSE, OnBrowse)
+        COMMAND_CODE_HANDLER(EN_CHANGE, OnQueryChange)
         CHAIN_MSG_MAP(CDialogResize)
     END_MSG_MAP()
 
@@ -44,11 +46,14 @@ public:
 private:
     uint32_t GetPageCount() const;
     void AutoAdjustColumns();
+    void Search();
     void Search(uint32_t offset);
     void UpdatePageInfo();
 
     BOOL OnInitDialog(HWND /* hWnd */, LPARAM /*lParam*/);
     LRESULT OnDoubleClick(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
+    LRESULT OnQueryChange(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+    void OnBrowse();
     void OnClose();
     void OnFirst();
     void OnGetMinMaxInfo(MINMAXINFO* lpMMI);

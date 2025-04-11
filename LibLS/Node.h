@@ -2,12 +2,10 @@
 
 #include "NodeAttribute.h"
 
-// TODO: this has to be renamed as it conflicts with the red-black tree
-
-struct RBNode : std::enable_shared_from_this<RBNode>
+struct LSNode : std::enable_shared_from_this<LSNode>
 {
-    using Ptr = std::shared_ptr<RBNode>;
-    using WeakPtr = std::weak_ptr<RBNode>;
+    using Ptr = std::shared_ptr<LSNode>;
+    using WeakPtr = std::weak_ptr<LSNode>;
 
     int32_t childCount() const;
     int32_t totalChildCount() const;
@@ -22,4 +20,3 @@ struct RBNode : std::enable_shared_from_this<RBNode>
     int32_t line{0};
     std::string keyAttribute;
 };
-

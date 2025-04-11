@@ -3,6 +3,8 @@
 
 #include "AttributeDlg.h"
 #include "SearchDlg.h"
+
+#include "FileDialogEx.h"
 #include "Searcher.h"
 #include "Settings.h"
 #include "StringHelper.h"
@@ -94,7 +96,47 @@ void SearchDlg::OnSize(UINT, const CSize& size)
     AutoAdjustColumns();
 }
 
+LRESULT SearchDlg::OnQueryChange(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
+{
+    if (wNotifyCode == EN_CHANGE && wID == IDC_E_QUERY) {
+        m_results = Xapian::MSet();
+        m_listResults.DeleteAllItems();
+        m_nPage = 0;
+    }
+
+    bHandled = FALSE; // Let the system handle it
+
+    return 0;
+}
+
+void SearchDlg::OnBrowse()
+{
+    FileDialogEx dlg(FileDialogEx::Folder, *this);
+    auto hr = dlg.Construct();
+    if (FAILED(hr)) {
+        return;
+    }
+
+    if (dlg.DoModal() != IDOK) {
+        return;
+    }
+
+    const auto& paths = dlg.paths();
+    if (paths.empty()) {
+        return;
+    }
+
+    auto path = paths.front();
+    m_indexPath.SetWindowText(path);
+}
+
 void SearchDlg::OnSearch()
+{
+    m_nPage = 0;
+    Search();
+}
+
+void SearchDlg::Search()
 {
     auto offset = m_nPage * PAGE_SIZE;
     Search(offset);
@@ -155,7 +197,7 @@ void SearchDlg::UpdatePageInfo()
     auto totalPages = GetPageCount();
 
     if (totalPages > 0) {
-        pageInfo.Format(_T("Page %d of %d"), m_nPage + 1, totalPages);
+        pageInfo.Format(_T("Page %d of about %d"), m_nPage + 1, totalPages);
     }
 
     m_pageInfo.SetWindowText(pageInfo);
@@ -178,20 +220,20 @@ void SearchDlg::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
 void SearchDlg::OnFirst()
 {
     m_nPage = 0;
-    OnSearch();
+    Search();
 }
 
 void SearchDlg::OnPrev()
 {
     m_nPage = std::max(0, m_nPage - 1);
-    OnSearch();
+    Search();
 }
 
 void SearchDlg::OnNext()
 {
     auto totalPages = GetPageCount();
     m_nPage = std::min<int>(m_nPage + 1, static_cast<int>(totalPages) - 1);
-    OnSearch();
+    Search();
 }
 
 void SearchDlg::OnLast()
@@ -203,12 +245,12 @@ void SearchDlg::OnLast()
 
     m_nPage = std::max(0, (total + PAGE_SIZE - 1) / PAGE_SIZE - 1);
 
-    OnSearch();
+    Search();
 }
 
 uint32_t SearchDlg::GetPageCount() const
 {
-    return (m_results.get_matches_upper_bound() + PAGE_SIZE - 1) / PAGE_SIZE;
+    return (m_results.get_matches_estimated() + PAGE_SIZE - 1) / PAGE_SIZE;
 }
 
 LRESULT SearchDlg::OnDoubleClick(int idCtrl, LPNMHDR pnmh, BOOL& bHandled)

@@ -177,11 +177,13 @@
     <ClInclude Include="LSCommon.h" />
     <ClInclude Include="LSFCommon.h" />
     <ClInclude Include="LSFReader.h" />
+    <ClInclude Include="LSXReader.h" />
     <ClInclude Include="Node.h" />
     <ClInclude Include="NodeAttribute.h" />
     <ClInclude Include="Package.h" />
     <ClInclude Include="PAKReader.h" />
     <ClInclude Include="PAKWriter.h" />
+    <ClInclude Include="Resource.h" />
     <ClInclude Include="Searcher.h" />
     <ClInclude Include="XmlWrapper.h" />
     <ClInclude Include="pch.h" />
@@ -197,6 +199,7 @@
     <ClCompile Include="Localization.cpp" />
     <ClCompile Include="LSFCommon.cpp" />
     <ClCompile Include="LSFReader.cpp" />
+    <ClCompile Include="LSXReader.cpp" />
     <ClCompile Include="Node.cpp" />
     <ClCompile Include="NodeAttribute.cpp" />
     <ClCompile Include="Package.cpp" />
@@ -207,6 +210,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="PAKWriter.cpp" />
+    <ClCompile Include="Resource.cpp" />
     <ClCompile Include="Searcher.cpp" />
     <ClCompile Include="XmlWrapper.cpp" />
     <ClCompile Include="pch.cpp">

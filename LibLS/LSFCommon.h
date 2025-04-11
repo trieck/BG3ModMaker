@@ -1,17 +1,8 @@
 #pragma once
-#include <unordered_map>
 
 #include "Compress.h"
 #include "LSCommon.h"
-#include "Node.h"
-#include "XmlWrapper.h"
-
-enum LSFMetadataFormat : uint32_t {
-
-    NONE = 0,
-    KEYS_AND_ADJACENCY = 1,
-    NONE2 = 2
-};
+#include "Resource.h"
 
 #pragma pack(push, 1)
 
@@ -28,7 +19,7 @@ struct LSFMetadataV5
     CompressionFlags compressionFlags;
     int8_t unknown2;
     uint16_t unknown3;
-    LSFMetadataFormat metadataFormat;
+    LSMetadataFormat metadataFormat;
 };
 
 struct LSFMetadataV6
@@ -46,7 +37,7 @@ struct LSFMetadataV6
     CompressionFlags compressionFlags;
     int8_t unknown2;
     uint16_t unknown3;
-    LSFMetadataFormat metadataFormat;
+    LSMetadataFormat metadataFormat;
 
     CompressionMethod compressionMethod() const
     {
@@ -195,28 +186,6 @@ struct LSFAttributeInfo
     uint32_t length;                // length of the attribute
     uint32_t dataOffset;            // absolute position of the attribute data in the values section
     int32_t nextAttributeIndex;     // index of the next attribute of the node, -1 if last
-};
-
-struct Region : RBNode
-{
-    std::string regionName;
-    using Ptr = std::shared_ptr<Region>;
-};
-
-struct Resource
-{
-    LSMetadata metadata{};
-    LSFMetadataFormat metadataFormat{ NONE };
-    std::unordered_map<std::string, Region::Ptr> regions;
-
-    using Ptr = std::unique_ptr<Resource>;
-
-    Resource()
-    {
-        metadata.majorVersion = 3;
-    }
-
-    XmlWrapper toXml() const;
 };
 
 struct TranslatedFSStringArgument {
