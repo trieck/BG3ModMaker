@@ -196,16 +196,16 @@ void Indexer::indexNode(const std::string& filename, const LSNode::Ptr& node)
         json attr;
 
         attr["id"] = key;
-        attr["value"] = val.value();
+        attr["value"] = val.str();
         attr["type"] = val.typeStr();
 
         if (key == "Script") {
             continue; // Skip script content
         }
 
-        addTerms(terms, val.value());
+        addTerms(terms, val.str());
 
-        attributes.push_back(attr);
+        attributes.emplace_back(std::move(attr));
     }
 
     doc["attributes"] = attributes;

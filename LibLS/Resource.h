@@ -34,3 +34,9 @@ struct AttributeTypeMaps
     static AttributeType typeToId(const std::string& type);
     static std::string idToType(AttributeType type);
 };
+
+enum ResourceFormat
+{
+    LSX,
+    LSF
+};

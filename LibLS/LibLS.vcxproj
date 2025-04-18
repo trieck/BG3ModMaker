@@ -177,6 +177,7 @@
     <ClInclude Include="LSCommon.h" />
     <ClInclude Include="LSFCommon.h" />
     <ClInclude Include="LSFReader.h" />
+    <ClInclude Include="LSFWriter.h" />
     <ClInclude Include="LSXReader.h" />
     <ClInclude Include="Node.h" />
     <ClInclude Include="NodeAttribute.h" />
@@ -184,6 +185,7 @@
     <ClInclude Include="PAKReader.h" />
     <ClInclude Include="PAKWriter.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="ResourceUtils.h" />
     <ClInclude Include="Searcher.h" />
     <ClInclude Include="XmlWrapper.h" />
     <ClInclude Include="pch.h" />
@@ -199,6 +201,7 @@
     <ClCompile Include="Localization.cpp" />
     <ClCompile Include="LSFCommon.cpp" />
     <ClCompile Include="LSFReader.cpp" />
+    <ClCompile Include="LSFWriter.cpp" />
     <ClCompile Include="LSXReader.cpp" />
     <ClCompile Include="Node.cpp" />
     <ClCompile Include="NodeAttribute.cpp" />
@@ -211,6 +214,7 @@
     </ClCompile>
     <ClCompile Include="PAKWriter.cpp" />
     <ClCompile Include="Resource.cpp" />
+    <ClCompile Include="ResourceUtils.cpp" />
     <ClCompile Include="Searcher.cpp" />
     <ClCompile Include="XmlWrapper.cpp" />
     <ClCompile Include="pch.cpp">

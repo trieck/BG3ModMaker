@@ -158,6 +158,17 @@ Stream Stream::makeStream(const std::string& str)
     return stream;
 }
 
+Stream Stream::makeStream(StreamBase& stream)
+{
+    Stream newStream;
+
+    ByteBuffer buffer{ std::make_unique<uint8_t[]>(stream.size()), stream.size() };
+    newStream.read(reinterpret_cast<char*>(buffer.first.get()), stream.size());
+    newStream.seek(0, SeekMode::Begin);
+
+    return newStream;
+}
+
 Stream Stream::read(size_t bytes)
 {
     auto buf = std::make_unique<char[]>(bytes);

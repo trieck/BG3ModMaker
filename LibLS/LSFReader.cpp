@@ -11,6 +11,17 @@ LSFReader::~LSFReader()
 
 namespace { // anonymous namespace
 
+template <typename T, size_t N>
+std::array<T, N> readArray(Stream& stream) {
+    std::array<T, N> out;
+
+    for (auto& v : out) {
+        v = stream.read<T>();
+    }
+
+    return out;
+}
+
 constexpr char LSF_MAGIC[4] = {'L', 'S', 'O', 'F'};
 
 } // anonymous namespace
@@ -233,40 +244,37 @@ void LSFReader::readKeys(Stream& stream)
     }
 }
 
-std::string LSFReader::readVector(const NodeAttribute& attr, Stream& stream)
+AttributeValue LSFReader::readVector(const NodeAttribute& attr, Stream& stream)
 {
-    std::ostringstream oss;
-    oss << std::fixed << std::setprecision(2);
+    AttributeValue val;
 
     switch (attr.type()) {
     case IVec2:
-        oss << stream.read<int32_t>() << " " << stream.read<int32_t>();
+        val = readArray<int32_t, 2>(stream);
         break;
     case IVec3:
-        oss << stream.read<int32_t>() << " " << stream.read<int32_t>() << " " << stream.read<int32_t>();
+        val = readArray<int32_t, 3>(stream);
         break;
     case IVec4:
-        oss << stream.read<int32_t>() << " " << stream.read<int32_t>() << " "
-            << stream.read<int32_t>() << " " << stream.read<int32_t>();
+        val = readArray<int32_t, 4>(stream);
         break;
     case Vec2:
-        oss << std::setw(5) << stream.read<float>() << " " << stream.read<float>();
+        val = readArray<float, 2>(stream);
         break;
     case Vec3:
-        oss << std::setw(5) << stream.read<float>() << " " << stream.read<float>() << " " << stream.read<float>();
+        val = readArray<float, 3>(stream);
         break;
     case Vec4:
-        oss << std::setw(5) << stream.read<float>() << " " << stream.read<float>() << " "
-            << stream.read<float>() << " " << stream.read<float>();
+        val = readArray<float, 4>(stream);
         break;
     default:
         throw Exception("Unsupported vector type.");
     }
 
-    return oss.str();
+    return val;
 }
 
-std::string LSFReader::readTranslatedFSString(Stream& stream) const
+TranslatedFSStringT LSFReader::readTranslatedFSString(Stream& stream) const
 {
     TranslatedFSStringT str;
 
@@ -288,83 +296,45 @@ std::string LSFReader::readTranslatedFSString(Stream& stream) const
         TranslatedFSStringArgument arg;
         auto keyLength = stream.read<int32_t>();
         arg.key = stream.read(keyLength).str();
-        arg.string = readTranslatedFSString(stream);
+        arg.string = std::make_shared<TranslatedFSStringT>(readTranslatedFSString(stream));
 
         auto valueLength = stream.read<int32_t>();
         arg.value = stream.read(valueLength).str();
         str.arguments[i] = arg;
     }
 
-    return str.str();
+    return str;
 }
 
-static uint32_t columns(AttributeType type)
+AttributeValue LSFReader::readMatrix(const NodeAttribute& attr, Stream& stream)
 {
-    switch (type) {
-    case IVec2:
-    case Vec2:
+    AttributeValue val;
+
+    switch (attr.type()) {
     case Mat2:
-        return 2;
-    case IVec3:
-    case Vec3:
+        val = readArray<float, 4>(stream);
+        break;
     case Mat3:
-    case Mat4x3:
-        return 3;
-    case IVec4:
-    case Vec4:
+        val = readArray<float, 9>(stream);
+        break;
     case Mat3x4:
-    case Mat4:
-        return 4;
-    default:
-        throw Exception("Unsupported attribute type.");
-    }
-}
-
-static uint32_t rows(AttributeType type)
-{
-    switch (type) {
-    case IVec2:
-    case Vec2:
-    case IVec3:
-    case Vec3:
-    case IVec4:
-    case Vec4:
-        return 1;
-    case Mat2:
-        return 2;
-    case Mat3:
-    case Mat3x4:
-        return 3;
-    case Mat4:
     case Mat4x3:
-        return 4;
+        val = readArray<float, 12>(stream);
+        break;
+    case Mat4:
+        val = readArray<float, 16>(stream);
+        break;
     default:
-        throw Exception("Unsupported attribute type.");
-    }
-}
-
-std::string LSFReader::readMatrix(const NodeAttribute& attr, Stream& stream)
-{
-    auto columns = ::columns(attr.type());
-    auto rows = ::rows(attr.type());
-
-    std::ostringstream oss;
-    oss << std::fixed << std::setprecision(2);
-
-    for (auto row = 0u; row < rows; ++row) {
-        for (auto col = 0u; col < columns; ++col) {
-            if (row > 0 || col > 0) oss << " ";
-            oss << std::setw(5) << stream.read<float>();
-        }
+        break;
     }
 
-    return oss.str();
+    return val;
 }
 
 NodeAttribute LSFReader::readAttribute(AttributeType type, Stream& reader, uint32_t length) const
 {
     NodeAttribute attr(type);
-    TranslatedString_T str;
+    TranslatedStringT str;
 
     int32_t handleLength;
 
@@ -391,7 +361,7 @@ NodeAttribute LSFReader::readAttribute(AttributeType type, Stream& reader, uint3
 
         handleLength = reader.read<int32_t>();
         str.handle = reader.read(handleLength).str();
-        attr.setValue(str.str());
+        attr.setValue(str);
         break;
     case TranslatedFSString:
         attr.setValue(readTranslatedFSString(reader));
@@ -419,17 +389,10 @@ NodeAttribute LSFReader::readAttribute(AttributeType type, Stream& reader, uint3
     return attr;
 }
 
-static std::string readUUID(Stream& stream)
+static UUIDT readUUID(Stream& stream)
 {
-    std::string uuid;
-
-    for (auto i = 0; i < 16; ++i) {
-        if (i == 4 || i == 6 || i == 8 || i == 10) {
-            uuid += "-";
-        }
-        uuid += std::format("{:02x}", stream.read<uint8_t>());
-    }
-
+    UUIDT uuid{};
+    stream.read(uuid.m_bytes.data(), uuid.m_bytes.size());
     return uuid;
 }
 
@@ -441,40 +404,40 @@ NodeAttribute LSFReader::readAttribute(AttributeType type, Stream& reader)
     case None:
         break;
     case Byte:
-        attr.setValue(std::to_string(reader.read<uint8_t>()));
+        attr.setValue(reader.read<uint8_t>());
         break;
     case Int8:
-        attr.setValue(std::to_string(reader.read<int8_t>()));
+        attr.setValue(reader.read<int8_t>());
         break;
     case Short:
-        attr.setValue(std::to_string(reader.read<int16_t>()));
+        attr.setValue(reader.read<int16_t>());
         break;
     case UShort:
-        attr.setValue(std::to_string(reader.read<uint16_t>()));
+        attr.setValue(reader.read<uint16_t>());
         break;
     case Int:
-        attr.setValue(std::to_string(reader.read<int32_t>()));
+        attr.setValue(reader.read<int32_t>());
         break;
     case UInt:
-        attr.setValue(std::to_string(reader.read<uint32_t>()));
+        attr.setValue(reader.read<uint32_t>());
         break;
     case Long:
-        attr.setValue(std::to_string(reader.read<int64_t>()));
+        attr.setValue(reader.read<int64_t>());
         break;
     case Int64:
-        attr.setValue(std::to_string(reader.read<int64_t>()));
+        attr.setValue(reader.read<int64_t>());
         break;
     case ULongLong:
-        attr.setValue(std::to_string(reader.read<uint64_t>()));
+        attr.setValue(reader.read<uint64_t>());
         break;
     case Float:
-        attr.setValue(std::to_string(reader.read<float>()));
+        attr.setValue(reader.read<float>());
         break;
     case Double:
-        attr.setValue(std::to_string(reader.read<double>()));
+        attr.setValue(reader.read<double>());
         break;
     case Bool:
-        attr.setValue(reader.read<uint8_t>() != 0 ? "true" : "false");
+        attr.setValue(reader.read<uint8_t>());
         break;
     case Uuid:
         attr.setValue(readUUID(reader));

@@ -11,10 +11,13 @@
 #include <memory>
 #include <numbers>
 #include <ranges>
+#include <span>
 #include <sstream>
 #include <string_view>
 #include <string>
+#include <type_traits>
 #include <unordered_set>
+#include <variant>
 #include <vector>
 #include <xmemory>
 

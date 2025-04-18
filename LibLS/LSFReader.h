@@ -12,21 +12,20 @@ public:
     Resource::Ptr read(const ByteBuffer& info);
 
 private:
-    void readHeader();
-    void readNames(Stream& stream);
-    void readNodes(Stream& stream, bool longNodes);
+    static AttributeValue readMatrix(const NodeAttribute& attr, Stream& stream);
+    NodeAttribute readAttribute(AttributeType type, Stream& reader, uint32_t length) const;
+    static AttributeValue readVector(const NodeAttribute& attr, Stream& stream);
+    static NodeAttribute readAttribute(AttributeType type, Stream& reader);
+    TranslatedFSStringT readTranslatedFSString(Stream& stream) const;
+    Stream decompress(uint32_t sizeOnDisk, uint32_t uncompressedSize, const std::string& debugDumpTo, bool allowChunked);
     void readAttributesV2(Stream& stream);
     void readAttributesV3(Stream& stream);
+    void readHeader();
     void readKeys(Stream& stream);
-    static std::string readVector(const NodeAttribute& attr, Stream& stream);
-    std::string readTranslatedFSString(Stream& stream) const;
-    static std::string readMatrix(const NodeAttribute& attr, Stream& stream);
-    NodeAttribute readAttribute(AttributeType type, Stream& reader, uint32_t length) const;
-    static NodeAttribute readAttribute(AttributeType type, Stream& reader);
+    void readNames(Stream& stream);
     void readNode(const LSFNodeInfo& defn, LSNode& node, Stream& attributeReader);
+    void readNodes(Stream& stream, bool longNodes);
     void readRegions(const Resource::Ptr& resource);
-
-    Stream decompress(uint32_t sizeOnDisk, uint32_t uncompressedSize, const std::string& debugDumpTo, bool allowChunked);
 
     Stream m_stream, m_values;
     PackedVersion m_gameVersion;

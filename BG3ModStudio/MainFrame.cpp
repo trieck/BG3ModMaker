@@ -7,6 +7,7 @@
 #include "Localization.h"
 #include "MainFrame.h"
 #include "PAKWriter.h"
+#include "ResourceUtils.h"
 #include "SearchDlg.h"
 #include "SettingsDlg.h"
 #include "StringHelper.h"
@@ -496,7 +497,11 @@ void MainFrame::OnConvertLSF()
     }
 
     auto utf8Path = StringHelper::toUTF8(path);
-    auto utf8LocaPath = StringHelper::toUTF8(dlg.paths().front());
+    auto utf8LSFPath = StringHelper::toUTF8(dlg.paths().front());
+
+    auto resource = ResourceUtils::loadResource(utf8Path, LSX);
+
+    ResourceUtils::saveResource(utf8LSFPath, resource, LSF);
 }
 
 void MainFrame::OnClose()

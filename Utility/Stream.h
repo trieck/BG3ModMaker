@@ -32,6 +32,7 @@ public:
     static Stream makeStream(const char* buf, size_t size);
     static Stream makeStream(const ByteBuffer& buf);
     static Stream makeStream(const std::string& str);
+    static Stream makeStream(StreamBase& stream);
 
     Stream read(size_t bytes);
     std::string str() const;

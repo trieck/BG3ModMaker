@@ -191,6 +191,7 @@
     </ClCompile>
     <ClCompile Include="RBTreeTests.cpp" />
     <ClCompile Include="RopeTests.cpp" />
+    <ClCompile Include="FNVHashTests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />

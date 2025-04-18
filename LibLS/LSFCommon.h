@@ -63,13 +63,14 @@ struct LSFExtendedHeader
 
 struct LSFNodeEntryV2
 {
-    uint32_t nameHashTableIndex;    // name of this node (16-bit MSB: hash table index, 16-bit LSB: offset in hash chain)
-    int32_t firstAttributeIndex;   // index of the first attribute of the node, -1 if none
-    int32_t parentIndex;           // index of the parent node, -1 if root
+    uint32_t nameHashTableIndex; // name of this node (16-bit MSB: hash table index, 16-bit LSB: offset in hash chain)
+    int32_t firstAttributeIndex; // index of the first attribute of the node, -1 if none
+    int32_t parentIndex; // index of the parent node, -1 if root
     int32_t nameIndex() const
     {
         return static_cast<int32_t>(nameHashTableIndex >> 16);
     }
+
     int32_t nameOffset() const
     {
         return static_cast<int32_t>(nameHashTableIndex & 0xFFFF);
@@ -78,14 +79,15 @@ struct LSFNodeEntryV2
 
 struct LSFNodeEntryV3
 {
-    uint32_t nameHashTableIndex;    // name of this node (16-bit MSB: hash table index, 16-bit LSB: offset in hash chain)
-    int32_t parentIndex;           // index of the parent node, -1 if root
-    int32_t nextSiblingIndex;      // index of the next sibling node, -1 if last
-    int32_t firstAttributeIndex;   // index of the first attribute of the node, -1 if none
+    uint32_t nameHashTableIndex; // name of this node (16-bit MSB: hash table index, 16-bit LSB: offset in hash chain)
+    int32_t parentIndex; // index of the parent node, -1 if root
+    int32_t nextSiblingIndex; // index of the next sibling node, -1 if last
+    int32_t firstAttributeIndex; // index of the first attribute of the node, -1 if none
     int32_t nameIndex() const
     {
         return static_cast<int32_t>(nameHashTableIndex >> 16);
     }
+
     int32_t nameOffset() const
     {
         return static_cast<int32_t>(nameHashTableIndex & 0xFFFF);
@@ -94,21 +96,24 @@ struct LSFNodeEntryV3
 
 struct LSFAttributeEntryV2
 {
-    uint32_t nameHashTableIndex;    // name of this attribute (16-bit MSB: hash table index, 16-bit LSB: offset in hash chain)
-    uint32_t typeAndLength;         // 6-bit LSB: type of this attribute, 26-bit MSB: length of this attribute
-    int32_t nodeIndex;              // index of the node this attribute belongs to
+    uint32_t nameHashTableIndex; // name of this attribute (16-bit MSB: hash table index, 16-bit LSB: offset in hash chain)
+    uint32_t typeAndLength; // 6-bit LSB: type of this attribute, 26-bit MSB: length of this attribute
+    int32_t nodeIndex; // index of the node this attribute belongs to
     int32_t nameIndex() const
     {
         return static_cast<int32_t>(nameHashTableIndex >> 16);
     }
+
     int32_t nameOffset() const
     {
         return static_cast<int32_t>(nameHashTableIndex & 0xFFFF);
     }
+
     uint32_t type() const
     {
         return typeAndLength & 0x3F;
     }
+
     uint32_t length() const
     {
         return typeAndLength >> 6;
@@ -117,23 +122,26 @@ struct LSFAttributeEntryV2
 
 struct LSFAttributeEntryV3
 {
-    uint32_t nameHashTableIndex;    // name of this attribute (16-bit MSB: hash table index, 16-bit LSB: offset in hash chain)
-    uint32_t typeAndLength;         // 6-bit LSB: type of this attribute, 26-bit MSB: length of this attribute
-    int32_t nextAttributeIndex;     // index of the next attribute of the node, -1 if last
-    uint32_t offset;                // absolute position of the attribute data in the value stream
+    uint32_t nameHashTableIndex; // name of this attribute (16-bit MSB: hash table index, 16-bit LSB: offset in hash chain)
+    uint32_t typeAndLength; // 6-bit LSB: type of this attribute, 26-bit MSB: length of this attribute
+    int32_t nextAttributeIndex; // index of the next attribute of the node, -1 if last
+    uint32_t offset; // absolute position of the attribute data in the value stream
 
     int32_t nameIndex() const
     {
         return static_cast<int32_t>(nameHashTableIndex >> 16);
     }
+
     int32_t nameOffset() const
     {
         return static_cast<int32_t>(nameHashTableIndex & 0xFFFF);
     }
+
     uint32_t type() const
     {
         return typeAndLength & 0x3F;
     }
+
     uint32_t length() const
     {
         return typeAndLength >> 6;
@@ -143,16 +151,16 @@ struct LSFAttributeEntryV3
 struct LSFKeyEntry
 {
     uint32_t nodeIndex; // index of the node
-    uint32_t keyName;   // name of key attribute (16-bit MSB: index into hash table, 16-bit LSB: offset in hash chain)
+    uint32_t keyName; // name of key attribute (16-bit MSB: index into hash table, 16-bit LSB: offset in hash chain)
     int32_t keyNameIndex() const
     {
         return static_cast<int32_t>(keyName >> 16);
     }
+
     int32_t keyNameOffset() const
     {
         return static_cast<int32_t>(keyName & 0xFFFF);
     }
-    
 };
 #pragma pack(pop)
 
@@ -169,46 +177,28 @@ enum class LSFVersion : uint32_t
     MAX_WRITE = 0x07
 };
 
+enum class LSFMetadataFormat : uint32_t
+{
+    NONE = 0,
+    KEYS_AND_ADJACENCY = 1,
+    NONE2 = NONE // Behaves same as NONE
+};
+
 struct LSFNodeInfo
 {
-    int32_t parentIndex;            // index of the parent node, -1 if root
-    int32_t nameIndex;              // index of the name in the name hash
-    int32_t nameOffset;             // offset of the name in the hash chain
-    int32_t firstAttributeIndex;    // index of the first attribute of the node, -1 if none
-    std::string keyAttribute{};     // key attribute of the node
+    int32_t parentIndex; // index of the parent node, -1 if root
+    int32_t nameIndex; // index of the name in the name hash
+    int32_t nameOffset; // offset of the name in the hash chain
+    int32_t firstAttributeIndex; // index of the first attribute of the node, -1 if none
+    std::string keyAttribute{}; // key attribute of the node
 };
 
 struct LSFAttributeInfo
 {
-    int32_t nameIndex;              // index of the name in the name hash
-    int32_t nameOffset;             // offset of the name in the hash chain
-    uint32_t typeId;                // type of the attribute
-    uint32_t length;                // length of the attribute
-    uint32_t dataOffset;            // absolute position of the attribute data in the values section
-    int32_t nextAttributeIndex;     // index of the next attribute of the node, -1 if last
-};
-
-struct TranslatedFSStringArgument {
-    std::string key;
-    std::string value;
-    std::string string;
-};
-
-struct TranslatedString {
-    uint16_t version = 0;
-    std::string value;
-    std::string handle;
-
-    std::string str() const
-    {
-        if (!value.empty()) {
-            return value;
-        }
-
-        return std::format("{};{}", handle, version);
-    }
-};
-
-struct TranslatedFSStringT : TranslatedString {
-    std::vector<TranslatedFSStringArgument> arguments;
+    int32_t nameIndex; // index of the name in the name hash
+    int32_t nameOffset; // offset of the name in the hash chain
+    uint32_t typeId; // type of the attribute
+    uint32_t length; // length of the attribute
+    uint32_t dataOffset; // absolute position of the attribute data in the values section
+    int32_t nextAttributeIndex; // index of the next attribute of the node, -1 if last
 };

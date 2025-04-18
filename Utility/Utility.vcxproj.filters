@@ -81,6 +81,12 @@
     <ClInclude Include="ThreadImpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FNVHash.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UUIDT.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -129,6 +135,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="StringHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UUIDT.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
