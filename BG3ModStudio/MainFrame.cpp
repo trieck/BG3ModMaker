@@ -37,7 +37,7 @@ LRESULT MainFrame::OnCreate(LPCREATESTRUCT pcs)
     m_cmdBar.Create(m_hWnd, rcDefault, nullptr, ATL_SIMPLE_CMDBAR_PANE_STYLE);
     m_cmdBar.AttachMenu(GetMenu());
     m_cmdBar.LoadImages(IDR_MAINFRAME);
-    SetMenu(nullptr); // remove old menu
+    this->SetMenu(nullptr); // remove old menu
 
     if (RunTimeHelper::IsRibbonUIAvailable()) {
         UIAddMenu(m_cmdBar.GetMenu(), true);
@@ -903,7 +903,7 @@ void MainFrame::IterateFiles(HTREEITEM hItem, const FileCallback& callback)
         auto data = std::bit_cast<LPTREEITEMDATA>(m_folderView.GetItemData(hItem));
         if (data && data->type == TIT_FILE) {
             callback(data->path);
-        } else if (data->type == TIT_FOLDER) {
+        } else if (data && data->type == TIT_FOLDER) {
             auto hChild = m_folderView.GetChildItem(hItem);
             if (hChild != nullptr) {
                 IterateFiles(hChild, callback);

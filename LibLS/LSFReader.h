@@ -1,6 +1,7 @@
 #pragma once
 #include "LSCommon.h"
 #include "LSFCommon.h"
+#include "Resource.h"
 #include "Stream.h"
 
 class LSFReader

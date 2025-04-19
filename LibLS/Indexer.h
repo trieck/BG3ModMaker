@@ -2,8 +2,9 @@
 
 #include <xapian.h>
 
-#include "LSFCommon.h"
+#include "Node.h"
 #include "PAKReader.h"
+#include "Resource.h"
 
 class IIndexProgressListener {
 public:

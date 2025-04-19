@@ -3,6 +3,7 @@
 #include "Exception.h"
 #include "LSCommon.h"
 #include "LSFReader.h"
+#include "Resource.h"
 
 LSFReader::LSFReader() = default;
 
@@ -22,8 +23,6 @@ std::array<T, N> readArray(Stream& stream) {
     return out;
 }
 
-constexpr char LSF_MAGIC[4] = {'L', 'S', 'O', 'F'};
-
 } // anonymous namespace
 
 Resource::Ptr LSFReader::read(const ByteBuffer& info)
@@ -41,7 +40,7 @@ Resource::Ptr LSFReader::read(const ByteBuffer& info)
     auto nodesStream = decompress(m_metadata.nodesSizeOnDisk, m_metadata.nodesUncompressedSize, "nodes.bin", true);
 
     auto hasAdjacencyData = m_version >= LSFVersion::EXTENDED_NODES
-        && m_metadata.metadataFormat == KEYS_AND_ADJACENCY;
+        && m_metadata.metadataFormat == LSFMetadataFormat::KEYS_AND_ADJACENCY;
     readNodes(nodesStream, hasAdjacencyData);
 
     m_attributes.clear();
@@ -56,7 +55,7 @@ Resource::Ptr LSFReader::read(const ByteBuffer& info)
 
     m_values = decompress(m_metadata.valuesSizeOnDisk, m_metadata.valuesUncompressedSize, "values.bin", true);
 
-    if (m_metadata.metadataFormat == KEYS_AND_ADJACENCY) {
+    if (m_metadata.metadataFormat == LSFMetadataFormat::KEYS_AND_ADJACENCY) {
         auto keysStream = decompress(m_metadata.keysSizeOnDisk, m_metadata.keysUncompressedSize, "keys.bin", true);
         readKeys(keysStream);
     }

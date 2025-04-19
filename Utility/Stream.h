@@ -28,6 +28,7 @@ public:
     size_t tell() const override;
     size_t size() const override;
 
+    // Stream helpers
     static Stream makeStream(UInt8Ptr&& ptr, size_t size);
     static Stream makeStream(const char* buf, size_t size);
     static Stream makeStream(const ByteBuffer& buf);

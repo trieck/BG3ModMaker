@@ -2,7 +2,15 @@
 
 #include "Compress.h"
 #include "LSCommon.h"
-#include "Resource.h"
+
+constexpr char LSF_MAGIC[4] = { 'L', 'S', 'O', 'F' };
+
+enum class LSFMetadataFormat : uint32_t
+{
+    NONE = 0,
+    KEYS_AND_ADJACENCY = 1,
+    NONE2 = NONE // Behaves same as NONE
+};
 
 #pragma pack(push, 1)
 
@@ -19,7 +27,7 @@ struct LSFMetadataV5
     CompressionFlags compressionFlags;
     int8_t unknown2;
     uint16_t unknown3;
-    LSMetadataFormat metadataFormat;
+    LSFMetadataFormat metadataFormat;
 };
 
 struct LSFMetadataV6
@@ -37,7 +45,7 @@ struct LSFMetadataV6
     CompressionFlags compressionFlags;
     int8_t unknown2;
     uint16_t unknown3;
-    LSMetadataFormat metadataFormat;
+    LSFMetadataFormat metadataFormat;
 
     CompressionMethod compressionMethod() const
     {
@@ -175,13 +183,6 @@ enum class LSFVersion : uint32_t
     BG3_PATCH3 = 0x07,
     MAX_READ = 0x07,
     MAX_WRITE = 0x07
-};
-
-enum class LSFMetadataFormat : uint32_t
-{
-    NONE = 0,
-    KEYS_AND_ADJACENCY = 1,
-    NONE2 = NONE // Behaves same as NONE
 };
 
 struct LSFNodeInfo

@@ -25,6 +25,22 @@ struct PackedVersion
             .build= static_cast<uint32_t>(packed & 0x7FFFFFFF)
         };
     }
+
+    int32_t toVersion32()
+    {
+        return (static_cast<int32_t>(major & 0x0f) << 28) |
+            (static_cast<int32_t>(minor & 0x0f) << 24) |
+            (static_cast<int32_t>(revision & 0xff) << 16) |
+            static_cast<int32_t>(build & 0xffff);
+    }
+
+    int64_t toVersion64()
+    {
+        return (static_cast<int64_t>(major & 0x7f) << 55) |
+            (static_cast<int64_t>(minor & 0xff) << 47) |
+            (static_cast<int64_t>(revision & 0xffff) << 31) |
+            static_cast<int64_t>(build & 0x7fffffff);
+    }
 };
 
 struct LSMetadata

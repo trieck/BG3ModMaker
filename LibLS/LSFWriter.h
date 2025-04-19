@@ -12,18 +12,22 @@ public:
 
     void write(StreamBase& stream, const Resource& resource);
 private:
-    void writeRegions(const Resource& resource);
-    void writeNodeV2(const LSNode::Ptr& node);
-    void writeNodeAttributesV2(const LSNode::Ptr& node);
-    void writeNodeV3(const LSNode::Ptr& node);
-    void writeNodeAttributesV3(const LSNode::Ptr& node);
-
-    void writeAttributeValue(const NodeAttribute& attr);
-    void writeString(const std::string& str);
-
     uint32_t addStaticString(const std::string& str);
+    void writeAttributeValue(const NodeAttribute& attr);
+    void writeNodeAttributesV2(const LSNode::Ptr& node);
+    void writeNodeAttributesV3(const LSNode::Ptr& node);
+    void writeNodeChildren(const LSNode::Ptr& node);
+    void writeNodeV2(const LSNode::Ptr& node);
+    void writeNodeV3(const LSNode::Ptr& node);
+    void writeRegions(const Resource& resource);
+    void writeStaticString(Stream& stream, const std::string& str);
+    void writeStaticStrings(Stream& stream);
+    void writeString(const std::string& str);
+    void writeStringWithLength(const std::string& value);
+    void writeTranslatedFSString(const TranslatedFSStringT& str);
+    void writeTranslatedString(const TranslatedStringT& str);
 
-    Stream m_stream, m_nodeStream, m_attrStream, m_valueStream, m_keyStream;
+    Stream m_nodeStream, m_attrStream, m_valueStream, m_keyStream;
     LSFVersion m_version = LSFVersion::MAX_WRITE;
     LSFMetadataFormat m_metadataFormat = LSFMetadataFormat::NONE;
     CompressionMethod m_compressionMethod = CompressionMethod::NONE;

@@ -1,13 +1,7 @@
 #pragma once
 #include "LSCommon.h"
+#include "LSFCommon.h"
 #include "Node.h"
-
-enum LSMetadataFormat : uint32_t {
-
-    NONE = 0,
-    KEYS_AND_ADJACENCY = 1,
-    NONE2 = 2
-};
 
 struct Region : LSNode
 {
@@ -18,7 +12,7 @@ struct Region : LSNode
 struct Resource
 {
     LSMetadata metadata{};
-    LSMetadataFormat metadataFormat{ NONE };
+    LSFMetadataFormat metadataFormat{LSFMetadataFormat::NONE };
     std::unordered_map<std::string, Region::Ptr> regions;
 
     using Ptr = std::unique_ptr<Resource>;
