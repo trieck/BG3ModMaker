@@ -258,6 +258,7 @@ void LSFWriter::writeAttributeValue(const NodeAttribute& attr)
 void LSFWriter::writeString(const std::string& str)
 {
     m_valueStream.write(str.data(), str.size());
+    m_valueStream.write<uint8_t>(0); // null terminator
 }
 
 void LSFWriter::writeStringWithLength(const std::string& value)

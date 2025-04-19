@@ -39,7 +39,17 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <variant>
 #include <vector>
+
+#ifdef max
+#undef max
+#endif
+#ifdef min
+#undef min
+#endif
+
+#include <tsl/ordered_map.h>
 
 #define MAKE_TREEITEM(n, t) \
     CTreeItem(((LPNMTREEVIEW)(n))->itemNew.hItem, t)

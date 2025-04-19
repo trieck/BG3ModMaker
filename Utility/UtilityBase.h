@@ -21,6 +21,15 @@
 #include <vector>
 #include <xmemory>
 
+#ifdef max
+#undef max
+#endif
+#ifdef min
+#undef min
+#endif
+
+#include <tsl/ordered_map.h>
+
 #define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
 

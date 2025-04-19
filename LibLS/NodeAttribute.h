@@ -1,7 +1,5 @@
 #pragma once
 
-#include <variant>
-
 #include "UUIDT.h"
 
 enum AttributeType

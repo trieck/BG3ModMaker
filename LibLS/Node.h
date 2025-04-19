@@ -13,9 +13,9 @@ struct LSNode : std::enable_shared_from_this<LSNode>
 
     std::string name;
     WeakPtr parent;
-
-    std::unordered_map<std::string, NodeAttribute> attributes;
-    std::unordered_map<std::string, std::vector<Ptr>> children;
+    
+    tsl::ordered_map<std::string, NodeAttribute> attributes;
+    tsl::ordered_map<std::string, std::vector<Ptr>> children;
 
     int32_t line{0};
     std::string keyAttribute;
