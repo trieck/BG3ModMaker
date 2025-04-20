@@ -59,12 +59,13 @@ bool LSXReader::begin(pugi::xml_node& node)
         LSNode::Ptr lsNode;
         if (m_stack.empty()) {
             lsNode = m_region;
+            lsNode->name = m_region->regionName;
         } else {
             lsNode = std::make_shared<LSNode>();
+            lsNode->name = node.attribute("id").as_string();
             lsNode->parent = m_stack.back();
         }
-
-        lsNode->name = node.attribute("id").as_string();
+        
         if (auto parent = lsNode->parent.lock()) {
             parent->appendChild(lsNode);
         }
