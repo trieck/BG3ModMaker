@@ -7,3 +7,4 @@ x64
 *.bin
 *.rc2
 /.vscode/
+/BG3ModStudio/resources/ribbon.h
