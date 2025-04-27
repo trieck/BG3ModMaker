@@ -80,8 +80,12 @@ bool LSXReader::begin(pugi::xml_node& node)
 
         auto nodeValue = node.attribute("value");
         if (typeId == TranslatedString) {
-            // TODO: support translated strings
-            ASSERT(0);
+            TranslatedStringT translatedString;
+            translatedString.value = nodeValue.as_string();
+            translatedString.handle = node.attribute("handle").as_string();
+            translatedString.version = static_cast<uint16_t>(node.attribute("version").as_uint());
+
+            attr.setValue(std::move(translatedString));
         } else if (typeId == TranslatedFSString) {
             // TODO: support translated FS strings
             ASSERT(0);
