@@ -14,6 +14,7 @@ public:
         MSG_WM_CLOSE(OnClose)
         MSG_WM_SIZE(OnSize)
         MSG_WM_MOUSEWHEEL(OnMouseWheel)
+        MSG_WM_CONTEXTMENU(OnContextMenu)
     END_MSG_MAP()
 
     BEGIN_DLGRESIZE_MAP(AttributeDlg)
@@ -29,6 +30,7 @@ private:
     void OnClose();
     void OnSize(UINT /*uMsg*/, const CSize& size);
     LRESULT OnMouseWheel(UINT nFlags, short zDelta, const CPoint& /*pt*/);
+    void OnContextMenu(const CWindow& wnd, const CPoint& point);
 
     CListViewCtrl m_list;
     CFont m_font;

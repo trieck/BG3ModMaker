@@ -101,11 +101,67 @@ LRESULT AttributeDlg::OnMouseWheel(UINT nFlags, short zDelta, const CPoint&)
     return 1;
 }
 
+void AttributeDlg::OnContextMenu(const CWindow& wnd, const CPoint& point)
+{
+    if (wnd != m_list) {
+        return;
+    }
+
+    CMenu menu;
+    menu.LoadMenuW(IDR_ATTRIBUTE_CONTEXT);
+
+    CMenuHandle popup = menu.GetSubMenu(0);
+    auto cmd = popup.TrackPopupMenu(TPM_RETURNCMD | TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, *this);
+    if (cmd == 0) {
+        return; // No command selected
+    }
+
+    auto selectedRow = m_list.GetSelectedIndex();
+    if (selectedRow < 0) {
+        return; // No item selected
+    }
+
+    CString text;
+    switch (cmd) {
+    case ID_ATTRIBUTE_COPYNAME: // Copy Name
+        m_list.GetItemText(selectedRow, 0, text);
+        break;
+    case ID_ATTRIBUTE_COPYVALUE: // Copy Value
+        m_list.GetItemText(selectedRow, 1, text);
+        break;
+    case ID_ATTRIBUTE_COPYTYPE: // Copy Type
+        m_list.GetItemText(selectedRow, 2, text);
+        break;
+    default:
+        return; // Unknown command
+    }
+
+    if (text.IsEmpty()) {
+        return; // Nothing to copy
+    }
+        
+    OpenClipboard();
+    EmptyClipboard();
+
+    auto hGlobal = GlobalAlloc(GMEM_MOVEABLE | GMEM_ZEROINIT, (text.GetLength() + 1) * sizeof(TCHAR));
+    if (hGlobal) {
+        auto pData = static_cast<LPTSTR>(GlobalLock(hGlobal));
+        if (pData) {
+            _tcscpy_s(pData, text.GetLength() + 1, text);
+            GlobalUnlock(hGlobal);
+            SetClipboardData(CF_UNICODETEXT, hGlobal);
+        }
+    }
+
+    CloseClipboard();
+}
+
 BOOL AttributeDlg::OnInitDialog(HWND, LPARAM)
 {
     m_list = GetDlgItem(IDC_LST_ATTRIBUTES);
     ATLASSERT(m_list.IsWindow());
 
+    m_list.ModifyStyle(0, LVS_SINGLESEL);
     m_list.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
     LOGFONT lf = {};

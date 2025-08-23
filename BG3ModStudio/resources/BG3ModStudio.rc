@@ -144,6 +144,17 @@ BEGIN
     END
 END
 
+IDR_ATTRIBUTE_CONTEXT MENU
+BEGIN
+    POPUP "ATTRIBUTE_CONTEXT"
+    BEGIN
+        MENUITEM "Copy Name",                   ID_ATTRIBUTE_COPYNAME
+        MENUITEM "Copy Value",                  ID_ATTRIBUTE_COPYVALUE
+        MENUITEM "Copy Type",                   ID_ATTRIBUTE_COPYTYPE
+    END
+    MENUITEM "ATTRIBUTE_MENU",              65535
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

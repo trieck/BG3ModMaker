@@ -29,6 +29,7 @@
 #define IDD_SETTINGS                    128
 #define IDC_E_INDEX_FOLDER              129
 #define ID_TOOL_LSF                     131
+#define IDR_ATTRIBUTE_CONTEXT           132
 #define IDC_PROGRESS_INDEX              1000
 #define IDC_PAKFILE                     1001
 #define IDC_INDEX_FILE                  1002
@@ -58,6 +59,9 @@
 #define ID_TREE_DELETE_FILE             40011
 #define ID_TREE_MAKELSFHERE             40017
 #define ID_TREE_DELETE_FOLDER           40018
+#define ID_ATTRIBUTE_COPYNAME           40019
+#define ID_ATTRIBUTE_COPYVALUE          40020
+#define ID_ATTRIBUTE_COPYTYPE           40021
 #define ATL_IDS_IDLEMESSAGE             0xE001
 #define ID_FILE_NEW                     0xE100
 #define ID_FILE_OPEN                    0xE101
@@ -164,8 +168,8 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        132
-#define _APS_NEXT_COMMAND_VALUE         40019
+#define _APS_NEXT_RESOURCE_VALUE        133
+#define _APS_NEXT_COMMAND_VALUE         40022
 #define _APS_NEXT_CONTROL_VALUE         1017
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
