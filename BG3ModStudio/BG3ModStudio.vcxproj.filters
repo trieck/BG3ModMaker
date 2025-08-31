@@ -113,6 +113,9 @@
     <ClInclude Include="Settings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DDSFileView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BG3ModStudio.cpp">
@@ -176,6 +179,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Settings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DDSFileView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

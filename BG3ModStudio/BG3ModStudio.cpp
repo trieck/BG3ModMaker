@@ -10,30 +10,45 @@ CComCriticalSection g_csFile; // Global critical section
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                       _In_opt_ HINSTANCE hPrevInstance,
-                      _In_ LPWSTR    lpCmdLine,
-                      _In_ int       nShowCmd)
+                      _In_ LPWSTR lpCmdLine,
+                      _In_ int nShowCmd)
 {
-    BG3ModStudio app;
-    if (!app.init())     {
+    auto& app = BG3ModStudio::instance();
+    if (!app.Init()) {
         ATLTRACE(_T("Failed to initialize application\n"));
         return 1;
     }
 
-    return BG3ModStudio::run(hInstance, lpCmdLine, nShowCmd);
+    return BG3ModStudio::Run(hInstance, lpCmdLine, nShowCmd);
+}
+
+BG3ModStudio& BG3ModStudio::instance()
+{
+    static BG3ModStudio instance;
+    return instance;
 }
 
 BG3ModStudio::~BG3ModStudio()
 {
+    m_direct2D.Terminate();
+
     (void)g_csFile.Term();
 
     CoUninitialize();
 }
 
-BOOL BG3ModStudio::init()
+BOOL BG3ModStudio::Init()
 {
     auto hr = CoInitialize(nullptr);
     if (FAILED(hr)) {
         ATLTRACE(_T("Cannot initialize COM libraries.\n"));
+        return FALSE;
+    }
+
+    hr = m_direct2D.Initialize();
+    if (FAILED(hr)) {
+        ATLTRACE(_T("Cannot initialize Direct2D.\n"));
+        CoUninitialize();
         return FALSE;
     }
 
@@ -66,7 +81,7 @@ BOOL BG3ModStudio::init()
     return TRUE;
 }
 
-int BG3ModStudio::run(HINSTANCE hInstance, LPWSTR lpCmdLine, int nShowCmd)
+int BG3ModStudio::Run(HINSTANCE hInstance, LPWSTR lpCmdLine, int nShowCmd)
 {
     auto hr = _Module.Init(nullptr, hInstance);
     if (FAILED(hr)) {
@@ -83,11 +98,17 @@ int BG3ModStudio::run(HINSTANCE hInstance, LPWSTR lpCmdLine, int nShowCmd)
         return -1;
     }
 
-    wndMain.ShowWindow(nShowCmd);
+    wndMain.ShowWindow(SW_SHOWNORMAL/*nShowCmd*/);
+    wndMain.UpdateWindow();
 
     auto result = theLoop.Run();
 
     _Module.RemoveMessageLoop();
 
     return result;
+}
+
+ID2D1Factory* BG3ModStudio::GetD2DFactory() const
+{
+    return m_direct2D.GetD2DFactory();
 }

@@ -149,6 +149,7 @@
     <ClInclude Include="CoMemory.h" />
     <ClInclude Include="COMError.h" />
     <ClInclude Include="CRC32.h" />
+    <ClInclude Include="Direct2D.h" />
     <ClInclude Include="Exception.h" />
     <ClInclude Include="FibTree.h" />
     <ClInclude Include="FileStream.h" />
@@ -175,6 +176,7 @@
     <ClCompile Include="CoMemory.cpp" />
     <ClCompile Include="COMError.cpp" />
     <ClCompile Include="CRC32.cpp" />
+    <ClCompile Include="Direct2D.cpp" />
     <ClCompile Include="Exception.cpp" />
     <ClCompile Include="FileStream.cpp" />
     <ClCompile Include="LZ4Codec.cpp" />

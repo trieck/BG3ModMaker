@@ -1,6 +1,7 @@
 {
   "builtin-baseline": "9aa0650e5c8d23fe66701bafb3ec03ac732a3ff1",
   "dependencies": [
+    "directxtex",
     "lz4",
     "nlohmann-json",
     "pugixml",

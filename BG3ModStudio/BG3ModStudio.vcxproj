@@ -91,7 +91,7 @@
       <AdditionalLibraryDirectories>$(VcpkgManifestRoot)\vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\lib;$(SolutionDir)$(IntDir);$(ProjectDir)TabView\$(ProcessorArchitecture)\$(Configuration)</AdditionalLibraryDirectories>
       <AdditionalManifestDependencies>
       </AdditionalManifestDependencies>
-      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);lz4.lib;Ws2_32.lib;Rpcrt4.lib;LibLS.lib;TabViewLib.lib;Utility.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);lz4.lib;Ws2_32.lib;Rpcrt4.lib;d2d1.lib;dwrite.lib;LibLS.lib;TabViewLib.lib;Utility.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -116,7 +116,7 @@
       <AdditionalLibraryDirectories>$(VcpkgManifestRoot)\vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\lib;$(SolutionDir)$(IntDir);$(ProjectDir)TabView\$(ProcessorArchitecture)\$(Configuration)</AdditionalLibraryDirectories>
       <AdditionalManifestDependencies>
       </AdditionalManifestDependencies>
-      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);lz4.lib;Ws2_32.lib;Rpcrt4.lib;LibLS.lib;TabViewLib.lib;Utility.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);lz4.lib;Ws2_32.lib;Rpcrt4.lib;d2d1.lib;dwrite.lib;LibLS.lib;TabViewLib.lib;Utility.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -134,7 +134,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);lz4.lib;Ws2_32.lib;Rpcrt4.lib;LibLS.lib;TabViewLib.lib;Utility.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);lz4.lib;Ws2_32.lib;Rpcrt4.lib;d2d1.lib;dwrite.lib;LibLS.lib;TabViewLib.lib;Utility.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(VcpkgManifestRoot)\vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\lib;$(SolutionDir)$(IntDir);$(ProjectDir)TabView\$(ProcessorArchitecture)\$(Configuration)</AdditionalLibraryDirectories>
       <AdditionalManifestDependencies>
       </AdditionalManifestDependencies>
@@ -159,7 +159,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);lz4.lib;Ws2_32.lib;Rpcrt4.lib;LibLS.lib;TabViewLib.lib;Utility.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);lz4.lib;Ws2_32.lib;Rpcrt4.lib;d2d1.lib;dwrite.lib;LibLS.lib;TabViewLib.lib;Utility.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(VcpkgManifestRoot)\vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\lib;$(SolutionDir)$(IntDir);$(ProjectDir)TabView\$(ProcessorArchitecture)\$(Configuration)</AdditionalLibraryDirectories>
       <AdditionalManifestDependencies>
       </AdditionalManifestDependencies>
@@ -169,6 +169,7 @@
     <ClInclude Include="AttributeDlg.h" />
     <ClInclude Include="BG3ModStudio.h" />
     <ClInclude Include="BinaryFileView.h" />
+    <ClInclude Include="DDSFileView.h" />
     <ClInclude Include="DocStyler.h" />
     <ClInclude Include="FileOperation.h" />
     <ClInclude Include="FolderMonitor.h" />
@@ -203,6 +204,7 @@
     <ClCompile Include="AttributeDlg.cpp" />
     <ClCompile Include="BG3ModStudio.cpp" />
     <ClCompile Include="BinaryFileView.cpp" />
+    <ClCompile Include="DDSFileView.cpp" />
     <ClCompile Include="DocStyler.cpp" />
     <ClCompile Include="FileOperation.cpp" />
     <ClCompile Include="FolderMonitor.cpp" />

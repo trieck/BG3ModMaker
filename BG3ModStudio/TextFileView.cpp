@@ -9,12 +9,6 @@ auto constexpr BUFFER_SIZE = 4096;
 
 LRESULT TextFileView::OnCreate(LPCREATESTRUCT pcs)
 {
-    /*auto hInstance = LoadLibrary(L"Scintilla.dll");
-    if (!hInstance) {
-        ATLTRACE("Failed to load Scintilla.dll\n");
-        return -1;
-    }*/
-
     if (!m_edit.Create(*this, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_HSCROLL)) {
         ATLTRACE("Unable to create rich edit control.\n");
         return -1;
