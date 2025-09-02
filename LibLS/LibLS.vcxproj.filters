@@ -78,6 +78,9 @@
     <ClInclude Include="ResourceUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Cataloger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -130,6 +133,9 @@
     </ClCompile>
     <ClCompile Include="ResourceUtils.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Cataloger.cpp">
+      <Filter>Header Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

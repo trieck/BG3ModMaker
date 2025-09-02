@@ -5,6 +5,7 @@
     "lz4",
     "nlohmann-json",
     "pugixml",
+    "rocksdb",
     "tsl-ordered-map",
     "wtl",
     "xapian"

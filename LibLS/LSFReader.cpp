@@ -13,7 +13,8 @@ LSFReader::~LSFReader()
 namespace { // anonymous namespace
 
 template <typename T, size_t N>
-std::array<T, N> readArray(Stream& stream) {
+std::array<T, N> readArray(Stream& stream)
+{
     std::array<T, N> out;
 
     for (auto& v : out) {
@@ -22,7 +23,6 @@ std::array<T, N> readArray(Stream& stream) {
 
     return out;
 }
-
 } // anonymous namespace
 
 Resource::Ptr LSFReader::read(const ByteBuffer& info)
@@ -139,8 +139,7 @@ void LSFReader::readNames(Stream& stream)
         auto numStrings = stream.read<uint16_t>();
         while (numStrings-- > 0) {
             auto nameLen = stream.read<uint16_t>();
-            auto nameStream = stream.read(nameLen);
-            auto name = std::string(nameStream.str());
+            auto name = readString(stream, nameLen);
             hash.emplace_back(std::move(name));
         }
 
@@ -345,7 +344,7 @@ NodeAttribute LSFReader::readAttribute(AttributeType type, Stream& reader, uint3
     case WString:
     case LSWString:
     case ScratchBuffer:
-        attr.setValue(reader.read(length).str());
+        attr.setValue(readString(reader, length));
         break;
     case TranslatedString:
         if (m_version >= LSFVersion::BG3 || (m_gameVersion.major > 4 ||
@@ -355,11 +354,11 @@ NodeAttribute LSFReader::readAttribute(AttributeType type, Stream& reader, uint3
         } else {
             str.version = 0;
             auto valueLength = reader.read<int32_t>();
-            str.value = reader.read(valueLength).str();
+            str.value = readString(reader, valueLength);
         }
 
         handleLength = reader.read<int32_t>();
-        str.handle = reader.read(handleLength).str();
+        str.handle = readString(reader, handleLength);
         attr.setValue(str);
         break;
     case TranslatedFSString:
@@ -492,6 +491,16 @@ void LSFReader::readRegions(const Resource::Ptr& resource)
             m_nodeInstances[defn.parentIndex]->children[node->name].emplace_back(node);
         }
     }
+}
+
+std::string LSFReader::readString(Stream& stream, uint32_t length) const
+{
+    auto s = stream.read(length).str();
+    if (!s.empty() && s.back() == '\0') {
+        s.pop_back();
+    }
+
+    return s;
 }
 
 Stream LSFReader::decompress(uint32_t sizeOnDisk, uint32_t uncompressedSize, const std::string& debugDumpTo,

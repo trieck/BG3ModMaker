@@ -90,6 +90,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)LibLS;$(SolutionDir)Utility</AdditionalIncludeDirectories>
       <AdditionalOptions>/wd4996</AdditionalOptions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -110,6 +111,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)LibLS;$(SolutionDir)Utility</AdditionalIncludeDirectories>
       <AdditionalOptions>/wd4996</AdditionalOptions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

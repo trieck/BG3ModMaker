@@ -111,7 +111,7 @@ void Indexer::index(const char* pakFile, const char* dbName, bool overwrite)
 void Indexer::compact() const
 {
     if (m_db) {
-        //m_db->compact(Xapian::DBCOMPACT_SINGLE_FILE);
+        m_db->compact(Xapian::DBCOMPACT_SINGLE_FILE);
     }
 }
 
@@ -224,6 +224,12 @@ void Indexer::indexNode(const std::string& filename, const LSNode::Ptr& node)
     m_termgen.index_text(values.str());
     xdoc.set_data(doc.dump());
     m_db->add_document(xdoc);
+
+    for (const auto& val : node->children | std::views::values) {
+        for (const auto& childNode : val) {
+            indexNode(filename, childNode);
+        }
+    }
 }
 
 void Indexer::indexNodes(const std::string& filename, const std::vector<LSNode::Ptr>& nodes)

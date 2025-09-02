@@ -27,6 +27,7 @@ private:
     void readNode(const LSFNodeInfo& defn, LSNode& node, Stream& attributeReader);
     void readNodes(Stream& stream, bool longNodes);
     void readRegions(const Resource::Ptr& resource);
+    std::string readString(Stream& stream, uint32_t length) const;
 
     Stream m_stream, m_values;
     PackedVersion m_gameVersion;
