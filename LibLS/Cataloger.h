@@ -38,4 +38,5 @@ private:
     PAKReader m_reader;
     ICatalogProgressListener* m_listener = nullptr;
     rocksdb::DB* m_db = nullptr;
+    rocksdb::WriteBatch m_batch;
 };

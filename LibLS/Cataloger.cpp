@@ -10,6 +10,8 @@
 
 using json = nlohmann::json;
 
+static constexpr auto COMMIT_SIZE = 10000;
+
 static bool isUUID(const std::string& s)
 {
     static constexpr auto NUL_UUID = "00000000-0000-0000-0000-000000000000";
@@ -65,6 +67,8 @@ void Cataloger::catalog(const char* pakFile, const char* dbName, bool overwrite)
         throw Exception("Failed to open RocksDB database: " + status.ToString());
     }
 
+    m_batch.Clear();
+
     auto i = 0;
     for (const auto& file : m_reader.files()) {
         if (m_listener && m_listener->isCancelled()) {
@@ -84,46 +88,20 @@ void Cataloger::catalog(const char* pakFile, const char* dbName, bool overwrite)
         }
 
         ++i;
+
+        auto count = m_batch.Count();
+        if (count > 0 && count % COMMIT_SIZE == 0) {
+            m_db->Write(rocksdb::WriteOptions(), &m_batch);
+            m_batch.Clear();
+        }
     }
 
-    // Final commit is not needed for RocksDB, as writes are immediate
+    m_db->Write(rocksdb::WriteOptions(), &m_batch);
+    m_batch.Clear();
+
     status = m_db->Flush(rocksdb::FlushOptions());
     if (!status.ok()) {
         throw Exception("Failed to flush RocksDB database: " + status.ToString());
-    }
-
-    // Now iterate over the database to count entries
-    std::unique_ptr<rocksdb::Iterator> it(m_db->NewIterator(rocksdb::ReadOptions()));
-
-    for (it->SeekToFirst(); it->Valid(); it->Next()) {
-        auto key = it->key().ToString();
-        auto val = it->value().ToString();
-
-        nlohmann::json j = nlohmann::json::parse(val);
-        auto attributes = j["attributes"];
-
-        std::string name, parentTemplateId;
-        for (const auto& attr : attributes) {
-            if (!name.empty() && !parentTemplateId.empty()) {
-                break; // no need to continue
-            }
-
-            if (attr["id"] == "Name") {
-                name = attr["value"];
-            } else if (attr["id"] == "ParentTemplateId") {
-                parentTemplateId = attr["value"];
-            }
-        }
-
-        std::cout << "UUID: " << key;
-        if (!name.empty()) {
-            std::cout << ", Name: " << name;
-        }
-        if (!parentTemplateId.empty()) {
-            std::cout << ", ParentTemplateId: " << parentTemplateId;
-        }
-
-        std::cout << "\n";
     }
 }
 
@@ -183,7 +161,7 @@ void Cataloger::catalogLSXFile(const PackagedFileInfo& file)
 
         doc["attributes"] = attributes;
 
-        auto s = m_db->Put(rocksdb::WriteOptions(), mapKey, doc.dump());
+        auto s = m_batch.Put(mapKey, doc.dump());
         if (!s.ok()) {
             throw Exception("Failed to write to RocksDB database: " + s.ToString());
         }
@@ -234,7 +212,7 @@ void Cataloger::catalogNode(const std::string& filename, const LSNode::Ptr& node
     if (isUUID(mapKey) && node->name == "GameObjects") {
         doc["attributes"] = attributes;
 
-        auto s = m_db->Put(rocksdb::WriteOptions(), mapKey, doc.dump());
+        auto s = m_batch.Put(mapKey, doc.dump());
         if (!s.ok()) {
             throw Exception("Failed to write to RocksDB database: " + s.ToString());
         }
