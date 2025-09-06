@@ -116,6 +116,9 @@
     <ClInclude Include="DDSFileView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GameObjectDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BG3ModStudio.cpp">
@@ -184,6 +187,9 @@
     <ClCompile Include="DDSFileView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GameObjectDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="ribbon.xml">
@@ -243,6 +249,9 @@
       <Filter>Resources</Filter>
     </Image>
     <Image Include="resources\lsf.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="resources\game-object.bmp">
       <Filter>Resources</Filter>
     </Image>
   </ItemGroup>

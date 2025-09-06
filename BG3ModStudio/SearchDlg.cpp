@@ -56,7 +56,7 @@ BOOL SearchDlg::OnInitDialog(HWND, LPARAM)
     ATLASSERT(m_pageInfo.IsWindow());
 
     Settings settings;
-    auto indexPath = settings.GetString(_T("Indexing"), _T("IndexPath"), _T(""));
+    auto indexPath = settings.GetString(_T("Settings"), _T("IndexPath"), _T(""));
     m_indexPath.SetWindowText(indexPath);
 
     m_listResults.ModifyStyle(0, LVS_REPORT);
@@ -64,7 +64,7 @@ BOOL SearchDlg::OnInitDialog(HWND, LPARAM)
 
     m_listResults.InsertColumn(0, _T("Source File"), LVCFMT_LEFT, 150);
     m_listResults.InsertColumn(1, _T("Type"), LVCFMT_LEFT, 80);
-    m_listResults.InsertColumn(2, _T("Atrributes"), LVCFMT_LEFT);
+    m_listResults.InsertColumn(2, _T("Attributes"), LVCFMT_LEFT);
 
     UIAddChildWindowContainer(m_hWnd);
 

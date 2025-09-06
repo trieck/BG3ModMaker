@@ -25,11 +25,15 @@
 #define IDC_E_FOLDER                    123
 #define IDC_B_BROWSE_INDEX              124
 #define IDD_ATTRIBUTES                  125
+#define IDC_B_BROWSE_GAMEOBJECT         125
 #define ID_TOOL_SETTINGS                127
 #define IDD_SETTINGS                    128
 #define IDC_E_INDEX_FOLDER              129
+#define IDC_E_GAMEOBJECT_FOLDER         130
 #define ID_TOOL_LSF                     131
 #define IDR_ATTRIBUTE_CONTEXT           132
+#define ID_TOOL_GAMEOBJECT              133
+#define IDD_GAMEOBJECT                  134
 #define IDC_PROGRESS_INDEX              1000
 #define IDC_PAKFILE                     1001
 #define IDC_INDEX_FILE                  1002
@@ -47,6 +51,13 @@
 #define IDC_B_NEXT                      1014
 #define IDC_B_LAST                      1015
 #define IDC_PAGEINFO                    1016
+#define IDC_ST_GAMEOBJECT               1019
+#define IDC_B_FIRST_PAGE                1020
+#define IDC_B_PREV_PAGE                 1021
+#define IDC_B_NEXT_PAGE                 1022
+#define IDC_B_LAST_PAGE                 1023
+#define IDC_E_QUERY_GAMEOBJECT          1024
+#define IDC_GAMEOBJECT_PAGEINFO         1025
 #define ATL_IDC_TAB_CONTROL             0x3020
 #define ID_APPLY_NOW                    0x3021
 #define ID_WIZBACK                      0x3023
@@ -62,6 +73,8 @@
 #define ID_ATTRIBUTE_COPYNAME           40019
 #define ID_ATTRIBUTE_COPYVALUE          40020
 #define ID_ATTRIBUTE_COPYTYPE           40021
+#define ID_UUID_LIST                    40022
+#define ID_ATTRIBUTE_LIST               40023
 #define ATL_IDS_IDLEMESSAGE             0xE001
 #define ID_FILE_NEW                     0xE100
 #define ID_FILE_OPEN                    0xE101
@@ -168,9 +181,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        133
-#define _APS_NEXT_COMMAND_VALUE         40023
-#define _APS_NEXT_CONTROL_VALUE         1017
+#define _APS_NEXT_RESOURCE_VALUE        136
+#define _APS_NEXT_COMMAND_VALUE         40024
+#define _APS_NEXT_CONTROL_VALUE         1026
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -185,6 +185,7 @@
     <ClInclude Include="Node.h" />
     <ClInclude Include="NodeAttribute.h" />
     <ClInclude Include="Package.h" />
+    <ClInclude Include="PageableIterator.h" />
     <ClInclude Include="PAKReader.h" />
     <ClInclude Include="PAKWriter.h" />
     <ClInclude Include="Resource.h" />
@@ -210,6 +211,7 @@
     <ClCompile Include="Node.cpp" />
     <ClCompile Include="NodeAttribute.cpp" />
     <ClCompile Include="Package.cpp" />
+    <ClCompile Include="PageableIterator.cpp" />
     <ClCompile Include="PAKReader.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>

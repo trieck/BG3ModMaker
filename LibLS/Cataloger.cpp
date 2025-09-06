@@ -1,12 +1,10 @@
 ﻿#include "pch.h"
 #include "Cataloger.h"
 #include "Exception.h"
+#include "LSFReader.h"
 #include "XmlWrapper.h"
 
-#include <nlohmann/json.hpp>
 #include <regex>
-
-#include "LSFReader.h"
 
 using json = nlohmann::json;
 
@@ -35,6 +33,18 @@ Cataloger::Cataloger()
 Cataloger::~Cataloger()
 {
     close();
+}
+
+void Cataloger::open(const char* dbName)
+{
+    close();
+
+    rocksdb::Options options;
+
+    auto status = rocksdb::DB::Open(options, dbName, &m_db);
+    if (!status.ok()) {
+        throw Exception("Failed to open RocksDB database: " + status.ToString());
+    }
 }
 
 void Cataloger::close()
@@ -105,8 +115,41 @@ void Cataloger::catalog(const char* pakFile, const char* dbName, bool overwrite)
     }
 }
 
+nlohmann::json Cataloger::get(const std::string& key)
+{
+    if (m_db == nullptr) {
+        throw Exception("Database is not open");
+    }
+
+    std::string value;
+    auto s = m_db->Get(rocksdb::ReadOptions(), key, &value);
+
+    if (!s.ok()) {
+        if (s.IsNotFound()) {
+            return {};
+        }
+        throw Exception("Failed to read from RocksDB database: " + s.ToString());
+    }
+
+    return json::parse(value);
+}
+
+bool Cataloger::isOpen() const
+{
+    return m_db != nullptr;
+}
+
 void Cataloger::setProgressListener(ICatalogProgressListener* listener)
 {
+}
+
+PageableIterator::Ptr Cataloger::newIterator(size_t pageSize)
+{
+    if (m_db == nullptr) {
+        throw Exception("Database is not open");
+    }
+
+    return PageableIterator::create(m_db, pageSize);
 }
 
 void Cataloger::catalogLSXFile(const PackagedFileInfo& file)

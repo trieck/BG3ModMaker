@@ -42,8 +42,14 @@
             <Command.LabelTitle>Convert to LOCA...</Command.LabelTitle>
             <Command.TooltipTitle>Convert to LOCA(Ctrl+Shift+L)</Command.TooltipTitle>
             <Command.TooltipDescription>Convert to LOCA</Command.TooltipDescription>
-        </Command>        
-        
+        </Command>
+
+        <Command Name="TOOL_LSF" Symbol="ID_TOOL_LSF" Id="131" Keytip="O">
+            <Command.LabelTitle>Convert LSX to LSF...</Command.LabelTitle>
+            <Command.TooltipTitle>Convert LSX to LSF</Command.TooltipTitle>
+            <Command.TooltipDescription>Convert LSX to LSF</Command.TooltipDescription>
+        </Command>
+
         <Command Name="TOOL_INDEX" Symbol="ID_TOOL_INDEX" Id="117" Keytip="O">
             <Command.LabelTitle>Index PAK File...</Command.LabelTitle>
             <Command.TooltipTitle>Index PAK File(Ctrl+Shift+I)</Command.TooltipTitle>
@@ -62,10 +68,10 @@
             <Command.TooltipDescription>Settings</Command.TooltipDescription>
         </Command>
 
-        <Command Name="TOOL_LSF" Symbol="ID_TOOL_LSF" Id="131" Keytip="O">
-            <Command.LabelTitle>Convert LSX to LSF...</Command.LabelTitle>
-            <Command.TooltipTitle>Convert LSX to LSF</Command.TooltipTitle>
-            <Command.TooltipDescription>Convert LSX to LSF</Command.TooltipDescription>
+        <Command Name="TOOL_GAMEOBJECT" Symbol="ID_TOOL_GAMEOBJECT" Id="133" Keytip="O">
+            <Command.LabelTitle>Game Object Explorer...</Command.LabelTitle>
+            <Command.TooltipTitle>Game Object Explorer</Command.TooltipTitle>
+            <Command.TooltipDescription>Open Game Object Explorer</Command.TooltipDescription>
         </Command>
 
         <Command Name="APP_ABOUT" Symbol="ID_APP_ABOUT" Id="0xE140" Keytip="O">
@@ -213,16 +219,20 @@
                             <ControlNameMap>
                                 <ControlNameDefinition Name="TOOL_PACKAGE" />
                                 <ControlNameDefinition Name="TOOL_LOCA" />
+                                <ControlNameDefinition Name="TOOL_LSF" />
                                 <ControlNameDefinition Name="TOOL_INDEX" />
                                 <ControlNameDefinition Name="TOOL_SEARCH" />
                                 <ControlNameDefinition Name="TOOL_SETTINGS" />
-                                <ControlNameDefinition Name="TOOL_LSF" />
+                                <ControlNameDefinition Name="TOOL_GAMEOBJECT" />
                             </ControlNameMap>
                             <GroupSizeDefinition Size="Large">
                                 <ControlSizeDefinition ControlName="TOOL_PACKAGE"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="TOOL_LOCA"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="TOOL_LSF"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="TOOL_INDEX"
@@ -234,7 +244,7 @@
                                 <ControlSizeDefinition ControlName="TOOL_SETTINGS"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
-                                <ControlSizeDefinition ControlName="TOOL_LSF"
+                                <ControlSizeDefinition ControlName="TOOL_GAMEOBJECT"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
                             </GroupSizeDefinition>
@@ -245,6 +255,9 @@
                                 <ControlSizeDefinition ControlName="TOOL_LOCA"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="TOOL_LSF"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="TOOL_INDEX"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
@@ -254,7 +267,7 @@
                                 <ControlSizeDefinition ControlName="TOOL_SETTINGS"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
-                                <ControlSizeDefinition ControlName="TOOL_LSF"
+                                <ControlSizeDefinition ControlName="TOOL_GAMEOBJECT"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
                             </GroupSizeDefinition>
@@ -265,6 +278,9 @@
                                 <ControlSizeDefinition ControlName="TOOL_LOCA"
                                                        ImageSize="Small"
                                                        IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="TOOL_LSF"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="TOOL_INDEX"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
@@ -274,17 +290,18 @@
                                 <ControlSizeDefinition ControlName="TOOL_SETTINGS"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
-                                <ControlSizeDefinition ControlName="TOOL_LSF"
+                                <ControlSizeDefinition ControlName="TOOL_GAMEOBJECT"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
                             </GroupSizeDefinition>
                         </SizeDefinition>
                         <Button CommandName="TOOL_PACKAGE" />
                         <Button CommandName="TOOL_LOCA" />
+                        <Button CommandName="TOOL_LSF" />
                         <Button CommandName="TOOL_INDEX" />
                         <Button CommandName="TOOL_SEARCH" />
                         <Button CommandName="TOOL_SETTINGS" />
-                        <Button CommandName="TOOL_LSF" />
+                        <Button CommandName="TOOL_GAMEOBJECT" />
                     </Group>
                 </Tab>
 

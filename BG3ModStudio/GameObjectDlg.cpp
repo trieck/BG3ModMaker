@@ -1,0 +1,321 @@
+#include "stdafx.h"
+#include "Exception.h"
+#include "GameObjectDlg.h"
+#include "Settings.h"
+#include "StringHelper.h"
+
+static constexpr auto COLUMN_PADDING = 12;
+
+BOOL GameObjectDlg::OnIdle()
+{
+    auto pageCount = GetPageCount();
+
+    UIEnable(IDC_B_FIRST_PAGE, m_nPage > 0 && pageCount);
+    UIEnable(IDC_B_PREV_PAGE, m_nPage > 0 && pageCount);
+    UIEnable(IDC_B_NEXT_PAGE, m_nPage + 1 < static_cast<int>(pageCount) && pageCount);
+    UIEnable(IDC_B_LAST_PAGE, m_nPage + 1 < static_cast<int>(pageCount) && pageCount);
+
+    UpdatePageInfo();
+    UIUpdateChildWindows(TRUE);
+
+    return FALSE;
+}
+
+BOOL GameObjectDlg::OnInitDialog(HWND, LPARAM)
+{
+    auto wndFrame = GetDlgItem(IDC_ST_GAMEOBJECT);
+    ATLASSERT(wndFrame.IsWindow());
+
+    CRect rcDlg;
+    GetClientRect(&rcDlg);
+
+    CRect rcFrame;
+    wndFrame.GetWindowRect(&rcFrame);
+    ScreenToClient(&rcFrame);
+
+    m_marginLeft = rcFrame.left;
+    m_marginTop = rcFrame.top;
+    m_marginRight = rcDlg.right - rcFrame.right;
+    m_marginBottom = rcDlg.bottom - rcFrame.bottom;
+
+    wndFrame.DestroyWindow(); // Needed only for margin calculation
+
+    m_pageInfo = GetDlgItem(IDC_GAMEOBJECT_PAGEINFO);
+    ATLASSERT(m_pageInfo.IsWindow());
+
+    m_splitter.Create(m_hWnd, rcFrame, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
+    ATLASSERT(m_splitter.IsWindow());
+
+    m_list.Create(m_splitter, rcDefault, nullptr,
+                  WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | LBS_NOINTEGRALHEIGHT |
+                  LBS_NOTIFY, WS_EX_CLIENTEDGE, ID_UUID_LIST);
+    ATLASSERT(m_list.IsWindow());
+
+    m_font = AtlCreateControlFont();
+    m_list.SetFont(m_font);
+
+    m_attributes.Create(m_splitter, rcDefault, nullptr,
+                        WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
+                        LVS_REPORT | LVS_SINGLESEL, WS_EX_CLIENTEDGE, ID_ATTRIBUTE_LIST);
+
+    m_attributes.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
+
+    m_attributes.InsertColumn(0, _T("Name"), LVCFMT_LEFT, 150);
+    m_attributes.InsertColumn(1, _T("Type"), LVCFMT_LEFT, 80);
+    m_attributes.InsertColumn(2, _T("Value"), LVCFMT_LEFT);
+
+    m_splitter.SetSplitterPane(0, m_list);
+    m_splitter.SetSplitterPane(1, m_attributes);
+    m_splitter.SetSplitterPosPct(40);
+
+    Populate();
+
+    UIAddChildWindowContainer(m_hWnd);
+
+    DlgResize_Init();
+
+    CenterWindow(GetParent());
+
+    auto* pLoop = _Module.GetMessageLoop();
+    ATLASSERT(pLoop != NULL);
+    pLoop->AddIdleHandler(this);
+
+    return FALSE; // Let the system set the focus
+}
+
+void GameObjectDlg::OnSize(UINT, const CSize& size)
+{
+    DlgResize_UpdateLayout(size.cx, size.cy);
+
+    if (m_splitter.IsWindow()) {
+        CRect rc;
+        rc.left = m_marginLeft;
+        rc.top = m_marginTop;
+        rc.right = size.cx - m_marginRight;
+        rc.bottom = size.cy - m_marginBottom;
+
+        m_splitter.MoveWindow(&rc);
+    }
+}
+
+void GameObjectDlg::PopulateKeys()
+{
+    m_list.ResetContent();
+
+    for (const auto& key : m_iterator->keys()) {
+        auto wideKey = StringHelper::fromUTF8(key.c_str());
+        m_list.AddString(wideKey);
+    }
+}
+
+void GameObjectDlg::AutoAdjustAttributes()
+{
+    CClientDC dc(m_attributes);
+    auto hFont = m_attributes.GetFont();
+    auto hOldFont = dc.SelectFont(hFont);
+
+    auto header = m_attributes.GetHeader();
+
+    for (auto col = 0; col < header.GetItemCount(); ++col) {
+        LVCOLUMN lvc{};
+        lvc.mask = LVCF_TEXT | LVCF_WIDTH;
+
+        TCHAR textBuf[256]{};
+        lvc.pszText = textBuf;
+        lvc.cchTextMax = _countof(textBuf);
+        m_attributes.GetColumn(col, &lvc);
+
+        CString headerText = lvc.pszText;
+
+        CSize sz;
+        dc.GetTextExtent(headerText, headerText.GetLength(), &sz);
+        auto maxWidth = sz.cx;
+
+        auto rowCount = m_attributes.GetItemCount();
+        for (auto row = 0; row < rowCount; ++row) {
+            CString cellText;
+            m_attributes.GetItemText(row, col, cellText);
+
+            dc.GetTextExtent(cellText, cellText.GetLength(), &sz);
+            maxWidth = std::max(sz.cx, maxWidth);
+        }
+
+        maxWidth += COLUMN_PADDING;
+        m_attributes.SetColumnWidth(col, maxWidth);
+    }
+
+    dc.SelectFont(hOldFont);
+}
+
+LRESULT GameObjectDlg::OnUuidSelChange(WORD, WORD, HWND, BOOL&)
+{
+    auto sel = m_list.GetCurSel();
+    if (sel == LB_ERR) {
+        return 0;
+    }
+
+    CString uuid;
+    m_list.GetText(sel, uuid);
+
+    m_attributes.DeleteAllItems();
+
+    auto attributes = GetAttributes(uuid);
+    if (!attributes.is_object()) {
+        return 0;
+    }
+
+    for (const auto& attr : attributes["attributes"]) {
+        CString name = attr.value("id", "").c_str();
+        CString value = attr.value("value", "").c_str();
+        CString type = attr.value("type", "").c_str();
+        auto row = m_attributes.InsertItem(m_attributes.GetItemCount(), name);
+        m_attributes.SetItemText(row, 1, type);
+        m_attributes.SetItemText(row, 2, value);
+    }
+
+    AutoAdjustAttributes();
+
+    return 0;
+}
+
+void GameObjectDlg::OnClose()
+{
+    auto* pLoop = _Module.GetMessageLoop();
+    ATLASSERT(pLoop != NULL);
+    pLoop->RemoveIdleHandler(this);
+
+    m_iterator = nullptr;
+    m_cataloger.close();
+
+    Destroy();
+}
+
+void GameObjectDlg::OnFirstPage()
+{
+    m_nPage = 0;
+
+    if (!m_iterator) {
+        return;
+    }
+
+    m_iterator->first();
+
+    PopulateKeys();
+
+    m_attributes.DeleteAllItems();
+}
+
+void GameObjectDlg::OnNextPage()
+{
+    if (!m_iterator) {
+        return;
+    }
+
+    if (!m_iterator->next()) {
+        return;
+    }
+
+    PopulateKeys();
+
+    m_attributes.DeleteAllItems();
+
+    auto pageCount = GetPageCount();
+
+    m_nPage = std::min(m_nPage + 1, static_cast<int>(pageCount) - 1);
+}
+
+void GameObjectDlg::OnPrevPage()
+{
+    if (!m_iterator) {
+        return;
+    }
+
+    if (!m_iterator->prev()) {
+        return;
+    }
+
+    PopulateKeys();
+
+    m_attributes.DeleteAllItems();
+
+    m_nPage = std::max(0, m_nPage - 1);
+}
+
+void GameObjectDlg::OnLastPage()
+{
+    if (!m_iterator) {
+        return;
+    }
+
+    if (!m_iterator->last()) {
+        return;
+    }
+
+    PopulateKeys();
+
+    m_attributes.DeleteAllItems();
+
+    auto pageCount = GetPageCount();
+
+    m_nPage = static_cast<int>(pageCount) - 1;
+}
+
+void GameObjectDlg::Populate()
+{
+    CWaitCursor cursor;
+    Settings settings;
+
+    auto dbPath = settings.GetString("Settings", "GameObjectPath");
+    if (dbPath.IsEmpty()) {
+        return;
+    }
+
+    m_list.ResetContent();
+
+    try {
+        m_cataloger.open(StringHelper::toUTF8(dbPath).GetString());
+        m_iterator = m_cataloger.newIterator(25);
+        PopulateKeys();
+    } catch (const Exception& ex) {
+        CString msg;
+        msg.Format(_T("Failed to open game object database: %s"), CString(ex.what()));
+        AtlMessageBox(*this, msg.GetString(), nullptr, MB_ICONERROR);
+    }
+}
+
+void GameObjectDlg::UpdatePageInfo()
+{
+    CString pageInfo;
+
+    auto totalPages = GetPageCount();
+
+    if (totalPages > 0) {
+        pageInfo.Format(_T("Page %d of about %llu"), m_nPage + 1, totalPages);
+    }
+
+    m_pageInfo.SetWindowText(pageInfo);
+}
+
+size_t GameObjectDlg::GetPageCount() const
+{
+    return m_iterator ? m_iterator->totalPages() : 0;
+}
+
+nlohmann::json GameObjectDlg::GetAttributes(const CString& uuid)
+{
+    if (!m_cataloger.isOpen()) {
+        return {};
+    }
+
+    auto key = StringHelper::toUTF8(uuid);
+
+    try {
+        return m_cataloger.get(key.GetString());
+    } catch (const std::exception& e) {
+        CString msg;
+        msg.Format(_T("Failed to read attributes: %s"), CString(e.what()));
+        AtlMessageBox(*this, msg.GetString(), nullptr, MB_ICONERROR);
+    }
+
+    return {};
+}

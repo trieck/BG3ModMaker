@@ -14,7 +14,7 @@ BOOL IndexDlg::OnInitDialog(HWND, LPARAM)
     ATLASSERT(m_indexPath.IsWindow());
 
     Settings settings;
-    auto indexPath = settings.GetString(_T("Indexing"), _T("IndexPath"), _T(""));
+    auto indexPath = settings.GetString(_T("Settings"), _T("IndexPath"), _T(""));
     m_indexPath.SetWindowText(indexPath);
 
     m_progress = GetDlgItem(IDC_PROGRESS_INDEX);

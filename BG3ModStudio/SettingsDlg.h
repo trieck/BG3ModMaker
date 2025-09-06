@@ -11,6 +11,7 @@ public:
     BEGIN_MSG_MAP(SettingsDlg)
         MSG_WM_INITDIALOG(OnInitDialog)
         COMMAND_ID_HANDLER3(IDC_B_BROWSE_INDEX, OnBrowseIndex)
+        COMMAND_ID_HANDLER3(IDC_B_BROWSE_GAMEOBJECT, OnBrowseGameObject)
         COMMAND_ID_HANDLER3(IDOK, OnOK)
         COMMAND_ID_HANDLER3(IDCANCEL, OnCancel)
     END_MSG_MAP()
@@ -18,10 +19,12 @@ public:
 private:
     LRESULT OnInitDialog(HWND /*hWnd*/, LPARAM /*lParam*/);
     void OnBrowseIndex();
+    void OnBrowseGameObject();
     void OnCancel();
     void OnOK();
 
     Settings m_settings;
     CEdit m_indexPath;
+    CEdit m_gameObjectPath;
 };
 
