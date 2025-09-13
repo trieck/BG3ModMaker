@@ -22,7 +22,9 @@ public:
         COMMAND_ID_HANDLER3(IDC_B_NEXT_PAGE, OnNextPage)
         COMMAND_ID_HANDLER3(IDC_B_PREV_PAGE, OnPrevPage)
         COMMAND_ID_HANDLER3(IDC_B_LAST_PAGE, OnLastPage)
-        COMMAND_HANDLER(ID_UUID_LIST, LBN_SELCHANGE, OnUuidSelChange)
+        COMMAND_ID_HANDLER3(IDC_B_SEARCH_GAMEOBJECT, OnSearch)
+        COMMAND_HANDLER3(ID_UUID_LIST, LBN_SELCHANGE, OnUuidSelChange)
+        COMMAND_HANDLER3(IDC_E_QUERY_GAMEOBJECT, EN_CHANGE, OnQueryChange)
         CHAIN_MSG_MAP(CDialogResize)
     END_MSG_MAP()
 
@@ -40,13 +42,15 @@ public:
 
 private:
     BOOL OnInitDialog(HWND /* hWnd */, LPARAM /*lParam*/);
-    LRESULT OnUuidSelChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+    void OnUuidSelChange();
     void AutoAdjustAttributes();
     void OnClose();
     void OnFirstPage();
     void OnNextPage();
     void OnPrevPage();
     void OnLastPage();
+    void OnQueryChange();
+    void OnSearch();
     void OnSize(UINT /*uMsg*/, const CSize& size);
     void PopulateKeys();
     void Populate();
@@ -63,6 +67,7 @@ private:
     CListViewCtrl m_attributes;
     CStatic m_pageInfo;
     CFont m_font;
+    CString m_dbPath;
 
     int m_marginLeft = 0;
     int m_marginTop = 0;

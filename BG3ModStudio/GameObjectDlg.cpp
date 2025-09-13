@@ -5,15 +5,26 @@
 #include "StringHelper.h"
 
 static constexpr auto COLUMN_PADDING = 12;
+static constexpr auto PAGE_SIZE = 25;
 
 BOOL GameObjectDlg::OnIdle()
 {
     auto pageCount = GetPageCount();
 
-    UIEnable(IDC_B_FIRST_PAGE, m_nPage > 0 && pageCount);
-    UIEnable(IDC_B_PREV_PAGE, m_nPage > 0 && pageCount);
-    UIEnable(IDC_B_NEXT_PAGE, m_nPage + 1 < static_cast<int>(pageCount) && pageCount);
-    UIEnable(IDC_B_LAST_PAGE, m_nPage + 1 < static_cast<int>(pageCount) && pageCount);
+    bool enableNext = m_nPage + 1 < static_cast<int>(pageCount) && pageCount > 0;
+    if (m_iterator && m_iterator->hasPrefix()) {
+        enableNext = true; // We can't know the total pages with a prefix, so always enable
+    }
+
+    bool enablePrev = m_nPage > 0 && pageCount > 0;
+    if (m_iterator && m_iterator->hasPrefix()) {
+        enablePrev = true; // We can't know the total pages with a prefix, so always enable
+    }
+
+    UIEnable(IDC_B_FIRST_PAGE, enablePrev);
+    UIEnable(IDC_B_PREV_PAGE, enablePrev);
+    UIEnable(IDC_B_NEXT_PAGE, enableNext);
+    UIEnable(IDC_B_LAST_PAGE, enableNext);
 
     UpdatePageInfo();
     UIUpdateChildWindows(TRUE);
@@ -23,6 +34,9 @@ BOOL GameObjectDlg::OnIdle()
 
 BOOL GameObjectDlg::OnInitDialog(HWND, LPARAM)
 {
+    Settings settings;
+    m_dbPath = settings.GetString("Settings", "GameObjectPath");
+
     auto wndFrame = GetDlgItem(IDC_ST_GAMEOBJECT);
     ATLASSERT(wndFrame.IsWindow());
 
@@ -101,6 +115,11 @@ void GameObjectDlg::OnSize(UINT, const CSize& size)
 void GameObjectDlg::PopulateKeys()
 {
     m_list.ResetContent();
+    m_attributes.DeleteAllItems();
+
+    if (!m_iterator) {
+        return;
+    }
 
     for (const auto& key : m_iterator->keys()) {
         auto wideKey = StringHelper::fromUTF8(key.c_str());
@@ -147,11 +166,11 @@ void GameObjectDlg::AutoAdjustAttributes()
     dc.SelectFont(hOldFont);
 }
 
-LRESULT GameObjectDlg::OnUuidSelChange(WORD, WORD, HWND, BOOL&)
+void GameObjectDlg::OnUuidSelChange()
 {
     auto sel = m_list.GetCurSel();
     if (sel == LB_ERR) {
-        return 0;
+        return;
     }
 
     CString uuid;
@@ -161,7 +180,7 @@ LRESULT GameObjectDlg::OnUuidSelChange(WORD, WORD, HWND, BOOL&)
 
     auto attributes = GetAttributes(uuid);
     if (!attributes.is_object()) {
-        return 0;
+        return;
     }
 
     for (const auto& attr : attributes["attributes"]) {
@@ -174,8 +193,6 @@ LRESULT GameObjectDlg::OnUuidSelChange(WORD, WORD, HWND, BOOL&)
     }
 
     AutoAdjustAttributes();
-
-    return 0;
 }
 
 void GameObjectDlg::OnClose()
@@ -260,21 +277,62 @@ void GameObjectDlg::OnLastPage()
     m_nPage = static_cast<int>(pageCount) - 1;
 }
 
+void GameObjectDlg::OnQueryChange()
+{
+    m_list.ResetContent();
+    m_attributes.DeleteAllItems();
+    m_iterator = nullptr;
+
+    CString uuid;
+    GetDlgItemText(IDC_E_QUERY_GAMEOBJECT, uuid);
+
+    if (uuid.IsEmpty()) {
+        Populate();
+    }
+}
+
+void GameObjectDlg::OnSearch()
+{
+    m_list.ResetContent();
+    m_attributes.DeleteAllItems();
+
+    CString uuid;
+    GetDlgItemText(IDC_E_QUERY_GAMEOBJECT, uuid);
+
+    m_nPage = 0;
+
+    if (uuid.IsEmpty()) {
+        Populate();
+        return;
+    }
+
+    auto utf8Uuid = StringHelper::toUTF8(uuid);
+
+    try {
+        m_iterator = m_cataloger.newIterator(utf8Uuid.GetString(), PAGE_SIZE);
+        PopulateKeys();
+    } catch (const Exception& ex) {
+        CString msg;
+        msg.Format(_T("Failed to open game object database: %s"), CString(ex.what()));
+        AtlMessageBox(*this, msg.GetString(), nullptr, MB_ICONERROR);
+    }
+}
+
 void GameObjectDlg::Populate()
 {
     CWaitCursor cursor;
     Settings settings;
 
-    auto dbPath = settings.GetString("Settings", "GameObjectPath");
-    if (dbPath.IsEmpty()) {
-        return;
-    }
-
     m_list.ResetContent();
+    m_attributes.DeleteAllItems();
+
+    m_iterator = nullptr;
 
     try {
-        m_cataloger.open(StringHelper::toUTF8(dbPath).GetString());
-        m_iterator = m_cataloger.newIterator(25);
+        if (!m_cataloger.isOpen()) {
+            m_cataloger.open(StringHelper::toUTF8(m_dbPath).GetString());
+        }
+        m_iterator = m_cataloger.newIterator(PAGE_SIZE);
         PopulateKeys();
     } catch (const Exception& ex) {
         CString msg;

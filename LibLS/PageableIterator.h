@@ -4,11 +4,13 @@
 class PageableIterator
 {
     PageableIterator(rocksdb::DB* db, size_t pageSize);
+    PageableIterator(rocksdb::DB* db, const char* key, size_t pageSize);
 
 public:
     using Ptr = std::unique_ptr<PageableIterator>;
 
     static Ptr create(rocksdb::DB* db, size_t pageSize);
+    static Ptr create(rocksdb::DB* db, const char* key, size_t pageSize);
 
     bool first();
     bool last();
@@ -21,6 +23,10 @@ public:
     size_t totalPages() const;
     size_t pageSize() const;
     size_t totalEntries() const;
+
+    bool hasPrefix() const;
+    bool isEmpty() const;
+    bool isValid() const;
 
 private:
     enum Direction
@@ -35,6 +41,10 @@ private:
     rocksdb::DB* m_db;
     std::unique_ptr<rocksdb::Iterator> m_it;
     std::string m_firstKey, m_lastKey;
+    std::string m_prefix;
+    std::string m_upperBoundStr;
+    rocksdb::Slice m_lowerBoundSlice;
+    rocksdb::Slice m_upperBoundSlice;
     size_t m_pageSize = 0;
     size_t m_currentPage = 1;
     size_t m_totalPages = 0;

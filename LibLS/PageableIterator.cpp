@@ -22,9 +22,47 @@ PageableIterator::PageableIterator(rocksdb::DB* db, size_t pageSize) : m_db(db),
     first();
 }
 
+PageableIterator::PageableIterator(rocksdb::DB* db, const char* key, size_t pageSize) : m_db(db), m_prefix(key),
+    m_pageSize(pageSize), m_upperBoundStr(key)
+{
+    if (m_db == nullptr) {
+        throw std::invalid_argument("Database pointer cannot be null");
+    }
+
+    if (m_prefix.empty()) {
+        throw std::invalid_argument("Prefix key cannot be empty");
+    }
+
+    if (m_pageSize == 0) {
+        throw std::invalid_argument("Page size must be greater than zero");
+    }
+
+    m_lowerBoundSlice = rocksdb::Slice(m_prefix);
+
+    // increment last char to form the exclusive upper bound
+    m_upperBoundStr.back()++;
+    m_upperBoundSlice = rocksdb::Slice(m_upperBoundStr);
+
+    rocksdb::ReadOptions ro;
+    ro.iterate_lower_bound = &m_lowerBoundSlice;
+    ro.iterate_upper_bound = &m_upperBoundSlice;
+
+    m_it = std::unique_ptr<rocksdb::Iterator>(m_db->NewIterator(ro));
+
+    // m_totalEntries and m_totalPages can't be determined efficiently with a prefix
+    // leave them as 0 to indicate unknown
+
+    first();
+}
+
 PageableIterator::Ptr PageableIterator::create(rocksdb::DB* db, size_t pageSize)
 {
     return std::unique_ptr<PageableIterator>(new PageableIterator(db, pageSize));
+}
+
+PageableIterator::Ptr PageableIterator::create(rocksdb::DB* db, const char* key, size_t pageSize)
+{
+    return std::unique_ptr<PageableIterator>(new PageableIterator(db, key, pageSize));
 }
 
 bool PageableIterator::first()
@@ -33,7 +71,12 @@ bool PageableIterator::first()
         return false;
     }
 
-    m_it->SeekToFirst();
+    if (!m_prefix.empty()) {
+        m_it->Seek(m_prefix);
+    } else {
+        m_it->SeekToFirst();
+    }
+
     m_currentPage = 1;
 
     buildKeys(Forward);
@@ -141,6 +184,21 @@ size_t PageableIterator::totalEntries() const
     return m_totalEntries;
 }
 
+bool PageableIterator::hasPrefix() const
+{
+    return !m_prefix.empty();
+}
+
+bool PageableIterator::isEmpty() const
+{
+    return m_currentKeys.empty();
+}
+
+bool PageableIterator::isValid() const
+{
+    return m_it != nullptr && m_it->Valid();
+}
+
 void PageableIterator::buildKeys(Direction dir)
 {
     m_currentKeys.clear();
@@ -153,6 +211,12 @@ void PageableIterator::buildKeys(Direction dir)
 
     size_t count = 0;
     while (m_it->Valid() && count < m_pageSize) {
+        auto k = m_it->key().ToString();
+
+        if (!m_prefix.empty() && !k.starts_with(m_prefix)) {
+            break;
+        }
+
         m_currentKeys.push_back(m_it->key().ToString());
 
         if (dir == Forward) {

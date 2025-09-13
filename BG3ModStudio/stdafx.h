@@ -75,12 +75,17 @@
     }
 
 #define COMMAND_ID_HANDLER2(id, func) \
-    if(uMsg == WM_COMMAND && (id) == LOWORD(wParam)) { \
+    if (uMsg == WM_COMMAND && (id) == LOWORD(wParam)) { \
         lResult = func(); \
     }
 
 #define COMMAND_ID_HANDLER3(id, func) \
-    if(uMsg == WM_COMMAND && (id) == LOWORD(wParam)) { \
+    if (uMsg == WM_COMMAND && (id) == LOWORD(wParam)) { \
+        func(); \
+    }
+
+#define COMMAND_HANDLER3(id, code, func) \
+    if (uMsg == WM_COMMAND && id == LOWORD(wParam) && code == HIWORD(wParam)) { \
         func(); \
     }
 

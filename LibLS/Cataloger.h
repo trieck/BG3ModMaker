@@ -29,6 +29,7 @@ public:
     void close();
     bool isOpen() const;
     PageableIterator::Ptr newIterator(size_t pageSize = 25);
+    PageableIterator::Ptr newIterator(const char* key, size_t pageSize = 25);
     void catalog(const char* pakFile, const char* dbName, bool overwrite = false);
     nlohmann::json get(const std::string& key);
     void open(const char* dbName);

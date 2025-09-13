@@ -58,6 +58,7 @@
 #define IDC_B_LAST_PAGE                 1023
 #define IDC_E_QUERY_GAMEOBJECT          1024
 #define IDC_GAMEOBJECT_PAGEINFO         1025
+#define IDC_B_SEARCH_GAMEOBJECT         1026
 #define ATL_IDC_TAB_CONTROL             0x3020
 #define ID_APPLY_NOW                    0x3021
 #define ID_WIZBACK                      0x3023
@@ -183,7 +184,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        136
 #define _APS_NEXT_COMMAND_VALUE         40024
-#define _APS_NEXT_CONTROL_VALUE         1026
+#define _APS_NEXT_CONTROL_VALUE         1027
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

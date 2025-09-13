@@ -143,6 +143,15 @@ void Cataloger::setProgressListener(ICatalogProgressListener* listener)
 {
 }
 
+PageableIterator::Ptr Cataloger::newIterator(const char* key, size_t pageSize)
+{
+    if (m_db == nullptr) {
+        throw Exception("Database is not open");
+    }
+
+    return PageableIterator::create(m_db, key, pageSize);
+}
+
 PageableIterator::Ptr Cataloger::newIterator(size_t pageSize)
 {
     if (m_db == nullptr) {

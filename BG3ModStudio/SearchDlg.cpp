@@ -96,17 +96,11 @@ void SearchDlg::OnSize(UINT, const CSize& size)
     AutoAdjustColumns();
 }
 
-LRESULT SearchDlg::OnQueryChange(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
+void SearchDlg::OnQueryChange()
 {
-    if (wNotifyCode == EN_CHANGE && wID == IDC_E_QUERY) {
-        m_results = Xapian::MSet();
-        m_listResults.DeleteAllItems();
-        m_nPage = 0;
-    }
-
-    bHandled = FALSE; // Let the system handle it
-
-    return 0;
+    m_results = Xapian::MSet();
+    m_listResults.DeleteAllItems();
+    m_nPage = 0;
 }
 
 void SearchDlg::OnBrowse()
