@@ -14,7 +14,7 @@ public:
     virtual ~ICatalogProgressListener() = default;
 
     virtual void onStart(std::size_t totalEntries) = 0;
-    virtual void onFileCataloging(std::size_t currentcatalog, const std::string& filename) = 0;
+    virtual void onFileCataloging(std::size_t currentFile, const std::string& filename) = 0;
     virtual void onFinished(std::size_t catalogedEntries) = 0;
     virtual bool isCancelled() = 0;
     virtual void onCancel() = 0;

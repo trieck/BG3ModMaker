@@ -64,7 +64,8 @@ BOOL SearchDlg::OnInitDialog(HWND, LPARAM)
 
     m_listResults.InsertColumn(0, _T("Source File"), LVCFMT_LEFT, 150);
     m_listResults.InsertColumn(1, _T("Type"), LVCFMT_LEFT, 80);
-    m_listResults.InsertColumn(2, _T("Attributes"), LVCFMT_LEFT);
+    m_listResults.InsertColumn(2, _T("Entry"), LVCFMT_LEFT, 150);
+    m_listResults.InsertColumn(3, _T("Attributes"), LVCFMT_LEFT);
 
     UIAddChildWindowContainer(m_hWnd);
 
@@ -172,15 +173,31 @@ void SearchDlg::Search(uint32_t offset)
         auto doc = nlohmann::json::parse(it.get_document().get_data());
         auto sourceFile = doc["source_file"].get<std::string>();
         auto type = doc["type"].get<std::string>();
+        auto entry = doc.value("entry", "");
         auto attributes = doc["attributes"].dump();
+
+        if (entry.empty()) {
+            auto attrDoc = doc["attributes"];
+            ATLASSERT(attrDoc.is_array());
+            for (const auto& attr : attrDoc) {
+                auto name = attr.value("id", "");
+                auto value = attr.value("value", "");
+                if (name == "Name" && !value.empty()) {
+                    entry = value;
+                    break;
+                }
+            }
+        }
 
         auto wSourceFile = StringHelper::fromUTF8(sourceFile.c_str());
         auto wType = StringHelper::fromUTF8(type.c_str());
+        auto wEntry = StringHelper::fromUTF8(entry.c_str());
         auto wAttributes = StringHelper::fromUTF8(attributes.c_str());
 
         auto index = m_listResults.InsertItem(0, wSourceFile.GetString());
         m_listResults.SetItemText(index, 1, wType.GetString());
-        m_listResults.SetItemText(index, 2, wAttributes.GetString());
+        m_listResults.SetItemText(index, 2, wEntry.GetString());
+        m_listResults.SetItemText(index, 3, wAttributes.GetString());
     }
 }
 
@@ -255,7 +272,7 @@ LRESULT SearchDlg::OnDoubleClick(int idCtrl, LPNMHDR pnmh, BOOL& bHandled)
     }
 
     CString text;
-    m_listResults.GetItemText(pia->iItem, 2, text);
+    m_listResults.GetItemText(pia->iItem, 3, text);
 
     AttributeDlg dlg;
     dlg.SetAttributeJson(StringHelper::toUTF8(text).GetString());

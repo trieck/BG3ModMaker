@@ -42,7 +42,18 @@
 #else
 #define ASSERT(expr)
 #endif // _DEBUG
-#endif // ASSERT 
+#endif // ASSERT
+
+// atltransactionmanager.h doesn't use the W equivalent functions, use this workaround
+#ifndef DeleteFile
+#define DeleteFile DeleteFileW
+#endif
+#ifndef MoveFile
+#define MoveFile MoveFileW
+#endif
+
+#include <atlbase.h>
+#include <atlstr.h>
 
 using UInt8Ptr = std::unique_ptr<uint8_t[]>;
 using ByteBuffer = std::pair<UInt8Ptr, size_t>;

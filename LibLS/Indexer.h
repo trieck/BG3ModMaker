@@ -28,11 +28,12 @@ public:
     void setProgressListener(IIndexProgressListener* listener);
 
 private:
+    void indexLSFFile(const PackagedFileInfo& file);
     void indexLSXFile(const PackagedFileInfo& file);
     void indexNode(const std::string& filename, const LSNode::Ptr& node);
     void indexNodes(const std::string& filename, const std::vector<LSNode::Ptr>& nodes);
     void indexRegion(const std::string& fileName, const Region::Ptr &region);
-    void indexLSFFile(const PackagedFileInfo& file);
+    void indexTXTFile(const PackagedFileInfo& file);
 
     using WritableDBPtr = std::unique_ptr<Xapian::WritableDatabase>;
     WritableDBPtr m_db;

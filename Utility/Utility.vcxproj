@@ -157,6 +157,7 @@
     <ClInclude Include="MessageLoopEx.h" />
     <ClInclude Include="Rope.h" />
     <ClInclude Include="FNVHash.h" />
+    <ClInclude Include="Settings.h" />
     <ClInclude Include="StringHelper.h" />
     <ClInclude Include="ThreadImpl.h" />
     <ClInclude Include="Utility.h" />
@@ -191,6 +192,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Rope.cpp" />
+    <ClCompile Include="Settings.cpp" />
     <ClCompile Include="Stream.cpp" />
     <ClCompile Include="StringHelper.cpp" />
     <ClCompile Include="Timer.cpp" />

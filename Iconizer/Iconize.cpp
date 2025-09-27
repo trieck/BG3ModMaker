@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Cataloger.h"
+#include "Iconizer.h"
 #include "Timer.h"
 
 int main(int argc, char* argv[])
@@ -20,10 +20,10 @@ int main(int argc, char* argv[])
     try {
         Timer timer;
 
-        Cataloger cataloger;
-        cataloger.catalog(argv[1], argv[2], overwrite);
+        Iconizer iconizer;
+        iconizer.iconize(argv[1], argv[2], overwrite);
 
-        std::cout << "   Cataloging took: " << timer.str() << std::endl;
+        std::cout << "   Iconizing took: " << timer.str() << std::endl;
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
         return 1;

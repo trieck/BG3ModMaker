@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "Cataloger.h"
 #include "Timer.h"
 
 int main(int argc, char* argv[])
@@ -8,6 +7,9 @@ int main(int argc, char* argv[])
         std::cerr << "usage: " << argv[0] << " {package-path} {db-path} <overwrite: true/false>\n";
         return 1;
     }
+
+    std::string pakPath = argv[1];
+    std::string dbPath = argv[2];
 
     auto overwrite = false;
 
@@ -20,10 +22,7 @@ int main(int argc, char* argv[])
     try {
         Timer timer;
 
-        Cataloger cataloger;
-        cataloger.catalog(argv[1], argv[2], overwrite);
-
-        std::cout << "   Cataloging took: " << timer.str() << std::endl;
+        std::cout << "   Iconizing took: " << timer.str() << std::endl;
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
         return 1;

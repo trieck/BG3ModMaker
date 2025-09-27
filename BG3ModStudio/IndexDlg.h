@@ -41,6 +41,8 @@ private:
     CButton m_overwriteCheckbox;
     CProgressBarCtrl m_progress;
 
+    CString m_gameDataPath;
+
     BOOL OnInitDialog(HWND /* hWnd */, LPARAM /*lParam*/);
     void OnCancelRequested();
     void OnIndex();

@@ -17,12 +17,14 @@ BOOL IndexDlg::OnInitDialog(HWND, LPARAM)
     auto indexPath = settings.GetString(_T("Settings"), _T("IndexPath"), _T(""));
     m_indexPath.SetWindowText(indexPath);
 
+    m_gameDataPath = settings.GetString(_T("Settings"), _T("GameDataPath"), _T(""));
+
     m_progress = GetDlgItem(IDC_PROGRESS_INDEX);
     ATLASSERT(m_progress.IsWindow());
 
     (void)SetWindowTheme(m_progress, L"", L"");
 
-    m_progress.SetBarColor(RGB(252, 129, 2));    // Fanta orange
+    m_progress.SetBarColor(RGB(252, 129, 2)); // Fanta orange
     m_progress.SetBkColor(GetSysColor(COLOR_APPWORKSPACE));
 
     m_indexButton = GetDlgItem(IDOK);
@@ -99,8 +101,12 @@ void IndexDlg::OnPakFile()
 {
     FileDialogEx dlg(FileDialogEx::Open, m_hWnd, _T("pak"), nullptr, OFN_HIDEREADONLY,
                      _T("Pak Files (*.pak)\0*.pak\0All Files (*.*)\0*.*\0"));
-
     auto hr = dlg.Construct();
+    if (FAILED(hr)) {
+        return;
+    }
+
+    hr = dlg.SetFolder(m_gameDataPath);
     if (FAILED(hr)) {
         return;
     }
@@ -194,10 +200,10 @@ void IndexDlg::Index(const CString& pakFile, const CString& indexPath)
         m_state = IDLE;
         CString errorMessage;
         errorMessage.Format(_T("Error: %s\nContext: %s\nType: %s\nError String: %s"),
-            StringHelper::fromUTF8(e.get_msg().c_str()).GetString(),
-            StringHelper::fromUTF8(e.get_context().c_str()).GetString(),
-            StringHelper::fromUTF8(e.get_type()).GetString(),
-            StringHelper::fromUTF8(e.get_error_string()).GetString());
+                            StringHelper::fromUTF8(e.get_msg().c_str()).GetString(),
+                            StringHelper::fromUTF8(e.get_context().c_str()).GetString(),
+                            StringHelper::fromUTF8(e.get_type()).GetString(),
+                            StringHelper::fromUTF8(e.get_error_string()).GetString());
         MessageBox(errorMessage, _T("Search Error"), MB_OK | MB_ICONERROR);
     }
 

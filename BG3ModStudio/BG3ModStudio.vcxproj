@@ -189,7 +189,6 @@
     <ClInclude Include="IFileView.h" />
     <ClInclude Include="MainFrame.h" />
     <ClInclude Include="resources\resource.h" />
-    <ClInclude Include="Settings.h" />
     <ClInclude Include="SettingsDlg.h" />
     <ClInclude Include="ShellHelper.h" />
     <ClInclude Include="stdafx.h" />
@@ -218,7 +217,6 @@
     <ClCompile Include="FolderView.cpp" />
     <ClCompile Include="MainFrame.cpp" />
     <ClCompile Include="SearchDlg.cpp" />
-    <ClCompile Include="Settings.cpp" />
     <ClCompile Include="SettingsDlg.cpp" />
     <ClCompile Include="ShellHelper.cpp" />
     <ClCompile Include="stdafx.cpp">

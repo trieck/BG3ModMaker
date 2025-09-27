@@ -85,6 +85,8 @@ void Cataloger::catalog(const char* pakFile, const char* dbName, bool overwrite)
             break;
         }
 
+        std::cout << file.name << std::endl;
+
         if (file.name.ends_with("lsx") || file.name.ends_with("lsf")) {
             if (m_listener) {
                 m_listener->onFileCataloging(i, file.name);
@@ -141,6 +143,7 @@ bool Cataloger::isOpen() const
 
 void Cataloger::setProgressListener(ICatalogProgressListener* listener)
 {
+    m_listener = listener;
 }
 
 PageableIterator::Ptr Cataloger::newIterator(const char* key, size_t pageSize)
@@ -199,12 +202,18 @@ void Cataloger::catalogLSXFile(const PackagedFileInfo& file)
             attributes.emplace_back(std::move(attr));
         }
 
-        std::string mapKey;
+        std::string mapKey, atype;
         for (const auto& attr : attributes) {
             if (attr["id"].get<std::string>() == "MapKey") {
                 mapKey = attr["value"].get<std::string>();
-                break;
             }
+            if (attr["id"].get<std::string>() == "Type") {
+                atype = attr["value"].get<std::string>();
+            }
+        }
+
+        if (atype != "item") {
+            continue; // only catalog items
         }
 
         if (mapKey.empty() || !isUUID(mapKey)) {
@@ -253,15 +262,17 @@ void Cataloger::catalogNode(const std::string& filename, const LSNode::Ptr& node
         attributes.emplace_back(std::move(attr));
     }
 
-    std::string mapKey;
+    std::string mapKey, type;
     for (const auto& attr : attributes) {
         if (attr["id"].get<std::string>() == "MapKey") {
             mapKey = attr["value"].get<std::string>();
-            break;
+        }
+        if (attr["id"].get<std::string>() == "Type") {
+            type = attr["value"].get<std::string>();
         }
     }
 
-    if (isUUID(mapKey) && node->name == "GameObjects") {
+    if (type == "item" && isUUID(mapKey) && node->name == "GameObjects") {
         doc["attributes"] = attributes;
 
         auto s = m_batch.Put(mapKey, doc.dump());
