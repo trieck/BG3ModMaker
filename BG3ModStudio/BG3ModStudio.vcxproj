@@ -175,6 +175,7 @@
     <ClInclude Include="FormatToken.h" />
     <ClInclude Include="GameObjectDlg.h" />
     <ClInclude Include="IconDlg.h" />
+    <ClInclude Include="IconExplorerDlg.h" />
     <ClInclude Include="ImageView.h" />
     <ClInclude Include="IndexDlg.h" />
     <ClInclude Include="ModelessDialog.h" />
@@ -210,6 +211,7 @@
     <ClCompile Include="FolderMonitor.cpp" />
     <ClCompile Include="GameObjectDlg.cpp" />
     <ClCompile Include="IconDlg.cpp" />
+    <ClCompile Include="IconExplorerDlg.cpp" />
     <ClCompile Include="ImageView.cpp" />
     <ClCompile Include="IndexDlg.cpp" />
     <ClCompile Include="OutputWindow.cpp" />

@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "AttributeDlg.h"
+#include "IconDlg.h"
 
 static constexpr auto COLUMN_PADDING = 12;
 
@@ -139,7 +140,7 @@ void AttributeDlg::OnContextMenu(const CWindow& wnd, const CPoint& point)
     if (text.IsEmpty()) {
         return; // Nothing to copy
     }
-        
+
     OpenClipboard();
     EmptyClipboard();
 
@@ -154,6 +155,46 @@ void AttributeDlg::OnContextMenu(const CWindow& wnd, const CPoint& point)
     }
 
     CloseClipboard();
+}
+
+LRESULT AttributeDlg::OnDoubleClick(int idCtrl, LPNMHDR pnmh, BOOL& bHandled)
+{
+    auto pia = reinterpret_cast<LPNMITEMACTIVATE>(pnmh);
+    if (!pia || pia->iItem < 0) {
+        return 0;
+    }
+
+    CString id, value;
+    m_list.GetItemText(pia->iItem, 1, value);
+    if (value.IsEmpty()) {
+        return 0;
+    }
+
+    try {
+        CWaitCursor cursor;
+        IconDlg dlg(value); // may throw if icon is invalid
+
+        auto hWnd = dlg.Create(*this);
+        if (hWnd == nullptr) {
+            ATLTRACE(_T("Unable to create icon dialog.\n"));
+            return 0;
+        }
+
+        EnableWindow(FALSE);
+
+        dlg.ShowWindow(SW_SHOWNORMAL);
+        dlg.UpdateWindow();
+
+        dlg.RunModal();
+        dlg.Destroy();
+    } catch (const std::exception& /*ex*/) {
+        return 0; // Ignore errors
+    }
+
+    EnableWindow(TRUE);
+    SetFocus();
+
+    return 0;
 }
 
 BOOL AttributeDlg::OnInitDialog(HWND, LPARAM)

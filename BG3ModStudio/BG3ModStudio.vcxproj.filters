@@ -113,10 +113,13 @@
     <ClInclude Include="GameObjectDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="IconDlg.h">
+    <ClInclude Include="IconExplorerDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ImageView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IconDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -184,10 +187,13 @@
     <ClCompile Include="GameObjectDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="IconDlg.cpp">
+    <ClCompile Include="IconExplorerDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ImageView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IconDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

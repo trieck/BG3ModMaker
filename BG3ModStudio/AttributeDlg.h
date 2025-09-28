@@ -15,6 +15,8 @@ public:
         MSG_WM_SIZE(OnSize)
         MSG_WM_MOUSEWHEEL(OnMouseWheel)
         MSG_WM_CONTEXTMENU(OnContextMenu)
+        NOTIFY_HANDLER(IDC_LST_ATTRIBUTES, NM_DBLCLK, OnDoubleClick)
+        CHAIN_MSG_MAP(CDialogResize)
     END_MSG_MAP()
 
     BEGIN_DLGRESIZE_MAP(AttributeDlg)
@@ -31,6 +33,7 @@ private:
     void OnSize(UINT /*uMsg*/, const CSize& size);
     LRESULT OnMouseWheel(UINT nFlags, short zDelta, const CPoint& /*pt*/);
     void OnContextMenu(const CWindow& wnd, const CPoint& point);
+    LRESULT OnDoubleClick(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
 
     CListViewCtrl m_list;
     CFont m_font;

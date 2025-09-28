@@ -4,7 +4,7 @@
 #include "FileDialogEx.h"
 #include "FileOperation.h"
 #include "GameObjectDlg.h"
-#include "IconDlg.h"
+#include "IconExplorerDlg.h"
 #include "IndexDlg.h"
 #include "Localization.h"
 #include "MainFrame.h"
@@ -253,7 +253,7 @@ void MainFrame::OnGameObject()
 
 void MainFrame::OnIconExplorer()
 {
-    IconDlg dlg;
+    IconExplorerDlg dlg;
     auto hWnd = dlg.Create(*this);
     if (hWnd == nullptr) {
         ATLTRACE(_T("Unable to create icon explorer dialog.\n"));
