@@ -226,11 +226,22 @@ BOOL ImageView::Create(HWND parent, _U_RECT rect, DWORD dwStyle, DWORD dwStyleEx
 BOOL ImageView::LoadFile(const CString& path)
 {
     DirectX::ScratchImage image;
-    auto hr = LoadFromDDSFile(path.GetString(),
-                              DirectX::DDS_FLAGS_NONE,
-                              nullptr, image);
+
+    CString extension = ATLPath::FindExtension(path);
+
+    HRESULT hr;
+    if (extension.CompareNoCase(L".dds") == 0) {
+        hr = LoadFromDDSFile(path.GetString(),
+                             DirectX::DDS_FLAGS_NONE,
+                             nullptr, image);
+    } else {
+        hr = LoadFromWICFile(path.GetString(),
+                             DirectX::WIC_FLAGS_NONE,
+                             nullptr, image);
+    }
+
     if (FAILED(hr)) {
-        ATLTRACE("Failed to load DDS file: %s\n", path.GetString());
+        ATLTRACE("Failed to load image file: %s\n", path.GetString());
         return FALSE;
     }
 
@@ -259,7 +270,7 @@ BOOL ImageView::LoadImage(const DirectX::ScratchImage& image)
 
     const auto* img = image.GetImage(0, 0, 0);
     if (!img) {
-        ATLTRACE("No image in DDS file\n");
+        ATLTRACE("No image found\n");
         return FALSE;
     }
 
@@ -281,18 +292,25 @@ BOOL ImageView::LoadImage(const DirectX::ScratchImage& image)
     }
 
     DirectX::ScratchImage converted;
-    hr = Convert(
-        *img,
-        DXGI_FORMAT_B8G8R8A8_UNORM,
-        DirectX::TEX_FILTER_DEFAULT,
-        DirectX::TEX_THRESHOLD_DEFAULT,
-        converted
-    );
+    if (img->format != DXGI_FORMAT_B8G8R8A8_UNORM) {
+        hr = Convert(*img,
+                     DXGI_FORMAT_B8G8R8A8_UNORM,
+                     DirectX::TEX_FILTER_DEFAULT,
+                     DirectX::TEX_THRESHOLD_DEFAULT,
+                     converted);
+        if (FAILED(hr)) {
+            ATLTRACE("Failed to convert image to BGRA\n");
+            return FALSE;
+        }
 
-    if (FAILED(hr)) {
-        ATLTRACE("Failed to convert image to BGRA\n");
-        return FALSE;
+        img = converted.GetImage(0, 0, 0);
+        if (!img) {
+            ATLTRACE("No converted image\n");
+            return FALSE;
+        }
     }
+
+    Release();
 
     D2D1_BITMAP_PROPERTIES props;
     props.dpiX = 96.0f;
@@ -302,18 +320,10 @@ BOOL ImageView::LoadImage(const DirectX::ScratchImage& image)
         D2D1_ALPHA_MODE_IGNORE
     );
 
-    const auto* imgBGRA = converted.GetImage(0, 0, 0);
-    if (!imgBGRA) {
-        ATLTRACE("No converted image\n");
-        return FALSE;
-    }
-
-    Release();
-
     hr = m_pRenderTarget->CreateBitmap(
-        D2D1::SizeU(static_cast<UINT32>(imgBGRA->width), static_cast<UINT32>(imgBGRA->height)),
-        imgBGRA->pixels,
-        static_cast<UINT32>(imgBGRA->rowPitch),
+        D2D1::SizeU(static_cast<UINT32>(img->width), static_cast<UINT32>(img->height)),
+        img->pixels,
+        static_cast<UINT32>(img->rowPitch),
         &props,
         &m_bitmap
     );
@@ -323,8 +333,8 @@ BOOL ImageView::LoadImage(const DirectX::ScratchImage& image)
         return FALSE;
     }
 
-    m_nDocWidth = static_cast<LONG>(imgBGRA->width);
-    m_nDocHeight = static_cast<LONG>(imgBGRA->height);
+    m_nDocWidth = static_cast<LONG>(img->width);
+    m_nDocHeight = static_cast<LONG>(img->height);
     m_ScrollPos = {0, 0};
 
     Invalidate();
@@ -336,6 +346,26 @@ void ImageView::Release()
 {
     m_bitmap.Release();
     Invalidate();
+}
+
+BOOL ImageView::IsRenderable(const CString& path)
+{
+    CString extension = ATLPath::FindExtension(path);
+
+    if (extension.CompareNoCase(L".dds") == 0 ||
+        extension.CompareNoCase(L".png") == 0 ||
+        extension.CompareNoCase(L".jpg") == 0 ||
+        extension.CompareNoCase(L".jpeg") == 0 ||
+        extension.CompareNoCase(L".bmp") == 0 ||
+        extension.CompareNoCase(L".tga") == 0 ||
+        extension.CompareNoCase(L".gif") == 0 ||
+        extension.CompareNoCase(L".hdr") == 0 ||
+        extension.CompareNoCase(L".tiff") == 0 ||
+        extension.CompareNoCase(L".tif") == 0) {
+        return TRUE;
+    }
+
+    return FALSE;
 }
 
 const CString& ImageView::GetPath() const

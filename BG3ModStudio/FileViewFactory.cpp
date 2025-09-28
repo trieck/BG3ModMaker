@@ -1,33 +1,12 @@
 #include "stdafx.h"
 #include "BinaryFileView.h"
-#include "ImageView.h"
 #include "Exception.h"
 #include "FileStream.h"
 #include "FileViewFactory.h"
+#include "ImageView.h"
 #include "TextFileView.h"
 
 namespace { // anonymous namespace
-
-BOOL IsDDSFile(const CString& path)
-{
-    CStringA strPath(path);
-    FileStream file;
-
-    try {
-        file.open(strPath, "rb");
-    } catch (const Exception& e) {
-        ATLTRACE("Failed to open file: %s\n", e.what());
-        return FALSE;
-    }
-
-    char magic[4];
-    auto read = file.read(magic, sizeof(magic));
-    if (read != sizeof(magic)) {
-        return FALSE;
-    }
-
-    return (magic[0] == 'D' && magic[1] == 'D' && magic[2] == 'S' && magic[3] == ' ');
-}
 
 BOOL IsBinaryFile(const CString& path)
 {
@@ -52,7 +31,6 @@ BOOL IsBinaryFile(const CString& path)
 
     return FALSE;
 }
-
 } // anonymous namespace
 
 IFileView::Ptr FileViewFactory::CreateFileView(const CString& path, HWND parent, _U_RECT rect, DWORD dwStyle,
@@ -60,7 +38,7 @@ IFileView::Ptr FileViewFactory::CreateFileView(const CString& path, HWND parent,
 {
     IFileView::Ptr fileView;
 
-    if (IsDDSFile(path)) {
+    if (ImageView::IsRenderable(path)) {
         fileView = std::make_shared<ImageView>();
     } else if (IsBinaryFile(path)) {
         fileView = std::make_shared<BinaryFileView>();

@@ -48,6 +48,8 @@ public:
     BOOL LoadImage(const DirectX::ScratchImage& image);
     void Release();
 
+    static BOOL IsRenderable(const CString& path);
+
 private:
     HRESULT CreateDevResources();
     void DiscardDevResources();
