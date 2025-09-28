@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "CoInit.h"
 #include "Iconizer.h"
 #include "Timer.h"
 
@@ -19,6 +20,7 @@ int main(int argc, char* argv[])
 
     try {
         Timer timer;
+        COMInitializer coinit;
 
         Iconizer iconizer;
         iconizer.iconize(argv[1], argv[2], overwrite);

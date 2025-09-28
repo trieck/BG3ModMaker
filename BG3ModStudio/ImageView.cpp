@@ -1,22 +1,21 @@
 #include "stdafx.h"
 #include "BG3ModStudio.h"
-#include "DDSFileView.h"
-#include "UtilityBase.h"
+#include "ImageView.h"
 
 #include <d2d1helper.h>
 
-DDSFileView::DDSFileView()
+ImageView::ImageView()
 {
 }
 
-LRESULT DDSFileView::OnCreate(LPCREATESTRUCT pcs)
+LRESULT ImageView::OnCreate(LPCREATESTRUCT pcs)
 {
     auto lRet = DefWindowProc();
 
     return lRet;
 }
 
-LRESULT DDSFileView::OnPaint(CPaintDC /*dc*/)
+LRESULT ImageView::OnPaint(CPaintDC /*dc*/)
 {
     if (!m_pRenderTarget || !m_bitmap) {
         return 0;
@@ -44,7 +43,7 @@ LRESULT DDSFileView::OnPaint(CPaintDC /*dc*/)
     return 0;
 }
 
-void DDSFileView::OnSize(UINT nType, CSize size)
+void ImageView::OnSize(UINT nType, CSize size)
 {
     DefWindowProc();
 
@@ -89,7 +88,7 @@ void DDSFileView::OnSize(UINT nType, CSize size)
     Invalidate();
 }
 
-LRESULT DDSFileView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
+LRESULT ImageView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 {
     if (nFlags & MK_CONTROL) {
         if (zDelta > 0) {
@@ -116,7 +115,7 @@ LRESULT DDSFileView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
     return 0;
 }
 
-void DDSFileView::OnHScroll(UINT nSBCode, UINT, CScrollBar)
+void ImageView::OnHScroll(UINT nSBCode, UINT, CScrollBar)
 {
     auto pos = m_ScrollPos.x;
     auto orig = pos;
@@ -159,7 +158,7 @@ void DDSFileView::OnHScroll(UINT nSBCode, UINT, CScrollBar)
     }
 }
 
-void DDSFileView::OnVScroll(UINT nSBCode, UINT, CScrollBar)
+void ImageView::OnVScroll(UINT nSBCode, UINT, CScrollBar)
 {
     auto pos = m_ScrollPos.y;
     auto orig = pos;
@@ -202,8 +201,7 @@ void DDSFileView::OnVScroll(UINT nSBCode, UINT, CScrollBar)
     }
 }
 
-
-BOOL DDSFileView::Create(HWND parent, _U_RECT rect, DWORD dwStyle, DWORD dwStyleEx)
+BOOL ImageView::Create(HWND parent, _U_RECT rect, DWORD dwStyle, DWORD dwStyleEx)
 {
     dwStyle |= WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VSCROLL | WS_HSCROLL;
 
@@ -215,20 +213,37 @@ BOOL DDSFileView::Create(HWND parent, _U_RECT rect, DWORD dwStyle, DWORD dwStyle
     return hWnd != nullptr;
 }
 
-BOOL DDSFileView::LoadFile(const CString& path)
+BOOL ImageView::LoadFile(const CString& path)
+{
+    DirectX::ScratchImage image;
+    auto hr = LoadFromDDSFile(path.GetString(),
+                              DirectX::DDS_FLAGS_NONE,
+                              nullptr, image);
+    if (FAILED(hr)) {
+        ATLTRACE("Failed to load DDS file: %s\n", path.GetString());
+        return FALSE;
+    }
+
+    m_path = path;
+
+    return LoadImage(image);
+}
+
+BOOL ImageView::SaveFile()
+{
+    return FALSE;
+}
+
+BOOL ImageView::SaveFileAs(const CString& path)
+{
+    return FALSE;
+}
+
+BOOL ImageView::LoadImage(const DirectX::ScratchImage& image)
 {
     auto hr = CreateDevResources();
     if (FAILED(hr)) {
         ATLTRACE("Failed to create device resources\n");
-        return FALSE;
-    }
-
-    DirectX::ScratchImage image;
-    hr = LoadFromDDSFile(path.GetString(),
-                         DirectX::DDS_FLAGS_NONE,
-                         nullptr, image);
-    if (FAILED(hr)) {
-        ATLTRACE("Failed to load DDS file: %s\n", path.GetString());
         return FALSE;
     }
 
@@ -239,26 +254,28 @@ BOOL DDSFileView::LoadFile(const CString& path)
     }
 
     DirectX::ScratchImage decompressed;
-    hr = Decompress(
-        *img,
-        DXGI_FORMAT_UNKNOWN, // let it choose a good format
-        decompressed
-    );
+    if (DirectX::IsCompressed(img->format)) {
+        hr = Decompress(
+            *img,
+            DXGI_FORMAT_UNKNOWN, // let it choose a good format
+            decompressed
+        );
 
-    if (FAILED(hr)) {
-        ATLTRACE("Failed to decompress image\n");
-        return FALSE;
-    }
+        if (FAILED(hr)) {
+            ATLTRACE("Failed to decompress image\n");
+            return FALSE;
+        }
 
-    const auto* tmpImg = decompressed.GetImage(0, 0, 0);
-    if (!tmpImg) {
-        ATLTRACE("No decompressed image\n");
-        return FALSE;
+        img = decompressed.GetImage(0, 0, 0);
+        if (!img) {
+            ATLTRACE("No decompressed image\n");
+            return FALSE;
+        }
     }
 
     DirectX::ScratchImage converted;
     hr = Convert(
-        *tmpImg,
+        *img,
         DXGI_FORMAT_B8G8R8A8_UNORM,
         DirectX::TEX_FILTER_DEFAULT,
         DirectX::TEX_THRESHOLD_DEFAULT,
@@ -284,6 +301,8 @@ BOOL DDSFileView::LoadFile(const CString& path)
         return FALSE;
     }
 
+    Release();
+
     hr = m_pRenderTarget->CreateBitmap(
         D2D1::SizeU(static_cast<UINT32>(imgBGRA->width), static_cast<UINT32>(imgBGRA->height)),
         imgBGRA->pixels,
@@ -301,53 +320,50 @@ BOOL DDSFileView::LoadFile(const CString& path)
     m_nDocHeight = static_cast<LONG>(imgBGRA->height);
     m_ScrollPos = {0, 0};
 
+    Invalidate();
+
     return TRUE;
 }
 
-BOOL DDSFileView::SaveFile()
+void ImageView::Release()
 {
-    return TRUE;
-}
-
-BOOL DDSFileView::SaveFileAs(const CString& path)
-{
-    return TRUE;
-}
-
-BOOL DDSFileView::Destroy()
-{
-    DiscardDevResources();
     m_bitmap.Release();
-
-    return DestroyWindow();
 }
 
-BOOL DDSFileView::IsDirty() const
-{
-    return FALSE;
-}
-
-const CString& DDSFileView::GetPath() const
+const CString& ImageView::GetPath() const
 {
     return m_path;
 }
 
-void DDSFileView::SetPath(const CString& path)
+void ImageView::SetPath(const CString& path)
 {
     m_path = path;
 }
 
-FileEncoding DDSFileView::GetEncoding() const
+FileEncoding ImageView::GetEncoding() const
 {
     return UNKNOWN;
 }
 
-DDSFileView::operator HWND() const
+ImageView::operator HWND() const
 {
     return m_hWnd;
 }
 
-HRESULT DDSFileView::CreateDevResources()
+BOOL ImageView::Destroy()
+{
+    Release();
+    DiscardDevResources();
+
+    return DestroyWindow();
+}
+
+BOOL ImageView::IsDirty() const
+{
+    return FALSE;
+}
+
+HRESULT ImageView::CreateDevResources()
 {
     DiscardDevResources();
 
@@ -382,7 +398,7 @@ HRESULT DDSFileView::CreateDevResources()
     return S_OK;
 }
 
-void DDSFileView::DiscardDevResources()
+void ImageView::DiscardDevResources()
 {
     m_pRenderTarget.Release();
 }

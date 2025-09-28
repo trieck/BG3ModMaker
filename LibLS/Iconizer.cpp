@@ -3,9 +3,11 @@
 #include "Iconizer.h"
 #include "StringHelper.h"
 #include "XmlWrapper.h"
+#include "LSFReader.h"
 
 #include <DirectXTex.h>
 #include <filesystem>
+
 
 static constexpr auto COMMIT_SIZE = 1000;
 
@@ -32,11 +34,6 @@ static DirectX::ScratchImage cropIcon(const DirectX::Image* atlas, uint32_t left
 
 Iconizer::Iconizer()
 {
-    auto hr = CoInitialize(nullptr);
-    if (FAILED(hr)) {
-        throw Exception("Failed to initialize COM library");
-    }
-
     auto gameDataPath = m_settings.GetString("Settings", "GameDataPath", "");
     if (gameDataPath.IsEmpty()) {
         throw Exception("Game data path is not set in settings");
@@ -55,8 +52,6 @@ Iconizer::Iconizer()
 Iconizer::~Iconizer()
 {
     close();
-
-    CoUninitialize();
 }
 
 void Iconizer::close()
@@ -96,19 +91,13 @@ void Iconizer::iconize(const char* pakFile, const char* dbName, bool overwrite)
         m_listener->onStart(m_reader.files().size());
     }
 
-    rocksdb::Options options;
-    options.create_if_missing = true;
-
     close();
 
     if (overwrite) {
-        DestroyDB(dbName, options);
+        DestroyDB(dbName, rocksdb::Options());
     }
 
-    auto status = rocksdb::DB::Open(options, dbName, &m_db);
-    if (!status.ok()) {
-        throw Exception(std::format("Failed to open RocksDB database: {}", status.ToString()));
-    }
+    open(dbName);
 
     m_batch.Clear();
 
@@ -142,7 +131,7 @@ void Iconizer::iconize(const char* pakFile, const char* dbName, bool overwrite)
     m_db->Write(rocksdb::WriteOptions(), &m_batch);
     m_batch.Clear();
 
-    status = m_db->Flush(rocksdb::FlushOptions());
+    auto status = m_db->Flush(rocksdb::FlushOptions());
     if (!status.ok()) {
         throw Exception(std::format("Failed to flush RocksDB database: {}", status.ToString()));
     }
@@ -153,16 +142,43 @@ void Iconizer::open(const char* dbName)
     close();
 
     rocksdb::Options options;
+    options.create_if_missing = true;
 
     auto status = rocksdb::DB::Open(options, dbName, &m_db);
     if (!status.ok()) {
-        throw Exception("Failed to open RocksDB database: " + status.ToString());
+        throw Exception(std::format("Failed to open RocksDB database: {}", status.ToString()));
     }
 }
 
 void Iconizer::setProgressListener(IIconizerProgressListener* listener)
 {
     m_listener = listener;
+}
+
+DirectX::ScratchImage Iconizer::getIcon(const std::string& key)
+{
+    if (!isOpen()) {
+        throw Exception("Database is not open");
+    }
+
+    std::string value;
+    auto status = m_db->Get(rocksdb::ReadOptions(), key, &value);
+    if (!status.ok()) {
+        throw Exception(std::format("Failed to get icon from database: {}", status.ToString()));
+    }
+
+    DirectX::ScratchImage image;
+    auto hr = LoadFromDDSMemory(
+        reinterpret_cast<const uint8_t*>(value.data()),
+        value.size(),
+        DirectX::DDS_FLAGS_NONE,
+        nullptr,
+        image);
+    if (FAILED(hr)) {
+        throw Exception("Failed to load icon texture from memory");
+    }
+
+    return image;
 }
 
 DirectX::ScratchImage Iconizer::loadIconTexture(const std::string& path)
@@ -333,4 +349,46 @@ void Iconizer::iconizeLSXFile(const PackagedFileInfo& file)
 
 void Iconizer::iconizeLSFFile(const PackagedFileInfo& file)
 {
+    auto buffer = m_reader.readFile(file.name);
+
+    LSFReader reader;
+    auto resource = reader.read(buffer);
+
+    auto regions = resource->regions;
+    for (const auto& [regionName, region] : regions) {
+        if (regionName == "TextureAtlasInfo") {
+            std::cout << "Found a TextureAtlasInfo region in " << file.name << std::endl;
+        }
+    }
+
+    // for (const auto& val : resource->regions | std::views::values) {
+    //     iconizeRegion(file.name, val);
+    // }
+}
+
+void Iconizer::iconizeRegion(const std::string& fileName, const Region::Ptr& region)
+{
+    for (const auto& val : region->children | std::views::values) {
+        iconizeNodes(fileName, val);
+    }
+}
+
+void Iconizer::iconizeNodes(const std::string& filename, const std::vector<LSNode::Ptr>& nodes)
+{
+    for (const auto& node : nodes) {
+        iconizeNode(filename, node);
+    }
+}
+
+void Iconizer::iconizeNode(const std::string& filename, const LSNode::Ptr& node)
+{
+    for (const auto& [key, val] : node->attributes) {
+        std::cout << key << " = " << val.str() << std::endl;
+    }
+
+    for (const auto& val : node->children | std::views::values) {
+        for (const auto& childNode : val) {
+            iconizeNode(filename, childNode);
+        }
+    }
 }

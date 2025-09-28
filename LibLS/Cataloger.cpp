@@ -40,6 +40,7 @@ void Cataloger::open(const char* dbName)
     close();
 
     rocksdb::Options options;
+    options.create_if_missing = true;
 
     auto status = rocksdb::DB::Open(options, dbName, &m_db);
     if (!status.ok()) {
@@ -63,19 +64,13 @@ void Cataloger::catalog(const char* pakFile, const char* dbName, bool overwrite)
         m_listener->onStart(m_reader.files().size());
     }
 
-    rocksdb::Options options;
-    options.create_if_missing = true;
-
     close();
 
     if (overwrite) {
-        DestroyDB(dbName, options);
+        DestroyDB(dbName, rocksdb::Options());
     }
 
-    auto status = rocksdb::DB::Open(options, dbName, &m_db);
-    if (!status.ok()) {
-        throw Exception("Failed to open RocksDB database: " + status.ToString());
-    }
+    open(dbName);
 
     m_batch.Clear();
 
@@ -111,7 +106,7 @@ void Cataloger::catalog(const char* pakFile, const char* dbName, bool overwrite)
     m_db->Write(rocksdb::WriteOptions(), &m_batch);
     m_batch.Clear();
 
-    status = m_db->Flush(rocksdb::FlushOptions());
+    auto status = m_db->Flush(rocksdb::FlushOptions());
     if (!status.ok()) {
         throw Exception("Failed to flush RocksDB database: " + status.ToString());
     }

@@ -146,6 +146,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CoInit.h" />
     <ClInclude Include="CoMemory.h" />
     <ClInclude Include="COMError.h" />
     <ClInclude Include="CRC32.h" />
@@ -174,6 +175,7 @@
     <ClInclude Include="UUIDT.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CoInit.cpp" />
     <ClCompile Include="CoMemory.cpp" />
     <ClCompile Include="COMError.cpp" />
     <ClCompile Include="CRC32.cpp" />

@@ -1,20 +1,20 @@
 #pragma once
-
-#include <d2d1.h>
+#pragma once
 
 #include "IFileView.h"
+
+#include <d2d1.h>
 #include <DirectXTex.h>
 
-class DDSFileView : public CWindowImpl<DDSFileView>, public IFileView
+class ImageView : public CWindowImpl<ImageView>, public IFileView
 {
 public:
     using Base = CWindowImpl;
-    using Ptr = std::shared_ptr<DDSFileView>;
 
-    DDSFileView();
-    ~DDSFileView() override = default;
+    ImageView();
+    ~ImageView() override = default;
 
-    BEGIN_MSG_MAP(DDSFileView)
+    BEGIN_MSG_MAP(IconView)
         MSG_WM_CREATE(OnCreate)
         MSG_WM_PAINT2(OnPaint)
         MSG_WM_SIZE(OnSize)
@@ -23,7 +23,7 @@ public:
         MSG_WM_MOUSEWHEEL(OnMouseWheel)
     END_MSG_MAP()
 
-    DECLARE_WND_SUPERCLASS(L"DDSFileView", nullptr)
+    DECLARE_WND_SUPERCLASS(L"ImageView", nullptr)
 
     LRESULT OnCreate(LPCREATESTRUCT pcs);
     LRESULT OnPaint(CPaintDC dc);
@@ -44,6 +44,9 @@ public:
     VOID SetPath(const CString& path) override;
     FileEncoding GetEncoding() const override;
     operator HWND() const override;
+
+    BOOL LoadImage(const DirectX::ScratchImage& image);
+    void Release();
 
 private:
     HRESULT CreateDevResources();

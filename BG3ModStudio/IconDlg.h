@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Iconizer.h"
+#include "ImageView.h"
 #include "ModelessDialog.h"
 #include "resources/resource.h"
 
@@ -60,7 +61,7 @@ private:
 
     CSplitterWindow m_splitter;
     CListBox m_list;
-    CStatic m_iconView;
+    ImageView m_iconView;
     CStatic m_pageInfo;
     CFont m_font;
     CString m_dbPath;

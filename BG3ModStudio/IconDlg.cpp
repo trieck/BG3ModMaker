@@ -46,8 +46,8 @@ BOOL IconDlg::OnInitDialog(HWND, LPARAM)
     m_font = AtlCreateControlFont();
     m_list.SetFont(m_font);
 
-    m_iconView.Create(m_splitter, rcDefault, nullptr,
-                      WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_CLIENTEDGE, ID_ICON_VIEW);
+    m_iconView.Create(m_splitter, rcDefault, 
+                      WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_CLIENTEDGE);
     ATLASSERT(m_iconView.IsWindow());
 
     m_splitter.SetSplitterPane(0, m_list);
@@ -188,4 +188,9 @@ size_t IconDlg::GetPageCount() const
 
 void IconDlg::RenderIcon(const DirectX::ScratchImage& icon)
 {
+    if (!m_iconView.IsWindow()) {
+        return;
+    }
+
+    m_iconView.LoadImage(icon);
 }

@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "BinaryFileView.h"
-#include "DDSFileView.h"
+#include "ImageView.h"
 #include "Exception.h"
 #include "FileStream.h"
 #include "FileViewFactory.h"
@@ -61,7 +61,7 @@ IFileView::Ptr FileViewFactory::CreateFileView(const CString& path, HWND parent,
     IFileView::Ptr fileView;
 
     if (IsDDSFile(path)) {
-        fileView = std::make_shared<DDSFileView>();
+        fileView = std::make_shared<ImageView>();
     } else if (IsBinaryFile(path)) {
         fileView = std::make_shared<BinaryFileView>();
     } else {

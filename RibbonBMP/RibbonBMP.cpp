@@ -20,7 +20,7 @@ int wmain(int argc, wchar_t* argv[])
         wprintf(L"usage: %s <input-image> <output.bmp> [size]\n", argv[0]);
         return 1;
     }
-    
+
     if (!gdiplus.Init()) {
         std::wcerr << L"Failed to initialize GDI+." << std::endl;
         return 1;
@@ -48,7 +48,7 @@ int wmain(int argc, wchar_t* argv[])
 void makeRibbonBMP(wchar_t* inputImage, wchar_t* outputImage, int size)
 {
     std::unique_ptr<Bitmap> bmp;
-    
+
     // If the input is an ICO file, extract the best 32x32 icon
     if (wcsstr(inputImage, L".ico") != nullptr) {
         HICON hIcon;
@@ -86,8 +86,19 @@ void makeRibbonBMP(wchar_t* inputImage, wchar_t* outputImage, int size)
     auto* pixels = static_cast<uint32_t*>(bmpData.Scan0);
     auto pixelCount = resized.GetWidth() * resized.GetHeight();
     for (auto i = 0u; i < pixelCount; i++) {
-        if ((pixels[i] & 0x00FFFFFF) == 0x00000000) { // If RGB is (0,0,0), set alpha to 0
+        auto r = (pixels[i] >> 16) & 0xFF;
+        auto g = (pixels[i] >> 8) & 0xFF;
+        auto b = pixels[i] & 0xFF;
+
+        // Anything that's near-black, kill it
+        if (r <= 20 && g <= 20 && b <= 20) {
             pixels[i] = 0x00000000;
+        } else {
+            // If alpha is not 255, force RGB to 0
+            uint8_t alpha = (pixels[i] >> 24) & 0xFF;
+            if (alpha < 255) {
+                pixels[i] &= 0xFF000000; // keep alpha, zero RGB
+            }
         }
     }
 
