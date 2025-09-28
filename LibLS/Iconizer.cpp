@@ -279,9 +279,7 @@ void Iconizer::iconizeLSXFile(const PackagedFileInfo& file)
 
     DirectX::ScratchImage decompressed;
     if (DirectX::IsCompressed(srcImage->format)) {
-        auto hr = Decompress(
-            texture.GetImage(0, 0, 0), 1, texture.GetMetadata(),
-            DXGI_FORMAT_R8G8B8A8_UNORM, decompressed);
+        auto hr = Decompress(*srcImage, DXGI_FORMAT_UNKNOWN, decompressed);
         if (FAILED(hr)) {
             throw Exception("Failed to decompress atlas DDS");
         }

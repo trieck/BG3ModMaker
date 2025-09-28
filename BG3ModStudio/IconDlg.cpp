@@ -7,7 +7,27 @@ static constexpr auto PAGE_SIZE = 25;
 
 BOOL IconDlg::OnIdle()
 {
-    return 0;
+    auto pageCount = GetPageCount();
+
+    bool enableNext = m_nPage + 1 < static_cast<int>(pageCount) && pageCount > 0;
+    if (m_iterator && m_iterator->hasPrefix()) {
+        enableNext = true; // We can't know the total pages with a prefix, so always enable
+    }
+
+    bool enablePrev = m_nPage > 0 && pageCount > 0;
+    if (m_iterator && m_iterator->hasPrefix()) {
+        enablePrev = true; // We can't know the total pages with a prefix, so always enable
+    }
+
+    UIEnable(IDC_B_ICON_FIRST_PAGE, enablePrev);
+    UIEnable(IDC_B_ICON_PREV_PAGE, enablePrev);
+    UIEnable(IDC_B_ICON_NEXT_PAGE, enableNext);
+    UIEnable(IDC_B_ICON_LAST_PAGE, enableNext);
+
+    UpdatePageInfo();
+    UIUpdateChildWindows(TRUE);
+
+    return FALSE;
 }
 
 BOOL IconDlg::OnInitDialog(HWND, LPARAM)
@@ -46,7 +66,7 @@ BOOL IconDlg::OnInitDialog(HWND, LPARAM)
     m_font = AtlCreateControlFont();
     m_list.SetFont(m_font);
 
-    m_iconView.Create(m_splitter, rcDefault, 
+    m_iconView.Create(m_splitter, rcDefault,
                       WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_CLIENTEDGE);
     ATLASSERT(m_iconView.IsWindow());
 
@@ -76,6 +96,8 @@ void IconDlg::OnIconSelChange()
         return;
     }
 
+    m_iconView.Release();
+
     CWaitCursor cursor;
 
     CString iconID;
@@ -102,18 +124,72 @@ void IconDlg::OnClose()
 
 void IconDlg::OnFirstPage()
 {
+    m_nPage = 0;
+
+    if (!m_iterator) {
+        return;
+    }
+
+    m_iterator->first();
+
+    PopulateKeys();
+
+    m_iconView.Release();
 }
 
 void IconDlg::OnNextPage()
 {
+    if (!m_iterator) {
+        return;
+    }
+
+    if (!m_iterator->next()) {
+        return;
+    }
+
+    PopulateKeys();
+
+    m_iconView.Release();
+
+    auto pageCount = GetPageCount();
+
+    m_nPage = std::min(m_nPage + 1, static_cast<int>(pageCount) - 1);
 }
 
 void IconDlg::OnPrevPage()
 {
+    if (!m_iterator) {
+        return;
+    }
+
+    if (!m_iterator->prev()) {
+        return;
+    }
+
+    PopulateKeys();
+
+    m_iconView.Release();
+
+    m_nPage = std::max(0, m_nPage - 1);
 }
 
 void IconDlg::OnLastPage()
 {
+    if (!m_iterator) {
+        return;
+    }
+
+    if (!m_iterator->last()) {
+        return;
+    }
+
+    PopulateKeys();
+
+    m_iconView.Release();
+
+    auto pageCount = GetPageCount();
+
+    m_nPage = static_cast<int>(pageCount) - 1;
 }
 
 void IconDlg::OnQueryChange()
@@ -142,6 +218,7 @@ void IconDlg::OnSize(UINT, const CSize& size)
 void IconDlg::PopulateKeys()
 {
     m_list.ResetContent();
+    m_iconView.Release();
 
     if (!m_iterator) {
         return;
@@ -159,6 +236,7 @@ void IconDlg::Populate()
     Settings settings;
 
     m_list.ResetContent();
+    m_iconView.Release();
 
     m_iterator = nullptr;
 
@@ -179,11 +257,20 @@ void IconDlg::Populate()
 
 void IconDlg::UpdatePageInfo()
 {
+    CString pageInfo;
+
+    auto totalPages = GetPageCount();
+
+    if (totalPages > 0) {
+        pageInfo.Format(_T("Page %d of about %llu"), m_nPage + 1, totalPages);
+    }
+
+    m_pageInfo.SetWindowText(pageInfo);
 }
 
 size_t IconDlg::GetPageCount() const
 {
-    return 0;
+    return m_iterator ? m_iterator->totalPages() : 0;
 }
 
 void IconDlg::RenderIcon(const DirectX::ScratchImage& icon)

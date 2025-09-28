@@ -12,29 +12,39 @@ LRESULT ImageView::OnCreate(LPCREATESTRUCT pcs)
 {
     auto lRet = DefWindowProc();
 
+    (void)CreateDevResources();
+
     return lRet;
 }
 
 LRESULT ImageView::OnPaint(CPaintDC /*dc*/)
 {
-    if (!m_pRenderTarget || !m_bitmap) {
+    if (!m_pRenderTarget) {
         return 0;
     }
 
     m_pRenderTarget->BeginDraw();
-    m_pRenderTarget->Clear(D2D1::ColorF(D2D1::ColorF::Black));
 
-    float w = m_bitmap->GetSize().width * m_zoom;
-    float h = m_bitmap->GetSize().height * m_zoom;
+    auto cref = GetSysColor(COLOR_APPWORKSPACE);
+    auto r = GetRValue(cref) / 255.0f;
+    auto g = GetGValue(cref) / 255.0f;
+    auto b = GetBValue(cref) / 255.0f;
+    m_pRenderTarget->Clear(D2D1::ColorF(r, g, b));
 
-    D2D1_RECT_F destRect = D2D1::RectF(
-        -static_cast<FLOAT>(m_ScrollPos.x),
-        -static_cast<FLOAT>(m_ScrollPos.y),
-        -static_cast<FLOAT>(m_ScrollPos.x) + w,
-        -static_cast<FLOAT>(m_ScrollPos.y) + h
-    );
+    if (m_bitmap) {
+        auto w = m_bitmap->GetSize().width * m_zoom;
+        auto h = m_bitmap->GetSize().height * m_zoom;
 
-    m_pRenderTarget->DrawBitmap(m_bitmap, &destRect);
+        D2D1_RECT_F destRect = D2D1::RectF(
+            -static_cast<FLOAT>(m_ScrollPos.x),
+            -static_cast<FLOAT>(m_ScrollPos.y),
+            -static_cast<FLOAT>(m_ScrollPos.x) + w,
+            -static_cast<FLOAT>(m_ScrollPos.y) + h
+        );
+
+        m_pRenderTarget->DrawBitmap(m_bitmap, &destRect);
+    }
+
     auto hr = m_pRenderTarget->EndDraw();
     if (hr == D2DERR_RECREATE_TARGET) {
         (void)CreateDevResources();
@@ -255,12 +265,9 @@ BOOL ImageView::LoadImage(const DirectX::ScratchImage& image)
 
     DirectX::ScratchImage decompressed;
     if (DirectX::IsCompressed(img->format)) {
-        hr = Decompress(
-            *img,
-            DXGI_FORMAT_UNKNOWN, // let it choose a good format
-            decompressed
-        );
-
+        hr = Decompress(*img,
+                        DXGI_FORMAT_UNKNOWN, // let it choose a good format
+                        decompressed);
         if (FAILED(hr)) {
             ATLTRACE("Failed to decompress image\n");
             return FALSE;
@@ -328,6 +335,7 @@ BOOL ImageView::LoadImage(const DirectX::ScratchImage& image)
 void ImageView::Release()
 {
     m_bitmap.Release();
+    Invalidate();
 }
 
 const CString& ImageView::GetPath() const
