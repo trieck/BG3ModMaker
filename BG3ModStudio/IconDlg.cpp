@@ -194,10 +194,43 @@ void IconDlg::OnLastPage()
 
 void IconDlg::OnQueryChange()
 {
+    m_list.ResetContent();
+    m_iconView.Release();
+    m_iterator = nullptr;
+
+    CString id;
+    GetDlgItemText(IDC_E_QUERY_ICON, id);
+
+    if (id.IsEmpty()) {
+        Populate();
+    }
 }
 
 void IconDlg::OnSearch()
 {
+    m_list.ResetContent();
+    m_iconView.Release();
+
+    CString id;
+    GetDlgItemText(IDC_E_QUERY_ICON, id);
+
+    m_nPage = 0;
+
+    if (id.IsEmpty()) {
+        Populate();
+        return;
+    }
+
+    auto utf8Id = StringHelper::toUTF8(id);
+
+    try {
+        m_iterator = m_iconizer.newIterator(utf8Id.GetString(), PAGE_SIZE);
+        PopulateKeys();
+    } catch (const Exception& ex) {
+        CString msg;
+        msg.Format(_T("Failed to open game icon database: %s"), CString(ex.what()));
+        AtlMessageBox(*this, msg.GetString(), nullptr, MB_ICONERROR);
+    }
 }
 
 void IconDlg::OnSize(UINT, const CSize& size)
