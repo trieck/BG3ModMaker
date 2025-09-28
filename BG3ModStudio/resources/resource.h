@@ -26,14 +26,20 @@
 #define IDC_B_BROWSE_INDEX              124
 #define IDD_ATTRIBUTES                  125
 #define IDC_B_BROWSE_GAMEOBJECT         125
+#define IDC_B_BROWSE_GAMEDATA           126
 #define ID_TOOL_SETTINGS                127
+#define IDC_B_BROWSE_ICON               127
 #define IDD_SETTINGS                    128
 #define IDC_E_INDEX_FOLDER              129
 #define IDC_E_GAMEOBJECT_FOLDER         130
 #define ID_TOOL_LSF                     131
+#define IDC_E_GAMEDATA_FOLDER           131
 #define IDR_ATTRIBUTE_CONTEXT           132
+#define IDC_E_ICON_FOLDER               132
 #define ID_TOOL_GAMEOBJECT              133
 #define IDD_GAMEOBJECT                  134
+#define IDD_ICON_EXPLORER               135
+#define ID_TOOL_ICON_EXPLORER           136
 #define IDC_PROGRESS_INDEX              1000
 #define IDC_PAKFILE                     1001
 #define IDC_INDEX_FILE                  1002
@@ -59,6 +65,14 @@
 #define IDC_E_QUERY_GAMEOBJECT          1024
 #define IDC_GAMEOBJECT_PAGEINFO         1025
 #define IDC_B_SEARCH_GAMEOBJECT         1026
+#define IDC_E_QUERY_ICON                1027
+#define IDC_B_SEARCH_ICON               1028
+#define IDC_B_ICON_FIRST_PAGE           1029
+#define IDC_B_ICON_PREV_PAGE            1030
+#define IDC_B_ICON_NEXT_PAGE            1031
+#define IDC_B_ICON_LAST_PAGE            1032
+#define IDC_ICON_PAGEINFO               1033
+#define IDC_ST_ICON_EXPLORER            1034
 #define ATL_IDC_TAB_CONTROL             0x3020
 #define ID_APPLY_NOW                    0x3021
 #define ID_WIZBACK                      0x3023
@@ -76,6 +90,8 @@
 #define ID_ATTRIBUTE_COPYTYPE           40021
 #define ID_UUID_LIST                    40022
 #define ID_ATTRIBUTE_LIST               40023
+#define ID_ICON_VIEW                    40024
+#define ID_ICON_LIST                    40025
 #define ATL_IDS_IDLEMESSAGE             0xE001
 #define ID_FILE_NEW                     0xE100
 #define ID_FILE_OPEN                    0xE101
@@ -182,9 +198,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        136
-#define _APS_NEXT_COMMAND_VALUE         40024
-#define _APS_NEXT_CONTROL_VALUE         1027
+#define _APS_NEXT_RESOURCE_VALUE        137
+#define _APS_NEXT_COMMAND_VALUE         40026
+#define _APS_NEXT_CONTROL_VALUE         1035
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

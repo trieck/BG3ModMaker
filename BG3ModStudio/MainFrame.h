@@ -30,6 +30,7 @@ public:
     void OnFolderOpen();
     void OnFolderPack();
     void OnGameObject();
+    void OnIconExplorer();
     void OnIndex();
     void OnNewFile();
     void OnNewFileHere();
@@ -80,6 +81,7 @@ public:
         COMMAND_ID_HANDLER3(ID_TOOL_LSF, OnConvertLSF)
         COMMAND_ID_HANDLER3(ID_TOOL_PACKAGE, OnFolderPack)
         COMMAND_ID_HANDLER3(ID_TOOL_GAMEOBJECT, OnGameObject)
+        COMMAND_ID_HANDLER3(ID_TOOL_ICON_EXPLORER, OnIconExplorer)
         COMMAND_ID_HANDLER3(ID_TOOL_SEARCH, OnSearch)
         COMMAND_ID_HANDLER3(ID_TOOL_SETTINGS, OnSettings)
         COMMAND_ID_HANDLER3(ID_TREE_DELETE_FILE, OnDeleteFile)

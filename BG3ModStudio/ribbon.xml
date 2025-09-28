@@ -74,6 +74,12 @@
             <Command.TooltipDescription>Open Game Object Explorer</Command.TooltipDescription>
         </Command>
 
+        <Command Name="TOOL_ICON_EXPLORER" Symbol="ID_TOOL_ICON_EXPLORER" Id="136" Keytip="O">
+            <Command.LabelTitle>Icon Explorer...</Command.LabelTitle>
+            <Command.TooltipTitle>Icon Explorer</Command.TooltipTitle>
+            <Command.TooltipDescription>Open Icon Explorer</Command.TooltipDescription>
+        </Command>
+
         <Command Name="APP_ABOUT" Symbol="ID_APP_ABOUT" Id="0xE140" Keytip="O">
             <Command.LabelTitle>About BG3 Mod Studio...</Command.LabelTitle>
             <Command.TooltipTitle>About BG3 Mod Studio(Ctrl+Shift+A)</Command.TooltipTitle>
@@ -224,6 +230,7 @@
                                 <ControlNameDefinition Name="TOOL_SEARCH" />
                                 <ControlNameDefinition Name="TOOL_SETTINGS" />
                                 <ControlNameDefinition Name="TOOL_GAMEOBJECT" />
+                                <ControlNameDefinition Name="TOOL_ICON_EXPLORER" />
                             </ControlNameMap>
                             <GroupSizeDefinition Size="Large">
                                 <ControlSizeDefinition ControlName="TOOL_PACKAGE"
@@ -245,6 +252,9 @@
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="TOOL_GAMEOBJECT"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="TOOL_ICON_EXPLORER"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
                             </GroupSizeDefinition>
@@ -270,6 +280,9 @@
                                 <ControlSizeDefinition ControlName="TOOL_GAMEOBJECT"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="TOOL_ICON_EXPLORER"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
                             </GroupSizeDefinition>
                             <GroupSizeDefinition Size="Small">
                                 <ControlSizeDefinition ControlName="TOOL_PACKAGE"
@@ -293,6 +306,9 @@
                                 <ControlSizeDefinition ControlName="TOOL_GAMEOBJECT"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="TOOL_ICON_EXPLORER"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
                             </GroupSizeDefinition>
                         </SizeDefinition>
                         <Button CommandName="TOOL_PACKAGE" />
@@ -302,6 +318,7 @@
                         <Button CommandName="TOOL_SEARCH" />
                         <Button CommandName="TOOL_SETTINGS" />
                         <Button CommandName="TOOL_GAMEOBJECT" />
+                        <Button CommandName="TOOL_ICON_EXPLORER" />
                     </Group>
                 </Tab>
 

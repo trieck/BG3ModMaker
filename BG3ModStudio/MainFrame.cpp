@@ -4,6 +4,7 @@
 #include "FileDialogEx.h"
 #include "FileOperation.h"
 #include "GameObjectDlg.h"
+#include "IconDlg.h"
 #include "IndexDlg.h"
 #include "Localization.h"
 #include "MainFrame.h"
@@ -235,6 +236,27 @@ void MainFrame::OnGameObject()
     auto hWnd = dlg.Create(*this);
     if (hWnd == nullptr) {
         ATLTRACE(_T("Unable to create game object dialog.\n"));
+        return;
+    }
+
+    EnableWindow(FALSE);
+
+    dlg.ShowWindow(SW_SHOWNORMAL);
+    dlg.UpdateWindow();
+
+    dlg.RunModal();
+    dlg.Destroy();
+
+    EnableWindow(TRUE);
+    SetFocus();
+}
+
+void MainFrame::OnIconExplorer()
+{
+    IconDlg dlg;
+    auto hWnd = dlg.Create(*this);
+    if (hWnd == nullptr) {
+        ATLTRACE(_T("Unable to create icon explorer dialog.\n"));
         return;
     }
 

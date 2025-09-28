@@ -175,6 +175,7 @@
     <ClInclude Include="FolderMonitor.h" />
     <ClInclude Include="FormatToken.h" />
     <ClInclude Include="GameObjectDlg.h" />
+    <ClInclude Include="IconDlg.h" />
     <ClInclude Include="IndexDlg.h" />
     <ClInclude Include="ModelessDialog.h" />
     <ClInclude Include="OutputWindow.h" />
@@ -209,6 +210,7 @@
     <ClCompile Include="FileOperation.cpp" />
     <ClCompile Include="FolderMonitor.cpp" />
     <ClCompile Include="GameObjectDlg.cpp" />
+    <ClCompile Include="IconDlg.cpp" />
     <ClCompile Include="IndexDlg.cpp" />
     <ClCompile Include="OutputWindow.cpp" />
     <ClCompile Include="FileDialogEx.cpp" />
@@ -247,6 +249,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Image Include="icon-explorer.bmp" />
     <Image Include="resources\about.bmp" />
     <Image Include="resources\app.ico" />
     <Image Include="resources\bom.ico" />
@@ -258,6 +261,7 @@
     <Image Include="resources\game-object.bmp" />
     <Image Include="resources\gear.bmp" />
     <Image Include="resources\globe.bmp" />
+    <Image Include="resources\icon-explorer.bmp" />
     <Image Include="resources\index.bmp" />
     <Image Include="resources\lsf.bmp" />
     <Image Include="resources\nobom.ico" />
