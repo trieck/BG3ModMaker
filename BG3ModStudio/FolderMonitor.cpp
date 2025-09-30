@@ -103,9 +103,13 @@ void FolderMonitor::Monitor()
             CStringW path;
             path.Format(L"%s\\%s", m_directory.GetString(), fileName.GetString());
 
-            auto bstrFilename = SysAllocStringLen(path.GetString(), path.GetLength() * sizeof(WCHAR));
+            auto bstrFilename = SysAllocStringLen(path.GetString(), path.GetLength());
 
-            PostMessage(m_hWndTarget, WM_FILE_CHANGED, pFni->Action, reinterpret_cast<LPARAM>(bstrFilename));
+            if (bstrFilename == nullptr) {
+                ATLTRACE("Failed to allocate BSTR for file change path: %S\n", path.GetString());
+            } else {
+                PostMessage(m_hWndTarget, WM_FILE_CHANGED, pFni->Action, reinterpret_cast<LPARAM>(bstrFilename));
+            }
 
             if (pFni->NextEntryOffset == 0) {
                 break;
