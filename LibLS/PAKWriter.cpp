@@ -6,8 +6,8 @@
 #include "PAKWriter.h"
 #include "Stream.h"
 
-PAKWriter::PAKWriter(PackageBuildData build, const char* packagePath) : m_build(std::move(build)),
-                                                                        m_packagePath(packagePath)
+PAKWriter::PAKWriter(PackageBuildData build, const char* packagePath, ProgressCallback cb)
+    : m_build(std::move(build)), m_packagePath(packagePath), m_cb(std::move(cb))
 {
     m_metadata.version = static_cast<uint32_t>(m_build.version);
     m_metadata.flags = m_build.flags;
@@ -72,8 +72,7 @@ void PAKWriter::writeCompressedFileList(const std::vector<PackagedFileInfoCommon
 void PAKWriter::archiveHash(uint8_t digest[16])
 {
     // MD5 is computed over the contents of all files in an alphabetically sorted order
-    std::ranges::sort(m_build.files, [](const PackageBuildInputFile& a, const PackageBuildInputFile& b)
-    {
+    std::ranges::sort(m_build.files, [](const PackageBuildInputFile& a, const PackageBuildInputFile& b) {
         return std::ranges::lexicographical_compare(a.name, b.name);
     });
 
@@ -94,8 +93,13 @@ std::vector<PackagedFileInfoCommon> PAKWriter::packFiles()
     std::vector<PackagedFileInfoCommon> writtenFiles;
     writtenFiles.reserve(m_build.files.size());
 
-    for (const auto& file : m_build.files) {
+    for (size_t i = 0; i < m_build.files.size(); i++) {
+        const auto& file = m_build.files[i];
         writtenFiles.emplace_back(writeFile(file));
+
+        if (m_cb) {
+            m_cb(i + 1, m_build.files.size(), file.name);
+        }
     }
 
     return writtenFiles;
@@ -106,7 +110,7 @@ void PAKWriter::writePadding()
     int padLength;
     if (m_build.version <= PackageVersion::V9) {
         padLength = 0x1000;
-    }else {
+    } else {
         padLength = 0x40;
     }
 

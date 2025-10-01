@@ -5,7 +5,9 @@
 class PAKWriter
 {
 public:
-    PAKWriter(PackageBuildData build, const char* packagePath);
+    using ProgressCallback = std::function<void(size_t current, size_t total, const std::string& filename)>;
+
+    PAKWriter(PackageBuildData build, const char* packagePath, ProgressCallback cb = nullptr);
     ~PAKWriter() = default;
 
     void write();
@@ -23,4 +25,5 @@ private:
     FileStream m_stream;
     Package m_package;
     std::string m_packagePath;
+    ProgressCallback m_cb;
 };

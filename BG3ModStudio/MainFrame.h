@@ -112,8 +112,6 @@ private:
     void AddFile(const CString& filename);
     void IterateFiles(HTREEITEM hItem, const FileCallback& callback);
     void LogMessage(const CString& message);
-    void PreloadTree();
-    void PreloadTree(HTREEITEM hItem);
     void ProcessFileChange(UINT action, const CString& filename);
     void RemoveFile(const CString& filename);
     void RenameFile(const CString& oldname, const CString& newname);

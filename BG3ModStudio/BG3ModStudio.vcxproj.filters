@@ -122,6 +122,24 @@
     <ClInclude Include="IconDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="PAKWizard.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PAKWizSheet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PAKWizWelcomePage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PAKWizFilePage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PAKWizBuildPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PAKIgnore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BG3ModStudio.cpp">
@@ -196,6 +214,24 @@
     <ClCompile Include="IconDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PAKWizard.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PAKWizSheet.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PAKWizWelcomePage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PAKWizFilePage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PAKWizBuildPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PAKIgnore.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="ribbon.xml">
@@ -263,7 +299,12 @@
     <Image Include="resources\icon-explorer.bmp">
       <Filter>Resources</Filter>
     </Image>
-    <Image Include="icon-explorer.bmp" />
+    <Image Include="resources\pak.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="resources\pak-large.bmp">
+      <Filter>Resources</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\BG3ModStudio.rc">

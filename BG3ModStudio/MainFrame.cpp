@@ -8,7 +8,7 @@
 #include "IndexDlg.h"
 #include "Localization.h"
 #include "MainFrame.h"
-#include "PAKWriter.h"
+#include "PAKWizard.h"
 #include "ResourceUtils.h"
 #include "SearchDlg.h"
 #include "SettingsDlg.h"
@@ -179,55 +179,8 @@ void MainFrame::OnFolderPack()
         return;
     }
 
-    auto filter = L"PAK Files (*.pak)\0*.pak\0"
-        L"All Files(*.*)\0*.*\0\0";
-
-    FileDialogEx dlg(FileDialogEx::Save, *this, nullptr, nullptr, 0, filter);
-    auto hr = dlg.Construct();
-    if (FAILED(hr)) {
-        return;
-    }
-
-    if (dlg.DoModal() != IDOK) {
-        return;
-    }
-
-    auto filename = dlg.paths().front();
-
-    CWaitCursor wait;
-    PreloadTree();
-
-    PackageBuildData build{};
-    build.version = PackageHeaderCommon::currentVersion;
-    build.compression = CompressionMethod::NONE;
-    build.compressionLevel = LSCompressionLevel::DEFAULT;
-
-    IterateFiles(m_folderView.GetRootItem(), [&](const CString& filePath) {
-        CString message;
-        message.Format(L"Adding file:\"%s\" to PAK...", filePath);
-        LogMessage(message);
-
-        auto relativePath = filePath.Mid(rootPath.GetLength() + 1);
-        relativePath.Replace(_T("\\"), _T("/"));
-
-        PackageBuildInputFile input;
-        input.filename = StringHelper::toUTF8(filePath);
-        input.name = StringHelper::toUTF8(relativePath);
-
-        build.files.emplace_back(input);
-    });
-
-    auto utf8Filename = StringHelper::toUTF8(filename);
-
-    PAKWriter writer(build, utf8Filename);
-
-    try {
-        writer.write();
-        AtlMessageBox(*this, L"Package created successfully.", nullptr, MB_ICONINFORMATION);
-    } catch (const std::exception& e) {
-        LogMessage(CString(e.what()));
-        AtlMessageBox(*this, L"An error occurred while creating the package.", nullptr, MB_ICONERROR);
-    }
+    PAKWizard wizard(rootPath);
+    wizard.Execute();
 }
 
 void MainFrame::OnGameObject()
@@ -958,31 +911,6 @@ void MainFrame::IterateFiles(HTREEITEM hItem, const FileCallback& callback)
 
         hItem = m_folderView.GetNextSiblingItem(hItem);
     } while (hItem);
-}
-
-void MainFrame::PreloadTree()
-{
-    m_folderView.LockWindowUpdate(TRUE);
-    PreloadTree(m_folderView.GetRootItem());
-    m_folderView.LockWindowUpdate(FALSE);
-}
-
-void MainFrame::PreloadTree(HTREEITEM hItem)
-{
-    while (hItem != nullptr) {
-        if (m_folderView.ItemHasChildren(hItem)) {
-            UINT state = m_folderView.GetItemState(hItem, TVIS_EXPANDED);
-
-            if (!(state & TVIS_EXPANDED)) {
-                m_folderView.Expand(hItem, TVE_EXPAND);
-                PreloadTree(m_folderView.GetChildItem(hItem));
-                m_folderView.Expand(hItem, TVE_COLLAPSE);
-            } else {
-                PreloadTree(m_folderView.GetChildItem(hItem));
-            }
-        }
-        hItem = m_folderView.GetNextSiblingItem(hItem);
-    }
 }
 
 void MainFrame::LogMessage(const CString& message)

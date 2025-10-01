@@ -180,6 +180,12 @@
     <ClInclude Include="IndexDlg.h" />
     <ClInclude Include="ModelessDialog.h" />
     <ClInclude Include="OutputWindow.h" />
+    <ClInclude Include="PAKIgnore.h" />
+    <ClInclude Include="PAKWizard.h" />
+    <ClInclude Include="PAKWizBuildPage.h" />
+    <ClInclude Include="PAKWizFilePage.h" />
+    <ClInclude Include="PAKWizSheet.h" />
+    <ClInclude Include="PAKWizWelcomePage.h" />
     <ClInclude Include="ScintillaCtrl.h" />
     <ClInclude Include="ScintillaLoader.h" />
     <ClInclude Include="SearchDlg.h" />
@@ -220,6 +226,12 @@
     <ClCompile Include="FileViews.cpp" />
     <ClCompile Include="FolderView.cpp" />
     <ClCompile Include="MainFrame.cpp" />
+    <ClCompile Include="PAKIgnore.cpp" />
+    <ClCompile Include="PAKWizard.cpp" />
+    <ClCompile Include="PAKWizBuildPage.cpp" />
+    <ClCompile Include="PAKWizFilePage.cpp" />
+    <ClCompile Include="PAKWizSheet.cpp" />
+    <ClCompile Include="PAKWizWelcomePage.cpp" />
     <ClCompile Include="SearchDlg.cpp" />
     <ClCompile Include="SettingsDlg.cpp" />
     <ClCompile Include="ShellHelper.cpp" />
@@ -251,7 +263,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="icon-explorer.bmp" />
     <Image Include="resources\about.bmp" />
     <Image Include="resources\app.ico" />
     <Image Include="resources\bom.ico" />
@@ -269,6 +280,8 @@
     <Image Include="resources\nobom.ico" />
     <Image Include="resources\open.bmp" />
     <Image Include="resources\package.bmp" />
+    <Image Include="resources\pak-large.bmp" />
+    <Image Include="resources\pak.bmp" />
     <Image Include="resources\save.bmp" />
     <Image Include="resources\saveall.bmp" />
     <Image Include="resources\search.bmp" />

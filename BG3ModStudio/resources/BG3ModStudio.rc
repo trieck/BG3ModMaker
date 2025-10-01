@@ -203,6 +203,10 @@ ID_TOOL_GAMEOBJECT      BITMAP                  "game-object.bmp"
 
 ID_TOOL_ICON_EXPLORER   BITMAP                  "icon-explorer.bmp"
 
+IDB_PAK_HEADER          BITMAP                  "pak.bmp"
+
+IDB_PAK_LARGE           BITMAP                  "pak-large.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -317,6 +321,37 @@ BEGIN
     LTEXT           "",IDC_ST_ICON,7,7,295,162,0,WS_EX_CLIENTEDGE
 END
 
+IDD_PAKWIZ_WELCOME DIALOGEX 0, 0, 317, 193
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "BG3 PAK Builder"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    LTEXT           "BG3 PAK Builder",IDC_PAKWIZ_TITLE,127,8,163,16
+    CONTROL         "Generate Localization files (.loca) from XML",IDC_CHK_GENERATE_LOCA,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,127,116,164,10
+    LTEXT           "Welcome to the BG3 PAK Builder!\n\nThis wizard will guide you through packaging your module into a PAK file for use in Baldur’s Gate 3.\n\nClick Next to begin.",IDC_STATIC,127,40,183,57,SS_SUNKEN
+    CONTROL         "Generate LSF files from LSX",IDC_CHK_GENERATE_LSF,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,127,133,164,10
+END
+
+IDD_PAKWIZ_FILE DIALOGEX 0, 0, 317, 143
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "BG3 PAK Builder"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    LTEXT           "Please specify your target PAK file location.",IDC_STATIC,21,8,275,10
+    EDITTEXT        IDC_E_PAK_BUILDER,21,47,251,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_B_PAK_BUILDER_BROWSE,276,47,20,14
+END
+
+IDD_PAKWIZ_BUILD DIALOGEX 0, 0, 317, 143
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "BG3 PAK Builder"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+LTEXT           "Now building your PAK file...Just a moment...", IDC_STATIC, 21, 8, 275, 10
+CONTROL         "", IDC_PROGRESS_PAKWIZ, "msctls_progress32", WS_BORDER, 21, 66, 275, 9
+END
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -376,6 +411,42 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 169
     END
+
+    IDD_PAKWIZ_WELCOME, DIALOG
+    BEGIN
+        RIGHTMARGIN, 310
+        VERTGUIDE, 115
+        VERTGUIDE, 118
+        VERTGUIDE, 127
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 186
+        HORZGUIDE, 8
+        HORZGUIDE, 32
+        HORZGUIDE, 40
+        HORZGUIDE, 169
+    END
+
+    IDD_PAKWIZ_FILE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 310
+        VERTGUIDE, 21
+        VERTGUIDE, 296
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 136
+        HORZGUIDE, 8
+    END
+
+    IDD_PAKWIZ_BUILD, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 310
+        VERTGUIDE, 21
+        VERTGUIDE, 296
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 136
+        HORZGUIDE, 8
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -421,6 +492,21 @@ BEGIN
 END
 
 IDD_ICON AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_PAKWIZ_WELCOME AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_PAKWIZ_FILE AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_PAKWIZ_BUILD AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

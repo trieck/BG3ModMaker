@@ -7,13 +7,15 @@ struct PackagedFileInfoCommon;
 
 constexpr uint32_t PAK_MAGIC = 0x4B50534C;
 
-enum class PackageFlags : uint8_t {
-    allowMemoryMapping = 0x02,  // Allow memory-mapped access to the files in this archive.
+enum class PackageFlags : uint8_t
+{
+    allowMemoryMapping = 0x02, // Allow memory-mapped access to the files in this archive.
     Solid = 0x04, // All files are compressed into a single LZ4 stream
     Preload = 0x08 // Archive contents should be preloaded on game startup.
 };
 
-struct PAKHeader {
+struct PAKHeader
+{
     uint32_t version;
     uint64_t fileListOffset;
     uint32_t fileListSize;
@@ -61,7 +63,8 @@ struct PackageHeaderCommon
 
 #pragma pack(push, 1)
 
-struct LSPKHeader16 {
+struct LSPKHeader16
+{
     uint32_t version;
     uint64_t fileListOffset;
     uint32_t fileListSize;
@@ -75,7 +78,8 @@ struct LSPKHeader16 {
     static LSPKHeader16 fromCommon(const PackageHeaderCommon& h);
 };
 
-struct FileEntry18 {
+struct FileEntry18
+{
     char name[256];
     uint32_t offsetInFile1;
     uint16_t offsetInFile2;
@@ -121,7 +125,7 @@ struct PackageBuildInputFile
 
 struct PackageBuildData final
 {
-    PackageVersion version{PackageHeaderCommon::currentVersion };
+    PackageVersion version{PackageHeaderCommon::currentVersion};
     CompressionMethod compression{CompressionMethod::NONE};
     LSCompressionLevel compressionLevel{LSCompressionLevel::DEFAULT};
     PackageFlags flags{0};
