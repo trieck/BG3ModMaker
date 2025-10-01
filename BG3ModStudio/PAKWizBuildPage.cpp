@@ -1,16 +1,16 @@
 #include "stdafx.h"
+#include "Compress.h"
+#include "Localization.h"
+#include "Package.h"
 #include "PAKIgnore.h"
 #include "PAKWizBuildPage.h"
-#include "Package.h"
-#include "Compress.h"
+#include "PAKWriter.h"
+#include "Resource.h"
+#include "ResourceUtils.h"
+#include "StringHelper.h"
 
 #include <filesystem>
 #include <functional>
-
-#include "Exception.h"
-#include "PAKWriter.h"
-#include "StringHelper.h"
-
 
 namespace fs = std::filesystem;
 
@@ -115,51 +115,70 @@ DWORD PAKWizBuildPage::BuildProc(LPVOID pv)
 
     PAKIgnore ignore(root.GetString());
 
-    for_each_file(root.GetString(), [&](const fs::path& p) {
-        auto relativePath = relative(p, root.GetString());
-        if (ignore.IsIgnored(relativePath)) {
-            return;
-        }
-
-        PackageBuildInputFile input;
-        input.filename = p.string();
-        input.name = relativePath.string();
-
-        build.files.emplace_back(input); // FIXME: we must ensure no duplicates
-
-        // Convert .lsx to .lsf if needed
-        if (genLSF && _stricmp(p.extension().string().c_str(), ".lsx") == 0) {
-            input.filename = input.filename.substr(0, input.filename.length() - 4) + ".lsf";
-            input.name = input.name.substr(0, input.name.length() - 4) + ".lsf";
-
-            // TODO: Make an LSF from from LSX
-        }
-
-        // Convert .xml to .loca if needed
-        if (genLoca && _stricmp(p.extension().string().c_str(), ".xml") == 0) {
-            if (relativePath.string().find("Localization") == std::string::npos) {
-                // Skip localization XML files NOT in Localization folders
-                return;
-            }
-
-            input.filename = input.filename.substr(0, input.filename.length() - 5) + ".loca";
-            input.name = input.name.substr(0, input.name.length() - 5) + ".loca";
-
-            // TODO: Make a LOCA from XML
-        }
-    });
-
-    pThis->PostMessage(WM_PAK_RANGE, 0, static_cast<LPARAM>(build.files.size()));
-
-    auto utf8Filename = StringHelper::toUTF8(targetFile);
-    PAKWriter writer(build, utf8Filename,
-                     [pThis](size_t current, size_t total, const std::string& name) {
-                         pThis->PostMessage(WM_PAK_PROGRESS, static_cast<WPARAM>(current), static_cast<LPARAM>(total));
-                     });
+    auto replaceExt = [](const std::string& s, const std::string& newExt) {
+        fs::path p{s};
+        p.replace_extension(newExt);
+        return p.string();
+    };
 
     WPARAM wParam = 0;
 
     try {
+        std::unordered_set<std::string> seen;
+        for_each_file(root.GetString(), [&](const fs::path& p) {
+            auto relativePath = relative(p, root.GetString());
+            if (ignore.IsIgnored(relativePath)) {
+                return;
+            }
+
+            PackageBuildInputFile input;
+            input.filename = p.string();
+            input.name = relativePath.string();
+
+            auto ext = p.extension().string();
+            std::ranges::transform(ext, ext.begin(), ::tolower);
+
+            // Convert .lsx to .lsf if needed
+            if (genLSF && ext == ".lsx") {
+                input.filename = replaceExt(input.filename, ".lsf");
+                input.name = replaceExt(input.name, ".lsf");
+
+                auto resource = ResourceUtils::loadResource(p.string().c_str(), LSX);
+
+                ResourceUtils::saveResource(input.filename.c_str(), resource, LSF);
+            }
+
+            // Convert .xml to .loca if needed
+            if (genLoca && ext == ".xml") {
+                if (std::ranges::none_of(relativePath, [](const fs::path& part) {
+                    return part == "Localization";
+                })) {
+                    return; // skip files not in a "Localization" folder
+                }
+
+                input.filename = replaceExt(input.filename, ".loca");
+                input.name = replaceExt(input.name, ".loca");
+
+                auto resource = LocaXmlReader::Read(p.string());
+
+                LocaWriter::Write(input.filename, resource);
+            }
+
+            if (seen.emplace(input.name).second) { // Only add if not already seen
+                build.files.push_back(std::move(input));
+            }
+        });
+
+        pThis->PostMessage(WM_PAK_RANGE, 0, static_cast<LPARAM>(build.files.size()));
+
+        auto utf8Filename = StringHelper::toUTF8(targetFile);
+        PAKWriter writer(build, utf8Filename,
+                         [pThis](size_t current, size_t total, const std::string& name) {
+                             pThis->PostMessage(WM_PAK_PROGRESS, static_cast<WPARAM>(current),
+                                                static_cast<LPARAM>(total));
+                         });
+
+
         writer.write();
     } catch (const std::exception& e) {
         pThis->m_lastError = StringHelper::fromUTF8(e.what());
