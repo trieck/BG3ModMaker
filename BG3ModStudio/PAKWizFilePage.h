@@ -1,7 +1,6 @@
 #pragma once
 
 #include "PAKWizard.h"
-#include "Settings.h"
 #include "resources/resource.h"
 
 class PAKWizFilePage : public CWizard97InteriorPageImpl<PAKWizFilePage>
@@ -28,8 +27,8 @@ private:
     END_MSG_MAP()
 
     void OnBrowse();
+    CString GetModsPath() const;
 
-    Settings m_settings;
     PAKWizard* m_pWiz;
     CEdit m_filePath;
 };

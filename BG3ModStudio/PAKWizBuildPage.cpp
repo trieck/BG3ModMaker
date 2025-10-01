@@ -133,13 +133,20 @@ DWORD PAKWizBuildPage::BuildProc(LPVOID pv)
 
             PackageBuildInputFile input;
             input.filename = p.string();
-            input.name = relativePath.string();
+            input.name = relativePath.generic_string();
 
             auto ext = p.extension().string();
             std::ranges::transform(ext, ext.begin(), ::tolower);
 
-            // Convert .lsx to .lsf if needed
-            if (genLSF && ext == ".lsx") {
+            auto filename = fs::path(input.name).filename();
+
+            // never package meta.lsf
+            if (filename == "meta.lsf") {
+                return;
+            }
+
+            // Convert .lsx to .lsf if needed (ignoring meta.lsx)
+            if (genLSF && ext == ".lsx" && filename != "meta.lsx") {
                 input.filename = replaceExt(input.filename, ".lsf");
                 input.name = replaceExt(input.name, ".lsf");
 

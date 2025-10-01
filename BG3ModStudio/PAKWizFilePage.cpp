@@ -16,12 +16,11 @@ BOOL PAKWizFilePage::OnInitDialog(HWND hWnd, LPARAM lParam)
     m_filePath = GetDlgItem(IDC_E_PAK_BUILDER);
     ATLASSERT(m_filePath.IsWindow());
 
-    auto gameDataPath = m_settings.GetString(L"Settings", L"GameDataPath");
-
     const auto& root = m_pWiz->GetRoot();
     auto rootSuffix = fs::path(root.GetString()).filename();
 
-    auto fullPath = fs::path(gameDataPath.GetString()) / rootSuffix;
+    auto gameModPath = GetModsPath();
+    auto fullPath = fs::path(gameModPath.GetString()) / rootSuffix;
     fullPath.replace_extension(".pak");
 
     m_filePath.SetWindowText(fullPath.wstring().c_str());
@@ -43,8 +42,8 @@ void PAKWizFilePage::OnBrowse()
         return;
     }
 
-    auto gameDataPath = m_settings.GetString(L"Settings", L"GameDataPath");
-    hr = dlg.SetFolder(gameDataPath);
+    auto modsPath = GetModsPath();
+    hr = dlg.SetFolder(modsPath);
     if (FAILED(hr)) {
         return;
     }
@@ -54,6 +53,24 @@ void PAKWizFilePage::OnBrowse()
     }
 
     m_filePath.SetWindowText(dlg.paths().front());
+}
+
+CString PAKWizFilePage::GetModsPath() const
+{
+    PWSTR localAppDataPath = nullptr;
+    auto hr = SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, nullptr, &localAppDataPath);
+    if (FAILED(hr)) {
+        return "";
+    }
+
+    std::filesystem::path modsPath(localAppDataPath);
+    CoTaskMemFree(localAppDataPath);
+
+    modsPath /= L"Larian Studios";
+    modsPath /= L"Baldur's Gate 3";
+    modsPath /= L"Mods";
+
+    return modsPath.wstring().c_str();
 }
 
 int PAKWizFilePage::OnSetActive()

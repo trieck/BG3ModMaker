@@ -327,10 +327,10 @@ CAPTION "BG3 PAK Builder"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     LTEXT           "BG3 PAK Builder",IDC_PAKWIZ_TITLE,127,8,163,16
-    CONTROL         "Generate Localization files (.loca) from XML",IDC_CHK_GENERATE_LOCA,
+    CONTROL         "Convert Localization files from .xml to .loca",IDC_CHK_GENERATE_LOCA,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,127,116,164,10
     LTEXT           "Welcome to the BG3 PAK Builder!\n\nThis wizard will guide you through packaging your module into a PAK file for use in Baldur’s Gate 3.\n\nClick Next to begin.",IDC_STATIC,127,40,183,57,SS_SUNKEN
-    CONTROL         "Generate LSF files from LSX",IDC_CHK_GENERATE_LSF,
+    CONTROL         "Convert LSX files to LSF (except meta.lsx)",IDC_CHK_GENERATE_LSF,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,127,133,164,10
 END
 
@@ -349,9 +349,10 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "BG3 PAK Builder"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-LTEXT           "Now building your PAK file...Just a moment...", IDC_STATIC, 21, 8, 275, 10
-CONTROL         "", IDC_PROGRESS_PAKWIZ, "msctls_progress32", WS_BORDER, 21, 66, 275, 9
+    LTEXT           "Now building your PAK file...Just a moment...",IDC_STATIC,21,8,275,10
+    CONTROL         "",IDC_PROGRESS_PAKWIZ,"msctls_progress32",WS_BORDER,21,66,275,9
 END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
