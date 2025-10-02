@@ -20,12 +20,6 @@
             <Command.TooltipDescription>Close the Folder</Command.TooltipDescription>
         </Command>
 
-        <Command Name="TOOL_PACKAGE" Symbol="ID_TOOL_PACKAGE" Id="104" Keytip="O">
-            <Command.LabelTitle>Create a PAK file...</Command.LabelTitle>
-            <Command.TooltipTitle>Create a PAK file(Ctrl+P)</Command.TooltipTitle>
-            <Command.TooltipDescription>Create a PAK file</Command.TooltipDescription>
-        </Command>
-
         <Command Name="FILE_SAVE" Symbol="ID_FILE_SAVE" Id="0xE103" Keytip="O">
             <Command.LabelTitle>Save Current File...</Command.LabelTitle>
             <Command.TooltipTitle>Save Current File(Ctrl+S)</Command.TooltipTitle>
@@ -36,6 +30,12 @@
             <Command.LabelTitle>Save All Files...</Command.LabelTitle>
             <Command.TooltipTitle>Save All File(Ctrl+A)</Command.TooltipTitle>
             <Command.TooltipDescription>Save All File</Command.TooltipDescription>
+        </Command>
+
+        <Command Name="TOOL_PACKAGE" Symbol="ID_TOOL_PACKAGE" Id="104" Keytip="O">
+            <Command.LabelTitle>Create a PAK file...</Command.LabelTitle>
+            <Command.TooltipTitle>Create a PAK file(Ctrl+P)</Command.TooltipTitle>
+            <Command.TooltipDescription>Create a PAK file</Command.TooltipDescription>
         </Command>
 
         <Command Name="TOOL_LOCA" Symbol="ID_TOOL_LOCA" Id="114" Keytip="O">
@@ -78,6 +78,12 @@
             <Command.LabelTitle>Icon Explorer...</Command.LabelTitle>
             <Command.TooltipTitle>Icon Explorer</Command.TooltipTitle>
             <Command.TooltipDescription>Open Icon Explorer</Command.TooltipDescription>
+        </Command>
+
+        <Command Name="TOOL_UUID" Symbol="ID_TOOL_UUID" Id="146" Keytip="O">
+            <Command.LabelTitle>Generate a UUID...</Command.LabelTitle>
+            <Command.TooltipTitle>Generate a UUID</Command.TooltipTitle>
+            <Command.TooltipDescription>Generate a UUID</Command.TooltipDescription>
         </Command>
 
         <Command Name="APP_ABOUT" Symbol="ID_APP_ABOUT" Id="0xE140" Keytip="O">
@@ -231,6 +237,7 @@
                                 <ControlNameDefinition Name="TOOL_SETTINGS" />
                                 <ControlNameDefinition Name="TOOL_GAMEOBJECT" />
                                 <ControlNameDefinition Name="TOOL_ICON_EXPLORER" />
+                                <ControlNameDefinition Name="TOOL_UUID" />
                             </ControlNameMap>
                             <GroupSizeDefinition Size="Large">
                                 <ControlSizeDefinition ControlName="TOOL_PACKAGE"
@@ -255,6 +262,9 @@
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="TOOL_ICON_EXPLORER"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="TOOL_UUID"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
                             </GroupSizeDefinition>
@@ -283,6 +293,9 @@
                                 <ControlSizeDefinition ControlName="TOOL_ICON_EXPLORER"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="TOOL_UUID"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
                             </GroupSizeDefinition>
                             <GroupSizeDefinition Size="Small">
                                 <ControlSizeDefinition ControlName="TOOL_PACKAGE"
@@ -309,6 +322,9 @@
                                 <ControlSizeDefinition ControlName="TOOL_ICON_EXPLORER"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="TOOL_UUID"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
                             </GroupSizeDefinition>
                         </SizeDefinition>
                         <Button CommandName="TOOL_PACKAGE" />
@@ -316,9 +332,11 @@
                         <Button CommandName="TOOL_LSF" />
                         <Button CommandName="TOOL_INDEX" />
                         <Button CommandName="TOOL_SEARCH" />
-                        <Button CommandName="TOOL_SETTINGS" />
                         <Button CommandName="TOOL_GAMEOBJECT" />
                         <Button CommandName="TOOL_ICON_EXPLORER" />
+                        <Button CommandName="TOOL_UUID" />
+                        <Button CommandName="TOOL_SETTINGS" />
+
                     </Group>
                 </Tab>
 

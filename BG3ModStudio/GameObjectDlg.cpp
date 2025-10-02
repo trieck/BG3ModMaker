@@ -3,6 +3,7 @@
 #include "GameObjectDlg.h"
 #include "Settings.h"
 #include "StringHelper.h"
+#include "Util.h"
 
 static constexpr auto COLUMN_PADDING = 12;
 static constexpr auto PAGE_SIZE = 25;
@@ -94,7 +95,72 @@ BOOL GameObjectDlg::OnInitDialog(HWND, LPARAM)
     ATLASSERT(pLoop != NULL);
     pLoop->AddIdleHandler(this);
 
-    return FALSE; // Let the system set the focus
+    return TRUE; // Let the system set the focus
+}
+
+void GameObjectDlg::OnContextMenu(const CWindow& wnd, const CPoint& point)
+{
+    CRect rc;
+    m_attributes.GetWindowRect(&rc);
+
+    if (rc.PtInRect(point)) {
+        OnContextAttributes(point);
+        return;
+    }
+
+    m_list.GetWindowRect(&rc);
+    if (!rc.PtInRect(point)) {
+        return; // Click was outside the list
+    }
+
+    CMenu menu;
+    menu.LoadMenuW(IDR_VALUE_CONTEXT);
+
+    CMenuHandle popup = menu.GetSubMenu(0);
+    auto cmd = popup.TrackPopupMenu(TPM_RETURNCMD | TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, *this);
+    if (cmd == 0) {
+        return; // No command selected
+    }
+
+    auto curSel = m_list.GetCurSel();
+    if (curSel == LB_ERR) {
+        return; // No selection
+    }
+
+    CString text;
+    m_list.GetText(curSel, text);
+
+    if (text.IsEmpty()) {
+        return; // Nothing to copy
+    }
+
+    Util::CopyToClipboard(*this, text);
+}
+
+void GameObjectDlg::OnContextAttributes(const CPoint& point)
+{
+    CMenu menu;
+    menu.LoadMenuW(IDR_VALUE_CONTEXT);
+
+    CMenuHandle popup = menu.GetSubMenu(0);
+    auto cmd = popup.TrackPopupMenu(TPM_RETURNCMD | TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, *this);
+    if (cmd == 0) {
+        return; // No command selected
+    }
+
+    auto selectedRow = m_attributes.GetSelectedIndex();
+    if (selectedRow < 0) {
+        return; // No item selected
+    }
+
+    CString text;
+    m_attributes.GetItemText(selectedRow, 2, text);
+
+    if (text.IsEmpty()) {
+        return; // Nothing to copy
+    }
+
+    Util::CopyToClipboard(*this, text);
 }
 
 void GameObjectDlg::OnSize(UINT, const CSize& size)

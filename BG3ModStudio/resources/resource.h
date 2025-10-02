@@ -46,6 +46,11 @@
 #define IDB_PAK_LARGE                   141
 #define IDD_PAKWIZ_FILE                 142
 #define IDD_PAKWIZ_BUILD                143
+#define IDD_UUID                        144
+#define ID_TOOL_UUID                    146
+#define IDR_ATTRIBUTE_CONTEXT1          148
+#define IDR_VALUE_CONTEXT               148
+#define IDR_ENTRY_CONTEXT               149
 #define IDC_PROGRESS_INDEX              1000
 #define IDC_PAKFILE                     1001
 #define IDC_INDEX_FILE                  1002
@@ -87,6 +92,9 @@
 #define IDC_E_PAK_BUILDER               1040
 #define IDC_B_PAK_BUILDER_BROWSE        1041
 #define IDC_PROGRESS_PAKWIZ             1042
+#define IDC_ST_UUID                     1043
+#define IDC_GENERATE_UUID               1044
+#define IDC_CHK_UUID_HANDLE             1045
 #define ATL_IDC_TAB_CONTROL             0x3020
 #define ID_APPLY_NOW                    0x3021
 #define ID_WIZBACK                      0x3023
@@ -106,6 +114,11 @@
 #define ID_ATTRIBUTE_LIST               40023
 #define ID_ICON_VIEW                    40024
 #define ID_ICON_LIST                    40025
+#define ID_ATTRIBUTE                    40026
+#define ID_ATTRIBUTEMENU                40027
+#define ID_ATTRIBUTE_COPYENTRY          40028
+#define ID_ENTRY_COPYENTRY              40029
+#define ID_VALUE_COPYVALUE              40030
 #define ATL_IDS_IDLEMESSAGE             0xE001
 #define ID_FILE_NEW                     0xE100
 #define ID_FILE_OPEN                    0xE101
@@ -212,9 +225,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        143
-#define _APS_NEXT_COMMAND_VALUE         40026
-#define _APS_NEXT_CONTROL_VALUE         1043
+#define _APS_NEXT_RESOURCE_VALUE        148
+#define _APS_NEXT_COMMAND_VALUE         40031
+#define _APS_NEXT_CONTROL_VALUE         1046
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

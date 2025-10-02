@@ -140,6 +140,9 @@
     <ClInclude Include="PAKIgnore.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="UUIDDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BG3ModStudio.cpp">
@@ -232,6 +235,9 @@
     <ClCompile Include="PAKIgnore.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="UUIDDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="ribbon.xml">
@@ -303,6 +309,9 @@
       <Filter>Resources</Filter>
     </Image>
     <Image Include="resources\pak-large.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="resources\uuid.bmp">
       <Filter>Resources</Filter>
     </Image>
   </ItemGroup>

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "AttributeDlg.h"
 #include "IconDlg.h"
+#include "Util.h"
 
 static constexpr auto COLUMN_PADDING = 12;
 
@@ -141,20 +142,7 @@ void AttributeDlg::OnContextMenu(const CWindow& wnd, const CPoint& point)
         return; // Nothing to copy
     }
 
-    OpenClipboard();
-    EmptyClipboard();
-
-    auto hGlobal = GlobalAlloc(GMEM_MOVEABLE | GMEM_ZEROINIT, (text.GetLength() + 1) * sizeof(TCHAR));
-    if (hGlobal) {
-        auto pData = static_cast<LPTSTR>(GlobalLock(hGlobal));
-        if (pData) {
-            _tcscpy_s(pData, text.GetLength() + 1, text);
-            GlobalUnlock(hGlobal);
-            SetClipboardData(CF_UNICODETEXT, hGlobal);
-        }
-    }
-
-    CloseClipboard();
+    Util::CopyToClipboard(*this, text);
 }
 
 LRESULT AttributeDlg::OnDoubleClick(int idCtrl, LPNMHDR pnmh, BOOL& bHandled)
@@ -202,7 +190,7 @@ BOOL AttributeDlg::OnInitDialog(HWND, LPARAM)
     m_list = GetDlgItem(IDC_LST_ATTRIBUTES);
     ATLASSERT(m_list.IsWindow());
 
-    m_list.ModifyStyle(0, LVS_SINGLESEL);
+    m_list.ModifyStyle(0, LVS_REPORT | LVS_SINGLESEL);
     m_list.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
     LOGFONT lf = {};
@@ -235,5 +223,5 @@ BOOL AttributeDlg::OnInitDialog(HWND, LPARAM)
 
     CenterWindow(GetParent());
 
-    return FALSE; // Let the system set the focus
+    return TRUE; // Let the system set the focus
 }

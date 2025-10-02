@@ -36,6 +36,7 @@ public:
     void OnNewFileHere();
     void OnSearch();
     void OnSettings();
+    void OnUUID();
     void OnViewOutput();
     void OnViewStatusBar();
 
@@ -76,14 +77,15 @@ public:
         COMMAND_ID_HANDLER3(ID_FILE_OPEN, OnFolderOpen)
         COMMAND_ID_HANDLER3(ID_FILE_SAVE, OnFileSave)
         COMMAND_ID_HANDLER3(ID_FILE_SAVE_ALL, OnFileSaveAll)
+        COMMAND_ID_HANDLER3(ID_TOOL_GAMEOBJECT, OnGameObject)
+        COMMAND_ID_HANDLER3(ID_TOOL_ICON_EXPLORER, OnIconExplorer)
         COMMAND_ID_HANDLER3(ID_TOOL_INDEX, OnIndex)
         COMMAND_ID_HANDLER3(ID_TOOL_LOCA, OnConvertLoca)
         COMMAND_ID_HANDLER3(ID_TOOL_LSF, OnConvertLSF)
         COMMAND_ID_HANDLER3(ID_TOOL_PACKAGE, OnFolderPack)
-        COMMAND_ID_HANDLER3(ID_TOOL_GAMEOBJECT, OnGameObject)
-        COMMAND_ID_HANDLER3(ID_TOOL_ICON_EXPLORER, OnIconExplorer)
         COMMAND_ID_HANDLER3(ID_TOOL_SEARCH, OnSearch)
         COMMAND_ID_HANDLER3(ID_TOOL_SETTINGS, OnSettings)
+        COMMAND_ID_HANDLER3(ID_TOOL_UUID, OnUUID)
         COMMAND_ID_HANDLER3(ID_TREE_DELETE_FILE, OnDeleteFile)
         COMMAND_ID_HANDLER3(ID_TREE_DELETE_FOLDER, OnDeleteFile)
         COMMAND_ID_HANDLER3(ID_TREE_NEWFILEHERE, OnNewFileHere)

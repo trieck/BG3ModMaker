@@ -34,7 +34,8 @@ BOOL IndexDlg::OnInitDialog(HWND, LPARAM)
     ATLASSERT(m_overwriteCheckbox.IsWindow());
 
     CenterWindow(GetParent());
-    return FALSE; // Let the system set the focus
+
+    return TRUE; // Let the system set the focus
 }
 
 void IndexDlg::onStart(std::size_t totalEntries)

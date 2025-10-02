@@ -26,6 +26,7 @@ public:
         COMMAND_ID_HANDLER3(IDC_B_LAST, OnLast)
         COMMAND_ID_HANDLER3(IDC_B_BROWSE, OnBrowse)
         COMMAND_HANDLER3(IDC_E_QUERY, EN_CHANGE, OnQueryChange)
+        MSG_WM_CONTEXTMENU(OnContextMenu)
         CHAIN_MSG_MAP(CDialogResize)
     END_MSG_MAP()
 
@@ -51,6 +52,7 @@ private:
     void UpdatePageInfo();
 
     BOOL OnInitDialog(HWND /* hWnd */, LPARAM /*lParam*/);
+    void OnContextMenu(const CWindow& wnd, const CPoint& point);
     LRESULT OnDoubleClick(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
     void OnQueryChange();
     void OnBrowse();

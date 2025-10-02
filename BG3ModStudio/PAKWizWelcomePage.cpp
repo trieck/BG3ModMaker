@@ -38,5 +38,5 @@ BOOL PAKWizWelcomePage::OnInitDialog(HWND hWnd, LPARAM lParam)
     ATLASSERT(m_generateLSF.IsWindow());
     m_generateLSF.SetCheck(TRUE);
 
-    return FALSE; // let the system set the focus
+    return TRUE; // let the system set the focus
 }

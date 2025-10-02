@@ -45,7 +45,7 @@ BOOL IconDlg::OnInitDialog(HWND hWnd, LPARAM lParam)
     DlgResize_Init();
     CenterWindow(GetParent());
 
-    return FALSE; // Let the system set the focus
+    return TRUE; // Let the system set the focus
 }
 
 void IconDlg::OnClose()

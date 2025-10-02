@@ -13,6 +13,7 @@
 #include "SearchDlg.h"
 #include "SettingsDlg.h"
 #include "StringHelper.h"
+#include "UUIDDlg.h"
 
 extern CComCriticalSection g_csFile;
 static constexpr auto FOLDER_MONITOR_WAIT_TIME = 50;
@@ -270,6 +271,12 @@ void MainFrame::OnSearch()
 void MainFrame::OnSettings()
 {
     SettingsDlg dlg;
+    dlg.DoModal();
+}
+
+void MainFrame::OnUUID()
+{
+    UUIDDlg dlg;
     dlg.DoModal();
 }
 

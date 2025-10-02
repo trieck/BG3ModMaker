@@ -25,7 +25,7 @@ BOOL PAKWizFilePage::OnInitDialog(HWND hWnd, LPARAM lParam)
 
     m_filePath.SetWindowText(fullPath.wstring().c_str());
 
-    return FALSE; // let the system set the focus
+    return TRUE; // let the system set the focus
 }
 
 void PAKWizFilePage::OnBrowse()

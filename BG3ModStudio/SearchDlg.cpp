@@ -8,6 +8,7 @@
 #include "Searcher.h"
 #include "Settings.h"
 #include "StringHelper.h"
+#include "Util.h"
 
 static constexpr auto PAGE_SIZE = 25;
 
@@ -59,7 +60,7 @@ BOOL SearchDlg::OnInitDialog(HWND, LPARAM)
     auto indexPath = settings.GetString(_T("Settings"), _T("IndexPath"), _T(""));
     m_indexPath.SetWindowText(indexPath);
 
-    m_listResults.ModifyStyle(0, LVS_REPORT);
+    m_listResults.ModifyStyle(0, LVS_REPORT | LVS_SINGLESEL);
     m_listResults.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
     m_listResults.InsertColumn(0, _T("Source File"), LVCFMT_LEFT, 150);
@@ -78,7 +79,36 @@ BOOL SearchDlg::OnInitDialog(HWND, LPARAM)
     ATLASSERT(pLoop != NULL);
     pLoop->AddIdleHandler(this);
 
-    return FALSE; // Let the system set the focus
+    return TRUE; // Let the system set the focus
+}
+
+void SearchDlg::OnContextMenu(const CWindow& wnd, const CPoint& point)
+{
+    if (wnd != m_listResults) {
+        return;
+    }
+
+    CMenu menu;
+    menu.LoadMenuW(IDR_ENTRY_CONTEXT);
+
+    CMenuHandle popup = menu.GetSubMenu(0);
+    auto cmd = popup.TrackPopupMenu(TPM_RETURNCMD | TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, *this);
+    if (cmd == 0) {
+        return; // No command selected
+    }
+
+    auto selectedRow = m_listResults.GetSelectedIndex();
+    if (selectedRow < 0) {
+        return; // No item selected
+    }
+
+    CString text;
+    m_listResults.GetItemText(selectedRow, 2, text);
+    if (text.IsEmpty()) {
+        return; // Nothing to copy
+    }
+
+    Util::CopyToClipboard(*this, text);
 }
 
 void SearchDlg::OnClose()

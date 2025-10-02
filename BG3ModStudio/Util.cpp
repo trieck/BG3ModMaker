@@ -50,3 +50,22 @@ CString Util::GetCurrentTimeString()
 
     return strTime;
 }
+
+void Util::CopyToClipboard(HWND hWnd, const CString& str)
+{
+    if (!OpenClipboard(hWnd)) {
+        return;
+    }
+
+    EmptyClipboard();
+
+    auto hGlob = GlobalAlloc(GMEM_MOVEABLE, (str.GetLength() + 1) * sizeof(TCHAR));
+
+    if (hGlob) {
+        wcscpy_s(static_cast<wchar_t*>(GlobalLock(hGlob)), str.GetLength() + 1, str);
+        GlobalUnlock(hGlob);
+        SetClipboardData(CF_UNICODETEXT, hGlob);
+    }
+
+    CloseClipboard();
+}

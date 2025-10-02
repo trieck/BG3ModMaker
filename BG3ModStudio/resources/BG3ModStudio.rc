@@ -152,7 +152,22 @@ BEGIN
         MENUITEM "Copy Value",                  ID_ATTRIBUTE_COPYVALUE
         MENUITEM "Copy Type",                   ID_ATTRIBUTE_COPYTYPE
     END
-    MENUITEM "ATTRIBUTE_MENU",              65535
+END
+
+IDR_VALUE_CONTEXT MENU
+BEGIN
+    POPUP "VALUE_CONTEXT"
+    BEGIN
+        MENUITEM "Copy Value",                  ID_VALUE_COPYVALUE
+    END
+END
+
+IDR_ENTRY_CONTEXT MENU
+BEGIN
+    POPUP "ENTRY_CONTEXT"
+    BEGIN
+        MENUITEM "Copy Entry",                  ID_ENTRY_COPYENTRY
+    END
 END
 
 
@@ -206,6 +221,8 @@ ID_TOOL_ICON_EXPLORER   BITMAP                  "icon-explorer.bmp"
 IDB_PAK_HEADER          BITMAP                  "pak.bmp"
 
 IDB_PAK_LARGE           BITMAP                  "pak-large.bmp"
+
+ID_TOOL_UUID            BITMAP                  "uuid.bmp"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -353,6 +370,16 @@ BEGIN
     CONTROL         "",IDC_PROGRESS_PAKWIZ,"msctls_progress32",WS_BORDER,21,66,275,9
 END
 
+IDD_UUID DIALOGEX 0, 0, 283, 72
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Generate UUID"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CTEXT           "",IDC_ST_UUID,7,15,203,12,SS_CENTERIMAGE | SS_SUNKEN
+    PUSHBUTTON      "Generate...",IDC_GENERATE_UUID,217,14,58,14
+    CONTROL         "Handle",IDC_CHK_UUID_HANDLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,38,38,10
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -448,6 +475,14 @@ BEGIN
         BOTTOMMARGIN, 136
         HORZGUIDE, 8
     END
+
+    IDD_UUID, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 276
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 65
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -508,6 +543,11 @@ BEGIN
 END
 
 IDD_PAKWIZ_BUILD AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_UUID AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

@@ -24,6 +24,7 @@ public:
         COMMAND_ID_HANDLER3(IDC_B_SEARCH_ICON, OnSearch)
         COMMAND_HANDLER3(ID_ICON_LIST, LBN_SELCHANGE, OnIconSelChange)
         COMMAND_HANDLER3(IDC_E_QUERY_ICON, EN_CHANGE, OnQueryChange)
+        MSG_WM_CONTEXTMENU(OnContextMenu)
         CHAIN_MSG_MAP(CDialogResize)
     END_MSG_MAP()
 
@@ -41,6 +42,7 @@ public:
 
 private:
     BOOL OnInitDialog(HWND /* hWnd */, LPARAM /*lParam*/);
+    void OnContextMenu(const CWindow& wnd, const CPoint& point);
     void OnIconSelChange();
     void OnClose();
     void OnFirstPage();

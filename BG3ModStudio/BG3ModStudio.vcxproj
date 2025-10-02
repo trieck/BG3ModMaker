@@ -207,6 +207,7 @@
     <ClInclude Include="TextTokenizer.h" />
     <ClInclude Include="UTF8Stream.h" />
     <ClInclude Include="Util.h" />
+    <ClInclude Include="UUIDDlg.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AttributeDlg.cpp" />
@@ -244,6 +245,7 @@
     <ClCompile Include="TextFileView.cpp" />
     <ClCompile Include="UTF8Stream.cpp" />
     <ClCompile Include="Util.cpp" />
+    <ClCompile Include="UUIDDlg.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\LibLS\LibLS.vcxproj">
@@ -285,6 +287,7 @@
     <Image Include="resources\save.bmp" />
     <Image Include="resources\saveall.bmp" />
     <Image Include="resources\search.bmp" />
+    <Image Include="resources\uuid.bmp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\BG3ModStudio.rc" />

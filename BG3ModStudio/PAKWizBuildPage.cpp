@@ -95,7 +95,7 @@ BOOL PAKWizBuildPage::OnInitDialog(HWND hWnd, LPARAM lParam)
 
     CloseHandle(hThread);
 
-    return FALSE; // let the system set the focus
+    return TRUE; // let the system set the focus
 }
 
 DWORD PAKWizBuildPage::BuildProc(LPVOID pv)

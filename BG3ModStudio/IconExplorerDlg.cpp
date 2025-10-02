@@ -2,6 +2,7 @@
 #include "Exception.h"
 #include "IconExplorerDlg.h"
 #include "StringHelper.h"
+#include "Util.h"
 
 static constexpr auto PAGE_SIZE = 25;
 
@@ -86,7 +87,39 @@ BOOL IconExplorerDlg::OnInitDialog(HWND, LPARAM)
     ATLASSERT(pLoop != NULL);
     pLoop->AddIdleHandler(this);
 
-    return FALSE; // Let the system set the focus
+    return TRUE; // Let the system set the focus
+}
+
+void IconExplorerDlg::OnContextMenu(const CWindow& wnd, const CPoint& point)
+{
+    CRect rcList;
+    m_list.GetWindowRect(&rcList);
+    if (!rcList.PtInRect(point)) {
+        return; // Click was outside the list
+    }
+
+    CMenu menu;
+    menu.LoadMenuW(IDR_VALUE_CONTEXT);
+
+    CMenuHandle popup = menu.GetSubMenu(0);
+    auto cmd = popup.TrackPopupMenu(TPM_RETURNCMD | TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, *this);
+    if (cmd == 0) {
+        return; // No command selected
+    }
+
+    auto curSel = m_list.GetCurSel();
+    if (curSel == LB_ERR) {
+        return; // No selection
+    }
+
+    CString text;
+    m_list.GetText(curSel, text);
+
+    if (text.IsEmpty()) {
+        return; // Nothing to copy
+    }
+
+    Util::CopyToClipboard(*this, text);
 }
 
 void IconExplorerDlg::OnIconSelChange()
