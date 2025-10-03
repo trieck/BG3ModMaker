@@ -187,85 +187,25 @@ void MainFrame::OnFolderPack()
 void MainFrame::OnGameObject()
 {
     GameObjectDlg dlg;
-    auto hWnd = dlg.Create(*this);
-    if (hWnd == nullptr) {
-        ATLTRACE(_T("Unable to create game object dialog.\n"));
-        return;
-    }
-
-    EnableWindow(FALSE);
-
-    dlg.ShowWindow(SW_SHOWNORMAL);
-    dlg.UpdateWindow();
-
-    dlg.RunModal();
-    dlg.Destroy();
-
-    EnableWindow(TRUE);
-    SetFocus();
+    dlg.RunModal(*this);
 }
 
 void MainFrame::OnIconExplorer()
 {
     IconExplorerDlg dlg;
-    auto hWnd = dlg.Create(*this);
-    if (hWnd == nullptr) {
-        ATLTRACE(_T("Unable to create icon explorer dialog.\n"));
-        return;
-    }
-
-    EnableWindow(FALSE);
-
-    dlg.ShowWindow(SW_SHOWNORMAL);
-    dlg.UpdateWindow();
-
-    dlg.RunModal();
-    dlg.Destroy();
-
-    EnableWindow(TRUE);
-    SetFocus();
+    dlg.RunModal(*this);
 }
 
 void MainFrame::OnIndex()
 {
     IndexDlg dlg;
-    auto hWnd = dlg.Create(*this);
-    if (hWnd == nullptr) {
-        ATLTRACE(_T("Unable to create index dialog.\n"));
-        return;
-    }
-
-    EnableWindow(FALSE);
-
-    dlg.ShowWindow(SW_SHOWNORMAL);
-    dlg.UpdateWindow();
-
-    dlg.RunModal();
-    dlg.Destroy();
-
-    EnableWindow(TRUE);
-    SetFocus();
+    dlg.RunModal(*this);
 }
 
 void MainFrame::OnSearch()
 {
     SearchDlg dlg;
-    auto hWnd = dlg.Create(*this);
-    if (hWnd == nullptr) {
-        ATLTRACE(_T("Unable to create search dialog.\n"));
-        return;
-    }
-
-    EnableWindow(FALSE);
-
-    dlg.ShowWindow(SW_SHOWNORMAL);
-    dlg.UpdateWindow();
-
-    dlg.RunModal();
-    dlg.Destroy();
-
-    EnableWindow(TRUE);
-    SetFocus();
+    dlg.RunModal(*this);
 }
 
 void MainFrame::OnSettings()
