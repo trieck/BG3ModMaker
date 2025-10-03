@@ -158,29 +158,14 @@ LRESULT AttributeDlg::OnDoubleClick(int idCtrl, LPNMHDR pnmh, BOOL& bHandled)
         return 0;
     }
 
-    try {
-        CWaitCursor cursor;
-        IconDlg dlg(value); // may throw if icon is invalid
+    CWaitCursor cursor;
 
-        auto hWnd = dlg.Create(*this);
-        if (hWnd == nullptr) {
-            ATLTRACE(_T("Unable to create icon dialog.\n"));
-            return 0;
-        }
-
-        EnableWindow(FALSE);
-
-        dlg.ShowWindow(SW_SHOWNORMAL);
-        dlg.UpdateWindow();
-
-        dlg.RunModal();
-        dlg.Destroy();
-    } catch (const std::exception& /*ex*/) {
-        return 0; // Ignore errors
+    IconDlg dlg(value);
+    if (!dlg.HasImage()) {
+        return 0;
     }
 
-    EnableWindow(TRUE);
-    SetFocus();
+    dlg.DoModal(*this);
 
     return 0;
 }

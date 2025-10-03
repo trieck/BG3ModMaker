@@ -25,6 +25,7 @@ public:
         COMMAND_ID_HANDLER3(IDC_B_SEARCH_GAMEOBJECT, OnSearch)
         COMMAND_HANDLER3(ID_UUID_LIST, LBN_SELCHANGE, OnUuidSelChange)
         COMMAND_HANDLER3(IDC_E_QUERY_GAMEOBJECT, EN_CHANGE, OnQueryChange)
+        NOTIFY_HANDLER(ID_ATTRIBUTE_LIST, NM_DBLCLK, OnDoubleClick)
         MSG_WM_CONTEXTMENU(OnContextMenu)
         CHAIN_MSG_MAP(CDialogResize)
     END_MSG_MAP()
@@ -43,8 +44,9 @@ public:
 
 private:
     BOOL OnInitDialog(HWND /* hWnd */, LPARAM /*lParam*/);
+    LRESULT OnDoubleClick(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
     void OnContextMenu(const CWindow& wnd, const CPoint& point);
-    void OnContextAttributes(const CPoint& point);
+    void OnContextAttributes(const CPoint& point);    
     void OnUuidSelChange();
     void AutoAdjustAttributes();
     void OnClose();

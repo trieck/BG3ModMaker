@@ -1,9 +1,8 @@
 #pragma once
 #include "ImageView.h"
-#include "ModelessDialog.h"
 #include "resources/resource.h"
 
-class IconDlg : public ModelessDialog<IconDlg>,
+class IconDlg : public CDialogImpl <IconDlg>,
                 public CDialogResize<IconDlg>
 {
 public:
@@ -20,6 +19,8 @@ public:
 
     BEGIN_DLGRESIZE_MAP(IconDlg)
     END_DLGRESIZE_MAP()
+
+    BOOL HasImage() const;
 
 private:
     BOOL OnInitDialog(HWND hWnd, LPARAM lParam);

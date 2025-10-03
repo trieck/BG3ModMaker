@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "Exception.h"
 #include "GameObjectDlg.h"
+
+#include "IconDlg.h"
 #include "Settings.h"
 #include "StringHelper.h"
 #include "Util.h"
@@ -96,6 +98,31 @@ BOOL GameObjectDlg::OnInitDialog(HWND, LPARAM)
     pLoop->AddIdleHandler(this);
 
     return TRUE; // Let the system set the focus
+}
+
+LRESULT GameObjectDlg::OnDoubleClick(int idCtrl, LPNMHDR pnmh, BOOL& bHandled)
+{
+    auto pia = reinterpret_cast<LPNMITEMACTIVATE>(pnmh);
+    if (!pia || pia->iItem < 0) {
+        return 0;
+    }
+
+    CString id, value;
+    m_attributes.GetItemText(pia->iItem, 2, value);
+    if (value.IsEmpty()) {
+        return 0;
+    }
+
+    CWaitCursor cursor;
+
+    IconDlg dlg(value);
+    if (!dlg.HasImage()) {
+        return 0;
+    }
+
+    dlg.DoModal(*this);
+
+    return 0;
 }
 
 void GameObjectDlg::OnContextMenu(const CWindow& wnd, const CPoint& point)
