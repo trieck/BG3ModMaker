@@ -17,7 +17,8 @@ HRESULT Direct2D::Initialize()
         return hr;
     }
 
-    hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<LPUNKNOWN*>(&m_pDWriteFactory));
+    hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),
+                             reinterpret_cast<LPUNKNOWN*>(&m_pDWriteFactory));
     if (FAILED(hr)) {
         m_pD2DFactory.Release();
         return hr;

@@ -23,11 +23,17 @@ public:
 
 class Iconizer
 {
-public:
     Iconizer();
+public:
+    using Ptr = std::unique_ptr<Iconizer>;
+
     virtual ~Iconizer();
 
+    static Ptr create();
+
     void open(const char* dbName);
+    void openReadOnly(const char* dbName);
+
     void close();
     bool isOpen() const;
     PageableIterator::Ptr newIterator(size_t pageSize = 25);

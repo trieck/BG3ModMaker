@@ -48,6 +48,19 @@ void Cataloger::open(const char* dbName)
     }
 }
 
+void Cataloger::openReadOnly(const char* dbName)
+{
+    close();
+
+    rocksdb::Options options;
+    options.create_if_missing = false;
+
+    auto status = rocksdb::DB::OpenForReadOnly(options, dbName, &m_db, false);
+    if (!status.ok()) {
+        throw Exception("Failed to open RocksDB database in read-only mode: " + status.ToString());
+    }
+}
+
 void Cataloger::close()
 {
     if (m_db) {

@@ -423,7 +423,7 @@ void GameObjectDlg::Populate()
 
     try {
         if (!m_cataloger.isOpen()) {
-            m_cataloger.open(StringHelper::toUTF8(m_dbPath).GetString());
+            m_cataloger.openReadOnly(StringHelper::toUTF8(m_dbPath).GetString());
         }
         m_iterator = m_cataloger.newIterator(PAGE_SIZE);
         PopulateKeys();

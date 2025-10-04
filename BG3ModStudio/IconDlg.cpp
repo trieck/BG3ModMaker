@@ -10,9 +10,9 @@ IconDlg::IconDlg(const CString& iconID) : m_iconID(iconID)
     auto dbPath = settings.GetString("Settings", "IconPath");
 
     try {
-        Iconizer iconizer;
-        iconizer.open(StringHelper::toUTF8(dbPath).GetString());
-        m_image = iconizer.getIcon(StringHelper::toUTF8(iconID).GetString());
+        auto iconizer = Iconizer::create();
+        iconizer->openReadOnly(StringHelper::toUTF8(dbPath).GetString());
+        m_image = iconizer->getIcon(StringHelper::toUTF8(iconID).GetString());
     } catch (std::exception& e) {
         ATLTRACE("Failed to load icon: %s\n", e.what());
     }

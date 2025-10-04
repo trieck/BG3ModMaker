@@ -33,6 +33,7 @@ public:
     void catalog(const char* pakFile, const char* dbName, bool overwrite = false);
     nlohmann::json get(const std::string& key);
     void open(const char* dbName);
+    void openReadOnly(const char* dbName);
     void setProgressListener(ICatalogProgressListener* listener);
 
 private:

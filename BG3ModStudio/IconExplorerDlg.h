@@ -58,7 +58,7 @@ private:
     size_t GetPageCount() const;
     void RenderIcon(const DirectX::ScratchImage& icon);
 
-    Iconizer m_iconizer;
+    Iconizer::Ptr m_iconizer;
     PageableIterator::Ptr m_iterator;
 
     CSplitterWindow m_splitter;

@@ -138,7 +138,7 @@ void IconExplorerDlg::OnIconSelChange()
 
     auto key = StringHelper::toUTF8(iconID);
 
-    auto icon = m_iconizer.getIcon(key.GetString());
+    auto icon = m_iconizer->getIcon(key.GetString());
 
     RenderIcon(icon);
 }
@@ -150,7 +150,11 @@ void IconExplorerDlg::OnClose()
     pLoop->RemoveIdleHandler(this);
 
     m_iterator = nullptr;
-    m_iconizer.close();
+
+    if (m_iconizer) {
+        m_iconizer->close();
+        m_iconizer = nullptr;
+    }
 
     Destroy();
 }
@@ -257,7 +261,7 @@ void IconExplorerDlg::OnSearch()
     auto utf8Id = StringHelper::toUTF8(id);
 
     try {
-        m_iterator = m_iconizer.newIterator(utf8Id.GetString(), PAGE_SIZE);
+        m_iterator = m_iconizer->newIterator(utf8Id.GetString(), PAGE_SIZE);
         PopulateKeys();
     } catch (const Exception& ex) {
         CString msg;
@@ -307,16 +311,15 @@ void IconExplorerDlg::Populate()
     m_iterator = nullptr;
 
     try {
-        if (!m_iconizer.isOpen()) {
-            m_iconizer.open(StringHelper::toUTF8(m_dbPath).GetString());
-        }
+        m_iconizer = Iconizer::create();
+        m_iconizer->openReadOnly(StringHelper::toUTF8(m_dbPath).GetString());
 
-        m_iterator = m_iconizer.newIterator(PAGE_SIZE);
+        m_iterator = m_iconizer->newIterator(PAGE_SIZE);
 
         PopulateKeys();
     } catch (const Exception& ex) {
         CString msg;
-        msg.Format(_T("Failed to open game object database: %s"), CString(ex.what()));
+        msg.Format(_T("Failed to properly construct: %s"), CString(ex.what()));
         AtlMessageBox(*this, msg.GetString(), nullptr, MB_ICONERROR);
     }
 }

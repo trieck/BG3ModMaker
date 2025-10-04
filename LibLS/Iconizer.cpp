@@ -55,6 +55,11 @@ Iconizer::~Iconizer()
     close();
 }
 
+Iconizer::Ptr Iconizer::create()
+{
+    return std::unique_ptr<Iconizer>(new Iconizer());
+}
+
 void Iconizer::close()
 {
     if (m_db) {
@@ -148,6 +153,19 @@ void Iconizer::open(const char* dbName)
     auto status = rocksdb::DB::Open(options, dbName, &m_db);
     if (!status.ok()) {
         throw Exception(std::format("Failed to open RocksDB database: {}", status.ToString()));
+    }
+}
+
+void Iconizer::openReadOnly(const char* dbName)
+{
+    close();
+
+    rocksdb::Options options;
+    options.create_if_missing = false;
+
+    auto status = rocksdb::DB::OpenForReadOnly(options, dbName, &m_db);
+    if (!status.ok()) {
+        throw Exception(std::format("Failed to open RocksDB database in read-only mode: {}", status.ToString()));
     }
 }
 

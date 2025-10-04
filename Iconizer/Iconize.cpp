@@ -22,8 +22,8 @@ int main(int argc, char* argv[])
         Timer timer;
         COMInitializer coinit;
 
-        Iconizer iconizer;
-        iconizer.iconize(argv[1], argv[2], overwrite);
+        auto iconizer = Iconizer::create();
+        iconizer->iconize(argv[1], argv[2], overwrite);
 
         std::cout << "   Iconizing took: " << timer.str() << std::endl;
     } catch (const std::exception& e) {
