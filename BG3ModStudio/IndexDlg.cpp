@@ -213,7 +213,15 @@ void IndexDlg::Index(const CString& pakFile, const CString& indexPath)
                             StringHelper::fromUTF8(e.get_context().c_str()).GetString(),
                             StringHelper::fromUTF8(e.get_type()).GetString(),
                             StringHelper::fromUTF8(e.get_error_string()).GetString());
-        MessageBox(errorMessage, _T("Search Error"), MB_OK | MB_ICONERROR);
+        MessageBox(errorMessage, _T("Index Error"), MB_OK | MB_ICONERROR);
+    } catch (const std::exception& e) {
+        m_state = IDLE;
+        CString errorMessage;
+        errorMessage.Format(_T("Error: %s"), StringHelper::fromUTF8(e.what()).GetString());
+        MessageBox(errorMessage, _T("Index Error"), MB_OK | MB_ICONERROR);
+    } catch (...) {
+        m_state = IDLE;
+        MessageBox(_T("An unknown error occurred."), _T("Index Error"), MB_OK | MB_ICONERROR);
     }
 
     m_indexButton.EnableWindow(TRUE);

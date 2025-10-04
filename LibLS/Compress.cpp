@@ -19,9 +19,9 @@ bool decompressData(CompressionMethod method, const uint8_t* compressedData, uin
 
     // Perform LZ4 decompression
     int result = LZ4_decompress_safe(reinterpret_cast<const char*>(compressedData),
-        reinterpret_cast<char*>(decompressedData.get()),
-        static_cast<int>(compressedSize),
-        static_cast<int>(decompressedSize));
+                                     reinterpret_cast<char*>(decompressedData.get()),
+                                     static_cast<int>(compressedSize),
+                                     static_cast<int>(decompressedSize));
 
     return result >= 0; // Return true if decompression was successful
 }

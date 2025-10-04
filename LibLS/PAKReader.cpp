@@ -107,7 +107,6 @@ bool readHeader(PAKReader& pakReader, int64_t offset)
 
     return true;
 }
-
 } // anonymous namespace
 
 PAKReader::PAKReader()
@@ -194,6 +193,10 @@ ByteBuffer PAKReader::readFile(const std::string& name)
 
     auto fileData = std::make_unique<uint8_t[]>(file.sizeOnDisk);
     m_package.read(fileData.get(), file.sizeOnDisk);
+
+    if (file.sizeOnDisk == 0) {
+        return {nullptr, 0};
+    }
 
     if (file.method() != CompressionMethod::NONE) {
         UInt8Ptr decompressed;
