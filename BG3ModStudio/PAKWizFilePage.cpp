@@ -43,6 +43,10 @@ void PAKWizFilePage::OnBrowse()
     }
 
     auto modsPath = GetModsPath();
+    if (modsPath.IsEmpty() || !PathFileExists(modsPath)) {
+        modsPath = fs::current_path().wstring().c_str();
+    }
+
     hr = dlg.SetFolder(modsPath);
     if (FAILED(hr)) {
         return;
@@ -57,14 +61,15 @@ void PAKWizFilePage::OnBrowse()
 
 CString PAKWizFilePage::GetModsPath() const
 {
-    PWSTR localAppDataPath = nullptr;
-    auto hr = SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, nullptr, &localAppDataPath);
+    WCHAR localAppDataPath[MAX_PATH]{};
+
+    // Get %LOCALAPPDATA%
+    auto hr = SHGetFolderPathW(nullptr, CSIDL_LOCAL_APPDATA, nullptr, 0, localAppDataPath);
     if (FAILED(hr)) {
         return "";
     }
 
     std::filesystem::path modsPath(localAppDataPath);
-    CoTaskMemFree(localAppDataPath);
 
     modsPath /= L"Larian Studios";
     modsPath /= L"Baldur's Gate 3";

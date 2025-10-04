@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "Settings.h"
 
+#include <shlobj_core.h>
+
 #include "StringHelper.h"
 
 static constexpr auto BUFFER_SIZE = 1024;
@@ -91,11 +93,19 @@ BOOL Settings::SetFloat(const CStringW& section, const CStringW& key, float valu
 
 CStringW Settings::GetPath()
 {
-    WCHAR exePath[MAX_PATH]{};
+    WCHAR path[MAX_PATH]{};
 
-    GetModuleFileNameW(nullptr, exePath, MAX_PATH);
-    PathRemoveFileSpecW(exePath);
-    PathAppendW(exePath, L"settings.ini");
+    // Get %LOCALAPPDATA%
+    auto hr = SHGetFolderPathW(nullptr, CSIDL_LOCAL_APPDATA, nullptr, 0, path);
+    if (FAILED(hr)) { // fallback to exe directory
+        GetModuleFileNameW(nullptr, path, MAX_PATH);
+        PathRemoveFileSpecW(path);
+    } else {
+        PathAppendW(path, L"BG3ModStudio");
+        CreateDirectoryW(path, nullptr); // ensure the folder exists
+    }
 
-    return exePath;
+    PathAppendW(path, L"settings.ini");
+
+    return path;
 }

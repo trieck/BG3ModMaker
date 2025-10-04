@@ -10,8 +10,8 @@ LRESULT SettingsDlg::OnInitDialog(HWND, LPARAM)
     m_gameObjectPath = GetDlgItem(IDC_E_GAMEOBJECT_FOLDER);
     ATLASSERT(m_gameObjectPath.IsWindow());
 
-    m_gameDataPath = GetDlgItem(IDC_E_GAMEDATA_FOLDER);
-    ATLASSERT(m_gameDataPath.IsWindow());
+    m_gamePath = GetDlgItem(IDC_E_GAME_FOLDER);
+    ATLASSERT(m_gamePath.IsWindow());
 
     m_iconPath = GetDlgItem(IDC_E_ICON_FOLDER);
     ATLASSERT(m_iconPath.IsWindow());
@@ -22,8 +22,8 @@ LRESULT SettingsDlg::OnInitDialog(HWND, LPARAM)
     path = m_settings.GetString(_T("Settings"), _T("GameObjectPath"));
     m_gameObjectPath.SetWindowText(path);
 
-    path = m_settings.GetString(_T("Settings"), _T("GameDataPath"));
-    m_gameDataPath.SetWindowText(path);
+    path = m_settings.GetString(_T("Settings"), _T("GamePath"));
+    m_gamePath.SetWindowText(path);
 
     path = m_settings.GetString(_T("Settings"), _T("IconPath"));
     m_iconPath.SetWindowText(path);
@@ -75,7 +75,7 @@ void SettingsDlg::OnBrowseGameObject()
     m_gameObjectPath.SetWindowText(path);
 }
 
-void SettingsDlg::OnBrowseGameData()
+void SettingsDlg::OnBrowseGame()
 {
     FileDialogEx dlg(FileDialogEx::Folder, *this);
     auto hr = dlg.Construct();
@@ -93,7 +93,7 @@ void SettingsDlg::OnBrowseGameData()
     }
 
     auto path = paths.front();
-    m_gameDataPath.SetWindowText(path);
+    m_gamePath.SetWindowText(path);
 }
 
 void SettingsDlg::OnBrowseIcon()
@@ -126,8 +126,8 @@ void SettingsDlg::OnOK()
     m_gameObjectPath.GetWindowText(path);
     m_settings.SetString(_T("Settings"), _T("GameObjectPath"), path);
 
-    m_gameDataPath.GetWindowText(path);
-    m_settings.SetString(_T("Settings"), _T("GameDataPath"), path);
+    m_gamePath.GetWindowText(path);
+    m_settings.SetString(_T("Settings"), _T("GamePath"), path);
 
     m_iconPath.GetWindowText(path);
     m_settings.SetString(_T("Settings"), _T("IconPath"), path);

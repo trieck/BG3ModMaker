@@ -8,6 +8,7 @@
 #include <DirectXTex.h>
 #include <filesystem>
 
+namespace fs = std::filesystem;
 
 static constexpr auto COMMIT_SIZE = 1000;
 
@@ -34,12 +35,12 @@ static DirectX::ScratchImage cropIcon(const DirectX::Image* atlas, uint32_t left
 
 Iconizer::Iconizer()
 {
-    auto gameDataPath = m_settings.GetString("Settings", "GameDataPath", "");
-    if (gameDataPath.IsEmpty()) {
-        throw Exception("Game data path is not set in settings");
+    auto gamePath = m_settings.GetString("Settings", "GamePath", "");
+    if (gamePath.IsEmpty()) {
+        throw Exception("Game path not found in settings");
     }
 
-    m_gameDataPath = StringHelper::toUTF8(gameDataPath);
+    m_gameDataPath = (fs::path(gamePath.GetString()) / "Data").string();
 
     auto iconPakPath = std::filesystem::path(m_gameDataPath) / "Icons.pak";
     if (!exists(iconPakPath)) {

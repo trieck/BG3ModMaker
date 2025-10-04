@@ -5,6 +5,9 @@
 #include "Settings.h"
 #include "StringHelper.h"
 
+#include <filesystem>
+namespace fs = std::filesystem;
+
 BOOL IndexDlg::OnInitDialog(HWND, LPARAM)
 {
     m_pakFile = GetDlgItem(IDC_E_PAKFILE);
@@ -17,7 +20,7 @@ BOOL IndexDlg::OnInitDialog(HWND, LPARAM)
     auto indexPath = settings.GetString(_T("Settings"), _T("IndexPath"), _T(""));
     m_indexPath.SetWindowText(indexPath);
 
-    m_gameDataPath = settings.GetString(_T("Settings"), _T("GameDataPath"), _T(""));
+    m_gamePath = settings.GetString(_T("Settings"), _T("GamePath"), _T(""));
 
     m_progress = GetDlgItem(IDC_PROGRESS_INDEX);
     ATLASSERT(m_progress.IsWindow());
@@ -107,7 +110,12 @@ void IndexDlg::OnPakFile()
         return;
     }
 
-    hr = dlg.SetFolder(m_gameDataPath);
+    auto gameDataPath = fs::path(m_gamePath.GetString()) / "Data";
+    if (!exists(gameDataPath)) {
+        gameDataPath = fs::current_path();
+    }
+
+    hr = dlg.SetFolder(gameDataPath.c_str());
     if (FAILED(hr)) {
         return;
     }

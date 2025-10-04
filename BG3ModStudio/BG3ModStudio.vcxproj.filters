@@ -12,9 +12,6 @@
     <Filter Include="Resources">
       <UniqueIdentifier>{273ab127-ed46-4368-b1b0-cf8a88597b2b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Config">
-      <UniqueIdentifier>{c4c3858a-ab2a-4ac6-8303-0c3c42830542}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -314,15 +311,13 @@
     <Image Include="resources\uuid.bmp">
       <Filter>Resources</Filter>
     </Image>
+    <Image Include="resources\setup.bmp">
+      <Filter>Resources</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\BG3ModStudio.rc">
       <Filter>Resources</Filter>
     </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="config\settings.ini">
-      <Filter>Config</Filter>
-    </None>
   </ItemGroup>
 </Project>

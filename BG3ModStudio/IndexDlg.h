@@ -34,20 +34,18 @@ private:
         CANCELLED
     };
 
+    BOOL OnInitDialog(HWND /* hWnd */, LPARAM /*lParam*/);
+    void OnCancelRequested();
+    void OnIndex();
+    void OnIndexPath();
+    void OnPakFile();
+    void Index(const CString& pakFile, const CString& indexPath);
+
     State m_state = IDLE;
     CEdit m_pakFile;
     CEdit m_indexPath;
     CButton m_indexButton;
     CButton m_overwriteCheckbox;
     CProgressBarCtrl m_progress;
-
-    CString m_gameDataPath;
-
-    BOOL OnInitDialog(HWND /* hWnd */, LPARAM /*lParam*/);
-    void OnCancelRequested();
-    void OnIndex();
-    void OnIndexPath();
-    void OnPakFile();
-
-    void Index(const CString& pakFile, const CString& indexPath);
+    CString m_gamePath;
 };

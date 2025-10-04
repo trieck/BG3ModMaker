@@ -26,14 +26,14 @@
 #define IDC_B_BROWSE_INDEX              124
 #define IDD_ATTRIBUTES                  125
 #define IDC_B_BROWSE_GAMEOBJECT         125
-#define IDC_B_BROWSE_GAMEDATA           126
+#define IDC_B_BROWSE_GAME               126
 #define ID_TOOL_SETTINGS                127
 #define IDC_B_BROWSE_ICON               127
 #define IDD_SETTINGS                    128
 #define IDC_E_INDEX_FOLDER              129
 #define IDC_E_GAMEOBJECT_FOLDER         130
 #define ID_TOOL_LSF                     131
-#define IDC_E_GAMEDATA_FOLDER           131
+#define IDC_E_GAME_FOLDER               131
 #define IDR_ATTRIBUTE_CONTEXT           132
 #define IDC_E_ICON_FOLDER               132
 #define ID_TOOL_GAMEOBJECT              133
