@@ -161,7 +161,7 @@ void IndexDlg::OnTimer(UINT_PTR)
         m_progress.SetPos(static_cast<int>(cur));
     }
 
-    if (auto msg = m_statusQueue.try_pop()) {
+    if (auto msg = m_status.get()) {
         SetDlgItemText(IDC_INDEX_STATUS, msg->GetString());
     }
 }
@@ -276,7 +276,7 @@ DWORD IndexDlg::IndexProc(LPVOID pv)
             CString msg;
             msg.Format(_T("Indexing %s..."), StringHelper::fromUTF8(szShort).GetString());
 
-            m_pDlg->m_statusQueue.push(msg);
+            m_pDlg->m_status.set(msg);
         }
 
         bool isCancelled() override

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "ThreadSafeQueue.h"
-#include "resources/resource.h"
-#include "ModelessDialog.h"
 #include "Indexer.h"
+#include "ModelessDialog.h"
+#include "resources/resource.h"
+#include "ThreadSafeLatest.h"
 #include "Timer.h"
 
 #define WM_SET_STATE            (WM_APP + 1)
@@ -59,7 +59,7 @@ private:
     std::atomic<State> m_state = IDLE;
     std::atomic<size_t> m_progressCur{0};
     std::atomic<size_t> m_progressTotal{0};
-    ThreadSafeQueue<CString> m_statusQueue;
+    ThreadSafeLatest<CString> m_status;
 
     CEdit m_pakFile;
     CEdit m_indexPath;
