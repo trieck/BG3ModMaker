@@ -85,8 +85,32 @@
     }
 
 #define COMMAND_HANDLER3(id, code, func) \
-    if (uMsg == WM_COMMAND && id == LOWORD(wParam) && code == HIWORD(wParam)) { \
+    if (uMsg == WM_COMMAND && (id) == LOWORD(wParam) && (code) == HIWORD(wParam)) { \
         func(); \
+    }
+
+#define MESSAGE_HANDLER2(msg, func) \
+    if(uMsg == (msg)) \
+    { \
+        this->SetMsgHandled(TRUE); \
+        func(wParam, lParam); \
+        return TRUE; \
+    }
+
+#define MESSAGE_HANDLER3(msg, func) \
+    if(uMsg == (msg)) \
+    { \
+        this->SetMsgHandled(TRUE); \
+        func(); \
+        return TRUE; \
+    }
+
+#define MESSAGE_HANDLER4(msg, func) \
+    if(uMsg == (msg)) \
+    { \
+        this->SetMsgHandled(TRUE); \
+        lResult = func(); \
+        return TRUE; \
     }
 
 extern CAppModule _Module;

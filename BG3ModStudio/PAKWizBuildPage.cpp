@@ -46,7 +46,7 @@ BOOL PAKWizBuildPage::OnQueryCancel()
 
 LRESULT PAKWizBuildPage::OnPAKRange(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
-    m_progress.SetRange(0, static_cast<int>(lParam));
+    m_progress.SetRange32(0, static_cast<int>(lParam));
     m_progress.SetPos(0);
     m_progress.SetState(PBST_NORMAL);
 
