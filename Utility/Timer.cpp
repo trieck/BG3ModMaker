@@ -9,19 +9,25 @@ Timer::Timer() : start_(Clock::now())
 {
 }
 
+std::chrono::nanoseconds Timer::elapsed() const
+{
+    using std::chrono::duration_cast;
+    auto now = Clock::now();
+    return duration_cast<std::chrono::nanoseconds>(now - start_);
+}
+
 std::string Timer::str() const
 {
     using std::chrono::duration_cast;
 
-    auto now = Clock::now();
-    auto elapsed = duration_cast<std::chrono::nanoseconds>(now - start_);
+    auto diff = elapsed();
 
-    auto hours = duration_cast<std::chrono::hours>(elapsed);
-    auto minutes = duration_cast<std::chrono::minutes>(elapsed) % 60;
-    auto seconds = duration_cast<std::chrono::seconds>(elapsed) % 60;
-    auto millis = duration_cast<std::chrono::milliseconds>(elapsed) % 1000;
-    auto micros = duration_cast<std::chrono::microseconds>(elapsed) % 1000;
-    auto nanos = elapsed % 1000;
+    auto hours = duration_cast<std::chrono::hours>(diff);
+    auto minutes = duration_cast<std::chrono::minutes>(diff) % 60;
+    auto seconds = duration_cast<std::chrono::seconds>(diff) % 60;
+    auto millis = duration_cast<std::chrono::milliseconds>(diff) % 1000;
+    auto micros = duration_cast<std::chrono::microseconds>(diff) % 1000;
+    auto nanos = diff % 1000;
 
     std::ostringstream oss;
     oss.fill('0'); // Ensure proper zero-padding

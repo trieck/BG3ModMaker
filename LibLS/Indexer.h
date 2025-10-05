@@ -6,7 +6,8 @@
 #include "PAKReader.h"
 #include "Resource.h"
 
-class IIndexProgressListener {
+class IIndexProgressListener
+{
 public:
     virtual ~IIndexProgressListener() = default;
 
@@ -32,7 +33,7 @@ private:
     void indexLSXFile(const PackagedFileInfo& file);
     void indexNode(const std::string& filename, const LSNode::Ptr& node);
     void indexNodes(const std::string& filename, const std::vector<LSNode::Ptr>& nodes);
-    void indexRegion(const std::string& fileName, const Region::Ptr &region);
+    void indexRegion(const std::string& fileName, const Region::Ptr& region);
     void indexTXTFile(const PackagedFileInfo& file);
 
     using WritableDBPtr = std::unique_ptr<Xapian::WritableDatabase>;
@@ -43,4 +44,3 @@ private:
     PAKReader m_reader;
     IIndexProgressListener* m_listener = nullptr;
 };
-

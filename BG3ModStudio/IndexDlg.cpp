@@ -27,7 +27,9 @@ BOOL IndexDlg::OnInitDialog(HWND, LPARAM)
 
     (void)SetWindowTheme(m_progress, L"", L"");
 
-    m_progress.SetBarColor(RGB(252, 129, 2)); // Fanta orange
+    m_progress.SetBarColor(RGB(0, 51, 128)); // Deep ocean blue
+
+
     m_progress.SetBkColor(GetSysColor(COLOR_APPWORKSPACE));
 
     m_indexButton = GetDlgItem(IDOK);
@@ -35,6 +37,8 @@ BOOL IndexDlg::OnInitDialog(HWND, LPARAM)
 
     m_overwriteCheckbox = GetDlgItem(IDC_CHK_OVERWRITE);
     ATLASSERT(m_overwriteCheckbox.IsWindow());
+
+    SetTimer(1, 100, nullptr); // 10Hz UI update
 
     CenterWindow(GetParent());
 
@@ -89,12 +93,13 @@ void IndexDlg::OnSetState(WPARAM state, LPARAM)
     m_state = static_cast<State>(state);
     switch (m_state) {
     case IDLE:
-        m_progress.SetPos(0);
+        m_progressCur = 0;
         m_progress.SetState(PBST_NORMAL);
         m_indexButton.EnableWindow(TRUE);
+        SetDlgItemText(IDC_INDEX_STATUS, _T(""));
         break;
     case INDEXING:
-        m_progress.SetPos(0);
+        m_progressCur = 0;
         m_progress.SetState(PBST_NORMAL);
         m_indexButton.EnableWindow(FALSE);
         break;
@@ -104,7 +109,7 @@ void IndexDlg::OnSetState(WPARAM state, LPARAM)
         break;
     case CANCELLED:
     case FAILED:
-        m_progress.SetPos(std::numeric_limits<int>::max());
+        m_progressCur = std::numeric_limits<int>::max();
         m_progress.SetState(PBST_ERROR);
         m_indexButton.EnableWindow(TRUE);
         OnIndexingFinished();
@@ -136,21 +141,28 @@ void IndexDlg::OnIndexingFinished()
         AtlMessageBox(*this, m_lastError.GetString(), _T("Error"), MB_ICONERROR);
         m_lastError.Empty();
     } else {
-        AtlMessageBox(*this, _T("Indexing completed successfully."), nullptr, MB_ICONINFORMATION);
+        CString msg;
+        CString time = StringHelper::fromUTF8(m_timer.str().c_str());
+        msg.Format(_T("Indexing completed successfully in %s."), time);
+        AtlMessageBox(*this, msg.GetString(), _T("Indexing completed"), MB_ICONINFORMATION);
+
         OnSetState(IDLE, 0);
     }
 }
 
-void IndexDlg::OnSetProgress(WPARAM wParam, LPARAM lParam)
+void IndexDlg::OnTimer(UINT_PTR)
 {
-    m_progress.SetPos(static_cast<int>(wParam));
-    m_progress.SetState(static_cast<int>(lParam));
-}
+    auto cur = m_progressCur.load();
+    auto total = m_progressTotal.load();
 
-void IndexDlg::OnSetStatusMessage(WPARAM, LPARAM lParam)
-{
-    std::unique_ptr<CString> text(reinterpret_cast<CString*>(lParam));
-    SetDlgItemText(IDC_INDEX_STATUS, *text);
+    if (total > 0) {
+        m_progress.SetRange32(0, static_cast<int>(total));
+        m_progress.SetPos(static_cast<int>(cur));
+    }
+
+    if (auto msg = m_statusQueue.try_pop()) {
+        SetDlgItemText(IDC_INDEX_STATUS, msg->GetString());
+    }
 }
 
 void IndexDlg::OnCancelRequested()
@@ -241,7 +253,7 @@ DWORD IndexDlg::IndexProc(LPVOID pv)
 
         void onStart(std::size_t totalEntries) override
         {
-            m_pDlg->PostMessage(WM_INDEXING_STARTED, totalEntries, 0);
+            m_pDlg->m_progressTotal = totalEntries;
         }
 
         void onFinished(std::size_t entries) override
@@ -251,17 +263,19 @@ DWORD IndexDlg::IndexProc(LPVOID pv)
 
         void onFileIndexing(std::size_t index, const std::string& filename) override
         {
-            m_pDlg->PostMessage(WM_SET_PROGRESS, index, PBST_NORMAL);
+            m_pDlg->m_progressCur.store(index, std::memory_order_relaxed);
 
-            constexpr auto COMPACT_LEN = 40;
+            if ((index % 50) == 0) {
+                constexpr auto COMPACT_LEN = 40;
 
-            char szShort[MAX_PATH];
-            PathCompactPathExA(szShort, filename.c_str(), COMPACT_LEN, 0);
+                char szShort[MAX_PATH];
+                PathCompactPathExA(szShort, filename.c_str(), COMPACT_LEN, 0);
 
-            auto* pMessage = new CString;
-            pMessage->Format(_T("Indexing %s..."), StringHelper::fromUTF8(szShort).GetString());
+                CString msg;
+                msg.Format(_T("Indexing %s..."), StringHelper::fromUTF8(szShort).GetString());
 
-            m_pDlg->PostMessage(WM_SET_STATUS_MESSAGE, 0, reinterpret_cast<LPARAM>(pMessage));
+                m_pDlg->m_statusQueue.push(msg);
+            }
         }
 
         bool isCancelled() override
@@ -282,6 +296,8 @@ DWORD IndexDlg::IndexProc(LPVOID pv)
 
     auto utf8PakPath = StringHelper::toUTF8(pakPath);
     auto utf8IndexPath = StringHelper::toUTF8(indexPath);
+
+    pThis->m_timer.restart();
 
     try {
         indexer.index(utf8PakPath, utf8IndexPath, overwrite);

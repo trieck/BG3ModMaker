@@ -1,17 +1,16 @@
 #pragma once
 
-#include "Indexer.h"
-#include "ModelessDialog.h"
+#include "ThreadSafeQueue.h"
 #include "resources/resource.h"
+#include "ModelessDialog.h"
+#include "Indexer.h"
+#include "Timer.h"
 
 #define WM_SET_STATE            (WM_APP + 1)
 #define WM_GET_OVERWRITE_CHECK  (WM_APP + 2)
 #define WM_GET_PAK_PATH         (WM_APP + 3)
 #define WM_GET_INDEX_PATH       (WM_APP + 4)
-#define WM_SET_PROGRESS         (WM_APP + 5)
-#define WM_INDEXING_STARTED     (WM_APP + 6)
 #define WM_INDEXING_FINISHED    (WM_APP + 7)
-#define WM_SET_STATUS_MESSAGE   (WM_APP + 8)
 
 class IndexDlg : public ModelessDialog<IndexDlg>
 {
@@ -29,10 +28,8 @@ public:
         MESSAGE_HANDLER4(WM_GET_OVERWRITE_CHECK, OnGetOverwriteCheck)
         MESSAGE_HANDLER2(WM_GET_PAK_PATH, OnGetPakPath)
         MESSAGE_HANDLER2(WM_GET_INDEX_PATH, OnGetIndexPath)
-        MESSAGE_HANDLER2(WM_INDEXING_STARTED, OnIndexingStarted)
         MESSAGE_HANDLER3(WM_INDEXING_FINISHED, OnIndexingFinished)
-        MESSAGE_HANDLER2(WM_SET_PROGRESS, OnSetProgress)
-        MESSAGE_HANDLER2(WM_SET_STATUS_MESSAGE, OnSetStatusMessage)
+        MSG_WM_TIMER(OnTimer)
     END_MSG_MAP()
 
 private:
@@ -46,22 +43,25 @@ private:
     };
 
     BOOL OnInitDialog(HWND, LPARAM);
+    LRESULT OnGetOverwriteCheck();
     void OnCancelRequested();
+    void OnGetIndexPath(WPARAM, LPARAM);
+    void OnGetPakPath(WPARAM, LPARAM);
     void OnIndex();
+    void OnIndexingFinished();
+    void OnIndexingStarted(WPARAM, LPARAM);
     void OnIndexPath();
     void OnPakFile();
-    void OnGetPakPath(WPARAM, LPARAM);
-    void OnGetIndexPath(WPARAM, LPARAM);
     void OnSetState(WPARAM, LPARAM);
-    LRESULT OnGetOverwriteCheck();
-    void OnIndexingStarted(WPARAM, LPARAM);
-    void OnIndexingFinished();
-    void OnSetProgress(WPARAM, LPARAM);
-    void OnSetStatusMessage(WPARAM, LPARAM);
+    void OnTimer(UINT_PTR);
 
     static DWORD IndexProc(LPVOID pv);
 
     std::atomic<State> m_state = IDLE;
+    std::atomic<size_t> m_progressCur{0};
+    std::atomic<size_t> m_progressTotal{0};
+    ThreadSafeQueue<CString> m_statusQueue;
+
     CEdit m_pakFile;
     CEdit m_indexPath;
     CButton m_indexButton;
@@ -69,4 +69,5 @@ private:
     CProgressBarCtrl m_progress;
     CString m_gamePath;
     CString m_lastError;
+    Timer m_timer;
 };

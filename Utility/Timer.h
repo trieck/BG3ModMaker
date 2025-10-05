@@ -6,6 +6,8 @@ public:
     Timer();
     ~Timer() = default;
 
+    std::chrono::nanoseconds elapsed() const;
+
     std::string str() const;
     void restart();
 
