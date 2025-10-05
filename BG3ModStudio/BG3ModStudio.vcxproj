@@ -268,6 +268,7 @@
     <Image Include="resources\about.bmp" />
     <Image Include="resources\app.ico" />
     <Image Include="resources\bom.ico" />
+    <Image Include="resources\catalog.bmp" />
     <Image Include="resources\close.bmp" />
     <Image Include="resources\exit.bmp" />
     <Image Include="resources\file.ico" />

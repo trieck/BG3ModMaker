@@ -314,6 +314,9 @@
     <Image Include="resources\setup.bmp">
       <Filter>Resources</Filter>
     </Image>
+    <Image Include="resources\catalog.bmp">
+      <Filter>Resources</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\BG3ModStudio.rc">
