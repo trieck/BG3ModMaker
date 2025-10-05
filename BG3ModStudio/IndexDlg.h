@@ -49,7 +49,6 @@ private:
     void OnGetPakPath(WPARAM, LPARAM);
     void OnIndex();
     void OnIndexingFinished();
-    void OnIndexingStarted(WPARAM, LPARAM);
     void OnIndexPath();
     void OnPakFile();
     void OnSetState(WPARAM, LPARAM);

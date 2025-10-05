@@ -38,8 +38,6 @@ BOOL IndexDlg::OnInitDialog(HWND, LPARAM)
     m_overwriteCheckbox = GetDlgItem(IDC_CHK_OVERWRITE);
     ATLASSERT(m_overwriteCheckbox.IsWindow());
 
-    SetTimer(1, 100, nullptr); // 10Hz UI update
-
     CenterWindow(GetParent());
 
     return TRUE; // Let the system set the focus
@@ -104,12 +102,22 @@ void IndexDlg::OnSetState(WPARAM state, LPARAM)
         m_indexButton.EnableWindow(FALSE);
         break;
     case CANCELING:
+        SetDlgItemText(IDC_INDEX_STATUS, _T("Canceling..."));
         m_progress.SetState(PBST_PAUSED);
         m_indexButton.EnableWindow(FALSE);
         break;
     case CANCELLED:
+        SetDlgItemText(IDC_INDEX_STATUS, _T("Cancelled"));
+        m_progressCur = std::numeric_limits<size_t>::max();
+        m_progress.SetPos(std::numeric_limits<int>::max());
+        m_progress.SetState(PBST_ERROR);
+        m_indexButton.EnableWindow(TRUE);
+        OnIndexingFinished();
+        break;
     case FAILED:
-        m_progressCur = std::numeric_limits<int>::max();
+        SetDlgItemText(IDC_INDEX_STATUS, _T("Indexing complete"));
+        m_progressCur = std::numeric_limits<size_t>::max();
+        m_progress.SetPos(std::numeric_limits<int>::max());
         m_progress.SetState(PBST_ERROR);
         m_indexButton.EnableWindow(TRUE);
         OnIndexingFinished();
@@ -122,16 +130,10 @@ LRESULT IndexDlg::OnGetOverwriteCheck()
     return m_overwriteCheckbox.GetCheck();
 }
 
-void IndexDlg::OnIndexingStarted(WPARAM wParam, LPARAM)
-{
-    m_progress.SetRange32(0, static_cast<int>(wParam));
-    m_progress.SetPos(0);
-    m_progress.SetStep(1);
-    m_progress.SetState(PBST_NORMAL);
-}
-
 void IndexDlg::OnIndexingFinished()
 {
+    KillTimer(1);
+
     if (m_state == CANCELLED) {
         AtlMessageBox(*this, _T("Indexing cancelled."), nullptr, MB_ICONWARNING);
     } else if (m_state == FAILED) {
@@ -145,7 +147,6 @@ void IndexDlg::OnIndexingFinished()
         CString time = StringHelper::fromUTF8(m_timer.str().c_str());
         msg.Format(_T("Indexing completed successfully in %s."), time);
         AtlMessageBox(*this, msg.GetString(), _T("Indexing completed"), MB_ICONINFORMATION);
-
         OnSetState(IDLE, 0);
     }
 }
@@ -254,6 +255,8 @@ DWORD IndexDlg::IndexProc(LPVOID pv)
         void onStart(std::size_t totalEntries) override
         {
             m_pDlg->m_progressTotal = totalEntries;
+            m_pDlg->KillTimer(1);
+            m_pDlg->SetTimer(1, 100, nullptr); // 10Hz UI update
         }
 
         void onFinished(std::size_t entries) override
@@ -265,17 +268,15 @@ DWORD IndexDlg::IndexProc(LPVOID pv)
         {
             m_pDlg->m_progressCur.store(index, std::memory_order_relaxed);
 
-            if ((index % 50) == 0) {
-                constexpr auto COMPACT_LEN = 40;
+            constexpr auto COMPACT_LEN = 40;
 
-                char szShort[MAX_PATH];
-                PathCompactPathExA(szShort, filename.c_str(), COMPACT_LEN, 0);
+            char szShort[MAX_PATH];
+            PathCompactPathExA(szShort, filename.c_str(), COMPACT_LEN, 0);
 
-                CString msg;
-                msg.Format(_T("Indexing %s..."), StringHelper::fromUTF8(szShort).GetString());
+            CString msg;
+            msg.Format(_T("Indexing %s..."), StringHelper::fromUTF8(szShort).GetString());
 
-                m_pDlg->m_statusQueue.push(msg);
-            }
+            m_pDlg->m_statusQueue.push(msg);
         }
 
         bool isCancelled() override
