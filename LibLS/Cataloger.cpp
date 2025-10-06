@@ -93,8 +93,6 @@ void Cataloger::catalog(const char* pakFile, const char* dbName, bool overwrite)
             break;
         }
 
-        std::cout << file.name << std::endl;
-
         if (file.name.ends_with("lsx") || file.name.ends_with("lsf")) {
             if (m_listener) {
                 m_listener->onFileCataloging(i, file.name);

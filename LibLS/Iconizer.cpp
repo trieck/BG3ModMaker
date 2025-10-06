@@ -341,8 +341,6 @@ void Iconizer::iconizeLSXFile(const PackagedFileInfo& file)
             continue; // missing required attributes
         }
 
-        std::cout << mapKey << std::endl;
-
         auto left = static_cast<uint32_t>(u1 * textureWidth);
         auto top = static_cast<uint32_t>(v1 * textureHeight);
 

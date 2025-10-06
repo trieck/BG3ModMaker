@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "BG3ModMaker"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.0.0-alpha"
 #define MyAppPublisher "Thomas A. Rieck"
 #define MyAppExeName "BG3ModStudio.exe"
 
@@ -12,7 +12,6 @@
 AppId={{C4F25E0E-73CA-41C3-BC5A-C8B415EAE13F}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
-;AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 DefaultDirName={autopf}\{#MyAppName}
 UninstallDisplayIcon={app}\{#MyAppExeName}
