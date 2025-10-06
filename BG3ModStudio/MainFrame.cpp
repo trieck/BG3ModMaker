@@ -315,7 +315,40 @@ void MainFrame::OnNewFileHere()
     auto type = m_folderView.GetItemType(item);
     ATLASSERT(type == TIT_FOLDER);
 
-    auto newItem = m_folderView.InsertItem(L"New File", 1, 1, item, TVI_LAST);
+    auto newItem = m_folderView.InsertItem(TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM /*mask*/,
+                                           L"New File",
+                                           1, /* image */
+                                           1, /* selected image */
+                                           0 /*state*/,
+                                           0 /*state mask */,
+                                           TIT_FILE /*lparam*/,
+                                           item, TVI_LAST);
+    ATLASSERT(newItem != nullptr);
+
+    m_folderView.EnsureVisible(newItem);
+
+    m_folderView.EditLabel(newItem);
+}
+
+void MainFrame::OnNewFolderHere()
+{
+    auto item = m_folderView.GetSelectedItem();
+    if (item.IsNull()) {
+        return;
+    }
+
+    auto type = m_folderView.GetItemType(item);
+    ATLASSERT(type == TIT_FOLDER);
+
+    auto newItem = m_folderView.InsertItem(TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM /*mask*/,
+                                           L"New Folder",
+                                           0, /* image */
+                                           0, /* selected image */
+                                           0 /*state*/,
+                                           0 /*state mask */,
+                                           TIT_FOLDER /*lparam*/,
+                                           item, TVI_LAST);
+    ATLASSERT(newItem != nullptr);
 
     m_folderView.EnsureVisible(newItem);
 
@@ -501,6 +534,11 @@ LRESULT MainFrame::OnTVEndLabelEdit(LPNMHDR pnmhdr)
         return FALSE;
     }
 
+    auto type = static_cast<TreeItemType>(pDispInfo->item.lParam);
+    if (type != TIT_FILE && type != TIT_FOLDER) {
+        return FALSE; // Unknown node type
+    }
+
     CString newName = pDispInfo->item.pszText;
 
     static constexpr WCHAR INVALID_CHARS[] = L"\\/:*?\"<>|";
@@ -536,19 +574,26 @@ LRESULT MainFrame::OnTVEndLabelEdit(LPNMHDR pnmhdr)
 
     CComCritSecLock lock(g_csFile); // lock the critical section to ensure the folder monitor does not notify us
 
-    auto hFile = CreateFile(fullPath, GENERIC_WRITE, 0, nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
-    if (hFile == INVALID_HANDLE_VALUE) {
-        MessageBox(L"Failed to create the file.", L"Error", MB_ICONERROR);
-        return FALSE;
+
+    if (type == TIT_FILE) {
+        auto hFile = CreateFile(fullPath, GENERIC_WRITE, 0, nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
+        if (hFile == INVALID_HANDLE_VALUE) {
+            MessageBox(L"Failed to create the file.", L"Error", MB_ICONERROR);
+            return FALSE;
+        }
+        CloseHandle(hFile);
+    } else { // Folder
+        if (!CreateDirectory(fullPath, nullptr)) {
+            MessageBox(L"Failed to create the directory", L"Error", MB_ICONERROR);
+            return FALSE;
+        }
     }
 
-    auto* data = new TreeItemData{.type = TIT_FILE, .path = fullPath};
+    auto* data = new TreeItemData{.type = type, .path = fullPath};
 
     m_folderView.SetItemData(hItem, reinterpret_cast<DWORD_PTR>(data));
 
     pDispInfo->item.lParam = reinterpret_cast<LPARAM>(data);
-
-    CloseHandle(hFile);
 
     return TRUE;
 }
@@ -894,6 +939,7 @@ BOOL MainFrame::OnIdle()
     UIEnable(ID_TOOL_LOCA, IsXmlSelected());
     UIEnable(ID_TOOL_LSF, IsLSXSelected());
     UIEnable(ID_TREE_NEWFILEHERE, IsFolderSelected());
+    UIEnable(ID_TREE_NEWFOLDERHERE, IsFolderSelected());
     UIEnable(ID_TREE_DELETE_FILE, !IsFolderSelected());
     UIEnable(ID_TREE_DELETE_FOLDER, IsFolderSelected());
     UIEnable(ID_TREE_MAKELSFHERE, IsLSXSelected());

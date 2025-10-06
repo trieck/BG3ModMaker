@@ -137,6 +137,7 @@ IDR_TREE_CONTEXT MENU
 BEGIN
     POPUP "TREE_CONTEXT"
     BEGIN
+        MENUITEM "New Folder Here",             ID_TREE_NEWFOLDERHERE
         MENUITEM "New File Here",               ID_TREE_NEWFILEHERE
         MENUITEM "Make LSF Here",               ID_TREE_MAKELSFHERE
         MENUITEM "Delete File",                 ID_TREE_DELETE_FILE
