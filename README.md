@@ -9,10 +9,6 @@ It’s written in modern C++ (WTL/DirectX/DirectXTex) with a focus on speed, tra
 
 ## ✨ Features
 
-- **PAK Explorer**
-  - Open and browse BG3 `.pak` archives
-  - Extract and view LSX / LSF / TXT resources
-
 - **Stats + LSX/LSF Indexing**
   - Full-text indexing of Gustav.pak and other content with **Xapian**
   - Fast search across stats, passives, spells, icons, and more
