@@ -159,6 +159,14 @@ void IconExplorerDlg::OnClose()
     Destroy();
 }
 
+void IconExplorerDlg::OnDestroy()
+{
+    auto* pLoop = _Module.GetMessageLoop();
+    if (pLoop != nullptr) {
+        pLoop->RemoveIdleHandler(this);
+    }
+}
+
 void IconExplorerDlg::OnFirstPage()
 {
     m_nPage = 0;

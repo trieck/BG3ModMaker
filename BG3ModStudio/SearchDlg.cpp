@@ -113,11 +113,15 @@ void SearchDlg::OnContextMenu(const CWindow& wnd, const CPoint& point)
 
 void SearchDlg::OnClose()
 {
-    auto* pLoop = _Module.GetMessageLoop();
-    ATLASSERT(pLoop != NULL);
-    pLoop->RemoveIdleHandler(this);
-
     Destroy();
+}
+
+void SearchDlg::OnDestroy()
+{
+    auto* pLoop = _Module.GetMessageLoop();
+    if (pLoop != nullptr) {
+        pLoop->RemoveIdleHandler(this);
+    }
 }
 
 void SearchDlg::OnSize(UINT, const CSize& size)

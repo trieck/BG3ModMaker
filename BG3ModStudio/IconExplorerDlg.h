@@ -16,6 +16,7 @@ public:
     BEGIN_MSG_MAP(IconExplorerDlg)
         MSG_WM_INITDIALOG(OnInitDialog)
         MSG_WM_CLOSE(OnClose)
+        MSG_WM_DESTROY(OnDestroy)
         MSG_WM_SIZE(OnSize)
         COMMAND_ID_HANDLER3(IDC_B_ICON_FIRST_PAGE, OnFirstPage)
         COMMAND_ID_HANDLER3(IDC_B_ICON_NEXT_PAGE, OnNextPage)
@@ -45,6 +46,7 @@ private:
     void OnContextMenu(const CWindow& wnd, const CPoint& point);
     void OnIconSelChange();
     void OnClose();
+    void OnDestroy();
     void OnFirstPage();
     void OnNextPage();
     void OnPrevPage();

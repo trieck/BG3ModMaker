@@ -5,13 +5,40 @@ class ATL_NO_VTABLE ModelessDialog : public CDialogImpl<T, TBase>
 {
 public:
     ModelessDialog() = default;
+    void Run(HWND hWndParent = GetActiveWindow());
     void RunModal(HWND hWndParent = GetActiveWindow());
     void Destroy();
 
+    static HWND FindWindow();
+
 protected:
+    static LPCWSTR GetDialogID();
+
     void PumpMessages();
     BOOL m_bPseudoModal = FALSE;
 };
+
+template <class T, class TBase>
+void ModelessDialog<T, TBase>::Run(HWND hWndParent)
+{
+    auto hWnd = this->Create(hWndParent);
+    if (hWnd == nullptr) {
+        ATLTRACE(_T("Unable to create dialog.\n"));
+        return;
+    }
+
+    SetProp(hWnd, GetDialogID(), hWnd);
+
+    this->ShowWindow(SW_SHOWNORMAL);
+    this->UpdateWindow();
+
+    while (this->IsWindow()) {
+        this->PumpMessages();
+        WaitMessage();
+    }
+
+    this->Destroy();
+}
 
 template <class T, class TBase>
 void ModelessDialog<T, TBase>::RunModal(HWND hWndParent)
@@ -56,6 +83,36 @@ void ModelessDialog<T, TBase>::Destroy()
         EnableWindow(hOwner, TRUE);
         SetActiveWindow(hOwner);
     }
+}
+
+template <class T, class TBase>
+HWND ModelessDialog<T, TBase>::FindWindow()
+{
+    struct Finder
+    {
+        static BOOL CALLBACK EnumProc(HWND hWnd, LPARAM lParam)
+        {
+            auto* data = reinterpret_cast<std::pair<LPCWSTR, HWND*>*>(lParam);
+            if (GetProp(hWnd, data->first)) {
+                *data->second = hWnd;
+                return FALSE; // stop
+            }
+            return TRUE;
+        }
+    };
+
+    HWND hWnd = nullptr;
+    std::pair data = {GetDialogID(), &hWnd};
+
+    EnumThreadWindows(GetCurrentThreadId(), Finder::EnumProc, reinterpret_cast<LPARAM>(&data));
+
+    return hWnd;
+}
+
+template <class T, class TBase>
+LPCWSTR ModelessDialog<T, TBase>::GetDialogID()
+{
+    return MAKEINTRESOURCEW(T::IDD);
 }
 
 template <class T, class TBase>

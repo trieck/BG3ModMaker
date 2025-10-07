@@ -300,6 +300,14 @@ void GameObjectDlg::OnClose()
     Destroy();
 }
 
+void GameObjectDlg::OnDestroy()
+{
+    auto* pLoop = _Module.GetMessageLoop();
+    if (pLoop != nullptr) {
+        pLoop->RemoveIdleHandler(this);
+    }
+}
+
 void GameObjectDlg::OnFirstPage()
 {
     m_nPage = 0;

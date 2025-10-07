@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Indexer.h"
 #include "ModelessDialog.h"
 #include "resources/resource.h"
 #include "ThreadSafeLatest.h"

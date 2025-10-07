@@ -186,14 +186,26 @@ void MainFrame::OnFolderPack()
 
 void MainFrame::OnGameObject()
 {
-    GameObjectDlg dlg;
-    dlg.RunModal(*this);
+    auto hWnd = GameObjectDlg::FindWindow();
+    if (hWnd) {
+        ::ShowWindow(hWnd, SW_RESTORE);
+        SetForegroundWindow(hWnd);
+    } else {
+        GameObjectDlg dlg;
+        dlg.Run(*this);
+    }
 }
 
 void MainFrame::OnIconExplorer()
 {
-    IconExplorerDlg dlg;
-    dlg.RunModal(*this);
+    auto hWnd = IconExplorerDlg::FindWindow();
+    if (hWnd) {
+        ::ShowWindow(hWnd, SW_RESTORE);
+        SetForegroundWindow(hWnd);
+    } else {
+        IconExplorerDlg dlg;
+        dlg.Run(*this);
+    }
 }
 
 void MainFrame::OnIndex()
@@ -204,8 +216,14 @@ void MainFrame::OnIndex()
 
 void MainFrame::OnSearch()
 {
-    SearchDlg dlg;
-    dlg.RunModal(*this);
+    auto hWnd = SearchDlg::FindWindow();
+    if (hWnd) {
+        ::ShowWindow(hWnd, SW_RESTORE);
+        SetForegroundWindow(hWnd);
+    } else {
+        SearchDlg dlg;
+        dlg.Run(*this);
+    }
 }
 
 void MainFrame::OnSettings()

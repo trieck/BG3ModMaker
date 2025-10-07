@@ -1,6 +1,7 @@
 #pragma once
 
 #include <mutex>
+#include <optional>
 
 template <typename T>
 class ThreadSafeLatest

@@ -17,6 +17,7 @@ public:
     BEGIN_MSG_MAP(GameObjectDlg)
         MSG_WM_INITDIALOG(OnInitDialog)
         MSG_WM_CLOSE(OnClose)
+        MSG_WM_DESTROY(OnDestroy)
         MSG_WM_SIZE(OnSize)
         COMMAND_ID_HANDLER3(IDC_B_FIRST_PAGE, OnFirstPage)
         COMMAND_ID_HANDLER3(IDC_B_NEXT_PAGE, OnNextPage)
@@ -50,6 +51,7 @@ private:
     void OnUuidSelChange();
     void AutoAdjustAttributes();
     void OnClose();
+    void OnDestroy();
     void OnFirstPage();
     void OnNextPage();
     void OnPrevPage();

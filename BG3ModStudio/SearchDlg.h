@@ -18,6 +18,7 @@ public:
         MSG_WM_SIZE(OnSize)
         MSG_WM_INITDIALOG(OnInitDialog)
         MSG_WM_CLOSE(OnClose)
+        MSG_WM_DESTROY(OnDestroy)
         MSG_WM_GETMINMAXINFO(OnGetMinMaxInfo)
         COMMAND_ID_HANDLER3(IDC_B_SEARCH, OnSearch)
         COMMAND_ID_HANDLER3(IDC_B_FIRST, OnFirst)
@@ -57,6 +58,7 @@ private:
     void OnQueryChange();
     void OnBrowse();
     void OnClose();
+    void OnDestroy();
     void OnFirst();
     void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
     void OnLast();
