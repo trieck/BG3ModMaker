@@ -77,9 +77,9 @@ BOOL GameObjectDlg::OnInitDialog(HWND, LPARAM)
 
     m_attributes.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
-    m_attributes.InsertColumn(0, _T("Name"), LVCFMT_LEFT, 150);
-    m_attributes.InsertColumn(1, _T("Type"), LVCFMT_LEFT, 80);
-    m_attributes.InsertColumn(2, _T("Value"), LVCFMT_LEFT);
+    m_attributes.InsertColumn(0, _T("Name"), LVCFMT_LEFT, 100);
+    m_attributes.InsertColumn(1, _T("Value"), LVCFMT_LEFT, 150);
+    m_attributes.InsertColumn(2, _T("Type"), LVCFMT_LEFT, 150);
 
     m_splitter.SetSplitterPane(0, m_list);
     m_splitter.SetSplitterPane(1, m_attributes);
@@ -108,7 +108,7 @@ LRESULT GameObjectDlg::OnDoubleClick(int idCtrl, LPNMHDR pnmh, BOOL& bHandled)
     }
 
     CString id, value;
-    m_attributes.GetItemText(pia->iItem, 2, value);
+    m_attributes.GetItemText(pia->iItem, 1, value);
     if (value.IsEmpty()) {
         return 0;
     }
@@ -167,7 +167,7 @@ void GameObjectDlg::OnContextMenu(const CWindow& wnd, const CPoint& point)
 void GameObjectDlg::OnContextAttributes(const CPoint& point)
 {
     CMenu menu;
-    menu.LoadMenuW(IDR_VALUE_CONTEXT);
+    menu.LoadMenuW(IDR_ATTRIBUTE_CONTEXT);
 
     CMenuHandle popup = menu.GetSubMenu(0);
     auto cmd = popup.TrackPopupMenu(TPM_RETURNCMD | TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, *this);
@@ -181,7 +181,19 @@ void GameObjectDlg::OnContextAttributes(const CPoint& point)
     }
 
     CString text;
-    m_attributes.GetItemText(selectedRow, 2, text);
+    switch (cmd) {
+    case ID_ATTRIBUTE_COPYNAME: // Copy Name
+        m_attributes.GetItemText(selectedRow, 0, text);
+        break;
+    case ID_ATTRIBUTE_COPYVALUE: // Copy Value
+        m_attributes.GetItemText(selectedRow, 1, text);
+        break;
+    case ID_ATTRIBUTE_COPYTYPE: // Copy Type
+        m_attributes.GetItemText(selectedRow, 2, text);
+        break;
+    default:
+        return; // Unknown command
+    }
 
     if (text.IsEmpty()) {
         return; // Nothing to copy
@@ -281,8 +293,8 @@ void GameObjectDlg::OnUuidSelChange()
         CString value = attr.value("value", "").c_str();
         CString type = attr.value("type", "").c_str();
         auto row = m_attributes.InsertItem(m_attributes.GetItemCount(), name);
-        m_attributes.SetItemText(row, 1, type);
-        m_attributes.SetItemText(row, 2, value);
+        m_attributes.SetItemText(row, 1, value);
+        m_attributes.SetItemText(row, 2, type);
     }
 
     AutoAdjustAttributes();

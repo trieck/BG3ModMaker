@@ -17,6 +17,8 @@ public:
         NOTIFY_CODE_HANDLER_EX(TVN_ITEMEXPANDING, OnItemExpanding)
         NOTIFY_CODE_HANDLER_EX(TVN_DELETEITEM, OnDelete)
         NOTIFY_CODE_HANDLER_EX(TVN_SELCHANGED, OnSelChanged)
+        NOTIFY_CODE_HANDLER_EX(NM_DBLCLK, OnDoubleClick)
+        MSG_WM_CONTEXTMENU(OnContextMenu)
     END_MSG_MAP()
 
     DECLARE_WND_SUPERCLASS(L"LSFFileView", nullptr)
@@ -26,6 +28,8 @@ public:
     LRESULT OnItemExpanding(LPNMHDR pnmh);
     LRESULT OnDelete(LPNMHDR pnmh);
     LRESULT OnSelChanged(LPNMHDR pnmh);
+    void OnContextMenu(const CWindow& wnd, const CPoint& point);
+    LRESULT OnDoubleClick(LPNMHDR pnmh);
 
     // IFileView
     BOOL Create(HWND parent, _U_RECT rect = nullptr, DWORD dwStyle = 0, DWORD dwStyleEx = 0) override;

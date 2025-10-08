@@ -1,6 +1,6 @@
 #pragma once
 
-class OutputWindow : public CWindowImpl<OutputWindow>
+class  OutputWindow : public CWindowImpl<OutputWindow>
 {
 public:
     DECLARE_WND_SUPERCLASS(L"BG3_OutputWnd", CListViewCtrl::GetWndClassName())

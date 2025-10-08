@@ -1,10 +1,12 @@
 #include "stdafx.h"
 #include "Exception.h"
 #include "FileStream.h"
+#include "IconDlg.h"
 #include "LSFFileView.h"
 #include "LSFReader.h"
 #include "resources/resource.h"
 #include "StringHelper.h"
+#include "Util.h"
 
 enum NodeItemType
 {
@@ -50,8 +52,8 @@ LRESULT LSFFileView::OnCreate(LPCREATESTRUCT pcs)
     m_list.SetFont(font);
 
     m_list.InsertColumn(0, _T("Name"), LVCFMT_LEFT, 100);
-    m_list.InsertColumn(1, _T("Type"), LVCFMT_LEFT, 150);
-    m_list.InsertColumn(2, _T("Value"), LVCFMT_LEFT, 150);
+    m_list.InsertColumn(1, _T("Value"), LVCFMT_LEFT, 150);
+    m_list.InsertColumn(2, _T("Type"), LVCFMT_LEFT, 150);
 
     m_splitter.SetSplitterPane(0, m_tree);
     m_splitter.SetSplitterPane(1, m_list);
@@ -127,6 +129,79 @@ LRESULT LSFFileView::OnSelChanged(LPNMHDR /*pnmh*/)
     if (data->type == NIT_REGION || data->type == NIT_NODE) {
         AddAttributes(*static_cast<LSNode*>(data->pdata));
     }
+
+    return 0;
+}
+
+void LSFFileView::OnContextMenu(const CWindow& wnd, const CPoint& point)
+{
+    CRect rc;
+    m_list.GetWindowRect(&rc);
+    if (!rc.PtInRect(point)) {
+        return; // Click was outside the list
+    }
+
+    CMenu menu;
+    menu.LoadMenuW(IDR_ATTRIBUTE_CONTEXT);
+
+    CMenuHandle popup = menu.GetSubMenu(0);
+    auto cmd = popup.TrackPopupMenu(TPM_RETURNCMD | TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, *this);
+    if (cmd == 0) {
+        return; // No command selected
+    }
+
+    auto selectedRow = m_list.GetSelectedIndex();
+    if (selectedRow < 0) {
+        return; // No item selected
+    }
+
+    CString text;
+    switch (cmd) {
+    case ID_ATTRIBUTE_COPYNAME: // Copy Name
+        m_list.GetItemText(selectedRow, 0, text);
+        break;
+    case ID_ATTRIBUTE_COPYVALUE: // Copy Value
+        m_list.GetItemText(selectedRow, 1, text);
+        break;
+    case ID_ATTRIBUTE_COPYTYPE: // Copy Type
+        m_list.GetItemText(selectedRow, 2, text);
+        break;
+    default:
+        return; // Unknown command
+    }
+
+    if (text.IsEmpty()) {
+        return; // Nothing to copy
+    }
+
+    Util::CopyToClipboard(*this, text);
+}
+
+LRESULT LSFFileView::OnDoubleClick(LPNMHDR pnmh)
+{
+    if (pnmh->hwndFrom != m_list.m_hWnd) {
+        return 0;
+    }
+
+    auto pia = reinterpret_cast<LPNMITEMACTIVATE>(pnmh);
+    if (!pia || pia->iItem < 0) {
+        return 0;
+    }
+
+    CString id, value;
+    m_list.GetItemText(pia->iItem, 1, value);
+    if (value.IsEmpty()) {
+        return 0;
+    }
+
+    CWaitCursor cursor;
+
+    IconDlg dlg(value);
+    if (!dlg.HasImage()) {
+        return 0;
+    }
+
+    dlg.DoModal(*this);
 
     return 0;
 }
@@ -372,11 +447,11 @@ void LSFFileView::AddAttributes(const LSNode& node)
     int index = 0;
     for (const auto& [name, attr] : node.attributes) {
         auto wideName = StringHelper::fromUTF8(name.c_str());
-        auto wideType = StringHelper::fromUTF8(attr.typeStr().c_str());
         auto wideValue = StringHelper::fromUTF8(attr.str().c_str());
+        auto wideType = StringHelper::fromUTF8(attr.typeStr().c_str());
         index = m_list.InsertItem(index, wideName);
-        m_list.SetItemText(index, 1, wideType);
-        m_list.SetItemText(index, 2, wideValue);
+        m_list.SetItemText(index, 1, wideValue);
+        m_list.SetItemText(index, 2, wideType);
         ++index;
     }
 
