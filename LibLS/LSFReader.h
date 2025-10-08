@@ -11,6 +11,7 @@ public:
     ~LSFReader();
 
     Resource::Ptr read(const ByteBuffer& info);
+    Resource::Ptr read(StreamBase& stream);
 
 private:
     static AttributeValue readMatrix(const NodeAttribute& attr, Stream& stream);
@@ -19,6 +20,7 @@ private:
     static NodeAttribute readAttribute(AttributeType type, Stream& reader);
     TranslatedFSStringT readTranslatedFSString(Stream& stream) const;
     Stream decompress(uint32_t sizeOnDisk, uint32_t uncompressedSize, const std::string& debugDumpTo, bool allowChunked);
+    Resource::Ptr read();
     void readAttributesV2(Stream& stream);
     void readAttributesV3(Stream& stream);
     void readHeader();

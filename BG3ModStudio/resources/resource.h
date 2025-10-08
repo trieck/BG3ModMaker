@@ -50,7 +50,10 @@
 #define ID_TOOL_UUID                    146
 #define IDR_ATTRIBUTE_CONTEXT1          148
 #define IDR_VALUE_CONTEXT               148
+#define IDI_RESOURCE                    148
 #define IDR_ENTRY_CONTEXT               149
+#define IDI_REGION                      149
+#define IDI_NODE                        150
 #define IDC_PROGRESS_INDEX              1000
 #define IDC_PAKFILE                     1001
 #define IDC_INDEX_FILE                  1002
@@ -226,7 +229,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        148
+#define _APS_NEXT_RESOURCE_VALUE        151
 #define _APS_NEXT_COMMAND_VALUE         40032
 #define _APS_NEXT_CONTROL_VALUE         1046
 #define _APS_NEXT_SYMED_VALUE           101

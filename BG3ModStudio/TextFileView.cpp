@@ -10,7 +10,7 @@ auto constexpr BUFFER_SIZE = 4096;
 LRESULT TextFileView::OnCreate(LPCREATESTRUCT pcs)
 {
     if (!m_edit.Create(*this, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_HSCROLL)) {
-        ATLTRACE("Unable to create rich edit control.\n");
+        ATLTRACE("Unable to edit control.\n");
         return -1;
     }
 

@@ -140,6 +140,9 @@
     <ClInclude Include="UUIDDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LSFFileView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BG3ModStudio.cpp">
@@ -235,6 +238,9 @@
     <ClCompile Include="UUIDDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LSFFileView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="ribbon.xml">
@@ -317,6 +323,12 @@
     <Image Include="resources\catalog.bmp">
       <Filter>Resources</Filter>
     </Image>
+    <Image Include="resource.ico" />
+    <Image Include="resources\resource.ico" />
+    <Image Include="region.ico" />
+    <Image Include="resources\region.ico" />
+    <Image Include="node.ico" />
+    <Image Include="resources\node.ico" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\BG3ModStudio.rc">

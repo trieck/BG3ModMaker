@@ -178,6 +178,7 @@
     <ClInclude Include="IconExplorerDlg.h" />
     <ClInclude Include="ImageView.h" />
     <ClInclude Include="IndexDlg.h" />
+    <ClInclude Include="LSFFileView.h" />
     <ClInclude Include="ModelessDialog.h" />
     <ClInclude Include="OutputWindow.h" />
     <ClInclude Include="PAKIgnore.h" />
@@ -221,6 +222,7 @@
     <ClCompile Include="IconExplorerDlg.cpp" />
     <ClCompile Include="ImageView.cpp" />
     <ClCompile Include="IndexDlg.cpp" />
+    <ClCompile Include="LSFFileView.cpp" />
     <ClCompile Include="OutputWindow.cpp" />
     <ClCompile Include="FileDialogEx.cpp" />
     <ClCompile Include="FileViewFactory.cpp" />
@@ -265,6 +267,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Image Include="node.ico" />
+    <Image Include="region.ico" />
+    <Image Include="resource.ico" />
     <Image Include="resources\about.bmp" />
     <Image Include="resources\app.ico" />
     <Image Include="resources\bom.ico" />
@@ -281,10 +286,13 @@
     <Image Include="resources\index.bmp" />
     <Image Include="resources\lsf.bmp" />
     <Image Include="resources\nobom.ico" />
+    <Image Include="resources\node.ico" />
     <Image Include="resources\open.bmp" />
     <Image Include="resources\package.bmp" />
     <Image Include="resources\pak-large.bmp" />
     <Image Include="resources\pak.bmp" />
+    <Image Include="resources\region.ico" />
+    <Image Include="resources\resource.ico" />
     <Image Include="resources\save.bmp" />
     <Image Include="resources\saveall.bmp" />
     <Image Include="resources\search.bmp" />

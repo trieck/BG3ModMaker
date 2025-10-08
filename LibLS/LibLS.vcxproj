@@ -174,7 +174,6 @@
     <ClInclude Include="Compress.h" />
     <ClInclude Include="CRC32.h" />
     <ClInclude Include="Exception.h" />
-    <ClInclude Include="FileStream.h" />
     <ClInclude Include="Iconizer.h" />
     <ClInclude Include="Indexer.h" />
     <ClInclude Include="Localization.h" />

@@ -10,6 +10,7 @@ public:
     using StreamBase::write;
 
     Stream();
+    explicit Stream(StreamBase& stream);
     explicit Stream(size_t capacity);
     Stream(const char* buf, size_t size);
     explicit Stream(const ByteBuffer& buf);

@@ -4,6 +4,7 @@
 #include "FileStream.h"
 #include "FileViewFactory.h"
 #include "ImageView.h"
+#include "LSFFileView.h"
 #include "TextFileView.h"
 
 namespace { // anonymous namespace
@@ -38,8 +39,12 @@ IFileView::Ptr FileViewFactory::CreateFileView(const CString& path, HWND parent,
 {
     IFileView::Ptr fileView;
 
+    CString extension = ATLPath::FindExtension(path);
+
     if (ImageView::IsRenderable(path)) {
         fileView = std::make_shared<ImageView>();
+    } else if (extension.CompareNoCase(L".lsf") == 0) {
+        fileView = std::make_shared<LSFFileView>();
     } else if (IsBinaryFile(path)) {
         fileView = std::make_shared<BinaryFileView>();
     } else {

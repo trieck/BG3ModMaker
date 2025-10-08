@@ -29,6 +29,18 @@ Resource::Ptr LSFReader::read(const ByteBuffer& info)
 {
     m_stream = Stream::makeStream(info);
 
+    return read();
+}
+
+Resource::Ptr LSFReader::read(StreamBase& stream)
+{
+    m_stream = Stream::makeStream(stream);
+
+    return read();
+}
+
+Resource::Ptr LSFReader::read()
+{
     readHeader();
 
     auto namesStream = decompress(m_metadata.stringsSizeOnDisk, m_metadata.stringsUncompressedSize, "strings.bin",

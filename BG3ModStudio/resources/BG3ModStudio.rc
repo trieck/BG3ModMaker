@@ -63,6 +63,12 @@ IDI_NOBOM               ICON                    "nobom.ico"
 
 IDI_BOM                 ICON                    "bom.ico"
 
+IDI_RESOURCE            ICON                    "resource.ico"
+
+IDI_REGION              ICON                    "region.ico"
+
+IDI_NODE                ICON                    "node.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

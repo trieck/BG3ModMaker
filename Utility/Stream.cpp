@@ -9,6 +9,14 @@ Stream::Stream() : m_pos(0), m_size(0), m_capacity(0)
     alloc(DEFAULT_BUFFER_SIZE);
 }
 
+Stream::Stream(StreamBase& stream)
+{
+    auto size = stream.size();
+    alloc(std::max<size_t>(size, DEFAULT_BUFFER_SIZE));
+
+    stream.read(m_bytes.get(), size);
+}
+
 Stream::Stream(size_t capacity) : m_pos(0), m_size(0), m_capacity(0)
 {
     alloc(capacity);
@@ -162,8 +170,13 @@ Stream Stream::makeStream(StreamBase& stream)
 {
     Stream newStream;
 
-    ByteBuffer buffer{ std::make_unique<uint8_t[]>(stream.size()), stream.size() };
-    newStream.read(reinterpret_cast<char*>(buffer.first.get()), stream.size());
+    char buf[DEFAULT_BUFFER_SIZE];
+    size_t bytesRead;
+
+    while ((bytesRead = stream.read(buf, sizeof(buf))) > 0) {
+        newStream.write(buf, bytesRead);
+    }
+
     newStream.seek(0, SeekMode::Begin);
 
     return newStream;
