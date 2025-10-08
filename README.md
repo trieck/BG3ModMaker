@@ -53,3 +53,15 @@ git clone https://github.com/trieck/BG3ModMaker.git
 cd BG3ModMaker
 # open the solution in Visual Studio and build
 ```
+
+---
+
+## 🚀 Future Features
+
+Interested in what to build next? Check out the [Feature Recommendations](docs/NEXT_FEATURES.md) with detailed implementation guides for:
+
+- **Lua Script Syntax Highlighting** - Quick win with high value
+- **Find/Replace Dialog** - Essential text editing feature
+- **Stats.txt Validator** - Catch modding errors early
+
+See [FEATURE_RECOMMENDATION_SUMMARY.md](FEATURE_RECOMMENDATION_SUMMARY.md) for the full roadmap.
