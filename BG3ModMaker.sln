@@ -7,6 +7,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Index", "Index\Index.vcxpro
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{73516DDC-49C5-49C6-B875-9EB3E64C24CC}"
 	ProjectSection(SolutionItems) = preProject
+		assets\bg3-mod-studio.png = assets\bg3-mod-studio.png
 		README.md = README.md
 		vcpkg.json = vcpkg.json
 	EndProjectSection
