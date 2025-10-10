@@ -155,7 +155,6 @@ void FolderView::ExpandFolders(const CTreeItem& folder)
 
             hasChildren = true;
         }
-
     } while (FindNextFile(hFind, &findData));
 
     FindClose(hFind);
@@ -200,7 +199,7 @@ HTREEITEM FolderView::FindFile(const CString& filename)
         auto rootComponent = rootComponents.front();
         auto component = components.front();
         if (rootComponent.CompareNoCase(component) != 0) {
-            break;  // not rooted
+            break; // not rooted
         }
         rootComponents.pop_front();
         components.pop_front();
@@ -248,7 +247,7 @@ HTREEITEM FolderView::AddFile(const CString& filename)
         auto rootComponent = rootComponents.front();
         auto component = components.front();
         if (rootComponent.CompareNoCase(component) != 0) {
-            break;  // not rooted
+            break; // not rooted
         }
         rootComponents.pop_front();
         components.pop_front();

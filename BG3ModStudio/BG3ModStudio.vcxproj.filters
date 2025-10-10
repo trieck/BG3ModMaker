@@ -68,9 +68,6 @@
     <ClInclude Include="FileOperation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FolderMonitor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ShellHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -143,6 +140,15 @@
     <ClInclude Include="LSFFileView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="COMError.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShellNotifyRegistrar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PIDL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BG3ModStudio.cpp">
@@ -176,9 +182,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FileOperation.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FolderMonitor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ShellHelper.cpp">
@@ -239,6 +242,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="LSFFileView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="COMError.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ShellNotifyRegistrar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PIDL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -323,12 +335,6 @@
     <Image Include="resources\catalog.bmp">
       <Filter>Resources</Filter>
     </Image>
-    <Image Include="resource.ico" />
-    <Image Include="resources\resource.ico" />
-    <Image Include="region.ico" />
-    <Image Include="resources\region.ico" />
-    <Image Include="node.ico" />
-    <Image Include="resources\node.ico" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\BG3ModStudio.rc">

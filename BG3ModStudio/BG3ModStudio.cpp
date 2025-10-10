@@ -6,8 +6,6 @@
 
 CAppModule _Module;
 
-CComCriticalSection g_csFile; // Global critical section
-
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                       _In_opt_ HINSTANCE hPrevInstance,
                       _In_ LPWSTR lpCmdLine,
@@ -32,8 +30,6 @@ BG3ModStudio::~BG3ModStudio()
 {
     m_direct2D.Terminate();
 
-    (void)g_csFile.Term();
-
     CoUninitialize();
 }
 
@@ -49,12 +45,6 @@ BOOL BG3ModStudio::Init()
     if (FAILED(hr)) {
         ATLTRACE(_T("Cannot initialize Direct2D.\n"));
         CoUninitialize();
-        return FALSE;
-    }
-
-    hr = g_csFile.Init();
-    if (FAILED(hr)) {
-        ATLTRACE(_T("Cannot initialize global critical section.\n"));
         return FALSE;
     }
 

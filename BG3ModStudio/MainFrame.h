@@ -1,11 +1,14 @@
 #pragma once
 
 #include "FileViews.h"
-#include "FolderMonitor.h"
 #include "FolderView.h"
 #include "OutputWindow.h"
+#include "PIDL.h"
 #include "resources/resource.h"
 #include "resources/ribbon.h"
+#include "ShellNotifyRegistrar.h"
+
+#define WM_FILE_CHANGED (WM_APP + 1)
 
 class MainFrame : public CRibbonFrameWindowImpl<MainFrame>,
                   public CMessageFilter,
@@ -48,7 +51,7 @@ public:
     LRESULT OnTabActivated(LPNMHDR pnmhdr);
     LRESULT OnTabContextMenu(LPNMHDR pnmh);
     LRESULT OnRClick(LPNMHDR pnmh);
-    LRESULT OnFileChanged(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+    void OnFileChanged(WPARAM wParam, LPARAM lParam);
 
     BEGIN_UPDATE_UI_MAP(MainFrame)
         UPDATE_ELEMENT(ID_VIEW_STATUS_BAR, UPDUI_MENUPOPUP)
@@ -70,9 +73,7 @@ public:
     BEGIN_MSG_MAP(MainFrame)
         MSG_WM_CREATE(OnCreate)
         MSG_WM_CLOSE(OnClose)
-
-        MESSAGE_HANDLER(WM_FILE_CHANGED, OnFileChanged)
-
+        MESSAGE_HANDLER2(WM_FILE_CHANGED, OnFileChanged)
         COMMAND_ID_HANDLER3(ID_APP_EXIT, OnFileExit)
         COMMAND_ID_HANDLER3(ID_FILE_CLOSE, OnFolderClose)
         COMMAND_ID_HANDLER3(ID_FILE_NEW, OnNewFile)
@@ -117,7 +118,7 @@ private:
     void AddFile(const CString& filename);
     void IterateFiles(HTREEITEM hItem, const FileCallback& callback);
     void LogMessage(const CString& message);
-    void ProcessFileChange(UINT action, const CString& filename);
+    void ProcessFileChange(LONG event, PIDLIST_ABSOLUTE* pidls);
     void RemoveFile(const CString& filename);
     void RenameFile(const CString& oldname, const CString& newname);
     void UpdateEncodingStatus(FileEncoding encoding);
@@ -131,6 +132,6 @@ private:
     FilesView m_filesView{};
     OutputWindow m_output{};
     CIcon m_bom, m_nobom;
-    FolderMonitor::Ptr m_folderMonitor;
-    std::stack<std::wstring> m_oldnames; // old file names for renaming
+    ShellNotifyRegistration  m_notify;
+    PIDL m_rootPIDL;
 };

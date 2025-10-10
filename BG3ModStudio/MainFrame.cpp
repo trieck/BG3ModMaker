@@ -15,9 +15,6 @@
 #include "StringHelper.h"
 #include "UUIDDlg.h"
 
-extern CComCriticalSection g_csFile;
-static constexpr auto FOLDER_MONITOR_WAIT_TIME = 50;
-
 BOOL MainFrame::DefCreate()
 {
     RECT rect = {0, 0, 1024, 600};
@@ -148,22 +145,23 @@ void MainFrame::OnFolderOpen()
 
     UpdateTitle();
 
-    CWaitCursor wait;
-    if (m_folderMonitor) {
-        m_folderMonitor->Stop(FOLDER_MONITOR_WAIT_TIME);
+    hr = SHParseDisplayName(paths[0], nullptr, m_rootPIDL.put(), 0, nullptr);
+    if (FAILED(hr)) {
+        CoMessageBox(*this, hr, nullptr, _T("Failed to get PIDL for folder."), MB_ICONERROR);
+        return;
     }
 
-    m_folderMonitor = FolderMonitor::Create(m_hWnd, paths[0]);
-    m_folderMonitor->Start();
+    SHChangeNotifyEntry entry{m_rootPIDL.get(), TRUE};
+    m_notify.reset(SHChangeNotifyRegister(
+        m_hWnd,
+        SHCNRF_ShellLevel | SHCNRF_InterruptLevel | SHCNRF_NewDelivery,
+        SHCNE_DISKEVENTS,
+        WM_FILE_CHANGED,
+        1, &entry));
 }
 
 void MainFrame::OnFolderClose()
 {
-    if (m_folderMonitor) {
-        CWaitCursor wait;
-        m_folderMonitor->Stop(FOLDER_MONITOR_WAIT_TIME);
-    }
-
     m_folderView.DeleteAllItems();
     m_folderView.RedrawWindow();
 
@@ -299,8 +297,6 @@ void MainFrame::OnDeleteFile()
     }
 
     CWaitCursor wait;
-    CComCritSecLock lock(g_csFile); // acquire the lock until deletion completes
-
     hr = op.DeleteItem(filename);
     if (FAILED(hr)) {
         CoMessageBox(*this, hr, nullptr, MB_ICONERROR);
@@ -501,11 +497,6 @@ void MainFrame::OnConvertLSF()
 
 void MainFrame::OnClose()
 {
-    if (m_folderMonitor) {
-        CWaitCursor wait;
-        m_folderMonitor->Stop(FOLDER_MONITOR_WAIT_TIME);
-    }
-
     if (m_filesView.IsWindow()) {
         m_filesView.CloseAllFiles();
     }
@@ -589,9 +580,6 @@ LRESULT MainFrame::OnTVEndLabelEdit(LPNMHDR pnmhdr)
         ::PostMessage(m_folderView.m_hWnd, TVM_EDITLABEL, 0, reinterpret_cast<LPARAM>(pDispInfo->item.hItem));
         return FALSE; // Reject rename
     }
-
-    CComCritSecLock lock(g_csFile); // lock the critical section to ensure the folder monitor does not notify us
-
 
     if (type == TIT_FILE) {
         auto hFile = CreateFile(fullPath, GENERIC_WRITE, 0, nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
@@ -726,43 +714,60 @@ LRESULT MainFrame::OnRClick(LPNMHDR pnmh)
     return 0;
 }
 
-LRESULT MainFrame::OnFileChanged(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+void MainFrame::OnFileChanged(WPARAM wParam, LPARAM lParam)
 {
-    auto bstrFilename = reinterpret_cast<BSTR>(lParam);
+    PIDLIST_ABSOLUTE* pidls;
+    LONG event;
+    auto hLock = SHChangeNotification_Lock(
+        reinterpret_cast<HANDLE>(wParam), static_cast<DWORD>(lParam),
+        &pidls, &event);
 
-    CString strFilename(bstrFilename);
-
-    SysFreeString(bstrFilename);
-
-    ProcessFileChange(static_cast<UINT>(wParam), strFilename);
-
-    bHandled = TRUE;
-
-    return 0;
+    if (hLock) {
+        ProcessFileChange(event, pidls);
+        SHChangeNotification_Unlock(hLock);
+    }
 }
 
-void MainFrame::ProcessFileChange(UINT action, const CString& filename)
+void MainFrame::ProcessFileChange(LONG event, PIDLIST_ABSOLUTE* pidls)
 {
     if (!m_folderView.IsWindow()) {
         return;
     }
 
-    switch (action) {
-    case FILE_ACTION_ADDED:
-        AddFile(filename);
-        break;
-    case FILE_ACTION_REMOVED:
-        RemoveFile(filename);
-        break;
-    case FILE_ACTION_RENAMED_OLD_NAME:
-        m_oldnames.emplace(filename.GetString());
-        break;
-    case FILE_ACTION_RENAMED_NEW_NAME:
-        if (m_oldnames.empty()) {
-            break; // out-of-place
+    auto PidlToString = [](PCIDLIST_ABSOLUTE pidl) -> CString {
+        if (!pidl) {
+            return {};
         }
-        RenameFile(m_oldnames.top().c_str(), filename);
-        m_oldnames.pop();
+
+        PWSTR p = nullptr;
+        auto hr = SHGetNameFromIDList(pidl, SIGDN_FILESYSPATH, &p);
+        if (FAILED(hr)) {
+            return {};
+        }
+
+        CString s(p);
+
+        CoTaskMemFree(p);
+
+        return s;
+    };
+
+    CString oldPath, newPath;
+    oldPath = PidlToString(pidls[0]);
+
+    switch (event) {
+    case SHCNE_CREATE:
+    case SHCNE_MKDIR:
+        AddFile(oldPath);
+        break;
+    case SHCNE_DELETE:
+    case SHCNE_RMDIR:
+        RemoveFile(oldPath);
+        break;
+    case SHCNE_RENAMEITEM:
+    case SHCNE_RENAMEFOLDER:
+        newPath = PidlToString(pidls[1]);
+        RenameFile(oldPath, newPath);
         break;
     default:
         break;

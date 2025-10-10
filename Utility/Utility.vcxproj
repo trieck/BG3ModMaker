@@ -148,7 +148,6 @@
   <ItemGroup>
     <ClInclude Include="CoInit.h" />
     <ClInclude Include="CoMemory.h" />
-    <ClInclude Include="COMError.h" />
     <ClInclude Include="CRC32.h" />
     <ClInclude Include="Direct2D.h" />
     <ClInclude Include="Exception.h" />
@@ -179,7 +178,6 @@
   <ItemGroup>
     <ClCompile Include="CoInit.cpp" />
     <ClCompile Include="CoMemory.cpp" />
-    <ClCompile Include="COMError.cpp" />
     <ClCompile Include="CRC32.cpp" />
     <ClCompile Include="Direct2D.cpp" />
     <ClCompile Include="Exception.cpp" />

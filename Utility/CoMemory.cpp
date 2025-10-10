@@ -1,5 +1,4 @@
 #include "pch.h"
-#include <objbase.h>
 #include "CoMemory.h"
 
 CoMemory::CoMemory() : m_pData(nullptr), m_cRef(0)
