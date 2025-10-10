@@ -34,12 +34,13 @@ public:
     void ExpandFolders(const CTreeItem& folder);
     HTREEITEM AddFile(const CString& filename);
     HTREEITEM FindFile(const CString& filename);
-    HTREEITEM RenameFile(const CString& oldname, const CString& newname);
+    HTREEITEM RenameFile(const CString& oldName, const CString& newName);
     CString GetRootPath() const;
     CString GetItemPath(HTREEITEM hItem) const;
     TreeItemType GetItemType(HTREEITEM hItem) const;
 
 private:
+    void RenameChildren(HTREEITEM hItem, const CString& oldBase, const CString& newBase);
     HTREEITEM InsertFile(HTREEITEM hRoot, const CString& filename, std::deque<CString>& components);
     HTREEITEM InsertSubpath(HTREEITEM hRoot, const CString& subpath, const CString& component);
     HTREEITEM FindFile(HTREEITEM hRoot, std::deque<CString>& components);
@@ -47,3 +48,4 @@ private:
 
     CImageList m_ImageList;
 };
+

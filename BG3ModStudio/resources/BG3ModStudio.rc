@@ -148,6 +148,7 @@ BEGIN
         MENUITEM "Make LSF Here",               ID_TREE_MAKELSFHERE
         MENUITEM "Delete File",                 ID_TREE_DELETE_FILE
         MENUITEM "Delete Folder",               ID_TREE_DELETE_FOLDER
+        MENUITEM "Rename File/Folder",          ID_TREE_RENAME_FILE
     END
 END
 

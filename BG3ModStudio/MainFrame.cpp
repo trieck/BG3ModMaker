@@ -369,6 +369,22 @@ void MainFrame::OnNewFolderHere()
     m_folderView.EditLabel(newItem);
 }
 
+void MainFrame::OnRenameFile()
+{
+    auto item = m_folderView.GetSelectedItem();
+    if (item.IsNull()) {
+        return;
+    }
+
+    auto type = m_folderView.GetItemType(item);
+    if (type != TIT_FILE && type != TIT_FOLDER) {
+        return;
+    }
+
+    m_folderView.EnsureVisible(item);
+    m_folderView.EditLabel(item);
+}
+
 void MainFrame::OnConvertLoca()
 {
     auto item = m_folderView.GetSelectedItem();
@@ -543,65 +559,15 @@ LRESULT MainFrame::OnTVEndLabelEdit(LPNMHDR pnmhdr)
         return FALSE;
     }
 
-    auto type = static_cast<TreeItemType>(pDispInfo->item.lParam);
-    if (type != TIT_FILE && type != TIT_FOLDER) {
-        return FALSE; // Unknown node type
+    auto lParam = pDispInfo->item.lParam;
+    switch (lParam) {
+    case TIT_FILE:
+    case TIT_FOLDER:
+        return NewFile(pDispInfo);
+    default:
+        // File rename
+        return RenameFile(pDispInfo);
     }
-
-    CString newName = pDispInfo->item.pszText;
-
-    static constexpr WCHAR INVALID_CHARS[] = L"\\/:*?\"<>|";
-    if (newName.FindOneOf(INVALID_CHARS) != -1) {
-        MessageBox(L"Invalid filename. Do not use: \\ / : * ? \" < > |", L"Error", MB_ICONERROR);
-        ::PostMessage(m_folderView.m_hWnd, TVM_EDITLABEL, 0, reinterpret_cast<LPARAM>(pDispInfo->item.hItem));
-        return FALSE;
-    }
-
-    auto hItem = pDispInfo->item.hItem;
-    auto hParent = m_folderView.GetParentItem(hItem);
-    if (hParent.IsNull()) {
-        return FALSE;
-    }
-
-    if (m_folderView.GetItemType(hParent) != TIT_FOLDER) {
-        return FALSE;
-    }
-
-    auto path = m_folderView.GetItemPath(hParent);
-    if (path.IsEmpty()) {
-        return FALSE;
-    }
-
-    WCHAR fullPath[MAX_PATH]{};
-    PathCombine(fullPath, path, newName);
-
-    if (PathFileExists(fullPath)) {
-        MessageBox(L"A file with this name already exists.", L"Error", MB_ICONERROR);
-        ::PostMessage(m_folderView.m_hWnd, TVM_EDITLABEL, 0, reinterpret_cast<LPARAM>(pDispInfo->item.hItem));
-        return FALSE; // Reject rename
-    }
-
-    if (type == TIT_FILE) {
-        auto hFile = CreateFile(fullPath, GENERIC_WRITE, 0, nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
-        if (hFile == INVALID_HANDLE_VALUE) {
-            MessageBox(L"Failed to create the file.", L"Error", MB_ICONERROR);
-            return FALSE;
-        }
-        CloseHandle(hFile);
-    } else { // Folder
-        if (!CreateDirectory(fullPath, nullptr)) {
-            MessageBox(L"Failed to create the directory", L"Error", MB_ICONERROR);
-            return FALSE;
-        }
-    }
-
-    auto* data = new TreeItemData{.type = type, .path = fullPath};
-
-    m_folderView.SetItemData(hItem, reinterpret_cast<DWORD_PTR>(data));
-
-    pDispInfo->item.lParam = reinterpret_cast<LPARAM>(data);
-
-    return TRUE;
 }
 
 LRESULT MainFrame::OnTVSelChanged(LPNMHDR /*pnmhdr*/)
@@ -817,6 +783,7 @@ BOOL MainFrame::IsFolderSelected() const
     if (!m_folderView.IsWindow()) {
         return FALSE;
     }
+
     auto hItem = m_folderView.GetSelectedItem();
     if (hItem.IsNull()) {
         return FALSE;
@@ -825,6 +792,22 @@ BOOL MainFrame::IsFolderSelected() const
     auto type = m_folderView.GetItemType(hItem);
 
     return type == TIT_FOLDER;
+}
+
+BOOL MainFrame::IsFileSelected() const
+{
+    if (!m_folderView.IsWindow()) {
+        return FALSE;
+    }
+
+    auto hItem = m_folderView.GetSelectedItem();
+    if (hItem.IsNull()) {
+        return FALSE;
+    }
+
+    auto type = m_folderView.GetItemType(hItem);
+
+    return type == TIT_FILE;
 }
 
 BOOL MainFrame::IsXmlSelected() const
@@ -880,6 +863,116 @@ void MainFrame::UpdateTitle()
     }
 
     SetWindowText(strTitle);
+}
+
+BOOL MainFrame::NewFile(LPNMTVDISPINFOW pDispInfo)
+{
+    auto type = static_cast<TreeItemType>(pDispInfo->item.lParam);
+    if (type != TIT_FILE && type != TIT_FOLDER) {
+        return FALSE; // not a new file
+    }
+
+    CString newName = pDispInfo->item.pszText;
+
+    static constexpr WCHAR INVALID_CHARS[] = L"\\/:*?\"<>|";
+    if (newName.FindOneOf(INVALID_CHARS) != -1) {
+        MessageBox(L"Invalid filename. Do not use: \\ / : * ? \" < > |", L"Error", MB_ICONERROR);
+        m_folderView.PostMessage(TVM_EDITLABEL, 0, reinterpret_cast<LPARAM>(pDispInfo->item.hItem));
+        return FALSE;
+    }
+
+    auto hItem = pDispInfo->item.hItem;
+    auto hParent = m_folderView.GetParentItem(hItem);
+    if (hParent.IsNull()) {
+        return FALSE; // no parent
+    }
+
+    if (m_folderView.GetItemType(hParent) != TIT_FOLDER) {
+        return FALSE; // parent not a folder
+    }
+
+    auto path = m_folderView.GetItemPath(hParent);
+    if (path.IsEmpty()) {
+        return FALSE; // no path
+    }
+
+    WCHAR fullPath[MAX_PATH]{};
+    PathCombine(fullPath, path, newName);
+
+    if (PathFileExists(fullPath)) {
+        MessageBox(L"A file with this name already exists.", L"Error", MB_ICONERROR);
+        m_folderView.PostMessage(TVM_EDITLABEL, 0, reinterpret_cast<LPARAM>(pDispInfo->item.hItem));
+        return FALSE; // Reject rename
+    }
+
+    if (type == TIT_FILE) {
+        auto hFile = CreateFile(fullPath, GENERIC_WRITE, 0, nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
+        if (hFile == INVALID_HANDLE_VALUE) {
+            MessageBox(L"Failed to create the file.", L"Error", MB_ICONERROR);
+            return FALSE;
+        }
+
+        CloseHandle(hFile);
+    } else { // Folder
+        if (!CreateDirectory(fullPath, nullptr)) {
+            MessageBox(L"Failed to create the directory", L"Error", MB_ICONERROR);
+            return FALSE;
+        }
+    }
+
+    auto* data = new TreeItemData{.type = type, .path = fullPath};
+
+    m_folderView.SetItemData(hItem, reinterpret_cast<DWORD_PTR>(data));
+
+    pDispInfo->item.lParam = reinterpret_cast<LPARAM>(data);
+
+    return TRUE;
+}
+
+BOOL MainFrame::RenameFile(LPNMTVDISPINFOW pDispInfo)
+{
+    auto* pData = reinterpret_cast<TREEITEMDATA*>(pDispInfo->item.lParam);
+    if (!pData) {
+        return FALSE; // not a valid tree item
+    }
+
+    ATLASSERT(pData->type == TIT_FILE || pData->type == TIT_FOLDER);
+
+    const auto& oldName = pData->path;
+    CString newName = pDispInfo->item.pszText;
+
+    WCHAR dir[MAX_PATH];
+    wcscpy_s(dir, pData->path);
+    PathRemoveFileSpec(dir);
+
+    WCHAR fullPath[MAX_PATH];
+    PathCombine(fullPath, dir, newName);
+
+    if (wcscmp(oldName, fullPath) == 0) {
+        return FALSE; // no rename
+    }
+
+    static constexpr WCHAR INVALID_CHARS[] = L"\\/:*?\"<>|";
+    if (newName.FindOneOf(INVALID_CHARS) != -1) {
+        MessageBox(L"Invalid filename. Do not use: \\ / : * ? \" < > |", L"Error", MB_ICONERROR);
+        m_folderView.PostMessage(TVM_EDITLABEL, 0, reinterpret_cast<LPARAM>(pDispInfo->item.hItem));
+        return FALSE;
+    }
+
+    FileOperation op;
+    auto hr = op.Create();
+    if (FAILED(hr)) {
+        CoMessageBox(*this, hr, nullptr, MB_ICONERROR);
+        return FALSE;
+    }
+
+    hr = op.RenameItems(oldName, newName);
+    if (FAILED(hr)) {
+        CoMessageBox(*this, hr);
+        return FALSE;
+    }
+
+    return TRUE;
 }
 
 void MainFrame::UpdateEncodingStatus(FileEncoding encoding)
@@ -956,16 +1049,17 @@ void MainFrame::OnViewOutput()
 
 BOOL MainFrame::OnIdle()
 {
-    UIEnable(ID_FILE_NEW, IsFolderOpen());
     UIEnable(ID_FILE_CLOSE, IsFolderOpen());
-    UIEnable(ID_TOOL_PACKAGE, IsFolderOpen());
+    UIEnable(ID_FILE_NEW, IsFolderOpen());
     UIEnable(ID_TOOL_LOCA, IsXmlSelected());
     UIEnable(ID_TOOL_LSF, IsLSXSelected());
-    UIEnable(ID_TREE_NEWFILEHERE, IsFolderSelected());
-    UIEnable(ID_TREE_NEWFOLDERHERE, IsFolderSelected());
-    UIEnable(ID_TREE_DELETE_FILE, !IsFolderSelected());
+    UIEnable(ID_TOOL_PACKAGE, IsFolderOpen());
+    UIEnable(ID_TREE_DELETE_FILE, IsFileSelected());
     UIEnable(ID_TREE_DELETE_FOLDER, IsFolderSelected());
     UIEnable(ID_TREE_MAKELSFHERE, IsLSXSelected());
+    UIEnable(ID_TREE_NEWFILEHERE, IsFolderSelected());
+    UIEnable(ID_TREE_NEWFOLDERHERE, IsFolderSelected());
+    UIEnable(ID_TREE_RENAME_FILE, IsFolderSelected() || IsFileSelected());
 
     if (m_hSplitter.IsWindow()) {
         UISetCheck(ID_VIEW_OUTPUT, m_hSplitter.GetSinglePaneMode() == SPLIT_PANE_NONE);

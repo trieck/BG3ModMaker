@@ -287,10 +287,13 @@
     <Image Include="resources\index.bmp" />
     <Image Include="resources\lsf.bmp" />
     <Image Include="resources\nobom.ico" />
+    <Image Include="resources\node.ico" />
     <Image Include="resources\open.bmp" />
     <Image Include="resources\package.bmp" />
     <Image Include="resources\pak-large.bmp" />
     <Image Include="resources\pak.bmp" />
+    <Image Include="resources\region.ico" />
+    <Image Include="resources\resource.ico" />
     <Image Include="resources\save.bmp" />
     <Image Include="resources\saveall.bmp" />
     <Image Include="resources\search.bmp" />

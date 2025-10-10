@@ -335,6 +335,15 @@
     <Image Include="resources\catalog.bmp">
       <Filter>Resources</Filter>
     </Image>
+    <Image Include="resources\resource.ico">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="resources\node.ico">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="resources\region.ico">
+      <Filter>Resources</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\BG3ModStudio.rc">

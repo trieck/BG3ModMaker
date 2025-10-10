@@ -123,6 +123,8 @@
 #define ID_ENTRY_COPYENTRY              40029
 #define ID_VALUE_COPYVALUE              40030
 #define ID_TREE_NEWFOLDERHERE           40031
+#define ID_TREE_RENAMEFILE              40032
+#define ID_TREE_RENAME_FILE             40033
 #define ATL_IDS_IDLEMESSAGE             0xE001
 #define ID_FILE_NEW                     0xE100
 #define ID_FILE_OPEN                    0xE101
@@ -230,7 +232,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        151
-#define _APS_NEXT_COMMAND_VALUE         40032
+#define _APS_NEXT_COMMAND_VALUE         40034
 #define _APS_NEXT_CONTROL_VALUE         1046
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

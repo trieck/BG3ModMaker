@@ -22,36 +22,6 @@ public:
     BOOL DefCreate();
 
     LRESULT OnCreate(LPCREATESTRUCT pcs);
-    void OnClose();
-    void OnConvertLoca();
-    void OnConvertLSF();
-    void OnDeleteFile();
-    void OnFileExit();
-    void OnFileSave();
-    void OnFileSaveAll();
-    void OnFolderClose();
-    void OnFolderOpen();
-    void OnFolderPack();
-    void OnGameObject();
-    void OnIconExplorer();
-    void OnIndex();
-    void OnNewFile();
-    void OnNewFileHere();
-    void OnNewFolderHere();
-    void OnSearch();
-    void OnSettings();
-    void OnUUID();
-    void OnViewOutput();
-    void OnViewStatusBar();
-
-    LRESULT OnTVSelChanged(LPNMHDR pnmhdr);
-    LRESULT OnTVBeginLabelEdit(LPNMHDR pnmhdr);
-    LRESULT OnTVEndLabelEdit(LPNMHDR pnmhdr);
-    LRESULT OnTVDelete(LPNMHDR pnmhdr);
-    LRESULT OnTabActivated(LPNMHDR pnmhdr);
-    LRESULT OnTabContextMenu(LPNMHDR pnmh);
-    LRESULT OnRClick(LPNMHDR pnmh);
-    void OnFileChanged(WPARAM wParam, LPARAM lParam);
 
     BEGIN_UPDATE_UI_MAP(MainFrame)
         UPDATE_ELEMENT(ID_VIEW_STATUS_BAR, UPDUI_MENUPOPUP)
@@ -61,6 +31,7 @@ public:
         UPDATE_ELEMENT(ID_TREE_MAKELSFHERE, UPDUI_MENUPOPUP)
         UPDATE_ELEMENT(ID_TREE_DELETE_FOLDER, UPDUI_MENUPOPUP)
         UPDATE_ELEMENT(ID_TREE_DELETE_FILE, UPDUI_MENUPOPUP)
+        UPDATE_ELEMENT(ID_TREE_RENAME_FILE, UPDUI_MENUPOPUP)
         UPDATE_ELEMENT(ID_TOOL_PACKAGE, UPDUI_MENUPOPUP)
         UPDATE_ELEMENT(ID_TOOL_LSF, UPDUI_MENUPOPUP)
         UPDATE_ELEMENT(ID_TOOL_LOCA, UPDUI_MENUPOPUP)
@@ -93,6 +64,7 @@ public:
         COMMAND_ID_HANDLER3(ID_TREE_DELETE_FOLDER, OnDeleteFile)
         COMMAND_ID_HANDLER3(ID_TREE_NEWFILEHERE, OnNewFileHere)
         COMMAND_ID_HANDLER3(ID_TREE_NEWFOLDERHERE, OnNewFolderHere)
+        COMMAND_ID_HANDLER3(ID_TREE_RENAME_FILE, OnRenameFile)
         COMMAND_ID_HANDLER3(ID_VIEW_OUTPUT, OnViewOutput)
         COMMAND_ID_HANDLER3(ID_VIEW_STATUS_BAR, OnViewStatusBar)
 
@@ -109,10 +81,43 @@ public:
     END_MSG_MAP()
 
 private:
+    void OnClose();
+    void OnConvertLoca();
+    void OnConvertLSF();
+    void OnDeleteFile();
+    void OnFileExit();
+    void OnFileSave();
+    void OnFileSaveAll();
+    void OnFolderClose();
+    void OnFolderOpen();
+    void OnFolderPack();
+    void OnGameObject();
+    void OnIconExplorer();
+    void OnIndex();
+    void OnNewFile();
+    void OnNewFileHere();
+    void OnNewFolderHere();
+    void OnRenameFile();
+    void OnSearch();
+    void OnSettings();
+    void OnUUID();
+    void OnViewOutput();
+    void OnViewStatusBar();
+
+    LRESULT OnTVSelChanged(LPNMHDR pnmhdr);
+    LRESULT OnTVBeginLabelEdit(LPNMHDR pnmhdr);
+    LRESULT OnTVEndLabelEdit(LPNMHDR pnmhdr);
+    LRESULT OnTVDelete(LPNMHDR pnmhdr);
+    LRESULT OnTabActivated(LPNMHDR pnmhdr);
+    LRESULT OnTabContextMenu(LPNMHDR pnmh);
+    LRESULT OnRClick(LPNMHDR pnmh);
+    void OnFileChanged(WPARAM wParam, LPARAM lParam);
+
     using FileCallback = std::function<void(const CStringW& filePath)>;
 
     BOOL IsFolderOpen() const;
     BOOL IsFolderSelected() const;
+    BOOL IsFileSelected() const;
     BOOL IsXmlSelected() const;
     BOOL IsLSXSelected() const;
     void AddFile(const CString& filename);
@@ -123,6 +128,8 @@ private:
     void RenameFile(const CString& oldname, const CString& newname);
     void UpdateEncodingStatus(FileEncoding encoding);
     void UpdateTitle();
+    BOOL NewFile(LPNMTVDISPINFO pDispInfo);
+    BOOL RenameFile(LPNMTVDISPINFO pDispInfo);
 
     CHorSplitterWindow m_hSplitter;
     CSplitterWindow m_vSplitter;
@@ -132,6 +139,6 @@ private:
     FilesView m_filesView{};
     OutputWindow m_output{};
     CIcon m_bom, m_nobom;
-    ShellNotifyRegistration  m_notify;
+    ShellNotifyRegistration m_notify;
     PIDL m_rootPIDL;
 };

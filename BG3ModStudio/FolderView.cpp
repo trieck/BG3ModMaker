@@ -427,33 +427,53 @@ HTREEITEM FolderView::FindSubpath(HTREEITEM hRoot, const CString& subpath)
     return nullptr;
 }
 
-HTREEITEM FolderView::RenameFile(const CString& oldname, const CString& newname)
+HTREEITEM FolderView::RenameFile(const CString& oldName, const CString& newName)
 {
-    auto components = SplitPath(newname);
+    auto components = SplitPath(newName);
     if (components.empty()) {
         return nullptr;
     }
 
     const auto& filepart = components.back();
 
-    auto hItem = FindFile(oldname);
+    auto hItem = FindFile(oldName);
+    if (hItem == nullptr) {
+        return nullptr;
+    }
 
-    if (hItem != nullptr) {
-        auto data = reinterpret_cast<LPTREEITEMDATA>(GetItemData(hItem));
-        if (data) {
-            data->path = newname;
-        }
+    auto data = reinterpret_cast<LPTREEITEMDATA>(GetItemData(hItem));
+    if (data) {
+        data->path = newName;
+    }
 
-        TVITEMEX item{};
-        item.mask = TVIF_TEXT | TVIF_HANDLE;
-        item.hItem = hItem;
-        item.pszText = const_cast<LPWSTR>(filepart.GetString());
-        if (!SetItem(&item)) {
-            return nullptr;
-        }
+    TVITEMEX item{};
+    item.mask = TVIF_TEXT | TVIF_HANDLE;
+    item.hItem = hItem;
+    item.pszText = const_cast<LPWSTR>(filepart.GetString());
+    if (!SetItem(&item)) {
+        return nullptr;
+    }
+
+    if (data->type == TIT_FOLDER) {
+        RenameChildren(hItem, oldName, newName);
     }
 
     return hItem;
+}
+
+void FolderView::RenameChildren(HTREEITEM hItem, const CString& oldBase, const CString& newBase)
+{
+    auto hChild = GetChildItem(hItem);
+    while (hChild) {
+        auto* data = reinterpret_cast<LPTREEITEMDATA>(GetItemData(hChild));
+        if (data && PathIsPrefix(oldBase, data->path)) {
+            data->path.Replace(oldBase, newBase);
+        }
+
+        RenameChildren(hChild, oldBase, newBase);
+
+        hChild = GetNextSiblingItem(hChild);
+    }
 }
 
 CString FolderView::GetRootPath() const

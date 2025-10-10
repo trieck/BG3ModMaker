@@ -52,3 +52,23 @@ HRESULT FileOperation::DeleteItem(const CString& path)
 
     return fileOperation->PerformOperations();
 }
+
+HRESULT FileOperation::RenameItems(const CString& oldPath, const CString& newPath)
+{
+    if (fileOperation == nullptr) {
+        return E_FAIL;
+    }
+
+    CComPtr<IShellItem> pItem;
+    auto hr = SHCreateItemFromParsingName(oldPath, nullptr, IID_PPV_ARGS(&pItem));
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    hr = fileOperation->RenameItem(pItem, newPath, nullptr);
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    return fileOperation->PerformOperations();
+}

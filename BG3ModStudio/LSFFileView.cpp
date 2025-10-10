@@ -77,7 +77,6 @@ LRESULT LSFFileView::OnCreate(LPCREATESTRUCT pcs)
 
     m_tree.SetImageList(m_ImageList, TVSIL_NORMAL);
 
-
     return 0;
 }
 
@@ -306,6 +305,8 @@ void LSFFileView::Populate()
     tvis.itemex.lParam = std::bit_cast<LPARAM>(new NodeItemData{NIT_RESOURCE, m_resource.get()});
 
     m_tree.InsertItem(&tvis);
+
+    m_tree.Expand(m_tree.GetRootItem(), TVE_EXPAND);
 }
 
 void LSFFileView::Expand(const CTreeItem& item)

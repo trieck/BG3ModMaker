@@ -32,6 +32,27 @@ BOOL IsBinaryFile(const CString& path)
 
     return FALSE;
 }
+
+BOOL IsLSFFile(const CString& path)
+{
+    CStringA strPath(path);
+
+    FileStream file;
+    try {
+        file.open(strPath, "rb");
+    } catch (const Exception& e) {
+        ATLTRACE("Failed to open file: %s\n", e.what());
+        return FALSE;
+    }
+
+    char header[4];
+    auto read = file.read(header, sizeof(header));
+    if (read < sizeof(header)) {
+        return FALSE;
+    }
+
+    return (memcmp(header, "LSOF", 4) == 0);
+}
 } // anonymous namespace
 
 IFileView::Ptr FileViewFactory::CreateFileView(const CString& path, HWND parent, _U_RECT rect, DWORD dwStyle,
@@ -43,7 +64,7 @@ IFileView::Ptr FileViewFactory::CreateFileView(const CString& path, HWND parent,
 
     if (ImageView::IsRenderable(path)) {
         fileView = std::make_shared<ImageView>();
-    } else if (extension.CompareNoCase(L".lsf") == 0) {
+    } else if (IsLSFFile(path)) {
         fileView = std::make_shared<LSFFileView>();
     } else if (IsBinaryFile(path)) {
         fileView = std::make_shared<BinaryFileView>();
