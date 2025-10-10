@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "BG3ModMaker"
-#define MyAppVersion "1.0.0-alpha"
+#define MyAppVersion "1.0.1"
 #define MyAppPublisher "Thomas A. Rieck"
 #define MyAppExeName "BG3ModStudio.exe"
 
