@@ -32,7 +32,9 @@ void FileStream::open(const char* path, const char* mode)
         throw Exception("Invalid mode specified for file stream.");
     }
 
-    m_file = CreateFileA(path, access, FILE_SHARE_READ, nullptr, creation, FILE_ATTRIBUTE_NORMAL, nullptr);
+    auto shareMode = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
+
+    m_file = CreateFileA(path, access, shareMode, nullptr, creation, FILE_ATTRIBUTE_NORMAL, nullptr);
     if (m_file == INVALID_HANDLE_VALUE) {
         throw Exception(GetLastError());
     }
@@ -41,6 +43,7 @@ void FileStream::open(const char* path, const char* mode)
 void FileStream::close()
 {
     if (m_file != INVALID_HANDLE_VALUE) {
+        FlushFileBuffers(m_file);
         CloseHandle(m_file);
         m_file = INVALID_HANDLE_VALUE;
     }
@@ -141,7 +144,7 @@ Stream FileStream::read(size_t bytes)
 
     read(buf.get(), bytes);
 
-    return { buf.get(), bytes };
+    return {buf.get(), bytes};
 }
 
 bool FileStream::isOpen() const

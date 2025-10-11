@@ -13,6 +13,7 @@
 #include "SearchDlg.h"
 #include "SettingsDlg.h"
 #include "StringHelper.h"
+#include "Util.h"
 #include "UUIDDlg.h"
 
 BOOL MainFrame::DefCreate()
@@ -242,6 +243,8 @@ void MainFrame::OnFileSave()
     ATLASSERT(activeFile != nullptr);
 
     m_filesView.SaveFile(activeFile);
+
+    m_folderView.AddFile(activeFile->GetPath());
 }
 
 void MainFrame::OnFileSaveAll()
@@ -671,6 +674,8 @@ LRESULT MainFrame::OnRClick(LPNMHDR pnmh)
     menu.LoadMenu(IDR_TREE_CONTEXT);
 
     CMenuHandle popup = menu.GetSubMenu(0);
+    Util::SetMenuItemIcon(popup, ID_TREE_NEWFOLDERHERE, IDI_FOLDER);
+    Util::SetMenuItemIcon(popup, ID_TREE_NEWFILEHERE, IDI_FILE);
 
     CPoint pt;
     GetCursorPos(&pt);

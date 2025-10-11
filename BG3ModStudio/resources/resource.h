@@ -123,8 +123,7 @@
 #define ID_ENTRY_COPYENTRY              40029
 #define ID_VALUE_COPYVALUE              40030
 #define ID_TREE_NEWFOLDERHERE           40031
-#define ID_TREE_RENAMEFILE              40032
-#define ID_TREE_RENAME_FILE             40033
+#define ID_TREE_RENAME_FILE             40032
 #define ATL_IDS_IDLEMESSAGE             0xE001
 #define ID_FILE_NEW                     0xE100
 #define ID_FILE_OPEN                    0xE101

@@ -344,6 +344,9 @@
     <Image Include="resources\region.ico">
       <Filter>Resources</Filter>
     </Image>
+    <Image Include="resources\delete-folder.ico">
+      <Filter>Resources</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\BG3ModStudio.rc">

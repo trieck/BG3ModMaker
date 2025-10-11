@@ -46,7 +46,7 @@ CString Util::GetCurrentTimeString()
 
     CString strTime;
     strTime.Format(L"%02d:%02d:%02d.%03d",
-        st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
+                   st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
 
     return strTime;
 }
@@ -68,4 +68,45 @@ void Util::CopyToClipboard(HWND hWnd, const CString& str)
     }
 
     CloseClipboard();
+}
+
+void Util::SetMenuItemIcon(HMENU hMenu, UINT itemID, UINT iconResID, int cx, int cy)
+{
+    auto hIcon = static_cast<HICON>(LoadImage(
+        _Module.GetResourceInstance(),
+        MAKEINTRESOURCE(iconResID),
+        IMAGE_ICON,
+        cx, cy,
+        LR_CREATEDIBSECTION | LR_DEFAULTCOLOR));
+    if (!hIcon) {
+        return;
+    }
+
+    // Create a 32-bit ARGB DIB section
+    BITMAPINFO bmi{};
+    bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    bmi.bmiHeader.biWidth = cx;
+    bmi.bmiHeader.biHeight = -cy; // top-down
+    bmi.bmiHeader.biPlanes = 1;
+    bmi.bmiHeader.biBitCount = 32;
+    bmi.bmiHeader.biCompression = BI_RGB;
+
+    void* pvBits = nullptr;
+    auto hdcScreen = GetDC(nullptr);
+    auto hbm = CreateDIBSection(hdcScreen, &bmi, DIB_RGB_COLORS, &pvBits, nullptr, 0);
+    auto hdcMem = CreateCompatibleDC(hdcScreen);
+    auto old = SelectObject(hdcMem, hbm);
+
+    DrawIconEx(hdcMem, 0, 0, hIcon, cx, cy, 0, nullptr, DI_NORMAL);
+
+    SelectObject(hdcMem, old);
+    DeleteDC(hdcMem);
+    ReleaseDC(nullptr, hdcScreen);
+    DestroyIcon(hIcon);
+
+    MENUITEMINFO mii{};
+    mii.cbSize = sizeof(MENUITEMINFO);
+    mii.fMask = MIIM_BITMAP;
+    mii.hbmpItem = hbm;
+    SetMenuItemInfo(hMenu, itemID, FALSE, &mii);
 }
