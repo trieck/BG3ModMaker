@@ -53,7 +53,12 @@ LRESULT FolderView::OnDelete(LPNMHDR pnmh)
 {
     const auto item = MAKE_OLDTREEITEM(pnmh, this);
 
-    auto data = std::bit_cast<TreeItemData*>(item.GetData());
+    auto lParam = item.GetData();
+    if (lParam == TIT_FILE || lParam == TIT_FOLDER) {
+        return 0; // not-fully constructed
+    }
+
+    auto data = std::bit_cast<TreeItemData*>(lParam);
 
     delete data;
 
@@ -179,7 +184,12 @@ HTREEITEM FolderView::FindFile(const CString& filename)
         return nullptr;
     }
 
-    auto* rootData = reinterpret_cast<LPTREEITEMDATA>(GetItemData(hRoot));
+    auto lParam = GetItemData(hRoot);
+    if (lParam == TIT_UNKNOWN || lParam == TIT_FILE || lParam == TIT_FOLDER) {
+        return nullptr; // not fully constructed
+    }
+
+    auto* rootData = reinterpret_cast<LPTREEITEMDATA>(lParam);
     if (!rootData) {
         return nullptr; // unknown
     }
@@ -227,7 +237,12 @@ HTREEITEM FolderView::AddFile(const CString& filename)
         return nullptr;
     }
 
-    auto* rootData = reinterpret_cast<LPTREEITEMDATA>(GetItemData(hRoot));
+    auto lParam = GetItemData(hRoot);
+    if (lParam == TIT_UNKNOWN || lParam == TIT_FILE || lParam == TIT_FOLDER) {
+        return nullptr; // not fully constructed
+    }
+
+    auto* rootData = reinterpret_cast<LPTREEITEMDATA>(lParam);
     if (!rootData) {
         return nullptr; // unknown
     }
@@ -282,7 +297,12 @@ HTREEITEM FolderView::AddFile(const CString& filename)
 
 HTREEITEM FolderView::InsertFile(HTREEITEM hRoot, const CString& filename, std::deque<CString>& components)
 {
-    auto* rootData = reinterpret_cast<LPTREEITEMDATA>(GetItemData(hRoot));
+    auto lParam = GetItemData(hRoot);
+    if (lParam == TIT_UNKNOWN || lParam == TIT_FILE || lParam == TIT_FOLDER) {
+        return nullptr; // not fully constructed
+    }
+
+    auto* rootData = reinterpret_cast<LPTREEITEMDATA>(lParam);
     if (!rootData) {
         return nullptr; // unknown
     }
@@ -307,7 +327,12 @@ HTREEITEM FolderView::InsertFile(HTREEITEM hRoot, const CString& filename, std::
 
 HTREEITEM FolderView::InsertSubpath(HTREEITEM hRoot, const CString& subpath, const CString& component)
 {
-    auto* pData = reinterpret_cast<LPTREEITEMDATA>(GetItemData(hRoot));
+    auto lParam = GetItemData(hRoot);
+    if (lParam == TIT_UNKNOWN || lParam == TIT_FILE || lParam == TIT_FOLDER) {
+        return nullptr; // not fully constructed
+    }
+
+    auto* pData = reinterpret_cast<LPTREEITEMDATA>(lParam);
     if (!pData) {
         return nullptr; // unknown
     }
@@ -325,7 +350,12 @@ HTREEITEM FolderView::InsertSubpath(HTREEITEM hRoot, const CString& subpath, con
     HTREEITEM hChild = GetNextItem(hRoot, TVGN_CHILD);
     while (hChild != nullptr) {
         HTREEITEM hNext = GetNextItem(hChild, TVGN_NEXT);
-        pData = reinterpret_cast<LPTREEITEMDATA>(GetItemData(hChild));
+        lParam = GetItemData(hChild);
+        if (lParam == TIT_UNKNOWN || lParam == TIT_FILE || lParam == TIT_FOLDER) {
+            return nullptr; // not fully constructed
+        }
+
+        pData = std::bit_cast<LPTREEITEMDATA>(lParam);
         if (!pData) {
             hChild = hNext;
             continue;
@@ -368,7 +398,12 @@ HTREEITEM FolderView::InsertSubpath(HTREEITEM hRoot, const CString& subpath, con
 
 HTREEITEM FolderView::FindFile(HTREEITEM hRoot, std::deque<CString>& components)
 {
-    auto* pData = reinterpret_cast<LPTREEITEMDATA>(GetItemData(hRoot));
+    auto lParam = GetItemData(hRoot);
+    if (lParam == TIT_UNKNOWN || lParam == TIT_FILE || lParam == TIT_FOLDER) {
+        return nullptr; // not fully constructed
+    }
+
+    auto* pData = reinterpret_cast<LPTREEITEMDATA>(lParam);
     if (!pData) {
         return nullptr; // unknown
     }
@@ -395,7 +430,12 @@ HTREEITEM FolderView::FindFile(HTREEITEM hRoot, std::deque<CString>& components)
 
 HTREEITEM FolderView::FindSubpath(HTREEITEM hRoot, const CString& subpath)
 {
-    auto* pData = reinterpret_cast<LPTREEITEMDATA>(GetItemData(hRoot));
+    auto lParam = GetItemData(hRoot);
+    if (lParam == TIT_UNKNOWN || lParam == TIT_FILE || lParam == TIT_FOLDER) {
+        return nullptr; // not fully constructed
+    }
+
+    auto* pData = reinterpret_cast<LPTREEITEMDATA>(lParam);
     if (!pData) {
         return nullptr; // unknown
     }
@@ -411,8 +451,12 @@ HTREEITEM FolderView::FindSubpath(HTREEITEM hRoot, const CString& subpath)
     HTREEITEM hChild = GetNextItem(hRoot, TVGN_CHILD);
     while (hChild != nullptr) {
         HTREEITEM hNext = GetNextItem(hChild, TVGN_NEXT);
+        lParam = GetItemData(hChild);
+        if (lParam == TIT_UNKNOWN || lParam == TIT_FILE || lParam == TIT_FOLDER) {
+            return nullptr; // not fully constructed
+        }
 
-        pData = reinterpret_cast<LPTREEITEMDATA>(GetItemData(hChild));
+        pData = reinterpret_cast<LPTREEITEMDATA>(lParam);
         if (!pData) {
             continue;
         }
@@ -441,7 +485,12 @@ HTREEITEM FolderView::RenameFile(const CString& oldName, const CString& newName)
         return nullptr;
     }
 
-    auto data = reinterpret_cast<LPTREEITEMDATA>(GetItemData(hItem));
+    auto lParam = GetItemData(hItem);
+    if (lParam == TIT_UNKNOWN || lParam == TIT_FILE || lParam == TIT_FOLDER) {
+        return nullptr; // not fully constructed
+    }
+
+    auto data = reinterpret_cast<LPTREEITEMDATA>(lParam);
     if (data) {
         data->path = newName;
     }
@@ -465,14 +514,22 @@ void FolderView::RenameChildren(HTREEITEM hItem, const CString& oldBase, const C
 {
     auto hChild = GetChildItem(hItem);
     while (hChild) {
-        auto* data = reinterpret_cast<LPTREEITEMDATA>(GetItemData(hChild));
+        auto hNext = GetNextSiblingItem(hChild);
+
+        auto lParam = GetItemData(hChild);
+        if (lParam == TIT_UNKNOWN || lParam == TIT_FILE || lParam == TIT_FOLDER) {
+            hChild = hNext;
+            continue; // not fully constructed
+        }
+
+        auto* data = reinterpret_cast<LPTREEITEMDATA>(lParam);
         if (data && PathIsPrefix(oldBase, data->path)) {
             data->path.Replace(oldBase, newBase);
         }
 
         RenameChildren(hChild, oldBase, newBase);
 
-        hChild = GetNextSiblingItem(hChild);
+        hChild = hNext;
     }
 }
 
@@ -483,7 +540,12 @@ CString FolderView::GetRootPath() const
         return CString();
     }
 
-    auto data = reinterpret_cast<LPTREEITEMDATA>(GetItemData(root));
+    auto lParam = GetItemData(root);
+    if (lParam == TIT_UNKNOWN || lParam == TIT_FILE || lParam == TIT_FOLDER) {
+        return ""; // not fully constructed
+    }
+
+    auto data = reinterpret_cast<LPTREEITEMDATA>(lParam);
     if (!data) {
         return CString();
     }
@@ -493,7 +555,12 @@ CString FolderView::GetRootPath() const
 
 CString FolderView::GetItemPath(HTREEITEM hItem) const
 {
-    auto data = std::bit_cast<LPTREEITEMDATA>(GetItemData(hItem));
+    auto lParam = GetItemData(hItem);
+    if (lParam == TIT_UNKNOWN || lParam == TIT_FILE || lParam == TIT_FOLDER) {
+        return ""; // not fully constructed
+    }
+
+    auto data = std::bit_cast<LPTREEITEMDATA>(lParam);
     if (!data) {
         return CString();
     }
@@ -503,7 +570,12 @@ CString FolderView::GetItemPath(HTREEITEM hItem) const
 
 TreeItemType FolderView::GetItemType(HTREEITEM hItem) const
 {
-    auto data = std::bit_cast<LPTREEITEMDATA>(GetItemData(hItem));
+    auto lParam = GetItemData(hItem);
+    if (lParam == TIT_UNKNOWN || lParam == TIT_FILE || lParam == TIT_FOLDER) {
+        return static_cast<TreeItemType>(lParam); // not fully constructed
+    }
+
+    auto data = std::bit_cast<LPTREEITEMDATA>(lParam);
     if (!data) {
         return TIT_UNKNOWN;
     }

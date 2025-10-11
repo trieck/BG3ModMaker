@@ -42,6 +42,7 @@ public:
     BEGIN_MSG_MAP(MainFrame)
         MSG_WM_CREATE(OnCreate)
         MSG_WM_CLOSE(OnClose)
+
         MESSAGE_HANDLER2(WM_FILE_CHANGED, OnFileChanged)
         COMMAND_ID_HANDLER3(ID_APP_EXIT, OnFileExit)
         COMMAND_ID_HANDLER3(ID_FILE_CLOSE, OnFolderClose)

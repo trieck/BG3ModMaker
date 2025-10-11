@@ -254,7 +254,12 @@ void MainFrame::OnDeleteFile()
         return;
     }
 
-    auto data = std::bit_cast<TreeItemData*>(item.GetData());
+    auto lParam = item.GetData();
+    if (lParam == TIT_UNKNOWN || lParam == TIT_FILE || lParam == TIT_FOLDER) {
+        return; // not fully constructed
+    }
+
+    auto data = std::bit_cast<TreeItemData*>(lParam);
     CString filename = data ? data->path : CString();
     if (filename.IsEmpty()) {
         m_folderView.DeleteItem(item);
@@ -271,7 +276,8 @@ void MainFrame::OnDeleteFile()
         message.Format(L"Are you sure you want to delete the file \"%s\"?", filename);
     }
 
-    auto result = AtlMessageBox(*this, static_cast<LPCTSTR>(message), nullptr, MB_ICONQUESTION | MB_YESNO);
+    auto result = AtlMessageBox(*this, static_cast<LPCTSTR>(message), nullptr,
+                                MB_ICONWARNING | MB_ICONQUESTION | MB_YESNO);
     if (result != IDYES) {
         return;
     }
@@ -308,38 +314,51 @@ void MainFrame::OnNewFile()
 
 void MainFrame::OnNewFileHere()
 {
-    auto item = m_folderView.GetSelectedItem();
-    if (item.IsNull()) {
+    auto parent = m_folderView.GetSelectedItem();
+    if (parent.IsNull()) {
         return;
     }
 
-    auto type = m_folderView.GetItemType(item);
+    auto type = m_folderView.GetItemType(parent);
     ATLASSERT(type == TIT_FOLDER);
 
-    auto newItem = m_folderView.InsertItem(TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM /*mask*/,
+    // Ensure the parent is known to have children
+    TVITEM tvi{};
+    tvi.mask = TVIF_CHILDREN;
+    tvi.hItem = parent;
+    tvi.cChildren = 1;
+    TreeView_SetItem(m_folderView, &tvi);
+
+    auto newItem = m_folderView.InsertItem(TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM/*mask*/,
                                            L"New File",
                                            1, /* image */
                                            1, /* selected image */
                                            0 /*state*/,
                                            0 /*state mask */,
                                            TIT_FILE /*lparam*/,
-                                           item, TVI_LAST);
+                                           parent, TVI_LAST);
     ATLASSERT(newItem != nullptr);
 
     m_folderView.EnsureVisible(newItem);
-
     m_folderView.EditLabel(newItem);
 }
 
 void MainFrame::OnNewFolderHere()
 {
-    auto item = m_folderView.GetSelectedItem();
-    if (item.IsNull()) {
+    auto parent = m_folderView.GetSelectedItem();
+    if (parent.IsNull()) {
         return;
     }
 
-    auto type = m_folderView.GetItemType(item);
+    auto type = m_folderView.GetItemType(parent);
     ATLASSERT(type == TIT_FOLDER);
+
+    // Ensure the parent is known to have children
+    TVITEM tvi{};
+    tvi.mask = TVIF_CHILDREN;
+    tvi.hItem = parent;
+    tvi.cChildren = 1;
+    TreeView_SetItem(m_folderView, &tvi);
 
     auto newItem = m_folderView.InsertItem(TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM /*mask*/,
                                            L"New Folder",
@@ -348,11 +367,10 @@ void MainFrame::OnNewFolderHere()
                                            0 /*state*/,
                                            0 /*state mask */,
                                            TIT_FOLDER /*lparam*/,
-                                           item, TVI_LAST);
+                                           parent, TVI_LAST);
     ATLASSERT(newItem != nullptr);
 
     m_folderView.EnsureVisible(newItem);
-
     m_folderView.EditLabel(newItem);
 }
 
@@ -545,6 +563,8 @@ LRESULT MainFrame::OnTVBeginLabelEdit(LPNMHDR pnmhdr)
     if (editCtrl.IsWindow()) {
         editCtrl.SetLimitText(MAX_PATH);
         editCtrl.SetWindowText(pDispInfo->item.pszText);
+    } else {
+        return TRUE; // prevent label edit
     }
 
     return FALSE;
@@ -560,6 +580,8 @@ LRESULT MainFrame::OnTVEndLabelEdit(LPNMHDR pnmhdr)
 
     auto lParam = pDispInfo->item.lParam;
     switch (lParam) {
+    case TIT_UNKNOWN:
+        return FALSE;
     case TIT_FILE:
     case TIT_FOLDER:
         return NewFile(pDispInfo);
@@ -578,7 +600,12 @@ LRESULT MainFrame::OnTVSelChanged(LPNMHDR /*pnmhdr*/)
 
     CWaitCursor wait;
 
-    auto data = std::bit_cast<TreeItemData*>(item.GetData());
+    auto lParam = item.GetData();
+    if (lParam == TIT_UNKNOWN || lParam == TIT_FILE || lParam == TIT_FOLDER) {
+        return 0; // not fully constructed
+    }
+
+    auto data = std::bit_cast<TreeItemData*>(lParam);
     if (data && data->type == TIT_FILE) {
         if (!m_filesView.ActivateFile(data->path, item.m_hTreeItem)) {
             // Select the item's parent if unable to be activated (guaranteed).
@@ -855,7 +882,13 @@ void MainFrame::UpdateTitle()
     if (IsFolderOpen()) {
         auto root = m_folderView.GetRootItem();
         ATLASSERT(root.m_hTreeItem != nullptr);
-        auto data = std::bit_cast<TreeItemData*>(root.GetData());
+
+        auto lParam = root.GetData();
+        if (lParam == TIT_UNKNOWN || lParam == TIT_FILE || lParam == TIT_FOLDER) {
+            return; // not fully constructed
+        }
+
+        auto data = std::bit_cast<TreeItemData*>(lParam);
         if (data != nullptr && data->path.GetLength()) {
             strTitle.Format(_T("%s : %s"), title, data->path);
         }
@@ -906,17 +939,22 @@ BOOL MainFrame::NewFile(LPNMTVDISPINFOW pDispInfo)
         return FALSE; // Reject rename
     }
 
+    FileOperation op;
+    auto hr = op.Create();
+    if (FAILED(hr)) {
+        return FALSE;
+    }
+
     if (type == TIT_FILE) {
-        auto hFile = CreateFile(fullPath, GENERIC_WRITE, 0, nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
-        if (hFile == INVALID_HANDLE_VALUE) {
-            MessageBox(L"Failed to create the file.", L"Error", MB_ICONERROR);
+        hr = op.NewFile(fullPath);
+        if (FAILED(hr)) {
+            CoMessageBox(*this, hr, nullptr, L"File creation error", MB_ICONERROR);
             return FALSE;
         }
-
-        CloseHandle(hFile);
     } else { // Folder
-        if (!CreateDirectory(fullPath, nullptr)) {
-            MessageBox(L"Failed to create the directory", L"Error", MB_ICONERROR);
+        hr = op.NewFolder(fullPath);
+        if (FAILED(hr)) {
+            CoMessageBox(*this, hr, nullptr, L"Directory creation error", MB_ICONERROR);
             return FALSE;
         }
     }

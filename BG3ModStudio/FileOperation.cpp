@@ -1,6 +1,25 @@
 #include "stdafx.h"
 #include "FileOperation.h"
 
+namespace { // anonymous namespace
+
+CComPtr<IShellItem> GetParentShellItem(const CString& fullPath)
+{
+    TCHAR parentPath[MAX_PATH];
+    _tcscpy_s(parentPath, fullPath.GetString());
+
+    PathRemoveFileSpecW(parentPath);
+
+    CComPtr<IShellItem> psiParent;
+    HRESULT hr = SHCreateItemFromParsingName(parentPath, nullptr, IID_PPV_ARGS(&psiParent));
+    if (FAILED(hr)) {
+        return nullptr;
+    }
+
+    return psiParent;
+}
+}
+
 FileOperation::~FileOperation()
 {
     Release();
@@ -24,6 +43,45 @@ HRESULT FileOperation::Create(DWORD dwOperationFlags)
     }
 
     return hr;
+}
+
+HRESULT FileOperation::NewFile(const CString& path)
+{
+    if (fileOperation == nullptr) {
+        return E_FAIL;
+    }
+
+    CComPtr<IShellItem> pParent = GetParentShellItem(path);
+    if (pParent == nullptr) {
+        return E_FAIL;
+    }
+
+    auto hr = fileOperation->NewItem(pParent, FILE_ATTRIBUTE_NORMAL, path, nullptr, nullptr);
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    return fileOperation->PerformOperations();
+}
+
+
+HRESULT FileOperation::NewFolder(const CString& path)
+{
+    if (fileOperation == nullptr) {
+        return E_FAIL;
+    }
+
+    CComPtr<IShellItem> pParent = GetParentShellItem(path);
+    if (pParent == nullptr) {
+        return E_FAIL;
+    }
+
+    auto hr = fileOperation->NewItem(pParent, FILE_ATTRIBUTE_DIRECTORY, path, nullptr, nullptr);
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    return fileOperation->PerformOperations();
 }
 
 void FileOperation::Release()
