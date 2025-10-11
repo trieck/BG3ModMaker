@@ -574,7 +574,6 @@ END
 STRINGTABLE
 BEGIN
     ID_VIEW_STATUS_BAR      "Show or hide the status bar\nToggle StatusBar"
-    ID_VIEW_OUTPUT          "Show or hide the output window\nToggle Output Window"
 END
 
 STRINGTABLE

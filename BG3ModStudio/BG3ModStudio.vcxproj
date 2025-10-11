@@ -180,7 +180,6 @@
     <ClInclude Include="IndexDlg.h" />
     <ClInclude Include="LSFFileView.h" />
     <ClInclude Include="ModelessDialog.h" />
-    <ClInclude Include="OutputWindow.h" />
     <ClInclude Include="PAKIgnore.h" />
     <ClInclude Include="PAKWizard.h" />
     <ClInclude Include="PAKWizBuildPage.h" />
@@ -225,7 +224,6 @@
     <ClCompile Include="ImageView.cpp" />
     <ClCompile Include="IndexDlg.cpp" />
     <ClCompile Include="LSFFileView.cpp" />
-    <ClCompile Include="OutputWindow.cpp" />
     <ClCompile Include="FileDialogEx.cpp" />
     <ClCompile Include="FileViewFactory.cpp" />
     <ClCompile Include="FileViews.cpp" />

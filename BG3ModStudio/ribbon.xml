@@ -92,12 +92,6 @@
             <Command.TooltipDescription>About BG3 Mod Studio</Command.TooltipDescription>
         </Command>
 
-        <Command Name="VIEW_OUTPUT" Symbol="ID_VIEW_OUTPUT" Id="0xE802" Keytip="O">
-            <Command.LabelTitle>Show the output window</Command.LabelTitle>
-            <Command.TooltipTitle>Toggle the output window(Ctrl+Shift+O)</Command.TooltipTitle>
-            <Command.TooltipDescription>Show or hide the output window</Command.TooltipDescription>
-        </Command>
-
         <Command Name="VIEW_STATUS_BAR" Symbol="ID_VIEW_STATUS_BAR" Id="0xE801" />
         <Command Name="APP_EXIT" Symbol="ID_APP_EXIT" Id="0xE141" />
 
@@ -354,22 +348,14 @@
                         <SizeDefinition>
                             <ControlNameMap>
                                 <ControlNameDefinition Name="VIEW_STATUS_BAR" />
-                                <ControlNameDefinition Name="VIEW_OUTPUT" />
                             </ControlNameMap>
                             <GroupSizeDefinition Size="Large">
                                 <ControlSizeDefinition ControlName="VIEW_STATUS_BAR"
                                                        ImageSize="Small"
                                                        IsLabelVisible="true" />
-                                <ControlSizeDefinition ControlName="VIEW_OUTPUT"
-                                                       ImageSize="Small"
-                                                       IsLabelVisible="true" />
-
                             </GroupSizeDefinition>
                             <GroupSizeDefinition Size="Medium">
                                 <ControlSizeDefinition ControlName="VIEW_STATUS_BAR"
-                                                       ImageSize="Small"
-                                                       IsLabelVisible="true" />
-                                <ControlSizeDefinition ControlName="VIEW_OUTPUT"
                                                        ImageSize="Small"
                                                        IsLabelVisible="true" />
                             </GroupSizeDefinition>
@@ -377,15 +363,10 @@
                                 <ControlSizeDefinition ControlName="VIEW_STATUS_BAR"
                                                        ImageSize="Small"
                                                        IsLabelVisible="false" />
-                                <ControlSizeDefinition ControlName="VIEW_OUTPUT"
-                                                       ImageSize="Small"
-                                                       IsLabelVisible="true" />
-
                             </GroupSizeDefinition>
                         </SizeDefinition>
 
                         <CheckBox CommandName="VIEW_STATUS_BAR" />
-                        <CheckBox CommandName="VIEW_OUTPUT" />
                     </Group>
                 </Tab>
             </Ribbon.Tabs>

@@ -208,7 +208,6 @@
 #define ID_OLE_VERB_FIRST               0xE210
 #define ID_VIEW_TOOLBAR                 0xE800
 #define ID_VIEW_STATUS_BAR              0xE801
-#define ID_VIEW_OUTPUT                  0xE802
 #define ID_VIEW_REFRESH                 0xE803
 #define ID_VIEW_RIBBON                  0xE804
 #define ATL_IDS_SCSIZE                  0xEF00

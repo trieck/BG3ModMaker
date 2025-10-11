@@ -41,4 +41,6 @@ void ResourceUtils::saveResource(const char* filename, const Resource::Ptr& reso
 
     LSFWriter writer;
     writer.write(stream, *resource);
+
+    stream.close();
 }

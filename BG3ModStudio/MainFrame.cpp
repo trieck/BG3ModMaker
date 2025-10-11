@@ -70,44 +70,28 @@ LRESULT MainFrame::OnCreate(LPCREATESTRUCT pcs)
     m_bom.LoadIcon(IDI_BOM, 12, 12);
     m_nobom.LoadIcon(IDI_NOBOM, 12, 12);
 
-    m_hWndClient = m_hSplitter.Create(*this, rcDefault, nullptr,
-                                      WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
+    m_hWndClient = m_splitter.Create(*this, rcDefault, nullptr,
+                                     WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
     if (m_hWndClient == nullptr) {
-        ATLTRACE("Unable to create horizontal splitter window.\n");
+        ATLTRACE("Unable to create splitter window.\n");
         return -1;
     }
 
-    if (!m_vSplitter.Create(m_hSplitter, rcDefault, nullptr,
-                            WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN)) {
-        ATLTRACE("Unable to create vertical splitter window.\n");
-        return -1;
-    }
-
-    if (!m_folderView.Create(m_vSplitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+    if (!m_folderView.Create(m_splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
                              WS_EX_CLIENTEDGE)) {
         ATLTRACE("Unable to create folder view window.\n");
         return -1;
     }
 
-    if (!m_filesView.Create(m_vSplitter, rcDefault, nullptr,
+    if (!m_filesView.Create(m_splitter, rcDefault, nullptr,
                             WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, WS_EX_CLIENTEDGE)) {
         ATLTRACE("Unable to create files view window.\n");
         return -1;
     }
 
-    if (!m_output.Create(m_hSplitter, rcDefault, nullptr,
-                         WS_CAPTION | WS_SYSMENU | WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS)) {
-        ATLTRACE("Unable to create output window.\n");
-        return -1;
-    }
-
-    m_vSplitter.SetSplitterPane(0, m_folderView);
-    m_vSplitter.SetSplitterPane(1, m_filesView);
-    m_vSplitter.SetSplitterPosPct(30);
-
-    m_hSplitter.SetSplitterPane(0, m_vSplitter);
-    m_hSplitter.SetSplitterPane(1, m_output);
-    m_hSplitter.SetSplitterPosPct(70);
+    m_splitter.SetSplitterPane(0, m_folderView);
+    m_splitter.SetSplitterPane(1, m_filesView);
+    m_splitter.SetSplitterPosPct(30);
 
     UISetCheck(ID_VIEW_STATUS_BAR, 1);
 
@@ -244,7 +228,7 @@ void MainFrame::OnFileSave()
 
     m_filesView.SaveFile(activeFile);
 
-    m_folderView.AddFile(activeFile->GetPath());
+    AddFile(activeFile->GetPath());
 }
 
 void MainFrame::OnFileSaveAll()
@@ -459,6 +443,8 @@ void MainFrame::OnConvertLoca()
         return;
     }
 
+    AddFile(dlg.paths().front());
+
     AtlMessageBox(*this, L"File converted successfully.", nullptr, MB_ICONINFORMATION);
 }
 
@@ -506,12 +492,22 @@ void MainFrame::OnConvertLSF()
         return;
     }
 
+    auto lsfFile = dlg.paths().front();
     auto utf8Path = StringHelper::toUTF8(path);
-    auto utf8LSFPath = StringHelper::toUTF8(dlg.paths().front());
+    auto utf8LSFPath = StringHelper::toUTF8(lsfFile);
 
     auto resource = ResourceUtils::loadResource(utf8Path, LSX);
 
-    ResourceUtils::saveResource(utf8LSFPath, resource, LSF);
+    try {
+        ResourceUtils::saveResource(utf8LSFPath, resource, LSF);
+        AddFile(lsfFile);
+    } catch (const std::exception& e) {
+        CString error = StringHelper::fromUTF8(e.what());
+        CString message;
+        message.Format(L"An error occurred while writing the file: \"%s\": \"%s\".",
+                       lsfFile, error);
+        AtlMessageBox(*this, message.GetString(), nullptr, MB_ICONERROR);
+    }
 }
 
 void MainFrame::OnClose()
@@ -1026,30 +1022,12 @@ void MainFrame::IterateFiles(HTREEITEM hItem, const FileCallback& callback)
     } while (hItem);
 }
 
-void MainFrame::LogMessage(const CString& message)
-{
-    if (m_output.IsWindow()) {
-        m_output.AddLog(message);
-    }
-}
-
 void MainFrame::OnViewStatusBar()
 {
     BOOL bVisible = !::IsWindowVisible(m_hWndStatusBar);
     ::ShowWindow(m_hWndStatusBar, bVisible ? SW_SHOWNOACTIVATE : SW_HIDE);
     UISetCheck(ID_VIEW_STATUS_BAR, bVisible);
     UpdateLayout();
-}
-
-void MainFrame::OnViewOutput()
-{
-    BOOL bVisible = m_hSplitter.GetSinglePaneMode() != SPLIT_PANE_NONE;
-
-    if (bVisible) {
-        m_hSplitter.SetSinglePaneMode(SPLIT_PANE_NONE);
-    } else {
-        m_hSplitter.SetSinglePaneMode(SPLIT_PANE_TOP);
-    }
 }
 
 BOOL MainFrame::OnIdle()
@@ -1065,10 +1043,6 @@ BOOL MainFrame::OnIdle()
     UIEnable(ID_TREE_NEWFILEHERE, IsFolderSelected());
     UIEnable(ID_TREE_NEWFOLDERHERE, IsFolderSelected());
     UIEnable(ID_TREE_RENAME_FILE, IsFolderSelected() || IsFileSelected());
-
-    if (m_hSplitter.IsWindow()) {
-        UISetCheck(ID_VIEW_OUTPUT, m_hSplitter.GetSinglePaneMode() == SPLIT_PANE_NONE);
-    }
 
     if (m_filesView.IsWindow()) {
         UIEnable(ID_FILE_SAVE, m_filesView.IsDirty(m_filesView.ActivePage()));

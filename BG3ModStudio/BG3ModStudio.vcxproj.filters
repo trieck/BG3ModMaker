@@ -71,9 +71,6 @@
     <ClInclude Include="ShellHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="OutputWindow.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Util.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -185,9 +182,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ShellHelper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="OutputWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Util.cpp">
@@ -342,9 +336,6 @@
       <Filter>Resources</Filter>
     </Image>
     <Image Include="resources\region.ico">
-      <Filter>Resources</Filter>
-    </Image>
-    <Image Include="resources\delete-folder.ico">
       <Filter>Resources</Filter>
     </Image>
   </ItemGroup>

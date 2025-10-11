@@ -2,7 +2,6 @@
 
 #include "FileViews.h"
 #include "FolderView.h"
-#include "OutputWindow.h"
 #include "PIDL.h"
 #include "resources/resource.h"
 #include "resources/ribbon.h"
@@ -25,7 +24,6 @@ public:
 
     BEGIN_UPDATE_UI_MAP(MainFrame)
         UPDATE_ELEMENT(ID_VIEW_STATUS_BAR, UPDUI_MENUPOPUP)
-        UPDATE_ELEMENT(ID_VIEW_OUTPUT, UPDUI_MENUPOPUP)
         UPDATE_ELEMENT(ID_TREE_NEWFILEHERE, UPDUI_MENUPOPUP)
         UPDATE_ELEMENT(ID_TREE_NEWFOLDERHERE, UPDUI_MENUPOPUP)
         UPDATE_ELEMENT(ID_TREE_MAKELSFHERE, UPDUI_MENUPOPUP)
@@ -65,7 +63,6 @@ public:
         COMMAND_ID_HANDLER3(ID_TREE_NEWFILEHERE, OnNewFileHere)
         COMMAND_ID_HANDLER3(ID_TREE_NEWFOLDERHERE, OnNewFolderHere)
         COMMAND_ID_HANDLER3(ID_TREE_RENAME_FILE, OnRenameFile)
-        COMMAND_ID_HANDLER3(ID_VIEW_OUTPUT, OnViewOutput)
         COMMAND_ID_HANDLER3(ID_VIEW_STATUS_BAR, OnViewStatusBar)
 
         REFLECT_NOTIFY_CODE(TVN_ITEMEXPANDING)
@@ -101,7 +98,6 @@ private:
     void OnSearch();
     void OnSettings();
     void OnUUID();
-    void OnViewOutput();
     void OnViewStatusBar();
 
     LRESULT OnTVSelChanged(LPNMHDR pnmhdr);
@@ -122,7 +118,6 @@ private:
     BOOL IsLSXSelected() const;
     void AddFile(const CString& filename);
     void IterateFiles(HTREEITEM hItem, const FileCallback& callback);
-    void LogMessage(const CString& message);
     void ProcessFileChange(LONG event, PIDLIST_ABSOLUTE* pidls);
     void RemoveFile(const CString& filename);
     void RenameFile(const CString& oldname, const CString& newname);
@@ -131,13 +126,11 @@ private:
     BOOL NewFile(LPNMTVDISPINFO pDispInfo);
     BOOL RenameFile(LPNMTVDISPINFO pDispInfo);
 
-    CHorSplitterWindow m_hSplitter;
-    CSplitterWindow m_vSplitter;
+    CSplitterWindow m_splitter;
     CCommandBarCtrl m_cmdBar;
     CStatusBarCtrl m_statusBar;
     FolderView m_folderView{};
     FilesView m_filesView{};
-    OutputWindow m_output{};
     CIcon m_bom, m_nobom;
     ShellNotifyRegistration m_notify;
     PIDL m_rootPIDL;
