@@ -791,9 +791,8 @@ void MainFrame::RemoveFile(const CString& filename)
 
 void MainFrame::RenameFile(const CString& oldname, const CString& newname)
 {
-    if (m_folderView.RenameFile(oldname, newname)) {
-        m_filesView.RenameFile(oldname, newname);
-    }
+    m_folderView.RenameFile(oldname, newname);
+    m_filesView.RenameFile(oldname, newname);
 }
 
 BOOL MainFrame::IsFolderOpen() const
@@ -1066,6 +1065,22 @@ void MainFrame::OnViewStatusBar()
     ::ShowWindow(m_hWndStatusBar, bVisible ? SW_SHOWNOACTIVATE : SW_HIDE);
     UISetCheck(ID_VIEW_STATUS_BAR, bVisible);
     UpdateLayout();
+}
+
+LRESULT MainFrame::OnCopyData(HWND hWnd, PCOPYDATASTRUCT pcds)
+{
+    if (!pcds) {
+        return FALSE;
+    }
+
+    auto event = pcds->dwData;
+    if (event == CD_RENAME_EVENT) {
+        const auto* info = static_cast<const RenameInfo*>(pcds->lpData);
+        RenameFile(info->oldPath, info->newPath);
+        return TRUE;
+    }
+
+    return FALSE;
 }
 
 BOOL MainFrame::OnIdle()

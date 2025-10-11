@@ -42,6 +42,7 @@ public:
     BEGIN_MSG_MAP(MainFrame)
         MSG_WM_CREATE(OnCreate)
         MSG_WM_CLOSE(OnClose)
+        MSG_WM_COPYDATA(OnCopyData)
 
         MESSAGE_HANDLER2(WM_FILE_CHANGED, OnFileChanged)
         COMMAND_ID_HANDLER3(ID_APP_EXIT, OnFileExit)
@@ -100,6 +101,7 @@ private:
     void OnSettings();
     void OnUUID();
     void OnViewStatusBar();
+    LRESULT OnCopyData(HWND hWnd, PCOPYDATASTRUCT pcds);
 
     LRESULT OnTVSelChanged(LPNMHDR pnmhdr);
     LRESULT OnTVBeginLabelEdit(LPNMHDR pnmhdr);

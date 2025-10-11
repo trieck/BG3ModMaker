@@ -524,7 +524,16 @@ void FolderView::RenameChildren(HTREEITEM hItem, const CString& oldBase, const C
 
         auto* data = reinterpret_cast<LPTREEITEMDATA>(lParam);
         if (data && PathIsPrefix(oldBase, data->path)) {
-            data->path.Replace(oldBase, newBase);
+            auto oldName = data->path;
+            auto newName = oldName;
+            newName.Replace(oldBase, newBase);
+            data->path = newName;
+
+            // Broadcast the rename to the application
+            RenameInfo info{.oldPath = oldName, .newPath = newName};
+            COPYDATASTRUCT cds{CD_RENAME_EVENT, sizeof(info), &info};
+            GetTopLevelParent().SendMessage(WM_COPYDATA, reinterpret_cast<WPARAM>(m_hWnd),
+                                            reinterpret_cast<LPARAM>(&cds));
         }
 
         RenameChildren(hChild, oldBase, newBase);

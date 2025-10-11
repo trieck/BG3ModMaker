@@ -113,6 +113,14 @@
         return TRUE; \
     }
 
+struct RenameInfo
+{
+    CString oldPath;
+    CString newPath;
+};
+
+constexpr DWORD CD_RENAME_EVENT = 0x52454E41; // 'RENA'
+
 extern CAppModule _Module;
 
 #if defined _M_IX86
