@@ -134,6 +134,11 @@ public:
 
         return contents;
     }
+
+    LRESULT SetReadOnly(BOOL readOnly)
+    {
+        return SendMessage(this->m_hWnd, SCI_SETREADONLY, readOnly, 0);
+    }
 };
 
 using ScintillaCtrl = ScintillaCtrlT<CWindow>;

@@ -17,7 +17,7 @@ LRESULT TextFileView::OnCreate(LPCREATESTRUCT pcs)
     m_edit.SetDefaultFontFace("Cascadia Mono");
     m_edit.SetDefaultFontSize(12);
 
-    m_styler = DocStylerRegistry::GetInstance().GetDefaultStyler();
+    m_styler = DocStylerRegistry::GetDefaultStyler();
     m_styler->Apply(m_edit);
 
     return 0;
@@ -97,15 +97,17 @@ BOOL TextFileView::LoadFile(const CString& path)
         Write(buf, read);
     }
 
-    m_styler = DocStylerRegistry::GetInstance().GetStyler(path);
+    m_styler = DocStylerRegistry::GetStyler(path);
     m_styler->Apply(m_edit);
 
     Flush();
 
+    m_edit.SetReadOnly(m_bReadOnly);
+
     return TRUE;
 }
 
-BOOL TextFileView::LoadBuffer(const ByteBuffer& buffer)
+BOOL TextFileView::LoadBuffer(const CString& path, const ByteBuffer& buffer)
 {
     m_stream.Reset();
     m_path.Empty();
@@ -126,8 +128,13 @@ BOOL TextFileView::LoadBuffer(const ByteBuffer& buffer)
         m_encoding = UTF8; // nothing else supported for now
     }
 
+    m_styler = DocStylerRegistry::GetStyler(path);
+    m_styler->Apply(m_edit);
+
     Write(pb, size);
     Flush();
+
+    m_edit.SetReadOnly(m_bReadOnly);
 
     return TRUE;
 }
@@ -198,6 +205,11 @@ FileEncoding TextFileView::GetEncoding() const
 TextFileView::operator HWND() const
 {
     return m_hWnd;
+}
+
+void TextFileView::SetReadOnly(BOOL readOnly)
+{
+    m_bReadOnly = readOnly;
 }
 
 BOOL TextFileView::Write(LPCWSTR text) const

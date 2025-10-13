@@ -32,7 +32,7 @@ public:
     // IFileView
     BOOL Create(HWND parent, _U_RECT rect = nullptr, DWORD dwStyle = 0, DWORD dwStyleEx = 0) override;
     BOOL LoadFile(const CString& path) override;
-    BOOL LoadBuffer(const ByteBuffer& buffer) override;
+    BOOL LoadBuffer(const CString& path, const ByteBuffer& buffer) override;
     BOOL SaveFile() override;
     BOOL SaveFileAs(const CString& path) override;
     BOOL Destroy() override;
@@ -41,6 +41,8 @@ public:
     VOID SetPath(const CString& path) override;
     FileEncoding GetEncoding() const override;
     operator HWND() const override;
+
+    void SetReadOnly(BOOL);
 
 private:
     BOOL Write(LPCWSTR text) const;
@@ -57,4 +59,5 @@ private:
     CContainedWindowT<ScintillaCtrl> m_edit;
     DocStyler::Ptr m_styler;
     BOOL m_bDirty = FALSE;
+    BOOL m_bReadOnly = FALSE;
 };

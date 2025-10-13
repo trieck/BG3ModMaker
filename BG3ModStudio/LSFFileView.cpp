@@ -243,7 +243,7 @@ BOOL LSFFileView::LoadFile(const CString& path)
     return TRUE;
 }
 
-BOOL LSFFileView::LoadBuffer(const ByteBuffer& buffer)
+BOOL LSFFileView::LoadBuffer(const CString& /*path*/, const ByteBuffer& buffer)
 {
     LSFReader reader;
 

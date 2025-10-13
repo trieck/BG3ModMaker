@@ -351,7 +351,7 @@ BOOL BinaryFileView::LoadFile(const CString& path)
     return TRUE;
 }
 
-BOOL BinaryFileView::LoadBuffer(const ByteBuffer& buffer)
+BOOL BinaryFileView::LoadBuffer(const CString& /*path*/, const ByteBuffer& buffer)
 {
     m_stream.Reset();
     m_path.Empty();

@@ -13,7 +13,7 @@ class FileViewContainer : public CWindowImpl<FileViewContainer>
 
     DECLARE_WND_CLASS_EX(_T("FileViewContainer"), 0, COLOR_APPWORKSPACE)
 
-    BOOL LoadView(const CString& path, const ByteBuffer& contents);
+    BOOL LoadView(const CString& path, const ByteBuffer& contents, FileViewFlags flags = FileViewFlags::None);
 
 private:
     LRESULT OnCreate(LPCREATESTRUCT pcs);

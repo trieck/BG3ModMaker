@@ -88,7 +88,7 @@ LRESULT PakExplorerDlg::OnTVSelChanged(LPNMHDR pnmh)
     try {
         auto contents = m_pakReader.readFile(utf8File.GetString());
 
-        m_fileView.LoadView(fullPath, contents);
+        m_fileView.LoadView(fullPath, contents, FileViewFlags::ReadOnly);
     } catch (const std::exception& e) {
         CString msg;
         msg.Format(L"Failed to read file '%s': %S", fullPath.GetString(), e.what());

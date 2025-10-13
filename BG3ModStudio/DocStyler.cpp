@@ -1,6 +1,26 @@
 #include "stdafx.h"
-#include "DocStyler.h"
 #include "lexilla/include/SciLexer.h"
+#include "DocStyler.h"
+
+#include "StringHelper.h"
+
+class XmlStyler : public DocStyler
+{
+public:
+    void Apply(ScintillaCtrl& ctrl) override;
+};
+
+class JsonStyler : public DocStyler
+{
+public:
+    void Apply(ScintillaCtrl& ctrl) override;
+};
+
+class PlainTextStyler : public DocStyler
+{
+public:
+    void Apply(ScintillaCtrl& ctrl) override;
+};
 
 void XmlStyler::Apply(ScintillaCtrl& ctrl)
 {
@@ -62,22 +82,23 @@ DocStylerRegistry::DocStylerRegistry()
     m_default = std::make_unique<PlainTextStyler>();
 }
 
-DocStyler::Ptr DocStylerRegistry::GetStyler(const CString& path) const
+DocStyler::Ptr DocStylerRegistry::GetStyler(const CString& path)
 {
     auto extension = ATLPath::FindExtension(path);
 
-    CW2AEX<MAX_PATH> ansiExtension(extension);
+    auto utf8Extension = StringHelper::toUTF8(extension);
 
-    auto it = m_stylers.find(static_cast<LPSTR>(ansiExtension));
+    const auto& instance = GetInstance();
 
-    if (it != m_stylers.end()) {
+    auto it = instance.m_stylers.find(utf8Extension.GetString());
+    if (it != instance.m_stylers.end()) {
         return it->second;
     }
 
-    return m_default;
+    return instance.m_default;
 }
 
-DocStyler::Ptr DocStylerRegistry::GetDefaultStyler() const
+DocStyler::Ptr DocStylerRegistry::GetDefaultStyler()
 {
-    return m_default;
+    return GetInstance().m_default;
 }

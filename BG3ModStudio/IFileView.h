@@ -1,7 +1,8 @@
 #pragma once
 #include "UtilityBase.h"
 
-enum FileEncoding {
+enum FileEncoding
+{
     UNKNOWN = -1,
     ANSI,
     UTF8,
@@ -12,6 +13,12 @@ enum FileEncoding {
     UTF32BE
 };
 
+enum class FileViewFlags : uint32_t
+{
+    None = 0,
+    ReadOnly = 1 << 0,
+};
+
 class IFileView
 {
 public:
@@ -20,7 +27,7 @@ public:
 
     virtual BOOL Create(HWND parent, _U_RECT rect = nullptr, DWORD dwStyle = 0, DWORD dwStyleEx = 0) = 0;
     virtual BOOL LoadFile(const CString& path) = 0;
-    virtual BOOL LoadBuffer(const ByteBuffer& buffer) = 0;
+    virtual BOOL LoadBuffer(const CString& path, const ByteBuffer& buffer) = 0;
     virtual BOOL SaveFile() = 0;
     virtual BOOL SaveFileAs(const CString& path) = 0;
     virtual BOOL Destroy() = 0;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ScintillaCtrl.h"
+#include "UtilityBase.h"
 
 class DocStyler
 {
@@ -10,30 +11,12 @@ public:
     virtual ~DocStyler() = default;
 };
 
-class XmlStyler : public DocStyler
-{
-public:
-    void Apply(ScintillaCtrl& ctrl) override;
-};
-
-class JsonStyler : public DocStyler
-{
-public:
-    void Apply(ScintillaCtrl& ctrl) override;
-};
-
-class PlainTextStyler : public DocStyler
-{
-public:
-    void Apply(ScintillaCtrl& ctrl) override;
-};
-
 class DocStylerRegistry
 {
 public:
     static DocStylerRegistry& GetInstance();
-    DocStyler::Ptr GetStyler(const CString& path) const;
-    DocStyler::Ptr GetDefaultStyler() const;
+    static DocStyler::Ptr GetStyler(const CString& path);
+    static DocStyler::Ptr GetDefaultStyler();
 
 private:
     DocStylerRegistry();

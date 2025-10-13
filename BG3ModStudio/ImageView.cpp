@@ -248,7 +248,7 @@ BOOL ImageView::LoadFile(const CString& path)
     return LoadImage(image);
 }
 
-BOOL ImageView::LoadBuffer(const ByteBuffer& buffer)
+BOOL ImageView::LoadBuffer(const CString& /*path*/, const ByteBuffer& buffer)
 {
     if (!buffer.first || buffer.second == 0) {
         ATLTRACE("Empty buffer\n");

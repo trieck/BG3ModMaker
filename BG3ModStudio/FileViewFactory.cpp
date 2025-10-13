@@ -9,6 +9,19 @@
 
 namespace { // anonymous namespace
 
+BOOL IsBinaryFile(const ByteBuffer& contents)
+{
+    auto read = std::min(contents.second, static_cast<size_t>(1024));
+
+    for (auto i = 0u; i < read; ++i) {
+        if (contents.first[i] == 0) {
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
 BOOL IsBinaryFile(const CString& path)
 {
     CStringA strPath(path);
@@ -24,6 +37,7 @@ BOOL IsBinaryFile(const CString& path)
     char buffer[1024];
     auto read = file.read(buffer, sizeof(buffer));
 
+
     for (auto i = 0u; i < read; ++i) {
         if (buffer[i] == 0) {
             return TRUE;
@@ -31,6 +45,15 @@ BOOL IsBinaryFile(const CString& path)
     }
 
     return FALSE;
+}
+
+BOOL IsLSFFile(const ByteBuffer& contents)
+{
+    if (contents.second < 4) {
+        return FALSE;
+    }
+
+    return (memcmp(contents.first.get(), "LSOF", 4) == 0);
 }
 
 BOOL IsLSFFile(const CString& path)
@@ -53,33 +76,10 @@ BOOL IsLSFFile(const CString& path)
 
     return (memcmp(header, "LSOF", 4) == 0);
 }
-
-BOOL IsLSFFile(const ByteBuffer& contents)
-{
-    if (contents.second < 4) {
-        return FALSE;
-    }
-
-    return (memcmp(contents.first.get(), "LSOF", 4) == 0);
-}
-
-BOOL IsBinaryFile(const ByteBuffer& contents)
-{
-    auto read = std::min(contents.second, static_cast<size_t>(1024));
-
-    for (auto i = 0u; i < read; ++i) {
-        if (contents.first[i] == 0) {
-            return TRUE;
-        }
-    }
-
-    return FALSE;
-}
-
 } // anonymous namespace
 
 IFileView::Ptr FileViewFactory::CreateFileView(const CString& path, HWND parent, _U_RECT rect, DWORD dwStyle,
-                                               DWORD dwStyleEx)
+                                               DWORD dwStyleEx, FileViewFlags flags)
 {
     IFileView::Ptr fileView;
 
@@ -92,7 +92,11 @@ IFileView::Ptr FileViewFactory::CreateFileView(const CString& path, HWND parent,
     } else if (IsBinaryFile(path)) {
         fileView = std::make_shared<BinaryFileView>();
     } else {
-        fileView = std::make_shared<TextFileView>();
+        auto textView = std::make_shared<TextFileView>();
+        if (textView != nullptr && flags == FileViewFlags::ReadOnly) {
+            textView->SetReadOnly(TRUE);
+        }
+        fileView = textView;
     }
 
     if (fileView != nullptr) {
@@ -105,40 +109,49 @@ IFileView::Ptr FileViewFactory::CreateFileView(const CString& path, HWND parent,
     return fileView;
 }
 
-IFileView::Ptr FileViewFactory::CreateFileView(HWND parent, _U_RECT rect, DWORD dwStyle, DWORD dwStyleEx)
+IFileView::Ptr FileViewFactory::CreateFileView(HWND parent, _U_RECT rect, DWORD dwStyle, DWORD dwStyleEx,
+                                               FileViewFlags flags)
 {
     IFileView::Ptr fileView;
 
-    fileView = std::make_shared<TextFileView>();
-    if (fileView == nullptr) {
+    auto textView = std::make_shared<TextFileView>();
+    if (textView == nullptr) {
         ATLTRACE("Failed to create file view.\n");
         return nullptr;
     }
 
-    if (!fileView->Create(parent, rect, dwStyle, dwStyleEx)) {
+    if (flags == FileViewFlags::ReadOnly) {
+        textView->SetReadOnly(TRUE);
+    }
+
+    if (!textView->Create(parent, rect, dwStyle, dwStyleEx)) {
         ATLTRACE("Failed to create file view window.\n");
         return nullptr;
     }
+
+    fileView = textView;
 
     return fileView;
 }
 
 IFileView::Ptr FileViewFactory::CreateFileView(const CString& path, const ByteBuffer& contents,
-    HWND hWndParent, _U_RECT rect, DWORD dwStyle, DWORD dwStyleEx)
+                                               HWND hWndParent, _U_RECT rect, DWORD dwStyle, DWORD dwStyleEx,
+                                               FileViewFlags flags)
 {
     IFileView::Ptr fileView;
 
     if (ImageView::IsRenderable(path)) {
         fileView = std::make_shared<ImageView>();
-    }
-    else if (IsLSFFile(contents)) {
+    } else if (IsLSFFile(contents)) {
         fileView = std::make_shared<LSFFileView>();
-    }
-    else if (IsBinaryFile(contents)) {
+    } else if (IsBinaryFile(contents)) {
         fileView = std::make_shared<BinaryFileView>();
-    }
-    else {
-        fileView = std::make_shared<TextFileView>();
+    } else {
+        auto textView = std::make_shared<TextFileView>();
+        if (textView != nullptr && flags == FileViewFlags::ReadOnly) {
+            textView->SetReadOnly(TRUE);
+        }
+        fileView = textView;
     }
 
     if (fileView != nullptr) {
@@ -148,7 +161,7 @@ IFileView::Ptr FileViewFactory::CreateFileView(const CString& path, const ByteBu
         }
     }
 
-    if (!fileView->LoadBuffer(contents)) {
+    if (!fileView->LoadBuffer(path, contents)) {
         fileView->Destroy();
         ATLTRACE("Failed to load buffer into view.\n");
         return nullptr;

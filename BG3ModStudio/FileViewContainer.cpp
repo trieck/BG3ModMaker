@@ -2,7 +2,7 @@
 #include "FileViewContainer.h"
 #include "FileViewFactory.h"
 
-BOOL FileViewContainer::LoadView(const CString& path, const ByteBuffer& contents)
+BOOL FileViewContainer::LoadView(const CString& path, const ByteBuffer& contents, FileViewFlags flags)
 {
     CRect rc;
     GetClientRect(&rc);
@@ -11,7 +11,7 @@ BOOL FileViewContainer::LoadView(const CString& path, const ByteBuffer& contents
         m_pFileView->Destroy();
     }
 
-    m_pFileView = FileViewFactory::CreateFileView(path, contents, *this, rcDefault);
+    m_pFileView = FileViewFactory::CreateFileView(path, contents, *this, rcDefault, WS_CHILD | WS_VISIBLE, 0, flags);
     if (!m_pFileView) {
         return FALSE;
     }
