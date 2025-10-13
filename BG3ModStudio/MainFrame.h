@@ -23,21 +23,21 @@ public:
     LRESULT OnCreate(LPCREATESTRUCT pcs);
 
     BEGIN_UPDATE_UI_MAP(MainFrame)
-        UPDATE_ELEMENT(ID_VIEW_STATUS_BAR, UPDUI_MENUPOPUP)
+        UPDATE_ELEMENT(ID_FILE_CLOSE, UPDUI_MENUPOPUP)
+        UPDATE_ELEMENT(ID_FILE_NEW, UPDUI_MENUPOPUP)
+        UPDATE_ELEMENT(ID_FILE_SAVE, UPDUI_MENUPOPUP)
+        UPDATE_ELEMENT(ID_FILE_SAVE_ALL, UPDUI_MENUPOPUP)
+        UPDATE_ELEMENT(ID_TOOL_LOCA, UPDUI_MENUPOPUP)
+        UPDATE_ELEMENT(ID_TOOL_LSF, UPDUI_MENUPOPUP)
+        UPDATE_ELEMENT(ID_TOOL_PACKAGE, UPDUI_MENUPOPUP)
+        UPDATE_ELEMENT(ID_TREE_DELETE_FILE, UPDUI_MENUPOPUP)
+        UPDATE_ELEMENT(ID_TREE_DELETE_FOLDER, UPDUI_MENUPOPUP)
+        UPDATE_ELEMENT(ID_TREE_MAKELSFHERE, UPDUI_MENUPOPUP)
         UPDATE_ELEMENT(ID_TREE_NEWFILEHERE, UPDUI_MENUPOPUP)
         UPDATE_ELEMENT(ID_TREE_NEWFOLDERHERE, UPDUI_MENUPOPUP)
-        UPDATE_ELEMENT(ID_TREE_MAKELSFHERE, UPDUI_MENUPOPUP)
-        UPDATE_ELEMENT(ID_TREE_DELETE_FOLDER, UPDUI_MENUPOPUP)
-        UPDATE_ELEMENT(ID_TREE_DELETE_FILE, UPDUI_MENUPOPUP)
         UPDATE_ELEMENT(ID_TREE_RENAME_FILE, UPDUI_MENUPOPUP)
-        UPDATE_ELEMENT(ID_TOOL_PACKAGE, UPDUI_MENUPOPUP)
-        UPDATE_ELEMENT(ID_TOOL_LSF, UPDUI_MENUPOPUP)
-        UPDATE_ELEMENT(ID_TOOL_LOCA, UPDUI_MENUPOPUP)
-        UPDATE_ELEMENT(ID_FILE_SAVE_ALL, UPDUI_MENUPOPUP)
-        UPDATE_ELEMENT(ID_FILE_SAVE, UPDUI_MENUPOPUP)
-        UPDATE_ELEMENT(ID_FILE_NEW, UPDUI_MENUPOPUP)
-        UPDATE_ELEMENT(ID_FILE_CLOSE, UPDUI_MENUPOPUP)
-    END_UPDATE_UI_MAP()
+        UPDATE_ELEMENT(ID_VIEW_STATUS_BAR, UPDUI_MENUPOPUP)
+        END_UPDATE_UI_MAP()
 
     BEGIN_MSG_MAP(MainFrame)
         MSG_WM_CREATE(OnCreate)
@@ -49,6 +49,7 @@ public:
         COMMAND_ID_HANDLER3(ID_FILE_CLOSE, OnFolderClose)
         COMMAND_ID_HANDLER3(ID_FILE_NEW, OnNewFile)
         COMMAND_ID_HANDLER3(ID_FILE_OPEN, OnFolderOpen)
+        COMMAND_ID_HANDLER3(ID_FILE_PAK_OPEN, OnPakOpen)
         COMMAND_ID_HANDLER3(ID_FILE_SAVE, OnFileSave)
         COMMAND_ID_HANDLER3(ID_FILE_SAVE_ALL, OnFileSaveAll)
         COMMAND_ID_HANDLER3(ID_TOOL_GAMEOBJECT, OnGameObject)
@@ -80,6 +81,7 @@ public:
     END_MSG_MAP()
 
 private:
+    LRESULT OnCopyData(HWND hWnd, PCOPYDATASTRUCT pcds);
     void OnClose();
     void OnConvertLoca();
     void OnConvertLSF();
@@ -96,29 +98,31 @@ private:
     void OnNewFile();
     void OnNewFileHere();
     void OnNewFolderHere();
+    void OnPakOpen();
     void OnRenameFile();
     void OnSearch();
     void OnSettings();
     void OnUUID();
     void OnViewStatusBar();
-    LRESULT OnCopyData(HWND hWnd, PCOPYDATASTRUCT pcds);
 
-    LRESULT OnTVSelChanged(LPNMHDR pnmhdr);
-    LRESULT OnTVBeginLabelEdit(LPNMHDR pnmhdr);
-    LRESULT OnTVEndLabelEdit(LPNMHDR pnmhdr);
-    LRESULT OnTVDelete(LPNMHDR pnmhdr);
+    LRESULT OnRClick(LPNMHDR pnmh);
     LRESULT OnTabActivated(LPNMHDR pnmhdr);
     LRESULT OnTabContextMenu(LPNMHDR pnmh);
-    LRESULT OnRClick(LPNMHDR pnmh);
+    LRESULT OnTVBeginLabelEdit(LPNMHDR pnmhdr);
+    LRESULT OnTVDelete(LPNMHDR pnmhdr);
+    LRESULT OnTVEndLabelEdit(LPNMHDR pnmhdr);
+    LRESULT OnTVSelChanged(LPNMHDR pnmhdr);
     void OnFileChanged(WPARAM wParam, LPARAM lParam);
 
     using FileCallback = std::function<void(const CStringW& filePath)>;
 
+    BOOL IsFileSelected() const;
     BOOL IsFolderOpen() const;
     BOOL IsFolderSelected() const;
-    BOOL IsFileSelected() const;
-    BOOL IsXmlSelected() const;
     BOOL IsLSXSelected() const;
+    BOOL IsXmlSelected() const;
+    BOOL NewFile(LPNMTVDISPINFO pDispInfo);
+    BOOL RenameFile(LPNMTVDISPINFO pDispInfo);
     void AddFile(const CString& filename);
     void IterateFiles(HTREEITEM hItem, const FileCallback& callback);
     void ProcessFileChange(LONG event, PIDLIST_ABSOLUTE* pidls);
@@ -126,15 +130,13 @@ private:
     void RenameFile(const CString& oldname, const CString& newname);
     void UpdateEncodingStatus(FileEncoding encoding);
     void UpdateTitle();
-    BOOL NewFile(LPNMTVDISPINFO pDispInfo);
-    BOOL RenameFile(LPNMTVDISPINFO pDispInfo);
 
-    CSplitterWindow m_splitter;
     CCommandBarCtrl m_cmdBar;
-    CStatusBarCtrl m_statusBar;
-    FolderView m_folderView{};
-    FilesView m_filesView{};
     CIcon m_bom, m_nobom;
-    ShellNotifyRegistration m_notify;
+    CSplitterWindow m_splitter;
+    CStatusBarCtrl m_statusBar;
+    FilesView m_filesView{};
+    FolderView m_folderView{};
     PIDL m_rootPIDL;
+    ShellNotifyRegistration m_notify;
 };

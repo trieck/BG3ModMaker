@@ -105,6 +105,33 @@ BOOL TextFileView::LoadFile(const CString& path)
     return TRUE;
 }
 
+BOOL TextFileView::LoadBuffer(const ByteBuffer& buffer)
+{
+    m_stream.Reset();
+    m_path.Empty();
+
+    m_encoding = UNKNOWN;
+
+    if (buffer.second == 0 || buffer.first == nullptr) {
+        return FALSE;
+    }
+
+    auto pb = reinterpret_cast<LPSTR>(buffer.first.get());
+    size_t size = buffer.second;
+
+    if (SkipBOM(pb, size)) {
+        size -= 3;
+        m_encoding = UTF8BOM;
+    } else {
+        m_encoding = UTF8; // nothing else supported for now
+    }
+
+    Write(pb, size);
+    Flush();
+
+    return TRUE;
+}
+
 BOOL TextFileView::SaveFile()
 {
     if (m_path.IsEmpty()) {

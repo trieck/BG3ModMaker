@@ -20,6 +20,12 @@
             <Command.TooltipDescription>Close the Folder</Command.TooltipDescription>
         </Command>
 
+        <Command Name="FILE_PAK_OPEN" Symbol="ID_FILE_PAK_OPEN" Id="153" Keytip="O">
+            <Command.LabelTitle>Open a PAK File...</Command.LabelTitle>
+            <Command.TooltipTitle>Open a PAK File</Command.TooltipTitle>
+            <Command.TooltipDescription>Open a PAK File</Command.TooltipDescription>
+        </Command>
+
         <Command Name="FILE_SAVE" Symbol="ID_FILE_SAVE" Id="0xE103" Keytip="O">
             <Command.LabelTitle>Save Current File...</Command.LabelTitle>
             <Command.TooltipTitle>Save Current File(Ctrl+S)</Command.TooltipTitle>
@@ -122,6 +128,7 @@
                         <Button CommandName="FILE_NEW" />
                         <Button CommandName="FILE_OPEN" />
                         <Button CommandName="FILE_CLOSE" />
+                        <Button CommandName="FILE_PAK_OPEN" />
                         <Button CommandName="FILE_SAVE" />
                         <Button CommandName="FILE_SAVE_ALL" />
                     </MenuGroup>
@@ -155,6 +162,7 @@
                                 <ControlNameDefinition Name="FILE_NEW" />
                                 <ControlNameDefinition Name="FILE_OPEN" />
                                 <ControlNameDefinition Name="FILE_CLOSE" />
+                                <ControlNameDefinition Name="FILE_PAK_OPEN" />
                                 <ControlNameDefinition Name="FILE_SAVE" />
                                 <ControlNameDefinition Name="FILE_SAVE_ALL" />
                             </ControlNameMap>
@@ -166,6 +174,10 @@
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="FILE_CLOSE"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
+                                IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="FILE_PAK_OPEN"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
                                 IsLabelVisible="true" />
@@ -186,6 +198,9 @@
                                 <ControlSizeDefinition ControlName="FILE_CLOSE"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="FILE_PAK_OPEN"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="FILE_SAVE"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
@@ -203,6 +218,9 @@
                                 <ControlSizeDefinition ControlName="FILE_CLOSE"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="FILE_PAK_OPEN"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="FILE_SAVE"
                                                        ImageSize="Small"
                                                        IsLabelVisible="true" />
@@ -214,6 +232,7 @@
                         <Button CommandName="FILE_NEW" />
                         <Button CommandName="FILE_OPEN" />
                         <Button CommandName="FILE_CLOSE" />
+                        <Button CommandName="FILE_PAK_OPEN" />
                         <Button CommandName="FILE_SAVE" />
                         <Button CommandName="FILE_SAVE_ALL" />
                     </Group>
@@ -330,7 +349,6 @@
                         <Button CommandName="TOOL_ICON_EXPLORER" />
                         <Button CommandName="TOOL_UUID" />
                         <Button CommandName="TOOL_SETTINGS" />
-
                     </Group>
                 </Tab>
 

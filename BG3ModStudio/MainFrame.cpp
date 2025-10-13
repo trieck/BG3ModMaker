@@ -8,6 +8,7 @@
 #include "IndexDlg.h"
 #include "Localization.h"
 #include "MainFrame.h"
+#include "PakExplorerDlg.h"
 #include "PAKWizard.h"
 #include "ResourceUtils.h"
 #include "SearchDlg.h"
@@ -15,6 +16,9 @@
 #include "StringHelper.h"
 #include "Util.h"
 #include "UUIDDlg.h"
+
+#include <filesystem>
+namespace fs = std::filesystem;
 
 BOOL MainFrame::DefCreate()
 {
@@ -169,26 +173,12 @@ void MainFrame::OnFolderPack()
 
 void MainFrame::OnGameObject()
 {
-    auto hWnd = GameObjectDlg::FindWindow();
-    if (hWnd) {
-        ::ShowWindow(hWnd, SW_RESTORE);
-        SetForegroundWindow(hWnd);
-    } else {
-        GameObjectDlg dlg;
-        dlg.Run(*this);
-    }
+    GameObjectDlg::RunOnce(*this);
 }
 
 void MainFrame::OnIconExplorer()
 {
-    auto hWnd = IconExplorerDlg::FindWindow();
-    if (hWnd) {
-        ::ShowWindow(hWnd, SW_RESTORE);
-        SetForegroundWindow(hWnd);
-    } else {
-        IconExplorerDlg dlg;
-        dlg.Run(*this);
-    }
+    IconExplorerDlg::RunOnce(*this);
 }
 
 void MainFrame::OnIndex()
@@ -199,14 +189,7 @@ void MainFrame::OnIndex()
 
 void MainFrame::OnSearch()
 {
-    auto hWnd = SearchDlg::FindWindow();
-    if (hWnd) {
-        ::ShowWindow(hWnd, SW_RESTORE);
-        SetForegroundWindow(hWnd);
-    } else {
-        SearchDlg dlg;
-        dlg.Run(*this);
-    }
+    SearchDlg::RunOnce(*this);
 }
 
 void MainFrame::OnSettings()
@@ -372,6 +355,49 @@ void MainFrame::OnNewFolderHere()
 
     m_folderView.EnsureVisible(newItem);
     m_folderView.EditLabel(newItem);
+}
+
+void MainFrame::OnPakOpen()
+{
+    FileDialogEx dlg(FileDialogEx::Open, m_hWnd, _T("pak"), nullptr, OFN_HIDEREADONLY,
+                     _T("Pak Files (*.pak)\0*.pak\0All Files (*.*)\0*.*\0"));
+    auto hr = dlg.Construct();
+    if (FAILED(hr)) {
+        return;
+    }
+
+    Settings settings;
+    auto gamePath = settings.GetString(_T("Settings"), _T("GamePath"), _T(""));
+
+    auto gameDataPath = fs::path(gamePath.GetString()) / "Data";
+    if (!exists(gameDataPath)) {
+        gameDataPath = fs::current_path();
+    }
+
+    hr = dlg.SetFolder(gameDataPath.c_str());
+    if (FAILED(hr)) {
+        return;
+    }
+
+    if (dlg.DoModal() != IDOK) {
+        return;
+    }
+
+    const auto& paths = dlg.paths();
+    if (paths.empty()) {
+        return;
+    }
+
+    CWaitCursor wait;
+    PAKReader reader;
+    if (!reader.read(StringHelper::toUTF8(paths[0]).GetString())) {
+        AtlMessageBox(*this, L"Failed to open PAK file.", nullptr, MB_ICONERROR);
+        return;
+    }
+
+    PakExplorerDlg pakDlg;
+    pakDlg.SetPAKReader(std::move(reader));
+    pakDlg.Run(*this);
 }
 
 void MainFrame::OnRenameFile()

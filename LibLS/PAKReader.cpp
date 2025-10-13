@@ -112,6 +112,20 @@ bool readHeader(PAKReader& pakReader, int64_t offset)
 PAKReader::PAKReader()
 = default;
 
+PAKReader::PAKReader(PAKReader&& rhs) noexcept
+{
+    m_package = std::move(rhs.m_package);
+}
+
+PAKReader& PAKReader::operator=(PAKReader&& rhs) noexcept
+{
+    if (this != &rhs) {
+        m_package = std::move(rhs.m_package);
+    }
+
+    return *this;
+}
+
 bool PAKReader::read(const char* filename)
 {
     m_package.load(filename);
@@ -165,6 +179,11 @@ void PAKReader::openStreams(uint32_t numParts)
     // TODO: implement
 }
 
+const std::string& PAKReader::filename() const
+{
+    return m_package.m_filename;
+}
+
 Package& PAKReader::package()
 {
     return m_package;
@@ -183,6 +202,20 @@ const PackagedFileInfo& PAKReader::operator[](const std::string& name) const
     }
 
     throw std::out_of_range("File not found.");
+}
+
+void PAKReader::sortFiles()
+{
+    std::ranges::sort(m_package.m_files,
+                      [](const PackagedFileInfo& a, const PackagedFileInfo& b) {
+                          return a.name < b.name;
+                      });
+
+    m_package.m_filemap.clear();
+
+    for (size_t i = 0; i < m_package.m_files.size(); ++i) {
+        m_package.m_filemap[m_package.m_files[i].name] = i;
+    }
 }
 
 ByteBuffer PAKReader::readFile(const std::string& name)

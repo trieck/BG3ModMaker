@@ -19,7 +19,7 @@ LRESULT ImageView::OnCreate(LPCREATESTRUCT pcs)
 
 LRESULT ImageView::OnPaint(CPaintDC /*dc*/)
 {
-    if (!m_pRenderTarget) {
+    if (!m_pRenderTarget || !m_bitmap) {
         return 0;
     }
 
@@ -31,19 +31,17 @@ LRESULT ImageView::OnPaint(CPaintDC /*dc*/)
     auto b = GetBValue(cref) / 255.0f;
     m_pRenderTarget->Clear(D2D1::ColorF(r, g, b));
 
-    if (m_bitmap) {
-        auto w = m_bitmap->GetSize().width * m_zoom;
-        auto h = m_bitmap->GetSize().height * m_zoom;
+    auto w = m_bitmap->GetSize().width * m_zoom;
+    auto h = m_bitmap->GetSize().height * m_zoom;
 
-        D2D1_RECT_F destRect = D2D1::RectF(
-            -static_cast<FLOAT>(m_ScrollPos.x),
-            -static_cast<FLOAT>(m_ScrollPos.y),
-            -static_cast<FLOAT>(m_ScrollPos.x) + w,
-            -static_cast<FLOAT>(m_ScrollPos.y) + h
-        );
+    D2D1_RECT_F destRect = D2D1::RectF(
+        -static_cast<FLOAT>(m_ScrollPos.x),
+        -static_cast<FLOAT>(m_ScrollPos.y),
+        -static_cast<FLOAT>(m_ScrollPos.x) + w,
+        -static_cast<FLOAT>(m_ScrollPos.y) + h
+    );
 
-        m_pRenderTarget->DrawBitmap(m_bitmap, &destRect);
-    }
+    m_pRenderTarget->DrawBitmap(m_bitmap, &destRect);
 
     auto hr = m_pRenderTarget->EndDraw();
     if (hr == D2DERR_RECREATE_TARGET) {
@@ -246,6 +244,27 @@ BOOL ImageView::LoadFile(const CString& path)
     }
 
     m_path = path;
+
+    return LoadImage(image);
+}
+
+BOOL ImageView::LoadBuffer(const ByteBuffer& buffer)
+{
+    if (!buffer.first || buffer.second == 0) {
+        ATLTRACE("Empty buffer\n");
+        return FALSE;
+    }
+
+    DirectX::ScratchImage image;
+    HRESULT hr = LoadFromWICMemory(buffer.first.get(), buffer.second,
+                                   DirectX::WIC_FLAGS_NONE,
+                                   nullptr, image);
+    if (FAILED(hr)) {
+        ATLTRACE("Failed to load image from memory\n");
+        return FALSE;
+    }
+
+    m_path.Empty();
 
     return LoadImage(image);
 }

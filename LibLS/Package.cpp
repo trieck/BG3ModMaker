@@ -41,3 +41,24 @@ FileEntry18 FileEntry18::fromCommon(const PackagedFileInfoCommon& info)
     return entry;
 }
 
+Package::Package(Package&& rhs) noexcept
+{
+    m_header = rhs.m_header;
+    m_files = std::move(rhs.m_files);
+    m_filemap = std::move(rhs.m_filemap);
+    m_filename = std::move(rhs.m_filename);
+    m_file = std::move(rhs.m_file);
+}
+
+Package& Package::operator=(Package&& rhs) noexcept
+{
+    if (this != &rhs) {
+        m_header = rhs.m_header;
+        m_files = std::move(rhs.m_files);
+        m_filemap = std::move(rhs.m_filemap);
+        m_filename = std::move(rhs.m_filename);
+        m_file = std::move(rhs.m_file);
+    }
+
+    return *this;
+}

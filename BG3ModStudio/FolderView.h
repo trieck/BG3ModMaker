@@ -46,6 +46,6 @@ private:
     HTREEITEM FindFile(HTREEITEM hRoot, std::deque<CString>& components);
     HTREEITEM FindSubpath(HTREEITEM hRoot, const CString& subpath);
 
-    CImageList m_ImageList;
+    CImageList m_imageList;
 };
 

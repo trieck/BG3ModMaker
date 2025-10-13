@@ -243,6 +243,21 @@ BOOL LSFFileView::LoadFile(const CString& path)
     return TRUE;
 }
 
+BOOL LSFFileView::LoadBuffer(const ByteBuffer& buffer)
+{
+    LSFReader reader;
+
+    try {
+        m_resource = reader.read(buffer);
+        Populate();
+    } catch (const Exception& e) {
+        ATLTRACE("Failed to read LSF buffer: %s\n", e.what());
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
 BOOL LSFFileView::SaveFile()
 {
     return TRUE;

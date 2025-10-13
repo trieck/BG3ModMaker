@@ -141,6 +141,12 @@ struct Package final
     Package();
     ~Package();
 
+    Package(Package&&) noexcept;
+    Package& operator=(Package&&) noexcept;
+
+    Package(const Package&) = delete;
+    Package& operator=(const Package&) = delete;
+
     void addFile(const PackagedFileInfo& file);
     bool load(const char* filename);
     void seek(int64_t offset, SeekMode mode);

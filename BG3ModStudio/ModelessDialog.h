@@ -5,13 +5,14 @@ class ATL_NO_VTABLE ModelessDialog : public CDialogImpl<T, TBase>
 {
 public:
     ModelessDialog() = default;
-    void Run(HWND hWndParent = GetActiveWindow());
+    void Run(HWND hWndParent = GetActiveWindow(), LPARAM lParam = 0);
     void RunModal(HWND hWndParent = GetActiveWindow());
     void Destroy();
 
     static HWND FindWindow();
+    static void RunOnce(HWND hWndParent = GetActiveWindow(), LPARAM lParam = 0);
 
-protected:
+private:
     static LPCWSTR GetDialogID();
 
     void PumpMessages();
@@ -19,9 +20,9 @@ protected:
 };
 
 template <class T, class TBase>
-void ModelessDialog<T, TBase>::Run(HWND hWndParent)
+void ModelessDialog<T, TBase>::Run(HWND hWndParent, LPARAM lParam)
 {
-    auto hWnd = this->Create(hWndParent);
+    auto hWnd = this->Create(hWndParent, lParam);
     if (hWnd == nullptr) {
         ATLTRACE(_T("Unable to create dialog.\n"));
         return;
@@ -107,6 +108,19 @@ HWND ModelessDialog<T, TBase>::FindWindow()
     EnumThreadWindows(GetCurrentThreadId(), Finder::EnumProc, reinterpret_cast<LPARAM>(&data));
 
     return hWnd;
+}
+
+template <class T, class TBase>
+void ModelessDialog<T, TBase>::RunOnce(HWND hWndParent, LPARAM lParam)
+{
+    auto hWnd = FindWindow();
+    if (hWnd) {
+        ::ShowWindow(hWnd, SW_RESTORE);
+        ::SetActiveWindow(hWnd);
+    } else {
+        T dlg;
+        dlg.Run(hWndParent, lParam);
+    }
 }
 
 template <class T, class TBase>

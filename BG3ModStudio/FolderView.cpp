@@ -12,15 +12,15 @@ LRESULT FolderView::OnCreate(LPCREATESTRUCT)
         IDI_FILE
     };
 
-    m_ImageList = ImageList_Create(16, 16, ILC_MASK | ILC_COLOR32, static_cast<uint32_t>(icons.size()), 0);
+    m_imageList = ImageList_Create(16, 16, ILC_MASK | ILC_COLOR32, static_cast<uint32_t>(icons.size()), 0);
 
     for (auto icon : icons) {
         auto hIcon = LoadIcon(_Module.GetResourceInstance(), MAKEINTRESOURCE(icon));
         ATLASSERT(hIcon);
-        m_ImageList.AddIcon(hIcon);
+        m_imageList.AddIcon(hIcon);
     }
 
-    SetImageList(m_ImageList, TVSIL_NORMAL);
+    SetImageList(m_imageList, TVSIL_NORMAL);
 
     auto style = TVS_HASBUTTONS | TVS_HASLINES | TVS_FULLROWSELECT | TVS_INFOTIP
         | TVS_LINESATROOT | TVS_SHOWSELALWAYS | TVS_EDITLABELS;

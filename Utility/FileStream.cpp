@@ -11,6 +11,22 @@ FileStream::~FileStream()
     close();
 }
 
+FileStream::FileStream(FileStream&& rhs) noexcept
+{
+    m_file = rhs.m_file;
+    rhs.m_file = INVALID_HANDLE_VALUE;
+}
+
+FileStream& FileStream::operator=(FileStream&& rhs) noexcept
+{
+    if (this != &rhs) {
+        m_file = rhs.m_file;
+        rhs.m_file = INVALID_HANDLE_VALUE;
+    }
+
+    return *this;
+}
+
 void FileStream::open(const char* path, const char* mode)
 {
     close();

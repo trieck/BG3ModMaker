@@ -232,6 +232,8 @@ IDB_PAK_LARGE           BITMAP                  "pak-large.bmp"
 
 ID_TOOL_UUID            BITMAP                  "uuid.bmp"
 
+ID_FILE_PAK_OPEN        BITMAP                  "pak-explorer.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -388,6 +390,14 @@ BEGIN
     CONTROL         "Handle",IDC_CHK_UUID_HANDLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,38,38,10
 END
 
+IDD_PAK_EXPLORER DIALOGEX 0, 0, 509, 255
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "PAK Explorer"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_ST_PAKEXPLORER,7,7,495,241,0,WS_EX_STATICEDGE
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -491,6 +501,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 65
     END
+
+    IDD_PAK_EXPLORER, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 502
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 248
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -556,6 +574,11 @@ BEGIN
 END
 
 IDD_UUID AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_PAK_EXPLORER AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

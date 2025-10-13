@@ -8,19 +8,26 @@ public:
     PAKReader();
     ~PAKReader() = default;
 
-    bool read(const char* filename);
-    void close();
+    PAKReader(PAKReader&&) noexcept;
+    PAKReader& operator=(PAKReader&&) noexcept;
+
+    PAKReader(const PAKReader&) = delete;
+    PAKReader& operator=(const PAKReader&) = delete;
 
     bool explode(const char* path);
-    void openStreams(uint32_t numParts);
-
-    Package& package();
-
-    const std::vector<PackagedFileInfo>& files() const;
+    bool read(const char* filename);
+    ByteBuffer readFile(const std::string& name);
 
     const PackagedFileInfo& operator[](const std::string& name) const;
 
-    ByteBuffer readFile(const std::string& name);
+    void sortFiles();
+    const std::vector<PackagedFileInfo>& files() const;
+
+    Package& package();
+    void close();
+    void openStreams(uint32_t numParts);
+
+    const std::string& filename() const;
 
 private:
     bool extractFile(const PackagedFileInfo& file, const char* path);

@@ -13,7 +13,8 @@ constexpr auto BUFFSIZE = 80;
 constexpr auto COLOR_SILVER = RGB(0xE0, 0xE0, 0xE0);
 constexpr auto MAX_LINE_SIZE = 80;
 
-std::string FormatLine(uint32_t line, const uint8_t* pdata, size_t size) {
+std::string FormatLine(uint32_t line, const uint8_t* pdata, size_t size)
+{
     std::array<char, MAX_LINE_SIZE> buffer{};
 
     // Write address
@@ -25,7 +26,8 @@ std::string FormatLine(uint32_t line, const uint8_t* pdata, size_t size) {
     }
 
     // Fill the rest of the line with spaces
-    offset += snprintf(buffer.data() + offset, buffer.size() - offset, "%*s", static_cast<int>((LINESIZE - size) * 3), "");
+    offset += snprintf(buffer.data() + offset, buffer.size() - offset, "%*s", static_cast<int>((LINESIZE - size) * 3),
+                       "");
     offset += snprintf(buffer.data() + offset, buffer.size() - offset, "  ");
 
     for (size_t i = 0; i < size; ++i) {
@@ -36,7 +38,6 @@ std::string FormatLine(uint32_t line, const uint8_t* pdata, size_t size) {
 
     return std::string(buffer.data(), offset);
 }
-
 } // anonymous namespace
 
 BinaryFileView::BinaryFileView() : m_cxChar(0), m_cyChar(0), m_nLinesTotal(0), m_nXPageSize(0), m_nYPageSize(0),
@@ -86,7 +87,7 @@ LRESULT BinaryFileView::OnPaint(CPaintDC dc)
     auto nend = std::max<int>(0, std::min<int>(m_nLinesTotal - 1, (rc.bottom + m_cyChar - 1) / m_cyChar));
 
     auto pdata = m_buffer.first.get();
-    
+
     for (auto i = nstart; i <= nend; ++i) {
         auto offset = static_cast<size_t>(i) * LINESIZE;
         auto length = std::min<size_t>(LINESIZE, size - offset);
@@ -343,6 +344,19 @@ BOOL BinaryFileView::LoadFile(const CString& path)
         Write(buf, read);
     }
 
+    Flush();
+
+    SetSizes();
+
+    return TRUE;
+}
+
+BOOL BinaryFileView::LoadBuffer(const ByteBuffer& buffer)
+{
+    m_stream.Reset();
+    m_path.Empty();
+
+    Write(reinterpret_cast<LPCSTR>(buffer.first.get()), buffer.second);
     Flush();
 
     SetSizes();

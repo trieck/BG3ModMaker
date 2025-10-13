@@ -12,6 +12,12 @@ public:
     FileStream();
     ~FileStream() override;
 
+    FileStream(FileStream&& rhs) noexcept;
+    FileStream& operator=(FileStream&& rhs) noexcept;
+
+    FileStream(const FileStream&) = delete;
+    FileStream& operator=(const FileStream&) = delete;
+
     void open(const char* path, const char* mode);
     void close();
 
@@ -25,6 +31,7 @@ public:
     Stream read(size_t bytes);
     void write(const void* data, size_t size) const;
     bool isOpen() const;
+
 private:
     HANDLE m_file;
 };

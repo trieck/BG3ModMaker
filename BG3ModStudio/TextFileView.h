@@ -32,6 +32,7 @@ public:
     // IFileView
     BOOL Create(HWND parent, _U_RECT rect = nullptr, DWORD dwStyle = 0, DWORD dwStyleEx = 0) override;
     BOOL LoadFile(const CString& path) override;
+    BOOL LoadBuffer(const ByteBuffer& buffer) override;
     BOOL SaveFile() override;
     BOOL SaveFileAs(const CString& path) override;
     BOOL Destroy() override;

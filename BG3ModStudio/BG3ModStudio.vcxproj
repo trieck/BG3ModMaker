@@ -172,6 +172,7 @@
     <ClInclude Include="COMError.h" />
     <ClInclude Include="DocStyler.h" />
     <ClInclude Include="FileOperation.h" />
+    <ClInclude Include="FileViewContainer.h" />
     <ClInclude Include="FormatToken.h" />
     <ClInclude Include="GameObjectDlg.h" />
     <ClInclude Include="IconDlg.h" />
@@ -180,7 +181,9 @@
     <ClInclude Include="IndexDlg.h" />
     <ClInclude Include="LSFFileView.h" />
     <ClInclude Include="ModelessDialog.h" />
+    <ClInclude Include="PakExplorerDlg.h" />
     <ClInclude Include="PAKIgnore.h" />
+    <ClInclude Include="PAKViewFactory.h" />
     <ClInclude Include="PAKWizard.h" />
     <ClInclude Include="PAKWizBuildPage.h" />
     <ClInclude Include="PAKWizFilePage.h" />
@@ -218,6 +221,7 @@
     <ClCompile Include="COMError.cpp" />
     <ClCompile Include="DocStyler.cpp" />
     <ClCompile Include="FileOperation.cpp" />
+    <ClCompile Include="FileViewContainer.cpp" />
     <ClCompile Include="GameObjectDlg.cpp" />
     <ClCompile Include="IconDlg.cpp" />
     <ClCompile Include="IconExplorerDlg.cpp" />
@@ -229,7 +233,9 @@
     <ClCompile Include="FileViews.cpp" />
     <ClCompile Include="FolderView.cpp" />
     <ClCompile Include="MainFrame.cpp" />
+    <ClCompile Include="PakExplorerDlg.cpp" />
     <ClCompile Include="PAKIgnore.cpp" />
+    <ClCompile Include="PAKViewFactory.cpp" />
     <ClCompile Include="PAKWizard.cpp" />
     <ClCompile Include="PAKWizBuildPage.cpp" />
     <ClCompile Include="PAKWizFilePage.cpp" />
@@ -269,6 +275,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Image Include="pak-explorer.bmp" />
     <Image Include="resources\about.bmp" />
     <Image Include="resources\app.ico" />
     <Image Include="resources\bom.ico" />
@@ -288,6 +295,7 @@
     <Image Include="resources\node.ico" />
     <Image Include="resources\open.bmp" />
     <Image Include="resources\package.bmp" />
+    <Image Include="resources\pak-explorer.bmp" />
     <Image Include="resources\pak-large.bmp" />
     <Image Include="resources\pak.bmp" />
     <Image Include="resources\region.ico" />
