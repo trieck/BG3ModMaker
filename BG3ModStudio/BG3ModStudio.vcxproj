@@ -183,7 +183,6 @@
     <ClInclude Include="ModelessDialog.h" />
     <ClInclude Include="PakExplorerDlg.h" />
     <ClInclude Include="PAKIgnore.h" />
-    <ClInclude Include="PAKViewFactory.h" />
     <ClInclude Include="PAKWizard.h" />
     <ClInclude Include="PAKWizBuildPage.h" />
     <ClInclude Include="PAKWizFilePage.h" />
@@ -235,7 +234,6 @@
     <ClCompile Include="MainFrame.cpp" />
     <ClCompile Include="PakExplorerDlg.cpp" />
     <ClCompile Include="PAKIgnore.cpp" />
-    <ClCompile Include="PAKViewFactory.cpp" />
     <ClCompile Include="PAKWizard.cpp" />
     <ClCompile Include="PAKWizBuildPage.cpp" />
     <ClCompile Include="PAKWizFilePage.cpp" />

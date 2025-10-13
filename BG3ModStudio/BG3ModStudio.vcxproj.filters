@@ -152,9 +152,6 @@
     <ClInclude Include="FileViewContainer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PAKViewFactory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BG3ModStudio.cpp">
@@ -260,9 +257,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FileViewContainer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PAKViewFactory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

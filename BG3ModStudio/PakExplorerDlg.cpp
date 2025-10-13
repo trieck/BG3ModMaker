@@ -5,8 +5,6 @@
 
 #include <algorithm>
 
-#include "PAKViewFactory.h"
-
 BOOL PakExplorerDlg::OnIdle()
 {
     UIUpdateChildWindows();
@@ -228,7 +226,7 @@ BOOL PakExplorerDlg::OnInitDialog(HWND, LPARAM lParam)
     m_treeView.ModifyStyle(0, style);
 
     if (!m_fileView.Create(m_splitter, rcDefault, nullptr,
-                            WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, WS_EX_CLIENTEDGE)) {
+                           WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, WS_EX_CLIENTEDGE)) {
         ATLTRACE("Unable to create files view window.\n");
         return -1;
     }

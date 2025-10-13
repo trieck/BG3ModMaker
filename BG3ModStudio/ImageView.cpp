@@ -256,12 +256,24 @@ BOOL ImageView::LoadBuffer(const ByteBuffer& buffer)
     }
 
     DirectX::ScratchImage image;
-    HRESULT hr = LoadFromWICMemory(buffer.first.get(), buffer.second,
-                                   DirectX::WIC_FLAGS_NONE,
-                                   nullptr, image);
+
+    // Try DDS first
+    auto hr = LoadFromDDSMemory(
+        buffer.first.get(),
+        buffer.second,
+        DirectX::DDS_FLAGS_NONE,
+        nullptr,
+        image
+    );
+
     if (FAILED(hr)) {
-        ATLTRACE("Failed to load image from memory\n");
-        return FALSE;
+        hr = LoadFromWICMemory(buffer.first.get(), buffer.second,
+                               DirectX::WIC_FLAGS_NONE,
+                               nullptr, image);
+        if (FAILED(hr)) {
+            ATLTRACE("Failed to load image from memory\n");
+            return FALSE;
+        }
     }
 
     m_path.Empty();
