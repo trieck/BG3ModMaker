@@ -353,7 +353,9 @@
     <Image Include="resources\pak-explorer.bmp">
       <Filter>Resources</Filter>
     </Image>
-    <Image Include="pak-explorer.bmp" />
+    <Image Include="resources\bg3.bmp">
+      <Filter>Resources</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\BG3ModStudio.rc">

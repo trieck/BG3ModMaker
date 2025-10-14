@@ -68,12 +68,6 @@
             <Command.TooltipDescription>Search Index</Command.TooltipDescription>
         </Command>
 
-        <Command Name="TOOL_SETTINGS" Symbol="ID_TOOL_SETTINGS" Id="127" Keytip="O">
-            <Command.LabelTitle>Settings</Command.LabelTitle>
-            <Command.TooltipTitle>Settings(Ctrl+Alt+S)</Command.TooltipTitle>
-            <Command.TooltipDescription>Settings</Command.TooltipDescription>
-        </Command>
-
         <Command Name="TOOL_GAMEOBJECT" Symbol="ID_TOOL_GAMEOBJECT" Id="133" Keytip="O">
             <Command.LabelTitle>Game Object Explorer...</Command.LabelTitle>
             <Command.TooltipTitle>Game Object Explorer</Command.TooltipTitle>
@@ -90,6 +84,18 @@
             <Command.LabelTitle>Generate a UUID...</Command.LabelTitle>
             <Command.TooltipTitle>Generate a UUID</Command.TooltipTitle>
             <Command.TooltipDescription>Generate a UUID</Command.TooltipDescription>
+        </Command>
+
+        <Command Name="TOOL_BG3" Symbol="ID_TOOL_BG3" Id="154" Keytip="O">
+            <Command.LabelTitle>Launch Game...</Command.LabelTitle>
+            <Command.TooltipTitle>Launch Game</Command.TooltipTitle>
+            <Command.TooltipDescription>Launch Game</Command.TooltipDescription>
+        </Command>
+
+        <Command Name="TOOL_SETTINGS" Symbol="ID_TOOL_SETTINGS" Id="127" Keytip="O">
+            <Command.LabelTitle>Settings</Command.LabelTitle>
+            <Command.TooltipTitle>Settings(Ctrl+Alt+S)</Command.TooltipTitle>
+            <Command.TooltipDescription>Settings</Command.TooltipDescription>
         </Command>
 
         <Command Name="APP_ABOUT" Symbol="ID_APP_ABOUT" Id="0xE140" Keytip="O">
@@ -247,10 +253,11 @@
                                 <ControlNameDefinition Name="TOOL_LSF" />
                                 <ControlNameDefinition Name="TOOL_INDEX" />
                                 <ControlNameDefinition Name="TOOL_SEARCH" />
-                                <ControlNameDefinition Name="TOOL_SETTINGS" />
                                 <ControlNameDefinition Name="TOOL_GAMEOBJECT" />
                                 <ControlNameDefinition Name="TOOL_ICON_EXPLORER" />
                                 <ControlNameDefinition Name="TOOL_UUID" />
+                                <ControlNameDefinition Name="TOOL_BG3" />
+                                <ControlNameDefinition Name="TOOL_SETTINGS" />
                             </ControlNameMap>
                             <GroupSizeDefinition Size="Large">
                                 <ControlSizeDefinition ControlName="TOOL_PACKAGE"
@@ -268,9 +275,6 @@
                                 <ControlSizeDefinition ControlName="TOOL_SEARCH"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
-                                <ControlSizeDefinition ControlName="TOOL_SETTINGS"
-                                                       ImageSize="Large"
-                                                       IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="TOOL_GAMEOBJECT"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
@@ -278,6 +282,12 @@
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="TOOL_UUID"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="TOOL_BG3"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="TOOL_SETTINGS"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
                             </GroupSizeDefinition>
@@ -297,9 +307,6 @@
                                 <ControlSizeDefinition ControlName="TOOL_SEARCH"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
-                                <ControlSizeDefinition ControlName="TOOL_SETTINGS"
-                                                       ImageSize="Large"
-                                                       IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="TOOL_GAMEOBJECT"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
@@ -307,6 +314,12 @@
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="TOOL_UUID"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="TOOL_BG3"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="TOOL_SETTINGS"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
                             </GroupSizeDefinition>
@@ -326,9 +339,6 @@
                                 <ControlSizeDefinition ControlName="TOOL_SEARCH"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
-                                <ControlSizeDefinition ControlName="TOOL_SETTINGS"
-                                                       ImageSize="Large"
-                                                       IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="TOOL_GAMEOBJECT"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
@@ -336,6 +346,12 @@
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="TOOL_UUID"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="TOOL_BG3"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="TOOL_SETTINGS"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
                             </GroupSizeDefinition>
@@ -348,6 +364,7 @@
                         <Button CommandName="TOOL_GAMEOBJECT" />
                         <Button CommandName="TOOL_ICON_EXPLORER" />
                         <Button CommandName="TOOL_UUID" />
+                        <Button CommandName="TOOL_BG3" />
                         <Button CommandName="TOOL_SETTINGS" />
                     </Group>
                 </Tab>

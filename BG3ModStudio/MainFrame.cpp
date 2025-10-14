@@ -187,6 +187,44 @@ void MainFrame::OnIndex()
     dlg.RunModal(*this);
 }
 
+void MainFrame::OnLaunchGame()
+{
+    Settings settings;
+    auto gamePath = settings.GetString(_T("Settings"), _T("GamePath"), _T(""));
+
+    CString directory;
+    directory.Format(_T("%s\\bin"), static_cast<LPCTSTR>(gamePath));
+
+    CString exePath;
+    exePath.Format(_T("%s\\bg3.exe"), static_cast<LPCTSTR>(directory));
+
+    if (!PathFileExists(exePath)) {
+        CString msg;
+        msg.Format(L"Game executable not found:\n\n%s\n\nPlease verify your game path.", exePath);
+        AtlMessageBox(*this, msg.GetString(), nullptr, MB_ICONEXCLAMATION);
+        return;
+    }
+
+    SHELLEXECUTEINFO sei{};
+    sei.cbSize = sizeof(sei);
+    sei.fMask = SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS;
+    sei.hwnd = m_hWnd;
+    sei.lpVerb = _T("open");
+    sei.lpFile = exePath;
+    sei.lpParameters = _T("--skip-launcher");
+    sei.lpDirectory = directory;
+    sei.nShow = SW_SHOWNORMAL;
+    if (!ShellExecuteEx(&sei)) {
+        auto hr = HRESULT_FROM_WIN32(GetLastError());
+        CoMessageBox(*this, hr, nullptr, L"Failed to launch game executable.", MB_ICONERROR);
+        return;
+    }
+
+    if (sei.hProcess != nullptr) {
+        CloseHandle(sei.hProcess);
+    }
+}
+
 void MainFrame::OnSearch()
 {
     SearchDlg::RunOnce(*this);

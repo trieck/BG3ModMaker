@@ -273,9 +273,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="pak-explorer.bmp" />
     <Image Include="resources\about.bmp" />
     <Image Include="resources\app.ico" />
+    <Image Include="resources\bg3.bmp" />
     <Image Include="resources\bom.ico" />
     <Image Include="resources\catalog.bmp" />
     <Image Include="resources\close.bmp" />

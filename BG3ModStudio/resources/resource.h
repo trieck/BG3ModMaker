@@ -55,6 +55,7 @@
 #define IDI_NODE                        150
 #define IDD_PAK_EXPLORER                151
 #define ID_FILE_PAK_OPEN                153
+#define ID_TOOL_BG3                     154
 #define IDC_PROGRESS_INDEX              1000
 #define IDC_PAKFILE                     1001
 #define IDC_INDEX_FILE                  1002
@@ -231,7 +232,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        154
+#define _APS_NEXT_RESOURCE_VALUE        155
 #define _APS_NEXT_COMMAND_VALUE         40034
 #define _APS_NEXT_CONTROL_VALUE         1047
 #define _APS_NEXT_SYMED_VALUE           101

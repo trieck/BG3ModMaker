@@ -232,6 +232,8 @@ ID_TOOL_UUID            BITMAP                  "uuid.bmp"
 
 ID_FILE_PAK_OPEN        BITMAP                  "pak-explorer.bmp"
 
+ID_TOOL_BG3             BITMAP                  "bg3.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
