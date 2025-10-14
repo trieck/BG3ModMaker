@@ -46,6 +46,7 @@ public:
         MSG_WM_COPYDATA(OnCopyData)
 
         MESSAGE_HANDLER2(WM_FILE_CHANGED, OnFileChanged)
+        COMMAND_ID_HANDLER3(ID_APP_ABOUT, OnFileAbout)
         COMMAND_ID_HANDLER3(ID_APP_EXIT, OnFileExit)
         COMMAND_ID_HANDLER3(ID_FILE_CLOSE, OnFolderClose)
         COMMAND_ID_HANDLER3(ID_FILE_NEW, OnNewFile)
@@ -88,6 +89,7 @@ private:
     void OnConvertLoca();
     void OnConvertLSF();
     void OnDeleteFile();
+    void OnFileAbout();
     void OnFileExit();
     void OnFileSave();
     void OnFileSaveAll();

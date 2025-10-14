@@ -56,6 +56,7 @@
 #define IDD_PAK_EXPLORER                151
 #define ID_FILE_PAK_OPEN                153
 #define ID_TOOL_BG3                     154
+#define IDD_ABOUT                       155
 #define IDC_PROGRESS_INDEX              1000
 #define IDC_PAKFILE                     1001
 #define IDC_INDEX_FILE                  1002
@@ -101,6 +102,11 @@
 #define IDC_GENERATE_UUID               1044
 #define IDC_CHK_UUID_HANDLE             1045
 #define IDC_ST_PAKEXPLORER              1046
+#define IDC_APPNAME                     1047
+#define IDC_COPYRIGHT                   1048
+#define IDC_NOTICE                      1049
+#define IDC_VERSION                     1050
+#define IDC_APPICON                     1051
 #define ATL_IDC_TAB_CONTROL             0x3020
 #define ID_APPLY_NOW                    0x3021
 #define ID_WIZBACK                      0x3023
@@ -232,9 +238,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        155
+#define _APS_NEXT_RESOURCE_VALUE        157
 #define _APS_NEXT_COMMAND_VALUE         40034
-#define _APS_NEXT_CONTROL_VALUE         1047
+#define _APS_NEXT_CONTROL_VALUE         1052
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -171,6 +171,7 @@
                                 <ControlNameDefinition Name="FILE_PAK_OPEN" />
                                 <ControlNameDefinition Name="FILE_SAVE" />
                                 <ControlNameDefinition Name="FILE_SAVE_ALL" />
+                                <ControlNameDefinition Name="APP_ABOUT" />
                             </ControlNameMap>
                             <GroupSizeDefinition Size="Large">
                                 <ControlSizeDefinition ControlName="FILE_NEW"
@@ -193,6 +194,9 @@
                                 <ControlSizeDefinition ControlName="FILE_SAVE_ALL"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="APP_ABOUT"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
                             </GroupSizeDefinition>
                             <GroupSizeDefinition Size="Medium">
                                 <ControlSizeDefinition ControlName="FILE_NEW"
@@ -211,6 +215,9 @@
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="FILE_SAVE_ALL"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="APP_ABOUT"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
                             </GroupSizeDefinition>
@@ -233,6 +240,9 @@
                                 <ControlSizeDefinition ControlName="FILE_SAVE_ALL"
                                                        ImageSize="Small"
                                                        IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="APP_ABOUT"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
                             </GroupSizeDefinition>
                         </SizeDefinition>
                         <Button CommandName="FILE_NEW" />
@@ -241,6 +251,7 @@
                         <Button CommandName="FILE_PAK_OPEN" />
                         <Button CommandName="FILE_SAVE" />
                         <Button CommandName="FILE_SAVE_ALL" />
+                        <Button CommandName="APP_ABOUT" />
                     </Group>
                 </Tab>
 

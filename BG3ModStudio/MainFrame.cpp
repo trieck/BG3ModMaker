@@ -1,5 +1,6 @@
 #include "stdafx.h"
 
+#include "AboutDlg.h"
 #include "COMError.h"
 #include "FileDialogEx.h"
 #include "FileOperation.h"
@@ -18,6 +19,7 @@
 #include "UUIDDlg.h"
 
 #include <filesystem>
+
 namespace fs = std::filesystem;
 
 BOOL MainFrame::DefCreate()
@@ -324,6 +326,12 @@ void MainFrame::OnDeleteFile()
     m_folderView.SelectItem(hParent);
     m_folderView.EnsureVisible(hParent);
     m_folderView.RedrawWindow();
+}
+
+void MainFrame::OnFileAbout()
+{
+    AboutDlg dlg;
+    dlg.DoModal();
 }
 
 void MainFrame::OnNewFile()

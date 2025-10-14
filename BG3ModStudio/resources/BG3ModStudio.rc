@@ -74,8 +74,8 @@ IDI_NODE                ICON                    "node.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,1
- PRODUCTVERSION 1,0,0,1
+ FILEVERSION 1,0,3,0
+ PRODUCTVERSION 1,0,3,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -92,12 +92,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Rieck Enterprises"
             VALUE "FileDescription", "BG3 Mod Studio"
-            VALUE "FileVersion", "1.0.0.1"
+            VALUE "FileVersion", "1.0.3"
             VALUE "InternalName", "BG3 Mod Studio"
-            VALUE "LegalCopyright", "Copyright (C) 2025"
+            VALUE "LegalCopyright", "© 2025 Rieck Enterprises"
             VALUE "OriginalFilename", "BG3ModStudio.exe"
             VALUE "ProductName", "BG3 Mod Studio"
-            VALUE "ProductVersion", "1.0.0.1"
+            VALUE "ProductVersion", "1.0.3"
         END
     END
     BLOCK "VarFileInfo"
@@ -398,6 +398,20 @@ BEGIN
     LTEXT           "",IDC_ST_PAKEXPLORER,7,7,495,241,0,WS_EX_STATICEDGE
 END
 
+IDD_ABOUT DIALOGEX 0, 0, 240, 130
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About BG3 Mod Studio"
+FONT 8, "Tahoma", 0, 0, 0x1
+BEGIN
+    ICON            "",IDC_APPICON,10,10,21,20
+    LTEXT           "BG3 Mod Studio",IDC_APPNAME,50,10,150,12,SS_NOPREFIX
+    LTEXT           "",IDC_VERSION,50,20,150,10,SS_NOPREFIX
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,8,34,224,1
+    LTEXT           "© 2025 Rieck Enterprises",IDC_COPYRIGHT,10,42,220,10
+    LTEXT           "This product is protected by copyright law and international treaties.",IDC_NOTICE,10,70,220,20,SS_NOPREFIX
+    DEFPUSHBUTTON   "OK",IDOK,182,106,50,14
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -509,6 +523,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 248
     END
+
+    IDD_ABOUT, DIALOG
+    BEGIN
+        LEFTMARGIN, 8
+        RIGHTMARGIN, 232
+        TOPMARGIN, 10
+        BOTTOMMARGIN, 95
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -579,6 +601,11 @@ BEGIN
 END
 
 IDD_PAK_EXPLORER AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_ABOUT AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
