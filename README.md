@@ -8,6 +8,9 @@ It’s written in modern C++ (WTL/DirectX/DirectXTex) with a focus on speed, tra
 ---
 
 ## ✨ Features
+- **Mod Editor**
+  - Multi-tab interface for low-level mod editing
+  - Explorer-type folder interface
 
 - **Stats + LSX/LSF Indexing**
   - Full-text indexing of Gustav.pak and other content with **Xapian**
@@ -25,6 +28,9 @@ It’s written in modern C++ (WTL/DirectX/DirectXTex) with a focus on speed, tra
 - **GameObject Explorer**
   - Explore root templates, stats bindings, localization, and icons by UUID
   - Quickly see how items and abilities are constructed
+
+- **PAK Explorer**
+  - Explore PAK file contents without requiring exploding to the filesystem
 
 ---
 
