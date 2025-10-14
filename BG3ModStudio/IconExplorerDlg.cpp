@@ -28,6 +28,12 @@ BOOL IconExplorerDlg::OnIdle()
     UpdatePageInfo();
     UIUpdateChildWindows(TRUE);
 
+    auto icon = Util::LoadBitmapAsIcon(ID_TOOL_ICON_EXPLORER, 32, 32);
+    if (icon != nullptr) {
+        SetIcon(icon, TRUE);
+        SetIcon(icon, FALSE);
+    }
+
     return FALSE;
 }
 

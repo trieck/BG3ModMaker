@@ -11,9 +11,8 @@
 enum NodeItemType
 {
     NIT_UNKNOWN = 0,
-    NIT_RESOURCE = 1,
-    NIT_REGION = 2,
-    NIT_NODE = 3,
+    NIT_REGION = 1,
+    NIT_NODE = 2,
 };
 
 typedef struct NodeItemData
@@ -60,7 +59,6 @@ LRESULT LSFFileView::OnCreate(LPCREATESTRUCT pcs)
     m_splitter.SetSplitterPosPct(40);
 
     static constexpr auto icons = {
-        IDI_RESOURCE,
         IDI_REGION,
         IDI_NODE
     };
@@ -309,19 +307,18 @@ void LSFFileView::Populate()
 
     TV_INSERTSTRUCT tvis{};
     tvis.hParent = TVI_ROOT;
-    tvis.hInsertAfter = TVI_FIRST;
+    tvis.hInsertAfter = TVI_LAST;
     tvis.itemex.mask = TVIF_CHILDREN | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_EXPANDEDIMAGE | TVIF_TEXT |
         TVIF_PARAM;
-    tvis.itemex.cChildren = 1;
-    tvis.itemex.pszText = const_cast<LPTSTR>(_T("Root"));
-    tvis.itemex.iImage = 0;
-    tvis.itemex.iSelectedImage = 0;
-    tvis.itemex.iExpandedImage = 0;
-    tvis.itemex.lParam = std::bit_cast<LPARAM>(new NodeItemData{NIT_RESOURCE, m_resource.get()});
 
-    m_tree.InsertItem(&tvis);
-
-    m_tree.Expand(m_tree.GetRootItem(), TVE_EXPAND);
+    for (const auto& region : m_resource->regions) {
+        auto wideName = StringHelper::fromUTF8(region.first.c_str());
+        tvis.itemex.cChildren = region.second->childCount() > 0 ? 1 : 0;
+        tvis.itemex.pszText = const_cast<LPTSTR>(wideName.GetString());
+        tvis.itemex.lParam = std::bit_cast<LPARAM>(new NodeItemData{.type = NIT_REGION, .pdata = region.second.get()});
+        auto hItem = m_tree.InsertItem(&tvis);
+        m_tree.Expand(hItem, TVE_EXPAND);
+    }
 }
 
 void LSFFileView::Expand(const CTreeItem& item)
@@ -350,45 +347,10 @@ void LSFFileView::Expand(const CTreeItem& item)
         return;
     }
 
-    if (data->type == NIT_RESOURCE) {
-        ExpandResource(item);
-    } else if (data->type == NIT_REGION) {
+    if (data->type == NIT_REGION) {
         ExpandRegion(item, *static_cast<Region*>(data->pdata));
     } else if (data->type == NIT_NODE) {
         ExpandNode(item, *static_cast<LSNode*>(data->pdata));
-    }
-}
-
-void LSFFileView::ExpandResource(const CTreeItem& item)
-{
-    auto child = item.GetChild();
-
-    const auto& regions = m_resource->regions;
-    if (regions.empty()) {
-        TVITEMEX newItem{};
-        newItem.mask = TVIF_CHILDREN;
-        newItem.hItem = child;
-        newItem.cChildren = 0;
-        m_tree.SetItem(&newItem);
-        return;
-    }
-
-    for (const auto& region : regions) {
-        auto wideName = StringHelper::fromUTF8(region.first.c_str());
-
-        TV_INSERTSTRUCT tvis{};
-        tvis.hParent = item.m_hTreeItem;
-        tvis.hInsertAfter = TVI_LAST;
-        tvis.itemex.mask = TVIF_CHILDREN | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_EXPANDEDIMAGE | TVIF_TEXT |
-            TVIF_PARAM;
-        tvis.itemex.cChildren = region.second->childCount() > 0 ? 1 : 0;
-        tvis.itemex.pszText = const_cast<LPTSTR>(wideName.GetString());
-        tvis.itemex.iImage = 1;
-        tvis.itemex.iSelectedImage = 1;
-        tvis.itemex.iExpandedImage = 1;
-        tvis.itemex.lParam = reinterpret_cast<LPARAM>(&region);
-        tvis.itemex.lParam = std::bit_cast<LPARAM>(new NodeItemData{.type = NIT_REGION, .pdata = region.second.get()});
-        m_tree.InsertItem(&tvis);
     }
 }
 
@@ -416,9 +378,9 @@ void LSFFileView::ExpandRegion(const CTreeItem& item, const Region& region)
                 TVIF_PARAM;
             tvis.itemex.cChildren = node->childCount() > 0 ? 1 : 0;
             tvis.itemex.pszText = const_cast<LPTSTR>(wideName.GetString());
-            tvis.itemex.iImage = 2;
-            tvis.itemex.iSelectedImage = 2;
-            tvis.itemex.iExpandedImage = 2;
+            tvis.itemex.iImage = 1;
+            tvis.itemex.iSelectedImage = 1;
+            tvis.itemex.iExpandedImage = 1;
             tvis.itemex.lParam = std::bit_cast<LPARAM>(new NodeItemData{.type = NIT_NODE, .pdata = node.get()});
             m_tree.InsertItem(&tvis);
         }
@@ -449,9 +411,9 @@ void LSFFileView::ExpandNode(const CTreeItem& item, const LSNode& node)
                 TVIF_PARAM;
             tvis.itemex.cChildren = childNode->childCount() > 0 ? 1 : 0;
             tvis.itemex.pszText = const_cast<LPTSTR>(wideName.GetString());
-            tvis.itemex.iImage = 2;
-            tvis.itemex.iSelectedImage = 2;
-            tvis.itemex.iExpandedImage = 2;
+            tvis.itemex.iImage = 1;
+            tvis.itemex.iSelectedImage = 1;
+            tvis.itemex.iExpandedImage = 1;
             tvis.itemex.lParam = std::bit_cast<LPARAM>(new NodeItemData{.type = NIT_NODE, .pdata = childNode.get()});
             m_tree.InsertItem(&tvis);
         }

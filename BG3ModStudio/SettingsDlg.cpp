@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "FileDialogEx.h"
 #include "SettingsDlg.h"
+#include "Util.h"
 
 LRESULT SettingsDlg::OnInitDialog(HWND, LPARAM)
 {
@@ -29,6 +30,12 @@ LRESULT SettingsDlg::OnInitDialog(HWND, LPARAM)
     m_iconPath.SetWindowText(path);
 
     CenterWindow(GetParent());
+
+    auto icon = Util::LoadBitmapAsIcon(ID_TOOL_SETTINGS, 32, 32);
+    if (icon != nullptr) {
+        SetIcon(icon, TRUE);
+        SetIcon(icon, FALSE);
+    }
 
     return TRUE; // Let the system set the focus to the first control
 }

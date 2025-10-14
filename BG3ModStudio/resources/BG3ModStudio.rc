@@ -63,8 +63,6 @@ IDI_NOBOM               ICON                    "nobom.ico"
 
 IDI_BOM                 ICON                    "bom.ico"
 
-IDI_RESOURCE            ICON                    "resource.ico"
-
 IDI_REGION              ICON                    "region.ico"
 
 IDI_NODE                ICON                    "node.ico"
@@ -258,7 +256,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,119,130,50,14
 END
 
-IDD_SEARCH DIALOGEX 0, 0, 500, 375
+IDD_SEARCH DIALOGEX 0, 0, 501, 228
 STYLE DS_SETFONT | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 EXSTYLE WS_EX_APPWINDOW
 CAPTION "Search"
@@ -270,7 +268,7 @@ BEGIN
     EDITTEXT        IDC_E_FOLDER,285,5,181,14,ES_AUTOHSCROLL
     PUSHBUTTON      "...",IDC_B_BROWSE,468,5,20,14
     PUSHBUTTON      "Search",IDC_B_SEARCH,7,24,60,14
-    CONTROL         "",IDC_LST_RESULTS,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,44,486,320
+    CONTROL         "",IDC_LST_RESULTS,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,8,44,486,173
     PUSHBUTTON      "<<",IDC_B_FIRST,73,24,37,14
     PUSHBUTTON      "<",IDC_B_PREV,112,24,37,14
     PUSHBUTTON      ">",IDC_B_NEXT,151,24,37,14
@@ -417,8 +415,8 @@ BEGIN
 
     IDD_SEARCH, DIALOG
     BEGIN
-        RIGHTMARGIN, 493
-        BOTTOMMARGIN, 364
+        RIGHTMARGIN, 494
+        BOTTOMMARGIN, 217
     END
 
     IDD_ATTRIBUTES, DIALOG

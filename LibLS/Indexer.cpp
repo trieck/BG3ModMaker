@@ -300,6 +300,8 @@ void Indexer::indexTXTFile(const PackagedFileInfo& file)
                        std::regex_constants::icase);
     std::regex reType(R"REG(^[ \t]*type[ \t]+"?([^"]+)"?)REG",
                       std::regex_constants::icase);
+    std::regex reUsing(R"REG(^[ \t]*using[ \t]+"([^"]+)")REG",
+                       std::regex_constants::icase);
     std::regex reData(R"REG(^[ \t]*data[ \t]+"([^"]+)"[ \t]+"([^"]+)")REG",
                       std::regex_constants::icase);
 
@@ -340,6 +342,14 @@ void Indexer::indexTXTFile(const PackagedFileInfo& file)
             currentEntry = m[1].str();
         } else if (std::regex_search(line, m, reType)) {
             currentType = m[1];
+        } else if (std::regex_search(line, m, reUsing)) {
+            json attr;
+            attr["id"] = "Using";
+            attr["value"] = m[1].str();
+            attr["type"] = "Using";
+            attributes.push_back(attr);
+
+            addTerms(terms, m[1].str());
         } else if (std::regex_search(line, m, reData)) {
             json attr;
             auto id = m[1].str();

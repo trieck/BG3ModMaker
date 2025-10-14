@@ -47,7 +47,6 @@ public:
 private:
     void Populate();
     void Expand(const CTreeItem& item);
-    void ExpandResource(const CTreeItem& item);
     void ExpandRegion(const CTreeItem& item, const Region& region);
     void ExpandNode(const CTreeItem& item, const LSNode& node);
     void AddAttributes(const LSNode& node);

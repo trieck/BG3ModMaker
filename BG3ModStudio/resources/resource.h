@@ -50,7 +50,6 @@
 #define ID_TOOL_UUID                    146
 #define IDR_ATTRIBUTE_CONTEXT1          148
 #define IDR_VALUE_CONTEXT               148
-#define IDI_RESOURCE                    148
 #define IDR_ENTRY_CONTEXT               149
 #define IDI_REGION                      149
 #define IDI_NODE                        150

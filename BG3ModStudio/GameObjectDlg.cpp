@@ -32,6 +32,12 @@ BOOL GameObjectDlg::OnIdle()
     UpdatePageInfo();
     UIUpdateChildWindows(TRUE);
 
+    auto icon = Util::LoadBitmapAsIcon(ID_TOOL_GAMEOBJECT, 32, 32);
+    if (icon != nullptr) {
+        SetIcon(icon, TRUE);
+        SetIcon(icon, FALSE);
+    }
+
     return FALSE;
 }
 

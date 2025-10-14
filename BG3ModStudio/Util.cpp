@@ -117,7 +117,7 @@ void Util::SetMenuItemIcon(HMENU hMenu, UINT itemID, UINT iconResID, int cx, int
 CIconHandle Util::LoadBitmapAsIcon(_U_STRINGorID id, int cx, int cy, COLORREF transparent)
 {
     // Create imagelist with 32-bpp, mask+alpha support
-    CImageList il;
+    CImageListManaged il;
     if (!il.Create(cx, cy, ILC_COLOR32 | ILC_MASK, 1, 1)) {
         ATLTRACE("Failed to create image list\n");
         return nullptr;

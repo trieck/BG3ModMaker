@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "UUIDDlg.h"
-
 #include "Util.h"
 
 void UUIDDlg::OnCancel()
@@ -17,11 +16,16 @@ LRESULT UUIDDlg::OnInitDialog(HWND, LPARAM)
     m_uuid.SetFont(m_font);
     m_uuid.ModifyStyle(0, SS_NOTIFY);
 
-
     m_handle = GetDlgItem(IDC_CHK_UUID_HANDLE);
     ATLASSERT(m_handle.IsWindow());
 
     CenterWindow(GetParent());
+
+    auto icon = Util::LoadBitmapAsIcon(ID_TOOL_UUID, 32, 32);
+    if (icon != nullptr) {
+        SetIcon(icon, TRUE);
+        SetIcon(icon, FALSE);
+    }
 
     return TRUE; // Let the system set the focus
 }

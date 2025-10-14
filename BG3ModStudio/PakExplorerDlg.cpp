@@ -83,8 +83,8 @@ LRESULT PakExplorerDlg::OnTVSelChanged(LPNMHDR pnmh)
 
     CString fullPath;
     fullPath.Format(L"%s/%s", data->prefix.GetString(), name.GetString());
-
     auto utf8File = StringHelper::toUTF8(fullPath);
+
     try {
         auto contents = m_pakReader.readFile(utf8File.GetString());
 
@@ -251,7 +251,6 @@ BOOL PakExplorerDlg::OnInitDialog(HWND, LPARAM lParam)
     }
 
     Populate();
-
     SetTitle();
 
     return TRUE; // Let the system set the focus

@@ -1,9 +1,10 @@
 #include "stdafx.h"
-#include "IndexDlg.h"
 #include "FileDialogEx.h"
+#include "IndexDlg.h"
 #include "Indexer.h"
 #include "Settings.h"
 #include "StringHelper.h"
+#include "Util.h"
 
 #include <filesystem>
 namespace fs = std::filesystem;
@@ -39,6 +40,12 @@ BOOL IndexDlg::OnInitDialog(HWND, LPARAM)
     ATLASSERT(m_overwriteCheckbox.IsWindow());
 
     CenterWindow(GetParent());
+
+    auto icon = Util::LoadBitmapAsIcon(ID_TOOL_INDEX, 32, 32);
+    if (icon != nullptr) {
+        SetIcon(icon, TRUE);
+        SetIcon(icon, FALSE);
+    }
 
     return TRUE; // Let the system set the focus
 }
