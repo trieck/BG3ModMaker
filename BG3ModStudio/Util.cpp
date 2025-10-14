@@ -116,35 +116,44 @@ void Util::SetMenuItemIcon(HMENU hMenu, UINT itemID, UINT iconResID, int cx, int
 
 CIconHandle Util::LoadBitmapAsIcon(_U_STRINGorID id, int cx, int cy, COLORREF transparent)
 {
-    // Create imagelist with 32-bpp, mask+alpha support
-    CImageListManaged il;
-    if (!il.Create(cx, cy, ILC_COLOR32 | ILC_MASK, 1, 1)) {
-        ATLTRACE("Failed to create image list\n");
-        return nullptr;
-    }
-
-    // Add the bitmap (black background becomes transparent)
+    // Load bitmap
     CBitmap bmp;
     if (!bmp.LoadBitmap(id)) {
-        ATLTRACE("Failed to load bitmap\n");
         return nullptr;
     }
 
-    il.Add(bmp, transparent);
+    BITMAP bm{};
+    bmp.GetBitmap(&bm);
 
-    // Extract the HICON
-    CIcon icon(il.ExtractIcon(0));
-    if (icon.IsNull()) {
-        ATLTRACE("Failed to extract icon from image list\n");
-        return nullptr;
-    }
+    CDC memDC;
+    memDC.CreateCompatibleDC(nullptr);
 
-    // CopyImage forces the handle into a system-registered icon
-    auto hSysIcon = static_cast<HICON>(CopyImage(icon, IMAGE_ICON, cx, cy, LR_COPYFROMRESOURCE));
-    if (!hSysIcon) {
-        ATLTRACE("Failed to copy icon\n");
-        return nullptr;
-    }
+    HBITMAP hOldBmp = memDC.SelectBitmap(bmp);
 
-    return hSysIcon;
+    // Create mask
+    CDC maskDC;
+    maskDC.CreateCompatibleDC();
+    CBitmap maskBmp;
+    maskBmp.CreateBitmap(bm.bmWidth, bm.bmHeight, 1, 1, nullptr);
+
+    HBITMAP hOldMask = maskDC.SelectBitmap(maskBmp);
+
+    COLORREF oldBk = memDC.SetBkColor(transparent);
+    maskDC.BitBlt(0, 0, bm.bmWidth, bm.bmHeight, memDC, 0, 0, SRCCOPY);
+    memDC.SetBkColor(oldBk);
+
+    ICONINFO ii{};
+    ii.fIcon = TRUE;
+    ii.hbmColor = bmp;
+    ii.hbmMask = maskBmp;
+
+    CIcon icon;
+    icon.CreateIconIndirect(&ii);
+
+    auto hIcon = static_cast<HICON>(CopyImage(icon, IMAGE_ICON, cx, cy, LR_COPYFROMRESOURCE));
+
+    memDC.SelectBitmap(hOldBmp);
+    maskDC.SelectBitmap(hOldMask);
+
+    return hIcon;
 }

@@ -28,12 +28,6 @@ BOOL IconExplorerDlg::OnIdle()
     UpdatePageInfo();
     UIUpdateChildWindows(TRUE);
 
-    auto icon = Util::LoadBitmapAsIcon(ID_TOOL_ICON_EXPLORER, 32, 32);
-    if (icon != nullptr) {
-        SetIcon(icon, TRUE);
-        SetIcon(icon, FALSE);
-    }
-
     return FALSE;
 }
 
@@ -92,6 +86,12 @@ BOOL IconExplorerDlg::OnInitDialog(HWND, LPARAM)
     auto* pLoop = _Module.GetMessageLoop();
     ATLASSERT(pLoop != NULL);
     pLoop->AddIdleHandler(this);
+
+    auto icon = Util::LoadBitmapAsIcon(ID_TOOL_ICON_EXPLORER, 32, 32);
+    if (icon != nullptr) {
+        SetIcon(icon, TRUE);
+        SetIcon(icon, FALSE);
+    }
 
     return TRUE; // Let the system set the focus
 }

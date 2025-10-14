@@ -19,7 +19,7 @@ LRESULT ImageView::OnCreate(LPCREATESTRUCT pcs)
 
 LRESULT ImageView::OnPaint(CPaintDC /*dc*/)
 {
-    if (!m_pRenderTarget || !m_bitmap) {
+    if (!m_pRenderTarget) {
         return 0;
     }
 
@@ -31,17 +31,19 @@ LRESULT ImageView::OnPaint(CPaintDC /*dc*/)
     auto b = GetBValue(cref) / 255.0f;
     m_pRenderTarget->Clear(D2D1::ColorF(r, g, b));
 
-    auto w = m_bitmap->GetSize().width * m_zoom;
-    auto h = m_bitmap->GetSize().height * m_zoom;
+    if (m_bitmap) {
+        auto w = m_bitmap->GetSize().width * m_zoom;
+        auto h = m_bitmap->GetSize().height * m_zoom;
 
-    D2D1_RECT_F destRect = D2D1::RectF(
-        -static_cast<FLOAT>(m_ScrollPos.x),
-        -static_cast<FLOAT>(m_ScrollPos.y),
-        -static_cast<FLOAT>(m_ScrollPos.x) + w,
-        -static_cast<FLOAT>(m_ScrollPos.y) + h
-    );
+        D2D1_RECT_F destRect = D2D1::RectF(
+            -static_cast<FLOAT>(m_ScrollPos.x),
+            -static_cast<FLOAT>(m_ScrollPos.y),
+            -static_cast<FLOAT>(m_ScrollPos.x) + w,
+            -static_cast<FLOAT>(m_ScrollPos.y) + h
+        );
 
-    m_pRenderTarget->DrawBitmap(m_bitmap, &destRect);
+        m_pRenderTarget->DrawBitmap(m_bitmap, &destRect);
+    }
 
     auto hr = m_pRenderTarget->EndDraw();
     if (hr == D2DERR_RECREATE_TARGET) {

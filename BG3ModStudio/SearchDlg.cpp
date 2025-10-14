@@ -24,12 +24,6 @@ BOOL SearchDlg::OnIdle()
     UpdatePageInfo();
     UIUpdateChildWindows(TRUE);
 
-    auto icon = Util::LoadBitmapAsIcon(ID_TOOL_SEARCH, 32, 32);
-    if (icon != nullptr) {
-        SetIcon(icon, TRUE);
-        SetIcon(icon, FALSE);
-    }
-
     return FALSE;
 }
 
@@ -84,6 +78,12 @@ BOOL SearchDlg::OnInitDialog(HWND, LPARAM)
     auto* pLoop = _Module.GetMessageLoop();
     ATLASSERT(pLoop != NULL);
     pLoop->AddIdleHandler(this);
+
+    auto icon = Util::LoadBitmapAsIcon(ID_TOOL_SEARCH, 32, 32);
+    if (icon != nullptr) {
+        SetIcon(icon, TRUE);
+        SetIcon(icon, FALSE);
+    }
 
     return TRUE; // Let the system set the focus
 }
