@@ -340,8 +340,7 @@ void MainFrame::OnNewFileHere()
         return;
     }
 
-    auto type = m_folderView.GetItemType(parent);
-    ATLASSERT(type == TIT_FOLDER);
+    ATLASSERT(m_folderView.GetItemType(parent) == TIT_FOLDER);
 
     // Ensure the parent is known to have children
     TVITEM tvi{};
@@ -371,8 +370,7 @@ void MainFrame::OnNewFolderHere()
         return;
     }
 
-    auto type = m_folderView.GetItemType(parent);
-    ATLASSERT(type == TIT_FOLDER);
+    ATLASSERT(m_folderView.GetItemType(parent) == TIT_FOLDER);
 
     // Ensure the parent is known to have children
     TVITEM tvi{};

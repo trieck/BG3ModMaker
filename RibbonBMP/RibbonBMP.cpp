@@ -10,14 +10,14 @@
 
 using namespace Gdiplus;
 
-static void makeRibbonBMP(wchar_t* inputImage, wchar_t* outputImage, int size);
+static void makeRibbonBMP(wchar_t* inputImage, wchar_t* outputImage, int size, uint32_t threshold);
 
 static GDIPlus gdiplus;
 
 int wmain(int argc, wchar_t* argv[])
 {
     if (argc < 3) {
-        wprintf(L"usage: %s <input-image> <output.bmp> [size]\n", argv[0]);
+        wprintf(L"usage: %s <input-image> <output.bmp> [size = 32] [threshold = 30]\n", argv[0]);
         return 1;
     }
 
@@ -27,7 +27,9 @@ int wmain(int argc, wchar_t* argv[])
     }
 
     int size = 32; // Default size
-    if (argc == 4) {
+    int threshold = 30; // Default threshold
+
+    if (argc > 3) {
         size = _wtoi(argv[3]);
         if (size <= 0) {
             std::wcerr << L"invalid size specified." << std::endl;
@@ -35,8 +37,16 @@ int wmain(int argc, wchar_t* argv[])
         }
     }
 
+    if (argc > 4) {
+        threshold = _wtoi(argv[4]);
+        if (threshold < 0 || threshold > 255) {
+            std::wcerr << L"invalid threshold specified." << std::endl;
+            return 1;
+        }
+    }
+
     try {
-        makeRibbonBMP(argv[1], argv[2], size);
+        makeRibbonBMP(argv[1], argv[2], size, threshold);
     } catch (Exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
         return 1;
@@ -45,11 +55,11 @@ int wmain(int argc, wchar_t* argv[])
     return 0;
 }
 
-void makeRibbonBMP(wchar_t* inputImage, wchar_t* outputImage, int size)
+void makeRibbonBMP(wchar_t* inputImage, wchar_t* outputImage, int size, uint32_t threshold)
 {
     std::unique_ptr<Bitmap> bmp;
 
-    // If the input is an ICO file, extract the best 32x32 icon
+    // If the input is an ICO file, extract the best size x size icon
     if (wcsstr(inputImage, L".ico") != nullptr) {
         HICON hIcon;
         auto extracted = PrivateExtractIconsW(inputImage, 0, size, size, &hIcon, nullptr, 1, LR_LOADTRANSPARENT);
@@ -74,9 +84,9 @@ void makeRibbonBMP(wchar_t* inputImage, wchar_t* outputImage, int size)
     }
 
     Bitmap resized(size, size, PixelFormat32bppARGB);
-    Graphics g(&resized);
-    g.SetInterpolationMode(InterpolationModeHighQualityBicubic);
-    g.DrawImage(bmp.get(), 0, 0, size, size);
+    Graphics gr(&resized);
+    gr.SetInterpolationMode(InterpolationModeHighQualityBicubic);
+    gr.DrawImage(bmp.get(), 0, 0, size, size);
 
     // Fix transparency: Set all pure black pixels (0,0,0) to transparent
     BitmapData bmpData;
@@ -91,7 +101,7 @@ void makeRibbonBMP(wchar_t* inputImage, wchar_t* outputImage, int size)
         auto b = pixels[i] & 0xFF;
 
         // Anything that's near-black, kill it
-        if (r <= 20 && g <= 20 && b <= 20) {
+        if (r <= threshold && g <= threshold && b <= threshold) {
             pixels[i] = 0x00000000;
         } else {
             // If alpha is not 255, force RGB to 0
