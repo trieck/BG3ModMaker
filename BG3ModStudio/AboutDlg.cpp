@@ -27,7 +27,7 @@ LRESULT AboutDlg::OnInitDialog(HWND, LPARAM)
     LOGFONT lf{};
     CFontHandle sysFont = GetFont();
     sysFont.GetLogFont(&lf);
-    _tcscpy_s(lf.lfFaceName, _T("Tahoma"));
+    Checked::tcsncpy_s(lf.lfFaceName, _countof(lf.lfFaceName), _T("Tahoma"), _TRUNCATE);
     lf.lfWeight = FW_BOLD;
 
     // Store as member so it outlives the dialog

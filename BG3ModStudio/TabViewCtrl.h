@@ -34,15 +34,16 @@ public:
         return this->m_hWnd;
     }
 
-    BOOL CreateTabControl()
+    BOOL CreateTabControl(_U_RECT rect = nullptr, LPCTSTR szWindowName = nullptr,
+                          DWORD dwStyle = CControlWinTraits::GetWndStyle(0) | TCS_TOOLTIPS,
+                          DWORD dwExStyle = CControlWinTraits::GetWndExStyle(0))
     {
         ATLASSERT(this->m_hWnd != nullptr);
         if (m_tabCtrl.IsWindow()) {
             return TRUE;
         }
 
-        if (!m_tabCtrl.Create(*this, this->rcDefault, nullptr, CControlWinTraits::GetWndStyle(0) | TCS_TOOLTIPS, 0,
-                              m_nTabID)) {
+        if (!m_tabCtrl.Create(*this, rect, szWindowName, dwStyle, dwExStyle, m_nTabID)) {
             ATLTRACE("Failed to create tab control.\n");
             return FALSE;
         }

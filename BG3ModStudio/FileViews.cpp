@@ -21,30 +21,13 @@ LRESULT FilesView::OnCreate(LPCREATESTRUCT pcs)
     Checked::tcsncpy_s(lf.lfFaceName, _countof(lf.lfFaceName), _T("Tahoma"), _TRUNCATE);
 
     m_tabFont.CreateFontIndirect(&lf);
+    lf.lfWeight = FW_NORMAL;
+    m_disabledFont.CreateFontIndirect(&lf);
+
     m_tabViewCtrl.m_tabCtrl.SetFont(m_tabFont);
 
     m_tabViewCtrl.SetTopMargin(1);
     m_tabViewCtrl.SetViewBorder(2);
-
-    return 0;
-}
-
-LRESULT FilesView::OnTabSelChange(int idCtrl, LPNMHDR pnmh, BOOL& bHandled)
-{
-    ATLASSERT(idCtrl == TabViewCtrl::m_nTabID);
-    ATLASSERT(pnmh->hwndFrom == m_tabViewCtrl.m_tabCtrl);
-    ATLASSERT(pnmh->code == TCN_SELCHANGE);
-
-    auto index = m_tabViewCtrl.GetActiveTab();
-    if (index == -1) {
-        return 0;
-    }
-
-    SetActivePage(index);
-    OnPageActivated(index);
-    UpdateLayout();
-
-    bHandled = TRUE;
 
     return 0;
 }
@@ -511,6 +494,50 @@ void FilesView::OnPageContextMenu(int nPage, const CPoint& pt)
     cmInfo.hdr.code = TBVN_CONTEXTMENU;
     cmInfo.pt = pt;
     GetTopLevelParent().SendMessage(WM_NOTIFY, this->GetDlgCtrlID(), reinterpret_cast<LPARAM>(&cmInfo));
+}
+
+void FilesView::OnDrawTabItem(LPDRAWITEMSTRUCT dis)
+{
+    CDCHandle dc(dis->hDC);
+    auto rc = dis->rcItem;
+    auto sel = (dis->itemState & ODS_SELECTED) != 0;
+    auto hTab = dis->hwndItem;
+    auto index = dis->itemID;
+
+    auto clrFace = GetSysColor(sel ? COLOR_WINDOW : COLOR_BTNFACE);
+    auto clrLight = GetSysColor(COLOR_BTNHIGHLIGHT);
+    auto clrDkShadow = GetSysColor(COLOR_3DDKSHADOW);
+    auto clrText = sel ? RGB(96, 0, 0) : GetSysColor(COLOR_GRAYTEXT);
+
+    dc.FillSolidRect(&rc, clrFace);
+
+    if (sel) {
+        dc.Draw3dRect(&rc, clrLight, clrDkShadow);
+    }
+
+    WCHAR text[MAX_PATH]{};
+
+    TCITEM tci{};
+    tci.mask = TCIF_TEXT;
+    tci.pszText = text;
+    tci.cchTextMax = _countof(text);
+    TabCtrl_GetItem(hTab, index, &tci);
+
+    auto hOldFont = dc.SelectFont(sel ? m_tabFont : m_disabledFont);
+
+    dc.SetBkMode(TRANSPARENT);
+    dc.SetTextColor(clrText);
+
+    InflateRect(&rc, -1, -1);
+
+    dc.DrawText(text, -1, &rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+
+    dc.SelectFont(hOldFont);
+}
+
+DWORD FilesView::GetTabCtrlStyle() const
+{
+    return CControlWinTraits::GetWndStyle(0) | TCS_TOOLTIPS | TCS_OWNERDRAWFIXED;
 }
 
 BOOL FilesView::AddPage(const IFileView::Ptr& fileView, LPCTSTR lpstrTitle, LPCTSTR lpstrPath, LPVOID pData)

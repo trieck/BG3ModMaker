@@ -15,11 +15,48 @@ public:
         MSG_WM_DESTROY(OnDestroy)
         MSG_WM_SIZE(OnSize)
         MSG_WM_CONTEXTMENU(OnContextMenu)
-        FORWARD_NOTIFICATIONS()
     END_MSG_MAP()
 
     TabViewImpl() : m_tabViewCtrl(this, 1)
     {
+    }
+
+    LRESULT OnDrawItem(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+    {
+        auto lpDrawItemStruct = reinterpret_cast<LPDRAWITEMSTRUCT>(lParam);
+        if (wParam != TabViewCtrl::m_nTabID) {
+            return 0;
+        }
+
+        auto pT = static_cast<T*>(this);
+        pT->OnDrawTabItem(lpDrawItemStruct);
+
+        bHandled = TRUE;
+
+        return 0;
+    }
+
+    LRESULT OnTabSelChange(int idCtrl, LPNMHDR pnmh, BOOL& bHandled)
+    {
+        ATLASSERT(idCtrl == TabViewCtrl::m_nTabID);
+        ATLASSERT(pnmh->hwndFrom == m_tabViewCtrl.m_tabCtrl);
+        ATLASSERT(pnmh->code == TCN_SELCHANGE);
+
+        auto index = m_tabViewCtrl.GetActiveTab();
+        if (index == -1) {
+            return 0;
+        }
+
+        SetActivePage(index);
+
+        auto pT = static_cast<T*>(this);
+        pT->OnPageActivated(index);
+
+        UpdateLayout();
+
+        bHandled = TRUE;
+
+        return 0;
     }
 
     LRESULT OnContextMenu(HWND hWnd, const CPoint& pt)
@@ -78,7 +115,10 @@ public:
             return -1;
         }
 
-        if (!m_tabViewCtrl.CreateTabControl()) {
+        auto pT = static_cast<T*>(this);
+        auto dwStyle = pT->GetTabCtrlStyle();
+
+        if (!m_tabViewCtrl.CreateTabControl(this->rcDefault, nullptr, dwStyle)) {
             ATLTRACE("Failed to create tab control.\n");
             return -1;
         }
