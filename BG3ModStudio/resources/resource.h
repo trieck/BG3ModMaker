@@ -4,7 +4,6 @@
 //
 #define ID_SEPARATOR                    0
 #define ID_DEFAULT_PANE                 0
-#define VS_VERSION_INFO                 1
 #define IDR_MAINFRAME                   101
 #define IDI_FOLDER                      102
 #define IDI_FILE                        103

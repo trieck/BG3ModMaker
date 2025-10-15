@@ -367,5 +367,8 @@
     <ResourceCompile Include="resources\BG3ModStudio.rc">
       <Filter>Resources</Filter>
     </ResourceCompile>
+    <ResourceCompile Include="resources\Version.rc2">
+      <Filter>Resources</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

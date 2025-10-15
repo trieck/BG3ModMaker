@@ -70,45 +70,6 @@ IDI_NODE                ICON                    "node.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Version
-//
-
-VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,3,0
- PRODUCTVERSION 1,0,3,0
- FILEFLAGSMASK 0x3fL
-#ifdef _DEBUG
- FILEFLAGS 0x1L
-#else
- FILEFLAGS 0x0L
-#endif
- FILEOS 0x40004L
- FILETYPE 0x0L
- FILESUBTYPE 0x0L
-BEGIN
-    BLOCK "StringFileInfo"
-    BEGIN
-        BLOCK "040904b0"
-        BEGIN
-            VALUE "CompanyName", "Rieck Enterprises"
-            VALUE "FileDescription", "BG3 Mod Studio"
-            VALUE "FileVersion", "1.0.3"
-            VALUE "InternalName", "BG3 Mod Studio"
-            VALUE "LegalCopyright", "© 2025 Rieck Enterprises"
-            VALUE "OriginalFilename", "BG3ModStudio.exe"
-            VALUE "ProductName", "BG3 Mod Studio"
-            VALUE "ProductVersion", "1.0.3"
-        END
-    END
-    BLOCK "VarFileInfo"
-    BEGIN
-        VALUE "Translation", 0x409, 1200
-    END
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
 // Menu
 //
 
@@ -653,3 +614,4 @@ END
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 
+#include "Version.rc2"

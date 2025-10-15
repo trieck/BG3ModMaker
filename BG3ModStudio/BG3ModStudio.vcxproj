@@ -254,6 +254,9 @@
     <ClCompile Include="PAKWizSheet.cpp" />
     <ClCompile Include="PAKWizWelcomePage.cpp" />
     <ClCompile Include="PIDL.cpp" />
+    <ResourceCompile Include="resources\Version.rc2">
+      <FileType>RC</FileType>
+    </ResourceCompile>
     <ClCompile Include="SearchDlg.cpp" />
     <ClCompile Include="SettingsDlg.cpp" />
     <ClCompile Include="ShellHelper.cpp" />

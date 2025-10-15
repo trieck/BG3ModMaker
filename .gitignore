@@ -5,7 +5,8 @@ x64
 *.vcxproj.user
 *.aps
 *.bin
-*.rc2
+*.exe
 /.vscode/
 /BG3ModStudio/resources/ribbon.h
 /install/*.pdf
+ribbon.rc2
