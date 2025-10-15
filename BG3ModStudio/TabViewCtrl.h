@@ -2,12 +2,12 @@
 
 #include "TabView.h"
 
-template<class TBase>
+template <class TBase>
 class TabViewCtrlT : public TBase
 {
 public:
-
     CTabCtrl m_tabCtrl;
+    CFont m_font;
     static constexpr auto m_nTabID = 0x1001;
 
     explicit TabViewCtrlT(HWND hWnd = nullptr) : TBase(hWnd)
@@ -21,27 +21,40 @@ public:
     }
 
     HWND Create(HWND hWndParent, _U_RECT rect = nullptr, LPCTSTR szWindowName = nullptr,
-        DWORD dwStyle = CControlWinTraits::GetWndStyle(0), DWORD dwExStyle = CControlWinTraits::GetWndExStyle(0), _U_MENUorID MenuOrID = 0U, LPVOID lpCreateParam = nullptr)
+                DWORD dwStyle = CControlWinTraits::GetWndStyle(0),
+                DWORD dwExStyle = CControlWinTraits::GetWndExStyle(0), _U_MENUorID MenuOrID = 0U,
+                LPVOID lpCreateParam = nullptr)
     {
-        ATLASSERT(hWndParent != nullptr);
-        ATLASSERT(this->m_hWnd == nullptr);
-        ATLASSERT(!m_tabCtrl.IsWindow());
-
-        if (!TBase::Create(GetWndClassName(), hWndParent, rect.m_lpRect, szWindowName, dwStyle, dwExStyle, MenuOrID.m_hMenu, lpCreateParam)) {
+        if (!TBase::Create(GetWndClassName(), hWndParent, rect.m_lpRect, szWindowName, dwStyle, dwExStyle,
+                           MenuOrID.m_hMenu, lpCreateParam)) {
             ATLTRACE("Failed to create tab view control.\n");
             return nullptr;
         }
 
-        if (!m_tabCtrl.Create(*this, this->rcDefault, nullptr, CControlWinTraits::GetWndStyle(0) | TCS_TOOLTIPS, 0, m_nTabID)) {
-            ATLTRACE("Failed to create tab control.\n");
-            return nullptr;
+        return this->m_hWnd;
+    }
+
+    BOOL CreateTabControl()
+    {
+        ATLASSERT(this->m_hWnd != nullptr);
+        if (m_tabCtrl.IsWindow()) {
+            return TRUE;
         }
-        
-        m_tabCtrl.SetFont(AtlCreateControlFont());
+
+        if (!m_tabCtrl.Create(*this, this->rcDefault, nullptr, CControlWinTraits::GetWndStyle(0) | TCS_TOOLTIPS, 0,
+                              m_nTabID)) {
+            ATLTRACE("Failed to create tab control.\n");
+            return FALSE;
+        }
+
+        m_font = AtlCreateControlFont();
+        ATLASSERT(!m_font.IsNull());
+
+        m_tabCtrl.SetFont(m_font);
 
         this->SetTabCtrl(m_tabCtrl);
 
-        return this->m_hWnd;
+        return TRUE;
     }
 
     static LPCTSTR GetWndClassName()

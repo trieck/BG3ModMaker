@@ -409,7 +409,7 @@ inline BOOL FilesView::ActivateView(const IFileView::Ptr& fileView, LPVOID data)
         return FALSE;
     }
 
-    m_data[data] = index;   // rewrite or insert
+    m_data[data] = index; // rewrite or insert
 
     SetActivePage(index);
     OnPageActivated(index);
@@ -460,9 +460,10 @@ BOOL FilesView::RenameFile(const CString& oldname, const CString& newname)
     if (fileView->IsDirty()) {
         CString message;
         message.Format(L"The file \"%s\" has been renamed to \"%s\", but your changes have not been saved.\n"
-            L"Do you want to save the changes under the new name?", oldname.GetString(), newname.GetString());
+                       L"Do you want to save the changes under the new name?", oldname.GetString(),
+                       newname.GetString());
         auto result = AtlMessageBox(*this, static_cast<LPCWSTR>(message), IDR_MAINFRAME,
-            MB_YESNO | MB_ICONQUESTION | MB_ICONWARNING);
+                                    MB_YESNO | MB_ICONQUESTION | MB_ICONWARNING);
         if (result == IDYES) {
             SaveFile(fileView);
         }
@@ -491,6 +492,25 @@ BOOL FilesView::RenameFile(const CString& oldname, const CString& newname)
     UpdateLayout();
 
     return TRUE;
+}
+
+void FilesView::OnPageActivated(int nPage)
+{
+    NMHDR nmhdr;
+    nmhdr.hwndFrom = this->m_hWnd;
+    nmhdr.idFrom = nPage;
+    nmhdr.code = TBVN_PAGEACTIVATED;
+    GetTopLevelParent().SendMessage(WM_NOTIFY, this->GetDlgCtrlID(), reinterpret_cast<LPARAM>(&nmhdr));
+}
+
+void FilesView::OnPageContextMenu(int nPage, const CPoint& pt)
+{
+    TVWCONTEXTMENUINFO cmInfo;
+    cmInfo.hdr.hwndFrom = this->m_hWnd;
+    cmInfo.hdr.idFrom = nPage;
+    cmInfo.hdr.code = TBVN_CONTEXTMENU;
+    cmInfo.pt = pt;
+    GetTopLevelParent().SendMessage(WM_NOTIFY, this->GetDlgCtrlID(), reinterpret_cast<LPARAM>(&cmInfo));
 }
 
 BOOL FilesView::AddPage(const IFileView::Ptr& fileView, LPCTSTR lpstrTitle, LPCTSTR lpstrPath, LPVOID pData)

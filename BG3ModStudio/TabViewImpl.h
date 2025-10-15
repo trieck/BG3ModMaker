@@ -8,21 +8,43 @@ class ATL_NO_VTABLE TabViewImpl : public CWindowImpl<T, TBase, TWinTraits>
 public:
     DECLARE_WND_CLASS_EX2(NULL, T, 0, COLOR_APPWORKSPACE)
 
-    TabViewCtrl m_tabViewCtrl;
+    CContainedWindowT<TabViewCtrl> m_tabViewCtrl;
 
     BEGIN_MSG_MAP(TabViewImpl)
         MSG_WM_CREATE(OnCreate)
         MSG_WM_DESTROY(OnDestroy)
         MSG_WM_SIZE(OnSize)
-        NOTIFY_CODE_HANDLER(TVWN_CONTEXTMENU, OnTabContextMenu)
+        MSG_WM_CONTEXTMENU(OnContextMenu)
+        FORWARD_NOTIFICATIONS()
     END_MSG_MAP()
 
-    LRESULT OnTabContextMenu(int idCtrl, LPNMHDR pnmh, BOOL& bHandled)
+    TabViewImpl() : m_tabViewCtrl(this, 1)
     {
-        auto pcmi = reinterpret_cast<LPTBVCONTEXTMENUINFO>(pnmh);
-        pcmi->hdr.code = TBVN_CONTEXTMENU;
+    }
 
-        SendMessage(GetParent(this->m_hWnd), WM_NOTIFY, idCtrl, reinterpret_cast<LPARAM>(pcmi));
+    LRESULT OnContextMenu(HWND hWnd, const CPoint& pt)
+    {
+        if (hWnd != m_tabViewCtrl) {
+            return 0;
+        }
+
+        TCHITTESTINFO hti{};
+        hti.pt = pt;
+
+        auto& tabCtrl = m_tabViewCtrl.m_tabCtrl;
+
+        auto result = tabCtrl.ScreenToClient(&hti.pt);
+        if (!result) {
+            return 0;
+        }
+
+        auto nCurSel = tabCtrl.HitTest(&hti);
+        if (nCurSel == -1) {
+            return 0;
+        }
+
+        auto pT = static_cast<T*>(this);
+        pT->OnPageContextMenu(nCurSel, pt);
 
         return 0;
     }
@@ -51,8 +73,13 @@ public:
     {
         ATLASSERT(!m_tabViewCtrl.IsWindow());
 
-        if (!m_tabViewCtrl.Create(*this)) {
+        if (!m_tabViewCtrl.Create(*this, this->rcDefault)) {
             ATLTRACE("Failed to create tab view control.\n");
+            return -1;
+        }
+
+        if (!m_tabViewCtrl.CreateTabControl()) {
+            ATLTRACE("Failed to create tab control.\n");
             return -1;
         }
 
@@ -93,8 +120,6 @@ public:
             ClosePage(i);
         }
     }
-
-    TabViewImpl() = default;
 
     int GetPageCount() const
     {
@@ -183,15 +208,6 @@ public:
         UpdateLayout();
 
         return TRUE;
-    }
-
-    void OnPageActivated(int nPage)
-    {
-        NMHDR nmhdr;
-        nmhdr.hwndFrom = this->m_hWnd;
-        nmhdr.idFrom = nPage;
-        nmhdr.code = TBVN_PAGEACTIVATED;
-        this->GetParent().SendMessage(WM_NOTIFY, this->GetDlgCtrlID(), reinterpret_cast<LPARAM>(&nmhdr));
     }
 
     BOOL AddPage(HWND hWndView, LPCTSTR lpstrTitle, int nImage = -1, LPVOID pData = nullptr)
