@@ -8,8 +8,9 @@
     "rocksdb",
     "tsl-ordered-map",
     "wtl",
-    "xapian"
+    "xapian",
+    "zlib",
+    "zstd"
   ],
-  "name": "bg3modmaker",
-  "version": "0.1.0"
+  "name": "bg3modmaker"
 }

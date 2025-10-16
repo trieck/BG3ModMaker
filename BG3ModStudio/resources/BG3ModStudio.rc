@@ -330,6 +330,8 @@ BEGIN
     LTEXT           "Please specify your target PAK file location.",IDC_STATIC,21,8,275,10
     EDITTEXT        IDC_E_PAK_BUILDER,21,47,251,14,ES_AUTOHSCROLL
     PUSHBUTTON      "...",IDC_B_PAK_BUILDER_BROWSE,276,47,20,14
+    LTEXT           "Compression:",IDC_STATIC,176,78,44,8
+    COMBOBOX        IDC_CB_COMPRESSION,224,76,48,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_PAKWIZ_BUILD DIALOGEX 0, 0, 317, 143
@@ -570,7 +572,6 @@ IDD_ABOUT AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
-
 
 /////////////////////////////////////////////////////////////////////////////
 //

@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Compress.h"
 #include "Exception.h"
+#include "LZ4Compressor.h"
 #include "PAKReader.h"
 #include "Stream.h"
 
@@ -61,17 +62,11 @@ void readCompressedFileList(PAKReader& reader, int64_t offset)
 
     const uint32_t fileBufferSize = sizeof(TFileEntry) * numFiles;
 
-    UInt8Ptr decompressed;
-    auto result = decompressData(CompressionMethod::LZ4, compressed.get(), compressedSize, decompressed,
-                                 fileBufferSize);
-    if (!result) {
-        throw Exception("Failed to decompress file list.");
-    }
+    LZ4Compressor compressor;
+    auto decompressed = compressor.decompress(compressed.get(), compressedSize, fileBufferSize);
 
     std::vector<TFileEntry> entries(numFiles);
-    Stream stream(reinterpret_cast<char*>(decompressed.get()), fileBufferSize);
-
-    result = readStructs<TFileEntry>(stream, entries, numFiles);
+    auto result = readStructs<TFileEntry>(decompressed, entries, numFiles);
     if (!result) {
         throw Exception("Failed to read file list.");
     }
@@ -232,13 +227,9 @@ ByteBuffer PAKReader::readFile(const std::string& name)
     }
 
     if (file.method() != CompressionMethod::NONE) {
-        UInt8Ptr decompressed;
-        if (auto result = decompressData(file.method(), fileData.get(),
-                                         file.sizeOnDisk, decompressed, file.uncompressedSize); !result) {
-            throw Exception("Failed to decompress file.");
-        }
-
-        fileData = std::move(decompressed);
+        auto decompressed = Compression::decompress(file.method(), fileData.get(), file.sizeOnDisk,
+                                                    file.uncompressedSize);
+        return decompressed.detach();
     }
 
     return {std::move(fileData), file.size()};

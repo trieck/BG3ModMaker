@@ -54,7 +54,7 @@ void LSFWriter::write(StreamBase& stream, const Resource& resource)
         meta.nodesUncompressedSize = static_cast<uint32_t>(m_nodeStream.size());
         meta.attributesUncompressedSize = static_cast<uint32_t>(m_attrStream.size());
         meta.valuesUncompressedSize = static_cast<uint32_t>(m_valueStream.size());
-        meta.compressionFlags = compressionFlags(m_compressionMethod);
+        meta.compressionFlags = Compression::compressionFlags(m_compressionMethod);
         meta.metadataFormat = m_metadataFormat;
 
         stream.write(meta);
@@ -65,7 +65,7 @@ void LSFWriter::write(StreamBase& stream, const Resource& resource)
         meta.nodesUncompressedSize = static_cast<uint32_t>(m_nodeStream.size());
         meta.attributesUncompressedSize = static_cast<uint32_t>(m_attrStream.size());
         meta.valuesUncompressedSize = static_cast<uint32_t>(m_valueStream.size());
-        meta.compressionFlags = compressionFlags(m_compressionMethod);
+        meta.compressionFlags = Compression::compressionFlags(m_compressionMethod);
         meta.metadataFormat = m_metadataFormat;
 
         stream.write(meta);

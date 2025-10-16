@@ -19,6 +19,8 @@ public:
 
 private:
     BOOL OnInitDialog(HWND hWnd, LPARAM lParam);
+    void SelectCompressionType(CompressionMethod method);
+    CompressionMethod GetCompressionMethod() const;
 
     BEGIN_MSG_MAP(PAKWizFilePage)
         MSG_WM_INITDIALOG(OnInitDialog)
@@ -31,4 +33,5 @@ private:
 
     PAKWizard* m_pWiz;
     CEdit m_filePath;
+    CComboBox m_compressionList;
 };

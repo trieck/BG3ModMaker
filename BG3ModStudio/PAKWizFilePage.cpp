@@ -1,9 +1,20 @@
 #include "stdafx.h"
+
 #include "FileDialogEx.h"
 #include "PAKWizFilePage.h"
 
 #include <filesystem>
+
 namespace fs = std::filesystem;
+
+namespace { // anonymous
+
+struct CompressionType
+{
+    CString description;
+    CompressionMethod method;
+};
+}
 
 PAKWizFilePage::PAKWizFilePage(PAKWizard* pWiz, _U_STRINGorID title) : BasePage(title), m_pWiz(pWiz)
 {
@@ -13,8 +24,25 @@ PAKWizFilePage::PAKWizFilePage(PAKWizard* pWiz, _U_STRINGorID title) : BasePage(
 
 BOOL PAKWizFilePage::OnInitDialog(HWND hWnd, LPARAM lParam)
 {
+    static const CompressionType compressionTypes[] = {
+        {.description = _T("None"), .method = CompressionMethod::NONE},
+        {.description = _T("LZ4"), .method = CompressionMethod::LZ4},
+        {.description = _T("ZLib"), .method = CompressionMethod::ZLIB},
+        {.description = _T("ZSTD"), .method = CompressionMethod::ZSTD}
+    };
+
     m_filePath = GetDlgItem(IDC_E_PAK_BUILDER);
     ATLASSERT(m_filePath.IsWindow());
+
+    m_compressionList = GetDlgItem(IDC_CB_COMPRESSION);
+    ATLASSERT(m_compressionList.IsWindow());
+
+    for (const auto& ct : compressionTypes) {
+        auto index = m_compressionList.AddString(ct.description);
+        m_compressionList.SetItemData(index, static_cast<DWORD_PTR>(ct.method));
+    }
+
+    SelectCompressionType(CompressionMethod::LZ4);
 
     const auto& root = m_pWiz->GetRoot();
     auto rootSuffix = fs::path(root.GetString()).filename();
@@ -26,6 +54,33 @@ BOOL PAKWizFilePage::OnInitDialog(HWND hWnd, LPARAM lParam)
     m_filePath.SetWindowText(fullPath.wstring().c_str());
 
     return TRUE; // let the system set the focus
+}
+
+void PAKWizFilePage::SelectCompressionType(CompressionMethod method)
+{
+    ATLASSERT(m_compressionList.IsWindow());
+
+    for (auto i = 0; i < m_compressionList.GetCount(); ++i) {
+        auto itemData = static_cast<CompressionMethod>(m_compressionList.GetItemData(i));
+        if (itemData == method) {
+            m_compressionList.SetCurSel(i);
+            break;
+        }
+    }
+}
+
+CompressionMethod PAKWizFilePage::GetCompressionMethod() const
+{
+    ATLASSERT(m_compressionList.IsWindow());
+
+    auto sel = m_compressionList.GetCurSel();
+    if (sel == CB_ERR) {
+        return CompressionMethod::NONE;
+    }
+
+    auto itemData = static_cast<CompressionMethod>(m_compressionList.GetItemData(sel));
+
+    return itemData;
 }
 
 void PAKWizFilePage::OnBrowse()
@@ -138,6 +193,7 @@ int PAKWizFilePage::OnWizardNext()
     DeleteFile(pakPath);
 
     m_pWiz->SetPAKFile(pakPath);
+    m_pWiz->SetCompressionMethod(GetCompressionMethod());
 
     return 0;
 }

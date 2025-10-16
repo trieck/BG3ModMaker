@@ -31,16 +31,9 @@ Stream::Stream(const char* buf, size_t size)
     m_size = size;
 }
 
-Stream::Stream(const ByteBuffer& buf)
+Stream::Stream(ByteBuffer buf)
+    : m_pos(0), m_size(buf.second), m_capacity(buf.second), m_bytes(std::move(buf.first))
 {
-    auto* pbuf = buf.first.get();
-    auto size = buf.second;
-
-    alloc(std::max<size_t>(size, DEFAULT_BUFFER_SIZE));
-
-    memcpy(m_bytes.get(), pbuf, size);
-
-    m_size = size;
 }
 
 Stream::Stream(const std::string& str)
@@ -154,9 +147,17 @@ Stream Stream::makeStream(const char* buf, size_t size)
     return {buf, size};
 }
 
+Stream Stream::makeStream(ByteBuffer&& buf)
+{
+    Stream stream(std::move(buf));
+    return stream;
+}
+
 Stream Stream::makeStream(const ByteBuffer& buf)
 {
-    Stream stream(buf);
+    Stream stream;
+    stream.attach({std::make_unique<uint8_t[]>(buf.second), buf.second});
+    memcpy(stream.m_bytes.get(), buf.first.get(), buf.second);
     return stream;
 }
 

@@ -14,11 +14,12 @@ public:
     void close();
 
 private:
-    std::vector<PackagedFileInfoCommon> packFiles();
-    void writePadding();
+    bool canCompressFile(const PackageBuildInputFile& inputFile);
     PackagedFileInfoCommon writeFile(const PackageBuildInputFile& inputFile);
-    void writeCompressedFileList(const std::vector<PackagedFileInfoCommon>& files);
+    std::vector<PackagedFileInfoCommon> packFiles();
     void archiveHash(uint8_t digest[16]);
+    void writeCompressedFileList(const std::vector<PackagedFileInfoCommon>& files);
+    void writePadding();
 
     PackageHeaderCommon m_metadata{};
     PackageBuildData m_build{};

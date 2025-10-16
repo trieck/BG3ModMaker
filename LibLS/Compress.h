@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cstdint>
-
 #include "LSCommon.h"
 #include "Stream.h"
 
@@ -10,7 +8,7 @@ enum class CompressionMethod : uint8_t
     NONE = METHOD_NONE,
     ZLIB = METHOD_ZLIB,
     LZ4 = METHOD_LZ4,
-    LZSTD = METHOD_LZSTD,
+    ZSTD = METHOD_ZSTD,
 };
 
 enum class LSCompressionLevel
@@ -20,12 +18,15 @@ enum class LSCompressionLevel
     MAX
 };
 
-bool decompressData(CompressionMethod method, const uint8_t* compressedData, uint32_t compressedSize,
-    UInt8Ptr& decompressedData, uint32_t decompressedSize);
-
-Stream decompressStream(CompressionMethod method, Stream& stream, uint32_t decompressedSize, bool chunked = false);
+namespace Compression { // Compression namespace
+Stream compress(CompressionMethod method, StreamBase& input, LSCompressionLevel level);
+Stream compress(CompressionMethod method, const uint8_t* data, size_t size, LSCompressionLevel level);
+Stream decompress(CompressionMethod method, StreamBase& input, size_t uncompressedSize, bool chunked = false);
+Stream decompress(CompressionMethod method, const uint8_t* data, size_t size, size_t uncompressedSize,
+                  bool chunked = false);
 
 CompressionFlags compressionFlags(CompressionMethod method);
 CompressionFlags compressionFlags(LSCompressionLevel level);
 CompressionFlags compressionFlags(CompressionMethod method, LSCompressionLevel level);
 CompressionMethod compressionMethod(CompressionFlags flags);
+} // namespace Compression

@@ -174,6 +174,7 @@
     <ClInclude Include="Compress.h" />
     <ClInclude Include="CRC32.h" />
     <ClInclude Include="Exception.h" />
+    <ClInclude Include="ICompressor.h" />
     <ClInclude Include="Iconizer.h" />
     <ClInclude Include="Indexer.h" />
     <ClInclude Include="Localization.h" />
@@ -182,6 +183,7 @@
     <ClInclude Include="LSFReader.h" />
     <ClInclude Include="LSFWriter.h" />
     <ClInclude Include="LSXReader.h" />
+    <ClInclude Include="LZ4Compressor.h" />
     <ClInclude Include="Node.h" />
     <ClInclude Include="NodeAttribute.h" />
     <ClInclude Include="Package.h" />
@@ -193,6 +195,8 @@
     <ClInclude Include="Searcher.h" />
     <ClInclude Include="XmlWrapper.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="ZLibCompressor.h" />
+    <ClInclude Include="ZSTDCompressor.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Cataloger.cpp" />
@@ -209,6 +213,7 @@
     <ClCompile Include="LSFReader.cpp" />
     <ClCompile Include="LSFWriter.cpp" />
     <ClCompile Include="LSXReader.cpp" />
+    <ClCompile Include="LZ4Compressor.cpp" />
     <ClCompile Include="Node.cpp" />
     <ClCompile Include="NodeAttribute.cpp" />
     <ClCompile Include="Package.cpp" />
@@ -230,6 +235,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="ZLibCompressor.cpp" />
+    <ClCompile Include="ZSTDCompressor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Utility\Utility.vcxproj">

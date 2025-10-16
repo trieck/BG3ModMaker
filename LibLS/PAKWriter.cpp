@@ -1,10 +1,14 @@
 #include "pch.h"
 
+#include "Compress.h"
 #include "CRC32.h"
 #include "LZ4Codec.h"
 #include "MD5.h"
 #include "PAKWriter.h"
 #include "Stream.h"
+
+#include <filesystem>
+namespace fs = std::filesystem;
 
 PAKWriter::PAKWriter(PackageBuildData build, const char* packagePath, ProgressCallback cb)
     : m_build(std::move(build)), m_packagePath(packagePath), m_cb(std::move(cb))
@@ -130,13 +134,39 @@ void PAKWriter::writePadding()
     }
 }
 
+bool PAKWriter::canCompressFile(const PackageBuildInputFile& inputFile)
+{
+    if (m_build.compression == CompressionMethod::NONE) {
+        return false;
+    }
+
+    fs::path p(inputFile.filename);
+    auto ext = p.extension().string();
+    std::ranges::transform(ext, ext.begin(), tolower);
+
+    static const std::unordered_set<std::string> noCompressExts = {
+        ".gts", ".gtp", ".wem", ".bnk"
+    };
+
+    if (noCompressExts.contains(ext)) {
+        return false;
+    }
+
+    return true;
+}
+
 PackagedFileInfoCommon PAKWriter::writeFile(const PackageBuildInputFile& inputFile)
 {
     FileStream input;
     input.open(inputFile.filename.c_str(), "rb");
 
-    auto method = CompressionMethod::NONE;
-    auto level = LSCompressionLevel::FAST;
+    auto method = m_build.compression;
+    auto level = m_build.compressionLevel;
+
+    if (!canCompressFile(inputFile)) {
+        method = CompressionMethod::NONE;
+        level = LSCompressionLevel::DEFAULT;
+    }
 
     auto size = input.size();
     auto data = input.read(size).detach();
@@ -147,9 +177,15 @@ PackagedFileInfoCommon PAKWriter::writeFile(const PackageBuildInputFile& inputFi
     packaged.sizeOnDisk = static_cast<uint32_t>(size);
     packaged.archivePart = 0;
     packaged.offsetInFile = m_stream.tell();
-    packaged.flags = compressionFlags(method, level);
+    packaged.flags = Compression::compressionFlags(method, level);
 
-    m_stream.write(data.first.get(), data.second);
+    if (method != CompressionMethod::NONE) {
+        auto compressed = Compression::compress(method, data.first.get(), size, level);
+        packaged.sizeOnDisk = static_cast<uint32_t>(compressed.size());
+        m_stream.write(compressed);
+    } else {
+        m_stream.write(data.first.get(), data.second);
+    }
 
     if (m_build.version >= PackageVersion::V10 && m_build.version <= PackageVersion::V16) {
         packaged.crc = CRC32::compute(data.first.get(), data.second);

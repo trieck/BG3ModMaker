@@ -82,6 +82,28 @@ void FileStream::write(const void* data, size_t size) const
     }
 }
 
+void FileStream::write(StreamBase& stream) const
+{
+    static constexpr auto BUFFER_SIZE = 4096u;
+
+    auto buffer = std::make_unique<char[]>(BUFFER_SIZE);
+
+    size_t remaining = stream.size();
+    stream.seek(0, SeekMode::Begin);
+
+    while (remaining > 0) {
+        auto toRead = std::min<size_t>(remaining, BUFFER_SIZE);
+        auto read = stream.read(buffer.get(), toRead);
+        if (read == 0) {
+            break; // EOF
+        }
+
+        write(buffer.get(), read);
+
+        remaining -= read;
+    }
+}
+
 size_t FileStream::read(char* buf, size_t size)
 {
     size_t totalRead = 0;

@@ -105,7 +105,7 @@ DWORD PAKWizBuildPage::BuildProc(LPVOID pv)
 
     PackageBuildData build{};
     build.version = PackageHeaderCommon::currentVersion;
-    build.compression = CompressionMethod::NONE;
+    build.compression = pThis->m_pWiz->GetCompressionMethod();
     build.compressionLevel = LSCompressionLevel::DEFAULT;
 
     const auto& root = pThis->m_pWiz->GetRoot();

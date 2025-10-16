@@ -50,3 +50,13 @@ void PAKWizard::SetPAKFile(const CString& file)
 {
     m_PAKFile = file;
 }
+
+CompressionMethod PAKWizard::GetCompressionMethod() const
+{
+    return m_method;
+}
+
+void PAKWizard::SetCompressionMethod(CompressionMethod method)
+{
+    m_method = method;
+}

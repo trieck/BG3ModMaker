@@ -13,7 +13,7 @@ public:
     explicit Stream(StreamBase& stream);
     explicit Stream(size_t capacity);
     Stream(const char* buf, size_t size);
-    explicit Stream(const ByteBuffer& buf);
+    explicit Stream(ByteBuffer buf);
     explicit Stream(const std::string& str);
     ~Stream() override;
 
@@ -32,6 +32,7 @@ public:
     // Stream helpers
     static Stream makeStream(UInt8Ptr&& ptr, size_t size);
     static Stream makeStream(const char* buf, size_t size);
+    static Stream makeStream(ByteBuffer&& buf);
     static Stream makeStream(const ByteBuffer& buf);
     static Stream makeStream(const std::string& str);
     static Stream makeStream(StreamBase& stream);

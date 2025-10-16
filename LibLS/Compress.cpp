@@ -1,49 +1,55 @@
 #include "pch.h"
 
-#include <lz4.h>
-
 #include "Compress.h"
 #include "Exception.h"
 #include "LZ4Codec.h"
-#include "LZ4FrameCompressor.h"
 
-bool decompressData(CompressionMethod method, const uint8_t* compressedData, uint32_t compressedSize,
-                    UInt8Ptr& decompressedData, uint32_t decompressedSize)
+#include "ICompressor.h"
+#include "LZ4Compressor.h"
+#include "ZLibCompressor.h"
+#include "ZSTDCompressor.h"
+
+namespace Compression {
+class CompressorFactory
 {
-    if (method != CompressionMethod::LZ4) {
-        throw Exception("Unsupported compression method");
-    }
-
-    // Allocate buffer for decompressed data
-    decompressedData = std::make_unique<uint8_t[]>(decompressedSize);
-
-    // Perform LZ4 decompression
-    int result = LZ4_decompress_safe(reinterpret_cast<const char*>(compressedData),
-                                     reinterpret_cast<char*>(decompressedData.get()),
-                                     static_cast<int>(compressedSize),
-                                     static_cast<int>(decompressedSize));
-
-    return result >= 0; // Return true if decompression was successful
-}
-
-Stream decompressStream(CompressionMethod method, Stream& stream, uint32_t decompressedSize, bool chunked)
-{
-    Stream decompressed;
-
-    if (method != CompressionMethod::LZ4) {
-        throw Exception("Unsupported compression method");
-    }
-
-    if (chunked) {
-        decompressed = LZ4FrameCompressor::decompress(stream, decompressedSize);
-    } else {
-        decompressed = LZ4Codec::decode(stream, 0, stream.size(), 0, decompressedSize, true);
-        if (decompressed.size() != decompressedSize) {
-            throw Exception("Decompressed size mismatch");
+public:
+    static ICompressor::Ptr create(CompressionMethod method)
+    {
+        switch (method) {
+        case CompressionMethod::ZLIB:
+            return std::make_unique<ZLibCompressor>();
+        case CompressionMethod::LZ4:
+            return std::make_unique<LZ4Compressor>();
+        case CompressionMethod::ZSTD:
+            return std::make_unique<ZSTDCompressor>();
+        default:
+            throw Exception("Invalid compression method");
         }
     }
+};
 
-    return decompressed;
+Stream compress(CompressionMethod method, StreamBase& input, LSCompressionLevel level)
+{
+    auto compressor = CompressorFactory::create(method);
+    return compressor->compress(input, level);
+}
+
+Stream compress(CompressionMethod method, const uint8_t* data, size_t size, LSCompressionLevel level)
+{
+    auto compressor = CompressorFactory::create(method);
+    return compressor->compress(data, size, level);
+}
+
+Stream decompress(CompressionMethod method, StreamBase& input, size_t uncompressedSize, bool chunked)
+{
+    auto compressor = CompressorFactory::create(method);
+    return compressor->decompress(input, uncompressedSize, chunked);
+}
+
+Stream decompress(CompressionMethod method, const uint8_t* data, size_t size, size_t uncompressedSize, bool chunked)
+{
+    auto compressor = CompressorFactory::create(method);
+    return compressor->decompress(data, size, uncompressedSize, chunked);
 }
 
 CompressionFlags compressionFlags(CompressionMethod method)
@@ -55,8 +61,8 @@ CompressionFlags compressionFlags(CompressionMethod method)
         return METHOD_ZLIB;
     case CompressionMethod::LZ4:
         return METHOD_LZ4;
-    case CompressionMethod::LZSTD:
-        return METHOD_LZSTD;
+    case CompressionMethod::ZSTD:
+        return METHOD_ZSTD;
     }
 
     throw Exception("Invalid compression method");
@@ -94,9 +100,10 @@ CompressionMethod compressionMethod(CompressionFlags flags)
         return CompressionMethod::ZLIB;
     case METHOD_LZ4:
         return CompressionMethod::LZ4;
-    case METHOD_LZSTD:
-        return CompressionMethod::LZSTD;
+    case METHOD_ZSTD:
+        return CompressionMethod::ZSTD;
     default:
         throw Exception("Invalid compression flags");
     }
 }
+} // namespace Compression

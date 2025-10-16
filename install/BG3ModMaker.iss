@@ -38,6 +38,7 @@ Source: "{#ReleaseDir}pugixml.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#ReleaseDir}Scintilla.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#ReleaseDir}xapian-30.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#ReleaseDir}zlib1.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#ReleaseDir}zstd.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\..\redist\vc_redist.x64.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall
 Source: "INSTALL.pdf"; DestDir: "{app}"; Flags: ignoreversion
 

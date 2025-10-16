@@ -531,8 +531,8 @@ Stream LSFReader::decompress(uint32_t sizeOnDisk, uint32_t uncompressedSize, con
     auto isCompressed = m_metadata.compressionMethod() != CompressionMethod::NONE;
     auto compressedSize = isCompressed ? sizeOnDisk : uncompressedSize;
     auto compressedStream = m_stream.read(compressedSize);
-    auto uncompressedStream = decompressStream(m_metadata.compressionMethod(), compressedStream, uncompressedSize,
-                                               chunked);
+    auto uncompressedStream = Compression::decompress(m_metadata.compressionMethod(), compressedStream,
+        uncompressedSize, chunked);
 
     return uncompressedStream;
 }

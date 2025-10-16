@@ -30,6 +30,8 @@ public:
 
     Stream read(size_t bytes);
     void write(const void* data, size_t size) const;
+    void write(StreamBase& stream) const;
+
     bool isOpen() const;
 
 private:

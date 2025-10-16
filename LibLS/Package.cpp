@@ -37,7 +37,7 @@ FileEntry18 FileEntry18::fromCommon(const PackagedFileInfoCommon& info)
     entry.archivePart = static_cast<uint8_t>(info.archivePart);
     entry.flags = static_cast<uint8_t>(info.flags);
     entry.sizeOnDisk = info.sizeOnDisk;
-    entry.uncompressedSize = compressionMethod(info.flags) == CompressionMethod::NONE ? 0 : info.uncompressedSize;
+    entry.uncompressedSize = Compression::compressionMethod(info.flags) == CompressionMethod::NONE ? 0 : info.uncompressedSize;
     return entry;
 }
 
