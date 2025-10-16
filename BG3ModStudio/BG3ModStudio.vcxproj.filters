@@ -155,6 +155,9 @@
     <ClInclude Include="AboutDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LocaFileView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BG3ModStudio.cpp">
@@ -263,6 +266,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AboutDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LocaFileView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -179,6 +179,10 @@ BOOL TextFileView::SaveFileAs(const CString& path)
 
 BOOL TextFileView::Destroy()
 {
+    if (m_hWnd == nullptr) {
+        return FALSE;
+    }
+
     return DestroyWindow();
 }
 

@@ -15,6 +15,8 @@ Stream::Stream(StreamBase& stream)
     alloc(std::max<size_t>(size, DEFAULT_BUFFER_SIZE));
 
     stream.read(m_bytes.get(), size);
+
+    m_size = size;
 }
 
 Stream::Stream(size_t capacity) : m_pos(0), m_size(0), m_capacity(0)

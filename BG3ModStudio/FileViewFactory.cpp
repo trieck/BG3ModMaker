@@ -4,6 +4,7 @@
 #include "FileStream.h"
 #include "FileViewFactory.h"
 #include "ImageView.h"
+#include "LocaFileView.h"
 #include "LSFFileView.h"
 #include "TextFileView.h"
 
@@ -47,6 +48,36 @@ BOOL IsBinaryFile(const CString& path)
     return FALSE;
 }
 
+BOOL IsLocaFile(const ByteBuffer& contents)
+{
+    if (contents.second < 4) {
+        return FALSE;
+    }
+
+    return (memcmp(contents.first.get(), "LOCA", 4) == 0);
+}
+
+BOOL IsLocaFile(const CString& path)
+{
+    CStringA strPath(path);
+
+    FileStream file;
+    try {
+        file.open(strPath, "rb");
+    } catch (const Exception& e) {
+        ATLTRACE("Failed to open file: %s\n", e.what());
+        return FALSE;
+    }
+
+    char header[4];
+    auto read = file.read(header, sizeof(header));
+    if (read < sizeof(header)) {
+        return FALSE;
+    }
+
+    return (memcmp(header, "LOCA", 4) == 0);
+}
+
 BOOL IsLSFFile(const ByteBuffer& contents)
 {
     if (contents.second < 4) {
@@ -87,6 +118,8 @@ IFileView::Ptr FileViewFactory::CreateFileView(const CString& path, HWND parent,
 
     if (ImageView::IsRenderable(path)) {
         fileView = std::make_shared<ImageView>();
+    } else if (IsLocaFile(path)) {
+        fileView = std::make_shared<LocaFileView>();
     } else if (IsLSFFile(path)) {
         fileView = std::make_shared<LSFFileView>();
     } else if (IsBinaryFile(path)) {
@@ -142,6 +175,8 @@ IFileView::Ptr FileViewFactory::CreateFileView(const CString& path, const ByteBu
 
     if (ImageView::IsRenderable(path)) {
         fileView = std::make_shared<ImageView>();
+    } else if (IsLocaFile(contents)) {
+        fileView = std::make_shared<LocaFileView>();
     } else if (IsLSFFile(contents)) {
         fileView = std::make_shared<LSFFileView>();
     } else if (IsBinaryFile(contents)) {

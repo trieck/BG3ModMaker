@@ -7,10 +7,23 @@
 
 LocaResource LocaReader::Read(const std::string& path)
 {
-    LocaResource resource;
+    FileStream fstream;
+    fstream.open(path.c_str(), "rb");
 
-    FileStream stream;
-    stream.open(path.c_str(), "rb");
+    Stream stream(fstream);
+
+    return Read(stream);
+}
+
+LocaResource LocaReader::Read(const ByteBuffer& buffer)
+{
+    Stream stream = Stream::makeStream(buffer);
+    return Read(stream);
+}
+
+LocaResource LocaReader::Read(Stream& stream)
+{
+    LocaResource resource;
 
     auto header = stream.read<LocaHeader>();
     if (header.signature != LOCA_SIGNATURE) {
@@ -27,12 +40,14 @@ LocaResource LocaReader::Read(const std::string& path)
 
     for (auto i = 0ul; i < header.numEntries; i++) {
         const auto& entry = entries[i];
-        auto text = stream.read(entry.length - 1).str();
+        auto text = stream.read(entry.length).str();
 
         LocalizedText localizedText;
         localizedText.key = reinterpret_cast<const char*>(entry.key);
         localizedText.version = entry.version;
         localizedText.text = text;
+
+        resource.entries.emplace_back(std::move(localizedText));
     }
 
     return resource;
@@ -67,6 +82,18 @@ void LocaWriter::Write(const std::string& path, const LocaResource& resource)
     }
 }
 
+namespace { // Helper function to get inner XML of a node as a string
+std::string inner_xml(const pugi::xml_node& node)
+{
+    std::ostringstream oss;
+    for (auto& child : node.children()) {
+        child.print(oss, "", pugi::format_raw); // no indentation or extra spaces
+    }
+
+    return oss.str();
+}
+}
+
 LocaResource LocaXmlReader::Read(const std::string& path)
 {
     LocaResource resource;
@@ -90,7 +117,7 @@ LocaResource LocaXmlReader::Read(const std::string& path)
             localizedText.version = static_cast<uint16_t>(content.attribute("version").as_uint());
         }
 
-        localizedText.text = content.child_value();
+        localizedText.text = inner_xml(content);
 
         resource.entries.emplace_back(std::move(localizedText));
     }

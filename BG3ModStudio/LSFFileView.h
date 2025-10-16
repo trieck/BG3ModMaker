@@ -11,7 +11,7 @@ public:
     LSFFileView();
     ~LSFFileView() override = default;
 
-    BEGIN_MSG_MAP(IconView)
+    BEGIN_MSG_MAP(LSFFileView)
         MSG_WM_CREATE(OnCreate)
         MSG_WM_SIZE(OnSize)
         NOTIFY_CODE_HANDLER_EX(TVN_ITEMEXPANDING, OnItemExpanding)
@@ -20,8 +20,6 @@ public:
         NOTIFY_CODE_HANDLER_EX(NM_DBLCLK, OnDoubleClick)
         MSG_WM_CONTEXTMENU(OnContextMenu)
     END_MSG_MAP()
-
-    DECLARE_WND_SUPERCLASS(L"LSFFileView", nullptr)
 
     LRESULT OnCreate(LPCREATESTRUCT pcs);
     void OnSize(UINT nType, CSize size);

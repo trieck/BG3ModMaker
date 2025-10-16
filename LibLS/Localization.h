@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Stream.h"
+
 static auto constexpr LOCA_SIGNATURE = 0x41434F4C; // LOCA
 
 #pragma pack(push, 1)
@@ -36,6 +38,8 @@ class LocaReader
 {
 public:
     static LocaResource Read(const std::string& path);
+    static LocaResource Read(const ByteBuffer& buffer);
+    static LocaResource Read(Stream& stream);
 };
 
 class LocaWriter

@@ -192,6 +192,7 @@
     <ClInclude Include="IconExplorerDlg.h" />
     <ClInclude Include="ImageView.h" />
     <ClInclude Include="IndexDlg.h" />
+    <ClInclude Include="LocaFileView.h" />
     <ClInclude Include="LSFFileView.h" />
     <ClInclude Include="ModelessDialog.h" />
     <ClInclude Include="PakExplorerDlg.h" />
@@ -240,6 +241,7 @@
     <ClCompile Include="IconExplorerDlg.cpp" />
     <ClCompile Include="ImageView.cpp" />
     <ClCompile Include="IndexDlg.cpp" />
+    <ClCompile Include="LocaFileView.cpp" />
     <ClCompile Include="LSFFileView.cpp" />
     <ClCompile Include="FileDialogEx.cpp" />
     <ClCompile Include="FileViewFactory.cpp" />

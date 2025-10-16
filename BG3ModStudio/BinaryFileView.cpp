@@ -376,6 +376,10 @@ BOOL BinaryFileView::SaveFileAs(const CString& path)
 
 BOOL BinaryFileView::Destroy()
 {
+    if (m_hWnd == nullptr) {
+        return FALSE;
+    }
+
     return DestroyWindow();
 }
 

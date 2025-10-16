@@ -423,6 +423,10 @@ ImageView::operator HWND() const
 
 BOOL ImageView::Destroy()
 {
+    if (m_hWnd == nullptr) {
+        return FALSE;
+    }
+
     Release();
     DiscardDevResources();
 
