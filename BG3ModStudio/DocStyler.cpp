@@ -78,6 +78,7 @@ DocStylerRegistry::DocStylerRegistry()
     m_stylers[".xslt"] = m_stylers[".xml"];
     m_stylers[".json"] = std::make_unique<JsonStyler>();
     m_stylers[".lsj"] = m_stylers[".json"];
+    m_stylers[".js"] = m_stylers[".json"];
     m_stylers[".txt"] = std::make_unique<PlainTextStyler>();
     m_default = std::make_unique<PlainTextStyler>();
 }

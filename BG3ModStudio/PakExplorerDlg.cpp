@@ -143,8 +143,7 @@ void PakExplorerDlg::Populate()
         auto pos = wideFile.Find(L'/');
 
         if (pos == -1) { // ignore files in root (rare)
-            ATLASSERT(0);
-            continue;
+            continue; // TODO: handle these?
         }
 
         auto root = wideFile.Left(pos);

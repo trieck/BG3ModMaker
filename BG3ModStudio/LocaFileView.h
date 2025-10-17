@@ -31,10 +31,10 @@ public:
 
 private:
     LRESULT OnCreate(LPCREATESTRUCT pcs);
-    void OnSize(UINT nType, CSize size);
     LRESULT OnGetDispInfo(NMHDR* pNMHDR);
+    void OnSize(UINT nType, CSize size);
+
     void Populate();
-    void AutoAdjustColumns();
 
     CListViewCtrl m_list;
     LocaResource m_resource;

@@ -2,8 +2,6 @@
 #include "LocaFileView.h"
 #include "StringHelper.h"
 
-static constexpr auto COLUMN_PADDING = 12;
-
 LocaFileView::LocaFileView()
 {
 }
@@ -94,45 +92,6 @@ void LocaFileView::Populate()
 
     m_list.SetItemCountEx(static_cast<int>(m_resource.entries.size()),
                           LVSICF_NOINVALIDATEALL);
-}
-
-void LocaFileView::AutoAdjustColumns()
-{
-    CClientDC dc(m_list);
-    auto hFont = m_list.GetFont();
-    auto hOldFont = dc.SelectFont(hFont);
-
-    auto header = m_list.GetHeader();
-
-    for (auto col = 0; col < header.GetItemCount(); ++col) {
-        LVCOLUMN lvc{};
-        lvc.mask = LVCF_TEXT | LVCF_WIDTH;
-
-        TCHAR textBuf[256]{};
-        lvc.pszText = textBuf;
-        lvc.cchTextMax = _countof(textBuf);
-        m_list.GetColumn(col, &lvc);
-
-        CString headerText = lvc.pszText;
-
-        CSize sz;
-        dc.GetTextExtent(headerText, headerText.GetLength(), &sz);
-        auto maxWidth = sz.cx;
-
-        auto rowCount = m_list.GetItemCount();
-        for (auto row = 0; row < rowCount; ++row) {
-            CString cellText;
-            m_list.GetItemText(row, col, cellText);
-
-            dc.GetTextExtent(cellText, cellText.GetLength(), &sz);
-            maxWidth = std::max(sz.cx, maxWidth);
-        }
-
-        maxWidth += COLUMN_PADDING;
-        m_list.SetColumnWidth(col, maxWidth);
-    }
-
-    dc.SelectFont(hOldFont);
 }
 
 BOOL LocaFileView::LoadFile(const CString& path)
