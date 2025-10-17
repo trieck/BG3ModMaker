@@ -17,7 +17,7 @@ LocaResource LocaReader::Read(const std::string& path)
 
 LocaResource LocaReader::Read(const ByteBuffer& buffer)
 {
-    Stream stream = Stream::makeStream(buffer);
+    auto stream = Stream::makeStream(buffer);
     return Read(stream);
 }
 

@@ -1,15 +1,16 @@
 #pragma once
 
-enum class SeekMode : DWORD {
+enum class SeekMode : DWORD
+{
     Begin = FILE_BEGIN,
     Current = FILE_CURRENT,
     End = FILE_END
 };
 
-template<typename T>
+template <typename T>
 concept StreamReadable = std::is_trivially_copyable_v<T>;
 
-template<typename T>
+template <typename T>
 concept StreamWritable = std::is_trivially_copyable_v<T>;
 
 class StreamBase

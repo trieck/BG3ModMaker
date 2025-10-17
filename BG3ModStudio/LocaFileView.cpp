@@ -160,8 +160,6 @@ BOOL LocaFileView::LoadBuffer(const CString& path, const ByteBuffer& buffer)
         return FALSE;
     }
 
-    Populate();
-
     return TRUE;
 }
 
