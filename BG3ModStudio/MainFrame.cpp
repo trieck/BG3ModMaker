@@ -1119,7 +1119,7 @@ void MainFrame::IterateFiles(HTREEITEM hItem, const FileCallback& callback)
     } while (hItem);
 }
 
-void MainFrame::OpenFolder(const CString& folder, int nID)
+void MainFrame::OpenFolder(const CString& folder)
 {
     m_filesView.CloseAllFiles();
     m_folderView.SetFolder(folder);
@@ -1128,7 +1128,6 @@ void MainFrame::OpenFolder(const CString& folder, int nID)
 
     auto hr = SHParseDisplayName(folder, nullptr, m_rootPIDL.put(), 0, nullptr);
     if (FAILED(hr)) {
-        m_mru.RemoveFromList(nID);
         CoMessageBox(*this, hr, nullptr, _T("Failed to get PIDL for folder."), MB_ICONERROR);
         return;
     }
@@ -1141,11 +1140,7 @@ void MainFrame::OpenFolder(const CString& folder, int nID)
         WM_FILE_CHANGED,
         1, &entry));
 
-    if (nID == -1) {
-        m_mru.AddToList(folder);
-    } else {
-        m_mru.MoveToTop(nID);
-    }
+    m_mru.AddToList(folder);
 }
 
 void MainFrame::OnViewStatusBar()
@@ -1161,7 +1156,7 @@ void MainFrame::OnMRUMenuItem(UINT /*uCode*/, int nID, HWND /*hwndCtrl*/)
     CString folder;
 
     if (m_mru.GetFromList(nID, folder)) {
-        OpenFolder(folder, nID);
+        OpenFolder(folder);
     }
 }
 

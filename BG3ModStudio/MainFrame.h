@@ -136,7 +136,7 @@ private:
     BOOL RenameFile(LPNMTVDISPINFO pDispInfo);
     void AddFile(const CString& filename);
     void IterateFiles(HTREEITEM hItem, const FileCallback& callback);
-    void OpenFolder(const CString& folder, int nID = -1);
+    void OpenFolder(const CString& folder);
     void ProcessFileChange(LONG event, PIDLIST_ABSOLUTE* pidls);
     void RemoveFile(const CString& filename);
     void RenameFile(const CString& oldname, const CString& newname);

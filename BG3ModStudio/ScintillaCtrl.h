@@ -139,6 +139,11 @@ public:
     {
         return SendMessage(this->m_hWnd, SCI_SETREADONLY, readOnly, 0);
     }
+
+    LRESULT SetKeywords(int keywordSet, LPCSTR keywords)
+    {
+        return SendMessage(this->m_hWnd, SCI_SETKEYWORDS, keywordSet, reinterpret_cast<LPARAM>(keywords));
+    }
 };
 
 using ScintillaCtrl = ScintillaCtrlT<CWindow>;
