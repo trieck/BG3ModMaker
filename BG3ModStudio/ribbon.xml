@@ -20,7 +20,7 @@
             <Command.TooltipDescription>Close the Folder</Command.TooltipDescription>
         </Command>
 
-        <Command Name="FILE_PAK_OPEN" Symbol="ID_FILE_PAK_OPEN" Id="153" Keytip="O">
+        <Command Name="FILE_PAK_OPEN" Symbol="ID_FILE_PAK_OPEN" Id="150" Keytip="O">
             <Command.LabelTitle>Open a PAK File...</Command.LabelTitle>
             <Command.TooltipTitle>Open a PAK File</Command.TooltipTitle>
             <Command.TooltipDescription>Open a PAK File</Command.TooltipDescription>
@@ -32,10 +32,16 @@
             <Command.TooltipDescription>Save Current File</Command.TooltipDescription>
         </Command>
 
-        <Command Name="FILE_SAVE_ALL" Symbol="ID_FILE_SAVE_ALL" Id="0x6C" Keytip="O">
+        <Command Name="FILE_SAVE_ALL" Symbol="ID_FILE_SAVE_ALL" Id="107" Keytip="O">
             <Command.LabelTitle>Save All Files...</Command.LabelTitle>
             <Command.TooltipTitle>Save All File(Ctrl+A)</Command.TooltipTitle>
             <Command.TooltipDescription>Save All File</Command.TooltipDescription>
+        </Command>
+
+        <Command Name="FILE_RECENT_FILES" Symbol="ID_FILE_RECENT_FILES" Id="153" Keytip="O">
+            <Command.LabelTitle>Recent Files</Command.LabelTitle>
+            <Command.TooltipTitle>Recent Files</Command.TooltipTitle>
+            <Command.TooltipDescription>Recent Files</Command.TooltipDescription>
         </Command>
 
         <Command Name="TOOL_PACKAGE" Symbol="ID_TOOL_PACKAGE" Id="104" Keytip="O">
@@ -44,55 +50,55 @@
             <Command.TooltipDescription>Create a PAK file</Command.TooltipDescription>
         </Command>
 
-        <Command Name="TOOL_LOCA" Symbol="ID_TOOL_LOCA" Id="114" Keytip="O">
+        <Command Name="TOOL_LOCA" Symbol="ID_TOOL_LOCA" Id="110" Keytip="O">
             <Command.LabelTitle>Convert to LOCA...</Command.LabelTitle>
             <Command.TooltipTitle>Convert to LOCA(Ctrl+Shift+L)</Command.TooltipTitle>
             <Command.TooltipDescription>Convert to LOCA</Command.TooltipDescription>
         </Command>
 
-        <Command Name="TOOL_LSF" Symbol="ID_TOOL_LSF" Id="131" Keytip="O">
+        <Command Name="TOOL_LSF" Symbol="ID_TOOL_LSF" Id="128" Keytip="O">
             <Command.LabelTitle>Convert LSX to LSF...</Command.LabelTitle>
             <Command.TooltipTitle>Convert LSX to LSF</Command.TooltipTitle>
             <Command.TooltipDescription>Convert LSX to LSF</Command.TooltipDescription>
         </Command>
 
-        <Command Name="TOOL_INDEX" Symbol="ID_TOOL_INDEX" Id="117" Keytip="O">
+        <Command Name="TOOL_INDEX" Symbol="ID_TOOL_INDEX" Id="112" Keytip="O">
             <Command.LabelTitle>Index PAK File...</Command.LabelTitle>
             <Command.TooltipTitle>Index PAK File(Ctrl+Shift+I)</Command.TooltipTitle>
             <Command.TooltipDescription>Index PAK File</Command.TooltipDescription>
         </Command>
 
-        <Command Name="TOOL_SEARCH" Symbol="ID_TOOL_SEARCH" Id="118" Keytip="O">
+        <Command Name="TOOL_SEARCH" Symbol="ID_TOOL_SEARCH" Id="113" Keytip="O">
             <Command.LabelTitle>Search Index...</Command.LabelTitle>
             <Command.TooltipTitle>Search Index(Ctrl+Shift+S)</Command.TooltipTitle>
             <Command.TooltipDescription>Search Index</Command.TooltipDescription>
         </Command>
 
-        <Command Name="TOOL_GAMEOBJECT" Symbol="ID_TOOL_GAMEOBJECT" Id="133" Keytip="O">
+        <Command Name="TOOL_GAMEOBJECT" Symbol="ID_TOOL_GAMEOBJECT" Id="132" Keytip="O">
             <Command.LabelTitle>Game Object Explorer...</Command.LabelTitle>
             <Command.TooltipTitle>Game Object Explorer</Command.TooltipTitle>
             <Command.TooltipDescription>Open Game Object Explorer</Command.TooltipDescription>
         </Command>
 
-        <Command Name="TOOL_ICON_EXPLORER" Symbol="ID_TOOL_ICON_EXPLORER" Id="136" Keytip="O">
+        <Command Name="TOOL_ICON_EXPLORER" Symbol="ID_TOOL_ICON_EXPLORER" Id="135" Keytip="O">
             <Command.LabelTitle>Icon Explorer...</Command.LabelTitle>
             <Command.TooltipTitle>Icon Explorer</Command.TooltipTitle>
             <Command.TooltipDescription>Open Icon Explorer</Command.TooltipDescription>
         </Command>
 
-        <Command Name="TOOL_UUID" Symbol="ID_TOOL_UUID" Id="146" Keytip="O">
+        <Command Name="TOOL_UUID" Symbol="ID_TOOL_UUID" Id="144" Keytip="O">
             <Command.LabelTitle>Generate a UUID...</Command.LabelTitle>
             <Command.TooltipTitle>Generate a UUID</Command.TooltipTitle>
             <Command.TooltipDescription>Generate a UUID</Command.TooltipDescription>
         </Command>
 
-        <Command Name="TOOL_BG3" Symbol="ID_TOOL_BG3" Id="154" Keytip="O">
+        <Command Name="TOOL_BG3" Symbol="ID_TOOL_BG3" Id="151" Keytip="O">
             <Command.LabelTitle>Launch Game...</Command.LabelTitle>
             <Command.TooltipTitle>Launch Game</Command.TooltipTitle>
             <Command.TooltipDescription>Launch Game</Command.TooltipDescription>
         </Command>
 
-        <Command Name="TOOL_SETTINGS" Symbol="ID_TOOL_SETTINGS" Id="127" Keytip="O">
+        <Command Name="TOOL_SETTINGS" Symbol="ID_TOOL_SETTINGS" Id="123" Keytip="O">
             <Command.LabelTitle>Settings</Command.LabelTitle>
             <Command.TooltipTitle>Settings(Ctrl+Alt+S)</Command.TooltipTitle>
             <Command.TooltipDescription>Settings</Command.TooltipDescription>
@@ -128,6 +134,10 @@
             <!-- Application Menu -->
             <Ribbon.ApplicationMenu>
                 <ApplicationMenu CommandName="AppMenu">
+                    <ApplicationMenu.RecentItems>
+                        <RecentItems MaxCount="4" EnablePinning="false" CommandName="FILE_RECENT_FILES"/>
+                    </ApplicationMenu.RecentItems>
+
                     <MenuGroup Class="StandardItems">
                     </MenuGroup>
                     <MenuGroup>

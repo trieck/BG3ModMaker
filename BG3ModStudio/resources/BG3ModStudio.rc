@@ -77,9 +77,12 @@ IDR_MAINFRAME MENU
 BEGIN
     POPUP "&File"
     BEGIN
-        MENUITEM "&Open...",                    ID_FILE_OPEN
+        MENUITEM "&Open a folder...",           ID_FILE_OPEN
         MENUITEM "&Save",                       ID_FILE_SAVE
         MENUITEM "Save &All",                   ID_FILE_SAVE_ALL
+        MENUITEM SEPARATOR
+        MENUITEM "(MRU List is empty)",         ID_FILE_MRU_FIRST
+        MENUITEM SEPARATOR
         MENUITEM "E&xit",                       ID_APP_EXIT
     END
     POPUP "&View"

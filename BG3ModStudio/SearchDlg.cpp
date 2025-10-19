@@ -1,14 +1,13 @@
 #include "stdafx.h"
-#include <nlohmann/json.hpp>
-
 #include "AttributeDlg.h"
-#include "SearchDlg.h"
-
 #include "FileDialogEx.h"
+#include "SearchDlg.h"
 #include "Searcher.h"
 #include "Settings.h"
 #include "StringHelper.h"
 #include "Util.h"
+
+#include <nlohmann/json.hpp>
 
 static constexpr auto PAGE_SIZE = 25;
 

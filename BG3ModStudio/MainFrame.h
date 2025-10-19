@@ -70,6 +70,7 @@ public:
         COMMAND_ID_HANDLER3(ID_TREE_NEWFOLDERHERE, OnNewFolderHere)
         COMMAND_ID_HANDLER3(ID_TREE_RENAME_FILE, OnRenameFile)
         COMMAND_ID_HANDLER3(ID_VIEW_STATUS_BAR, OnViewStatusBar)
+        COMMAND_RANGE_HANDLER_EX(ID_FILE_MRU_FIRST, ID_FILE_MRU_LAST, OnMRUMenuItem)
 
         REFLECT_NOTIFY_CODE(TVN_ITEMEXPANDING)
         NOTIFY_CODE_HANDLER_EX(TVN_DELETEITEM, OnTVDelete)
@@ -82,6 +83,10 @@ public:
 
         CHAIN_MSG_MAP(CRibbonFrameWindowImpl)
     END_MSG_MAP()
+
+    BEGIN_RIBBON_CONTROL_MAP(MainFrame)
+        RIBBON_CONTROL(m_mru)
+    END_RIBBON_CONTROL_MAP()
 
 private:
     LRESULT OnCopyData(HWND hWnd, PCOPYDATASTRUCT pcds);
@@ -109,6 +114,7 @@ private:
     void OnSettings();
     void OnUUID();
     void OnViewStatusBar();
+    void OnMRUMenuItem(UINT uCode, int nID, HWND hwndCtrl);
 
     LRESULT OnRClick(LPNMHDR pnmh);
     LRESULT OnTabActivated(LPNMHDR pnmhdr);
@@ -130,6 +136,7 @@ private:
     BOOL RenameFile(LPNMTVDISPINFO pDispInfo);
     void AddFile(const CString& filename);
     void IterateFiles(HTREEITEM hItem, const FileCallback& callback);
+    void OpenFolder(const CString& folder, int nID = -1);
     void ProcessFileChange(LONG event, PIDLIST_ABSOLUTE* pidls);
     void RemoveFile(const CString& filename);
     void RenameFile(const CString& oldname, const CString& newname);
@@ -138,6 +145,7 @@ private:
 
     CCommandBarCtrl m_cmdBar;
     CIcon m_bom, m_nobom;
+    CRibbonRecentItemsCtrl<ID_FILE_RECENT_FILES> m_mru;
     CSplitterWindow m_splitter;
     CStatusBarCtrl m_statusBar;
     FilesView m_filesView{};

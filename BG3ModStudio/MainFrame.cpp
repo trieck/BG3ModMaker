@@ -19,8 +19,9 @@
 #include "UUIDDlg.h"
 
 #include <filesystem>
-
 namespace fs = std::filesystem;
+
+static constexpr auto REGISTRY_KEY = L"Software\\Rieck Enterprises\\BG3ModStudio";
 
 BOOL MainFrame::DefCreate()
 {
@@ -42,9 +43,17 @@ BOOL MainFrame::PreTranslateMessage(MSG* pMsg)
 LRESULT MainFrame::OnCreate(LPCREATESTRUCT pcs)
 {
     m_cmdBar.Create(m_hWnd, rcDefault, nullptr, ATL_SIMPLE_CMDBAR_PANE_STYLE);
-    m_cmdBar.AttachMenu(GetMenu());
     m_cmdBar.LoadImages(IDR_MAINFRAME);
+    m_cmdBar.AttachMenu(GetMenu());
     this->SetMenu(nullptr); // remove old menu
+
+    auto fileMenu = m_cmdBar.GetMenu().GetSubMenu(0);
+    ATLASSERT(!fileMenu.IsNull());
+
+    m_mru.SetMaxEntries(4);
+    m_mru.SetMenuHandle(fileMenu);
+    m_mru.ReadFromRegistry(REGISTRY_KEY);
+    m_mru.UpdateMenu();
 
     if (RunTimeHelper::IsRibbonUIAvailable()) {
         UIAddMenu(m_cmdBar.GetMenu(), true);
@@ -127,28 +136,7 @@ void MainFrame::OnFolderOpen()
         return;
     }
 
-    const auto& paths = dlg.paths();
-    ATLASSERT(!paths.empty());
-
-    m_filesView.CloseAllFiles();
-
-    m_folderView.SetFolder(paths[0]);
-
-    UpdateTitle();
-
-    hr = SHParseDisplayName(paths[0], nullptr, m_rootPIDL.put(), 0, nullptr);
-    if (FAILED(hr)) {
-        CoMessageBox(*this, hr, nullptr, _T("Failed to get PIDL for folder."), MB_ICONERROR);
-        return;
-    }
-
-    SHChangeNotifyEntry entry{m_rootPIDL.get(), TRUE};
-    m_notify.reset(SHChangeNotifyRegister(
-        m_hWnd,
-        SHCNRF_ShellLevel | SHCNRF_InterruptLevel | SHCNRF_NewDelivery,
-        SHCNE_DISKEVENTS,
-        WM_FILE_CHANGED,
-        1, &entry));
+    OpenFolder(dlg.paths()[0]);
 }
 
 void MainFrame::OnFolderClose()
@@ -600,6 +588,8 @@ void MainFrame::OnConvertLSF()
 
 void MainFrame::OnClose()
 {
+    m_mru.WriteToRegistry(REGISTRY_KEY);
+
     if (m_filesView.IsWindow()) {
         m_filesView.CloseAllFiles();
     }
@@ -1129,12 +1119,50 @@ void MainFrame::IterateFiles(HTREEITEM hItem, const FileCallback& callback)
     } while (hItem);
 }
 
+void MainFrame::OpenFolder(const CString& folder, int nID)
+{
+    m_filesView.CloseAllFiles();
+    m_folderView.SetFolder(folder);
+
+    UpdateTitle();
+
+    auto hr = SHParseDisplayName(folder, nullptr, m_rootPIDL.put(), 0, nullptr);
+    if (FAILED(hr)) {
+        m_mru.RemoveFromList(nID);
+        CoMessageBox(*this, hr, nullptr, _T("Failed to get PIDL for folder."), MB_ICONERROR);
+        return;
+    }
+
+    SHChangeNotifyEntry entry{m_rootPIDL.get(), TRUE};
+    m_notify.reset(SHChangeNotifyRegister(
+        m_hWnd,
+        SHCNRF_ShellLevel | SHCNRF_InterruptLevel | SHCNRF_NewDelivery,
+        SHCNE_DISKEVENTS,
+        WM_FILE_CHANGED,
+        1, &entry));
+
+    if (nID == -1) {
+        m_mru.AddToList(folder);
+    } else {
+        m_mru.MoveToTop(nID);
+    }
+}
+
 void MainFrame::OnViewStatusBar()
 {
     BOOL bVisible = !::IsWindowVisible(m_hWndStatusBar);
     ::ShowWindow(m_hWndStatusBar, bVisible ? SW_SHOWNOACTIVATE : SW_HIDE);
     UISetCheck(ID_VIEW_STATUS_BAR, bVisible);
     UpdateLayout();
+}
+
+void MainFrame::OnMRUMenuItem(UINT /*uCode*/, int nID, HWND /*hwndCtrl*/)
+{
+    CString folder;
+
+    if (m_mru.GetFromList(nID, folder)) {
+        OpenFolder(folder, nID);
+    }
 }
 
 LRESULT MainFrame::OnCopyData(HWND hWnd, PCOPYDATASTRUCT pcds)
