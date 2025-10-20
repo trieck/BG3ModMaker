@@ -38,7 +38,7 @@ void JsonStyler::Apply(ScintillaCtrl& ctrl)
     ctrl.SetMarginWidth(0, 40);
 
     ctrl.SetForeStyle(SCE_JSON_PROPERTYNAME, RGB(0, 0, 255));
-    ctrl.SetForeStyle(SCE_JSON_STRING, RGB(163, 21, 21));
+    ctrl.SetForeStyle(SCE_JSON_STRING, RGB(128, 0, 0));
     ctrl.SetForeStyle(SCE_JSON_NUMBER, RGB(43, 145, 175));
     ctrl.SetForeStyle(SCE_JSON_OPERATOR, RGB(0, 0, 0));
 }
@@ -66,7 +66,7 @@ void LuaStyler::Apply(ScintillaCtrl& ctrl)
     ctrl.SetForeStyle(SCE_LUA_DEFAULT, RGB(0, 0, 64));
     ctrl.SetForeStyle(SCE_LUA_WORD, RGB(64, 128, 255)); // core keywords
     ctrl.SetForeStyle(SCE_LUA_WORD2, RGB(128, 0, 128)); // Lua standard library
-    ctrl.SetForeStyle(SCE_LUA_STRING, RGB(163, 21, 21)); // red strings
+    ctrl.SetForeStyle(SCE_LUA_STRING, RGB(128, 0, 0)); // red strings
     ctrl.SetForeStyle(SCE_LUA_LITERALSTRING, RGB(255, 64, 64)); // red long strings
     ctrl.SetForeStyle(SCE_LUA_LABEL, RGB(255, 128, 0)); // orange labels
     ctrl.SetForeStyle(SCE_LUA_IDENTIFIER, RGB(0, 0, 128)); // blue identifiers
@@ -83,20 +83,28 @@ void XmlStyler::Apply(ScintillaCtrl& ctrl)
     ctrl.SetMarginType(0, SC_MARGIN_NUMBER);
     ctrl.SetMarginWidth(0, 40);
 
-    ctrl.SetForeStyle(SCE_H_TAG, RGB(163, 21, 21));
+    ctrl.SetForeStyle(SCE_H_TAG, RGB(128, 0, 0));
     ctrl.SetForeStyle(SCE_H_ATTRIBUTE, RGB(0, 0, 255));
-    ctrl.SetForeStyle(SCE_H_DOUBLESTRING, RGB(163, 21, 21));
+    ctrl.SetForeStyle(SCE_H_DOUBLESTRING, RGB(128, 0, 0));
     ctrl.SetForeStyle(SCE_H_COMMENT, RGB(0, 128, 0));
 }
 
 void PlainTextStyler::Apply(ScintillaCtrl& ctrl)
 {
+    ctrl.SetLexer("cpp");
+
     ctrl.SetIndent(2);
     ctrl.SetTabWidth(2);
     ctrl.SetUseTabs(FALSE);
     ctrl.SetScrollWidthTracking(TRUE);
     ctrl.SetMarginType(0, SC_MARGIN_NUMBER);
     ctrl.SetMarginWidth(0, 40);
+
+    ctrl.SetKeywords(0, "new entry treasuretable type data using object category subtable initialweaponset "
+                     "add equipment equipmentgroup ItemCombination ItemCombinationResult treasure itemtypes");
+    ctrl.SetForeStyle(SCE_C_WORD, RGB(0, 0, 128));
+    ctrl.SetForeStyle(SCE_C_STRING, RGB(128, 0, 0));
+    ctrl.SetForeStyle(SCE_C_DEFAULT, RGB(0, 0, 0));
 }
 
 DocStylerRegistry& DocStylerRegistry::GetInstance()
@@ -108,6 +116,10 @@ DocStylerRegistry& DocStylerRegistry::GetInstance()
 DocStylerRegistry::DocStylerRegistry()
 {
     m_stylers[".lua"] = std::make_unique<LuaStyler>();
+    m_stylers[".khn"] = m_stylers[".lua"];
+    m_stylers[".anc"] = m_stylers[".lua"];
+    m_stylers[".ann"] = m_stylers[".lua"];
+    m_stylers[".clc"] = m_stylers[".lua"];
     m_stylers[".json"] = std::make_unique<JsonStyler>();
     m_stylers[".lsj"] = m_stylers[".json"];
     m_stylers[".js"] = m_stylers[".json"];
