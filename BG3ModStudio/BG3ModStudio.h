@@ -1,4 +1,5 @@
 #pragma once
+#include "CoInit.h"
 #include "Direct2D.h"
 #include "ScintillaLoader.h"
 
@@ -17,6 +18,7 @@ public:
     ID2D1Factory* GetD2DFactory() const;
 
 private:
+    COMInitializer m_coInit;
     ScintillaLoader m_scintillaLoader;
     Direct2D m_direct2D;
 };

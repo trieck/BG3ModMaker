@@ -29,19 +29,11 @@ BG3ModStudio& BG3ModStudio::instance()
 BG3ModStudio::~BG3ModStudio()
 {
     m_direct2D.Terminate();
-
-    CoUninitialize();
 }
 
 BOOL BG3ModStudio::Init()
 {
-    auto hr = CoInitialize(nullptr);
-    if (FAILED(hr)) {
-        ATLTRACE(_T("Cannot initialize COM libraries.\n"));
-        return FALSE;
-    }
-
-    hr = m_direct2D.Initialize();
+    auto hr = m_direct2D.Initialize();
     if (FAILED(hr)) {
         ATLTRACE(_T("Cannot initialize Direct2D.\n"));
         CoUninitialize();

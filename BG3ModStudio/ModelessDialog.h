@@ -134,6 +134,11 @@ void ModelessDialog<T, TBase>::PumpMessages()
 {
     MSG msg;
     while (::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+        if (msg.message == WM_QUIT) {
+            PostQuitMessage(static_cast<int>(msg.wParam));
+            return;
+        }
+
         if (!this->IsWindow() || !this->IsDialogMessage(&msg)) {
             TranslateMessage(&msg);
             ::DispatchMessage(&msg);
