@@ -1,0 +1,3 @@
+new treasuretable "TUT_Chest_Potions"
+CanMerge 1
+new subtable "-1"

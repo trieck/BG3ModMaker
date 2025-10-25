@@ -158,6 +158,27 @@
     <ClInclude Include="LocaFileView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="NewProjectWizard.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NewProjectSheet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NewProjectWelcomePage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NewProjectFolderPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NewProjectBuildPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Win32ErrorMessage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BG3ModStudio.cpp">
@@ -271,6 +292,27 @@
     <ClCompile Include="LocaFileView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="NewProjectWizard.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NewProjectSheet.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NewProjectWelcomePage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NewProjectFolderPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NewProjectBuildPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Win32ErrorMessage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="ribbon.xml">
@@ -368,6 +410,12 @@
     <Image Include="resources\bg3.bmp">
       <Filter>Resources</Filter>
     </Image>
+    <Image Include="resources\wizard.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="resources\new-project-large.bmp">
+      <Filter>Resources</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\BG3ModStudio.rc">
@@ -376,5 +424,21 @@
     <ResourceCompile Include="resources\Version.rc2">
       <Filter>Resources</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="resources\meta.xml">
+      <Filter>Resources</Filter>
+    </Xml>
+    <Xml Include="resources\loca.xml">
+      <Filter>Resources</Filter>
+    </Xml>
+    <Xml Include="resources\root-template.xml">
+      <Filter>Resources</Filter>
+    </Xml>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="resources\treasure-template.txt">
+      <Filter>Resources</Filter>
+    </Text>
   </ItemGroup>
 </Project>

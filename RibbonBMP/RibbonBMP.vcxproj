@@ -101,7 +101,7 @@
       <AdditionalDependencies>Utility.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y "$(ProjectDir)resources\cross.bmp" "$(OutDir)"</Command>
+      <Command>xcopy /Y "$(TargetPath)" "d:\bin"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -124,7 +124,7 @@
       <AdditionalDependencies>Utility.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y "$(ProjectDir)resources\cross.bmp" "$(OutDir)"</Command>
+      <Command>xcopy /Y "$(TargetPath)" "d:\bin"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -143,7 +143,7 @@
       <AdditionalDependencies>Utility.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y "$(ProjectDir)resources\cross.bmp" "$(OutDir)"</Command>
+      <Command>xcopy /Y "$(TargetPath)" "d:\bin"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -166,21 +166,12 @@
       <AdditionalDependencies>Utility.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y "$(ProjectDir)resources\cross.bmp" "$(OutDir)"</Command>
+      <Command>xcopy /Y "$(TargetPath)" "d:\bin"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="GDIPlus.cpp" />
     <ClCompile Include="RibbonBMP.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="resources\cross.bmp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </Image>
-    <Image Include="resources\cross.ico" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GDIPlus.h" />

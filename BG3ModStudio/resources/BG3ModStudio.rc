@@ -198,6 +198,10 @@ ID_FILE_PAK_OPEN        BITMAP                  "pak-explorer.bmp"
 
 ID_TOOL_BG3             BITMAP                  "bg3.bmp"
 
+ID_FILE_NEW_FOLDER      BITMAP                  "wizard.bmp"
+
+IDB_NEW_PROJECT_LARGE   BITMAP                  "new-project-large.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -313,20 +317,20 @@ BEGIN
 END
 
 IDD_PAKWIZ_WELCOME DIALOGEX 0, 0, 317, 193
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_CAPTION
 CAPTION "BG3 PAK Builder"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     LTEXT           "BG3 PAK Builder",IDC_PAKWIZ_TITLE,127,8,163,16
     CONTROL         "Convert Localization files from .xml to .loca",IDC_CHK_GENERATE_LOCA,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,127,116,164,10
-    LTEXT           "Welcome to the BG3 PAK Builder!\n\nThis wizard will guide you through packaging your module into a PAK file for use in Baldur’s Gate 3.\n\nClick Next to begin.",IDC_STATIC,127,40,183,57,SS_SUNKEN
+    LTEXT           "Welcome to the BG3 PAK Builder!\n\nThis wizard will guide you through packaging your project into a PAK file for use in Baldur’s Gate 3.\n\nClick Next to begin.",IDC_STATIC,127,40,183,57,SS_SUNKEN
     CONTROL         "Convert LSX files to LSF (except meta.lsx)",IDC_CHK_GENERATE_LSF,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,127,133,164,10
 END
 
 IDD_PAKWIZ_FILE DIALOGEX 0, 0, 317, 143
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_CAPTION
 CAPTION "BG3 PAK Builder"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -338,7 +342,7 @@ BEGIN
 END
 
 IDD_PAKWIZ_BUILD DIALOGEX 0, 0, 317, 143
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_CAPTION
 CAPTION "BG3 PAK Builder"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -376,6 +380,40 @@ BEGIN
     LTEXT           "© 2025 Rieck Enterprises",IDC_COPYRIGHT,10,42,220,10
     LTEXT           "This product is protected by copyright law and international treaties.",IDC_NOTICE,10,70,220,20,SS_NOPREFIX
     DEFPUSHBUTTON   "OK",IDOK,182,106,50,14
+END
+
+IDD_NEW_PROJECT DIALOGEX 0, 0, 317, 193
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_CAPTION
+CAPTION "New Project"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    LTEXT           "New Project",IDC_NEW_PROJECT_TITLE,127,8,163,16
+    LTEXT           "Welcome to the New Project Wizard!\n\nThis wizard will guide you through creating a new mod for use in Baldur’s Gate 3.\n\nClick Next to begin.",IDCANCEL,127,40,183,57,SS_SUNKEN
+END
+
+IDD_NEW_PROJECT_FOLDER DIALOGEX 0, 0, 317, 143
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_CAPTION
+CAPTION "New Project"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    LTEXT           "Please specify your project directory:",-1,21,8,275,10
+    EDITTEXT        IDC_E_NEW_FOLDER,21,21,251,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_B_NEW_PROJECT_BROWSE,276,21,20,14
+    LTEXT           "Please specify your mod name:",-1,21,50,275,10
+    EDITTEXT        IDC_E_MOD_NAME,21,63,251,14,ES_AUTOHSCROLL
+    LTEXT           "Please specify the author's name:",-1,21,92,275,10
+    EDITTEXT        IDC_E_AUTHOR_NAME,21,105,251,14,ES_AUTOHSCROLL
+END
+
+IDD_NEW_PROJECT_BUILD DIALOGEX 0, 0, 317, 143
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_CAPTION
+CAPTION "New Project"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    LTEXT           "Now generating your project folder...Just a moment...",IDC_STATIC,21,8,275,10
+    CONTROL         "",IDC_PROGRESS_NEW_PROJECT,"msctls_progress32",WS_BORDER,21,66,275,9
+    CONTROL         "Open new project on completion",IDC_CHK_OPEN_NEW_PROJECT,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,106,160,10
 END
 
 
@@ -497,6 +535,42 @@ BEGIN
         TOPMARGIN, 10
         BOTTOMMARGIN, 95
     END
+
+    IDD_NEW_PROJECT, DIALOG
+    BEGIN
+        RIGHTMARGIN, 310
+        VERTGUIDE, 115
+        VERTGUIDE, 118
+        VERTGUIDE, 127
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 186
+        HORZGUIDE, 8
+        HORZGUIDE, 32
+        HORZGUIDE, 40
+        HORZGUIDE, 169
+    END
+
+    IDD_NEW_PROJECT_FOLDER, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 310
+        VERTGUIDE, 21
+        VERTGUIDE, 296
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 136
+        HORZGUIDE, 8
+    END
+
+    IDD_NEW_PROJECT_BUILD, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 310
+        VERTGUIDE, 21
+        VERTGUIDE, 296
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 136
+        HORZGUIDE, 8
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -576,6 +650,36 @@ BEGIN
     0
 END
 
+IDD_NEW_PROJECT AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_NEW_PROJECT_FOLDER AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_NEW_PROJECT_BUILD AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// RCDATA
+//
+
+IDR_META_TEMPLATE       RCDATA                  "meta.xml"
+
+IDR_LOCA_TEMPLATE       RCDATA                  "loca.xml"
+
+IDR_ROOT_TEMPLATES_TEMPLATE RCDATA                  "root-template.xml"
+
+IDR_TREASURE_TEMPLATE   RCDATA                  "treasure-template.txt"
+
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // String Table
@@ -618,4 +722,3 @@ END
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 
-#include "Version.rc2"

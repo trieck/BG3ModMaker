@@ -32,33 +32,9 @@ LRESULT UUIDDlg::OnInitDialog(HWND, LPARAM)
 
 void UUIDDlg::OnGenerateUUID()
 {
-    GUID guid;
-    if (FAILED(CoCreateGuid(&guid))) {
-        AtlMessageBox(*this, L"Failed to generate UUID", L"Error", MB_OK | MB_ICONERROR);
-        return;
-    }
+    auto uuid = Util::MakeUUID(m_handle.GetCheck() == BST_CHECKED);
 
-    wchar_t buffer[40];
-    StringFromGUID2(guid, buffer, _countof(buffer));
-
-    // Strip curly braces
-    auto* pbuf = buffer;
-    size_t len = wcslen(buffer);
-    if (buffer[0] == L'{') {
-        buffer[len - 1] = L'\0';
-        pbuf++;
-    }
-
-    // Lowercase
-    std::ranges::transform(pbuf, pbuf + wcslen(pbuf), pbuf, ::towlower);
-
-    CString s(pbuf);
-    if (m_handle.GetCheck() == BST_CHECKED) { // Larian handle format
-        s.Replace(L"-", L"g");
-        s.Insert(0, L"h");
-    }
-
-    m_uuid.SetWindowText(s);
+    m_uuid.SetWindowText(uuid);
 }
 
 BOOL UUIDDlg::OnSetCursor(CWindow hWnd, UINT, UINT)

@@ -43,16 +43,12 @@ FileDialogEx::FileDialogEx(DialogType type, HWND hWndParent, LPCTSTR lpszDefExt,
 
 HRESULT FileDialogEx::Construct()
 {
-    HRESULT hr;
-
-    if (m_type == Open || m_type == Folder) {
-        hr = CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&m_pfd));
-    } else if (m_type == Save) {
-        hr = CoCreateInstance(CLSID_FileSaveDialog, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&m_pfd));
-    } else {
-        hr = CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&m_pfd));
+    CLSID clsid(CLSID_FileOpenDialog);
+    if (m_type == Save) {
+        clsid = CLSID_FileSaveDialog;
     }
 
+    auto hr = CoCreateInstance(clsid, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&m_pfd));
     if (FAILED(hr)) {
         ATLTRACE("Unable to create file dialog.\n");
     }
@@ -99,7 +95,7 @@ INT_PTR FileDialogEx::DoModal()
     dwOptions |= m_dwFlags;
 
     if (m_type == Folder) {
-        dwOptions |= FOS_PICKFOLDERS;
+        dwOptions |= FOS_PICKFOLDERS | FOS_FORCEFILESYSTEM;
     } else {
         dwOptions |= FOS_FORCEFILESYSTEM;
         dwOptions &= ~FOS_PICKFOLDERS;

@@ -2,111 +2,117 @@
 
 <Application xmlns="http://schemas.microsoft.com/windows/2009/Ribbon">
     <Application.Commands>
-        <Command Name="FILE_NEW" Symbol="ID_FILE_NEW" Id="0xE100" Keytip="O">
+        <Command Name="FILE_NEW_FOLDER" Symbol="ID_FILE_NEW_FOLDER" Id="154">
+            <Command.LabelTitle>Create a New Project...</Command.LabelTitle>
+            <Command.TooltipTitle>Create a New Project</Command.TooltipTitle>
+            <Command.TooltipDescription>Create a New Project</Command.TooltipDescription>
+        </Command>
+
+        <Command Name="FILE_NEW" Symbol="ID_FILE_NEW" Id="0xE100">
             <Command.LabelTitle>Create a New File...</Command.LabelTitle>
-            <Command.TooltipTitle>Create a New File(Ctrl+N)</Command.TooltipTitle>
+            <Command.TooltipTitle>Create a New File</Command.TooltipTitle>
             <Command.TooltipDescription>Create a New File</Command.TooltipDescription>
         </Command>
 
-        <Command Name="FILE_OPEN" Symbol="ID_FILE_OPEN" Id="0xE101" Keytip="O">
-            <Command.LabelTitle>Open a Folder...</Command.LabelTitle>
-            <Command.TooltipTitle>Open a Folder(Ctrl+O)</Command.TooltipTitle>
-            <Command.TooltipDescription>Open a Folder</Command.TooltipDescription>
+        <Command Name="FILE_OPEN" Symbol="ID_FILE_OPEN" Id="0xE101">
+            <Command.LabelTitle>Open a Project...</Command.LabelTitle>
+            <Command.TooltipTitle>Open a Project</Command.TooltipTitle>
+            <Command.TooltipDescription>Open a Project</Command.TooltipDescription>
         </Command>
 
-        <Command Name="FILE_CLOSE" Symbol="ID_FILE_CLOSE" Id="0xE102" Keytip="O">
-            <Command.LabelTitle>Close the Folder...</Command.LabelTitle>
-            <Command.TooltipTitle>Close the Folder(Ctrl+C)</Command.TooltipTitle>
-            <Command.TooltipDescription>Close the Folder</Command.TooltipDescription>
+        <Command Name="FILE_CLOSE" Symbol="ID_FILE_CLOSE" Id="0xE102">
+            <Command.LabelTitle>Close the Project...</Command.LabelTitle>
+            <Command.TooltipTitle>Close the Project</Command.TooltipTitle>
+            <Command.TooltipDescription>Close the Project</Command.TooltipDescription>
         </Command>
 
-        <Command Name="FILE_PAK_OPEN" Symbol="ID_FILE_PAK_OPEN" Id="150" Keytip="O">
+        <Command Name="FILE_PAK_OPEN" Symbol="ID_FILE_PAK_OPEN" Id="149">
             <Command.LabelTitle>Open a PAK File...</Command.LabelTitle>
             <Command.TooltipTitle>Open a PAK File</Command.TooltipTitle>
             <Command.TooltipDescription>Open a PAK File</Command.TooltipDescription>
         </Command>
 
-        <Command Name="FILE_SAVE" Symbol="ID_FILE_SAVE" Id="0xE103" Keytip="O">
+        <Command Name="FILE_SAVE" Symbol="ID_FILE_SAVE" Id="0xE103">
             <Command.LabelTitle>Save Current File...</Command.LabelTitle>
-            <Command.TooltipTitle>Save Current File(Ctrl+S)</Command.TooltipTitle>
+            <Command.TooltipTitle>Save Current File</Command.TooltipTitle>
             <Command.TooltipDescription>Save Current File</Command.TooltipDescription>
         </Command>
 
-        <Command Name="FILE_SAVE_ALL" Symbol="ID_FILE_SAVE_ALL" Id="107" Keytip="O">
+        <Command Name="FILE_SAVE_ALL" Symbol="ID_FILE_SAVE_ALL" Id="107">
             <Command.LabelTitle>Save All Files...</Command.LabelTitle>
-            <Command.TooltipTitle>Save All File(Ctrl+A)</Command.TooltipTitle>
+            <Command.TooltipTitle>Save All File</Command.TooltipTitle>
             <Command.TooltipDescription>Save All File</Command.TooltipDescription>
         </Command>
 
-        <Command Name="FILE_RECENT_FILES" Symbol="ID_FILE_RECENT_FILES" Id="153" Keytip="O">
+        <Command Name="FILE_RECENT_FILES" Symbol="ID_FILE_RECENT_FILES" Id="152">
             <Command.LabelTitle>Recent Files</Command.LabelTitle>
             <Command.TooltipTitle>Recent Files</Command.TooltipTitle>
             <Command.TooltipDescription>Recent Files</Command.TooltipDescription>
         </Command>
 
-        <Command Name="TOOL_PACKAGE" Symbol="ID_TOOL_PACKAGE" Id="104" Keytip="O">
+        <Command Name="TOOL_PACKAGE" Symbol="ID_TOOL_PACKAGE" Id="104">
             <Command.LabelTitle>Create a PAK file...</Command.LabelTitle>
-            <Command.TooltipTitle>Create a PAK file(Ctrl+P)</Command.TooltipTitle>
+            <Command.TooltipTitle>Create a PAK file</Command.TooltipTitle>
             <Command.TooltipDescription>Create a PAK file</Command.TooltipDescription>
         </Command>
 
-        <Command Name="TOOL_LOCA" Symbol="ID_TOOL_LOCA" Id="110" Keytip="O">
+        <Command Name="TOOL_LOCA" Symbol="ID_TOOL_LOCA" Id="110">
             <Command.LabelTitle>Convert to LOCA...</Command.LabelTitle>
-            <Command.TooltipTitle>Convert to LOCA(Ctrl+Shift+L)</Command.TooltipTitle>
+            <Command.TooltipTitle>Convert to LOCA</Command.TooltipTitle>
             <Command.TooltipDescription>Convert to LOCA</Command.TooltipDescription>
         </Command>
 
-        <Command Name="TOOL_LSF" Symbol="ID_TOOL_LSF" Id="128" Keytip="O">
+        <Command Name="TOOL_LSF" Symbol="ID_TOOL_LSF" Id="128">
             <Command.LabelTitle>Convert LSX to LSF...</Command.LabelTitle>
             <Command.TooltipTitle>Convert LSX to LSF</Command.TooltipTitle>
             <Command.TooltipDescription>Convert LSX to LSF</Command.TooltipDescription>
         </Command>
 
-        <Command Name="TOOL_INDEX" Symbol="ID_TOOL_INDEX" Id="112" Keytip="O">
+        <Command Name="TOOL_INDEX" Symbol="ID_TOOL_INDEX" Id="112">
             <Command.LabelTitle>Index PAK File...</Command.LabelTitle>
-            <Command.TooltipTitle>Index PAK File(Ctrl+Shift+I)</Command.TooltipTitle>
+            <Command.TooltipTitle>Index PAK File</Command.TooltipTitle>
             <Command.TooltipDescription>Index PAK File</Command.TooltipDescription>
         </Command>
 
-        <Command Name="TOOL_SEARCH" Symbol="ID_TOOL_SEARCH" Id="113" Keytip="O">
+        <Command Name="TOOL_SEARCH" Symbol="ID_TOOL_SEARCH" Id="113">
             <Command.LabelTitle>Search Index...</Command.LabelTitle>
-            <Command.TooltipTitle>Search Index(Ctrl+Shift+S)</Command.TooltipTitle>
+            <Command.TooltipTitle>Search Index</Command.TooltipTitle>
             <Command.TooltipDescription>Search Index</Command.TooltipDescription>
         </Command>
 
-        <Command Name="TOOL_GAMEOBJECT" Symbol="ID_TOOL_GAMEOBJECT" Id="132" Keytip="O">
+        <Command Name="TOOL_GAMEOBJECT" Symbol="ID_TOOL_GAMEOBJECT" Id="132">
             <Command.LabelTitle>Game Object Explorer...</Command.LabelTitle>
             <Command.TooltipTitle>Game Object Explorer</Command.TooltipTitle>
             <Command.TooltipDescription>Open Game Object Explorer</Command.TooltipDescription>
         </Command>
 
-        <Command Name="TOOL_ICON_EXPLORER" Symbol="ID_TOOL_ICON_EXPLORER" Id="135" Keytip="O">
+        <Command Name="TOOL_ICON_EXPLORER" Symbol="ID_TOOL_ICON_EXPLORER" Id="135">
             <Command.LabelTitle>Icon Explorer...</Command.LabelTitle>
             <Command.TooltipTitle>Icon Explorer</Command.TooltipTitle>
             <Command.TooltipDescription>Open Icon Explorer</Command.TooltipDescription>
         </Command>
 
-        <Command Name="TOOL_UUID" Symbol="ID_TOOL_UUID" Id="144" Keytip="O">
+        <Command Name="TOOL_UUID" Symbol="ID_TOOL_UUID" Id="143">
             <Command.LabelTitle>Generate a UUID...</Command.LabelTitle>
             <Command.TooltipTitle>Generate a UUID</Command.TooltipTitle>
             <Command.TooltipDescription>Generate a UUID</Command.TooltipDescription>
         </Command>
 
-        <Command Name="TOOL_BG3" Symbol="ID_TOOL_BG3" Id="151" Keytip="O">
+        <Command Name="TOOL_BG3" Symbol="ID_TOOL_BG3" Id="150">
             <Command.LabelTitle>Launch Game...</Command.LabelTitle>
             <Command.TooltipTitle>Launch Game</Command.TooltipTitle>
             <Command.TooltipDescription>Launch Game</Command.TooltipDescription>
         </Command>
 
-        <Command Name="TOOL_SETTINGS" Symbol="ID_TOOL_SETTINGS" Id="123" Keytip="O">
+        <Command Name="TOOL_SETTINGS" Symbol="ID_TOOL_SETTINGS" Id="123">
             <Command.LabelTitle>Settings</Command.LabelTitle>
-            <Command.TooltipTitle>Settings(Ctrl+Alt+S)</Command.TooltipTitle>
+            <Command.TooltipTitle>Settings</Command.TooltipTitle>
             <Command.TooltipDescription>Settings</Command.TooltipDescription>
         </Command>
 
-        <Command Name="APP_ABOUT" Symbol="ID_APP_ABOUT" Id="0xE140" Keytip="O">
+        <Command Name="APP_ABOUT" Symbol="ID_APP_ABOUT" Id="0xE140">
             <Command.LabelTitle>About BG3 Mod Studio...</Command.LabelTitle>
-            <Command.TooltipTitle>About BG3 Mod Studio(Ctrl+Shift+A)</Command.TooltipTitle>
+            <Command.TooltipTitle>About BG3 Mod Studio</Command.TooltipTitle>
             <Command.TooltipDescription>About BG3 Mod Studio</Command.TooltipDescription>
         </Command>
 
@@ -135,12 +141,13 @@
             <Ribbon.ApplicationMenu>
                 <ApplicationMenu CommandName="AppMenu">
                     <ApplicationMenu.RecentItems>
-                        <RecentItems MaxCount="4" EnablePinning="false" CommandName="FILE_RECENT_FILES"/>
+                        <RecentItems MaxCount="4" EnablePinning="false" CommandName="FILE_RECENT_FILES" />
                     </ApplicationMenu.RecentItems>
 
                     <MenuGroup Class="StandardItems">
                     </MenuGroup>
                     <MenuGroup>
+                        <Button CommandName="FILE_NEW_FOLDER" />
                         <Button CommandName="FILE_NEW" />
                         <Button CommandName="FILE_OPEN" />
                         <Button CommandName="FILE_CLOSE" />
@@ -175,6 +182,7 @@
                     <Group CommandName="GROUP_HOME">
                         <SizeDefinition>
                             <ControlNameMap>
+                                <ControlNameDefinition Name="FILE_NEW_FOLDER" />
                                 <ControlNameDefinition Name="FILE_NEW" />
                                 <ControlNameDefinition Name="FILE_OPEN" />
                                 <ControlNameDefinition Name="FILE_CLOSE" />
@@ -184,6 +192,9 @@
                                 <ControlNameDefinition Name="APP_ABOUT" />
                             </ControlNameMap>
                             <GroupSizeDefinition Size="Large">
+                                <ControlSizeDefinition ControlName="FILE_NEW_FOLDER"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="FILE_NEW"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
@@ -209,6 +220,9 @@
                                                        IsLabelVisible="true" />
                             </GroupSizeDefinition>
                             <GroupSizeDefinition Size="Medium">
+                                <ControlSizeDefinition ControlName="FILE_NEW_FOLDER"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="FILE_NEW"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
@@ -232,6 +246,9 @@
                                                        IsLabelVisible="true" />
                             </GroupSizeDefinition>
                             <GroupSizeDefinition Size="Small">
+                                <ControlSizeDefinition ControlName="FILE_NEW_FOLDER"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="FILE_NEW"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
@@ -255,6 +272,7 @@
                                                        IsLabelVisible="true" />
                             </GroupSizeDefinition>
                         </SizeDefinition>
+                        <Button CommandName="FILE_NEW_FOLDER" />
                         <Button CommandName="FILE_NEW" />
                         <Button CommandName="FILE_OPEN" />
                         <Button CommandName="FILE_CLOSE" />

@@ -50,6 +50,7 @@ public:
         COMMAND_ID_HANDLER3(ID_APP_EXIT, OnFileExit)
         COMMAND_ID_HANDLER3(ID_FILE_CLOSE, OnFolderClose)
         COMMAND_ID_HANDLER3(ID_FILE_NEW, OnNewFile)
+        COMMAND_ID_HANDLER3(ID_FILE_NEW_FOLDER, OnNewFolder)
         COMMAND_ID_HANDLER3(ID_FILE_OPEN, OnFolderOpen)
         COMMAND_ID_HANDLER3(ID_FILE_PAK_OPEN, OnPakOpen)
         COMMAND_ID_HANDLER3(ID_FILE_SAVE, OnFileSave)
@@ -106,6 +107,7 @@ private:
     void OnIndex();
     void OnLaunchGame();
     void OnNewFile();
+    void OnNewFolder();
     void OnNewFileHere();
     void OnNewFolderHere();
     void OnPakOpen();

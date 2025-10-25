@@ -206,12 +206,54 @@ AttributeValue parseString(const std::string& str, AttributeType type)
         return std::stof(str);
     case Double:
         return std::stod(str);
-    case IVec2:
-    case IVec3:
-    case IVec4:
-    case Vec2:
-    case Vec3:
-    case Vec4:
+    case IVec2: {
+        std::array<int32_t, 2> vec2{};
+        std::istringstream iss(str);
+        for (size_t i = 0; i < 2; ++i) {
+            iss >> vec2[i];
+        }
+        return vec2;
+    }
+    case IVec3: {
+        std::array<int32_t, 3> vec3{};
+        std::istringstream iss(str);
+        for (size_t i = 0; i < 3; ++i) {
+            iss >> vec3[i];
+        }
+        return vec3;
+    }
+    case IVec4: {
+        std::array<int32_t, 4> vec4{};
+        std::istringstream iss(str);
+        for (size_t i = 0; i < 4; ++i) {
+            iss >> vec4[i];
+        }
+        return vec4;
+    }
+    case Vec2: {
+        std::array<float, 2> vec2{};
+        std::istringstream iss(str);
+        for (size_t i = 0; i < 2; ++i) {
+            iss >> vec2[i];
+        }
+        return vec2;
+    }
+    case Vec3: {
+        std::array<float, 3> vec3{};
+        std::istringstream iss(str);
+        for (size_t i = 0; i < 3; ++i) {
+            iss >> vec3[i];
+        }
+        return vec3;
+    }
+    case Vec4: {
+        std::array<float, 4> vec4{};
+        std::istringstream iss(str);
+        for (size_t i = 0; i < 4; ++i) {
+            iss >> vec4[i];
+        }
+        return vec4;
+    }
     case Mat2:
     case Mat3:
     case Mat3x4:

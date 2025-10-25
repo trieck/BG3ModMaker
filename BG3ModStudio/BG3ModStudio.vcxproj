@@ -91,7 +91,7 @@
       <AdditionalLibraryDirectories>$(VcpkgManifestRoot)\vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\lib;$(SolutionDir)$(IntDir);$(ProjectDir)TabView\$(ProcessorArchitecture)\$(Configuration)</AdditionalLibraryDirectories>
       <AdditionalManifestDependencies>
       </AdditionalManifestDependencies>
-      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);lz4.lib;Ws2_32.lib;Rpcrt4.lib;d2d1.lib;dwrite.lib;LibLS.lib;TabViewLib.lib;Utility.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);lz4.lib;Ws2_32.lib;Rpcrt4.lib;d2d1.lib;dwrite.lib;Secur32.lib;LibLS.lib;TabViewLib.lib;Utility.lib</AdditionalDependencies>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)\include</AdditionalIncludeDirectories>
@@ -119,7 +119,7 @@
       <AdditionalLibraryDirectories>$(VcpkgManifestRoot)\vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\lib;$(SolutionDir)$(IntDir);$(ProjectDir)TabView\$(ProcessorArchitecture)\$(Configuration)</AdditionalLibraryDirectories>
       <AdditionalManifestDependencies>
       </AdditionalManifestDependencies>
-      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);lz4.lib;Ws2_32.lib;Rpcrt4.lib;d2d1.lib;dwrite.lib;LibLS.lib;TabViewLib.lib;Utility.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);lz4.lib;Ws2_32.lib;Rpcrt4.lib;d2d1.lib;dwrite.lib;Secur32.lib;LibLS.lib;TabViewLib.lib;Utility.lib</AdditionalDependencies>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)\include</AdditionalIncludeDirectories>
@@ -140,7 +140,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);lz4.lib;Ws2_32.lib;Rpcrt4.lib;d2d1.lib;dwrite.lib;LibLS.lib;TabViewLib.lib;Utility.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);lz4.lib;Ws2_32.lib;Rpcrt4.lib;d2d1.lib;dwrite.lib;Secur32.lib;LibLS.lib;TabViewLib.lib;Utility.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(VcpkgManifestRoot)\vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\lib;$(SolutionDir)$(IntDir);$(ProjectDir)TabView\$(ProcessorArchitecture)\$(Configuration)</AdditionalLibraryDirectories>
       <AdditionalManifestDependencies>
       </AdditionalManifestDependencies>
@@ -168,7 +168,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);lz4.lib;Ws2_32.lib;Rpcrt4.lib;d2d1.lib;dwrite.lib;LibLS.lib;TabViewLib.lib;Utility.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);lz4.lib;Ws2_32.lib;Rpcrt4.lib;d2d1.lib;dwrite.lib;Secur32.lib;LibLS.lib;TabViewLib.lib;Utility.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(VcpkgManifestRoot)\vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\lib;$(SolutionDir)$(IntDir);$(ProjectDir)TabView\$(ProcessorArchitecture)\$(Configuration)</AdditionalLibraryDirectories>
       <AdditionalManifestDependencies>
       </AdditionalManifestDependencies>
@@ -195,6 +195,11 @@
     <ClInclude Include="LocaFileView.h" />
     <ClInclude Include="LSFFileView.h" />
     <ClInclude Include="ModelessDialog.h" />
+    <ClInclude Include="NewProjectBuildPage.h" />
+    <ClInclude Include="NewProjectFolderPage.h" />
+    <ClInclude Include="NewProjectSheet.h" />
+    <ClInclude Include="NewProjectWelcomePage.h" />
+    <ClInclude Include="NewProjectWizard.h" />
     <ClInclude Include="PakExplorerDlg.h" />
     <ClInclude Include="PAKIgnore.h" />
     <ClInclude Include="PAKWizard.h" />
@@ -203,6 +208,7 @@
     <ClInclude Include="PAKWizSheet.h" />
     <ClInclude Include="PAKWizWelcomePage.h" />
     <ClInclude Include="PIDL.h" />
+    <ClInclude Include="ResourceHelper.h" />
     <ClInclude Include="ScintillaCtrl.h" />
     <ClInclude Include="ScintillaLoader.h" />
     <ClInclude Include="SearchDlg.h" />
@@ -226,6 +232,7 @@
     <ClInclude Include="UTF8Stream.h" />
     <ClInclude Include="Util.h" />
     <ClInclude Include="UUIDDlg.h" />
+    <ClInclude Include="Win32ErrorMessage.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AboutDlg.cpp" />
@@ -248,6 +255,11 @@
     <ClCompile Include="FileViews.cpp" />
     <ClCompile Include="FolderView.cpp" />
     <ClCompile Include="MainFrame.cpp" />
+    <ClCompile Include="NewProjectBuildPage.cpp" />
+    <ClCompile Include="NewProjectFolderPage.cpp" />
+    <ClCompile Include="NewProjectSheet.cpp" />
+    <ClCompile Include="NewProjectWelcomePage.cpp" />
+    <ClCompile Include="NewProjectWizard.cpp" />
     <ClCompile Include="PakExplorerDlg.cpp" />
     <ClCompile Include="PAKIgnore.cpp" />
     <ClCompile Include="PAKWizard.cpp" />
@@ -256,6 +268,8 @@
     <ClCompile Include="PAKWizSheet.cpp" />
     <ClCompile Include="PAKWizWelcomePage.cpp" />
     <ClCompile Include="PIDL.cpp" />
+    <ClCompile Include="ResourceHelper.cpp" />
+    <ClCompile Include="Win32ErrorMessage.cpp" />
     <ResourceCompile Include="resources\Version.rc2">
       <FileType>RC</FileType>
     </ResourceCompile>
@@ -308,6 +322,7 @@
     <Image Include="resources\icon-explorer.bmp" />
     <Image Include="resources\index.bmp" />
     <Image Include="resources\lsf.bmp" />
+    <Image Include="resources\new-project-large.bmp" />
     <Image Include="resources\nobom.ico" />
     <Image Include="resources\node.ico" />
     <Image Include="resources\open.bmp" />
@@ -322,6 +337,7 @@
     <Image Include="resources\search.bmp" />
     <Image Include="resources\setup.bmp" />
     <Image Include="resources\uuid.bmp" />
+    <Image Include="resources\wizard.bmp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\BG3ModStudio.rc" />
@@ -341,6 +357,14 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compiling Ribbon Markup...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">resources\%(Filename).bin;resources\%(Filename).h;resources\%(Filename).rc2;%(Outputs)</Outputs>
     </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="resources\loca.xml" />
+    <Xml Include="resources\meta.xml" />
+    <Xml Include="resources\root-template.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="resources\treasure-template.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

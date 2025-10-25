@@ -147,10 +147,8 @@ int PAKWizFilePage::OnWizardBack()
 
 int PAKWizFilePage::OnWizardNext()
 {
-    TCHAR szPath[MAX_PATH];
-    m_filePath.GetWindowText(szPath, MAX_PATH);
-
-    CString pakPath(szPath);
+    CString pakPath;
+    m_filePath.GetWindowText(pakPath);
 
     if (pakPath.IsEmpty()) {
         AtlMessageBox(*this, _T("Please specify a PAK file path."), _T("Error"), MB_ICONERROR);

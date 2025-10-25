@@ -2,9 +2,9 @@
 #include "PAKWizard.h"
 #include "resources/resource.h"
 
-#define WM_PAK_RANGE (WM_APP + 2)
-#define WM_PAK_PROGRESS (WM_APP + 3)
-#define WM_PAK_COMPLETE (WM_APP + 4)
+#define WM_PAK_RANGE (WM_APP + 1)
+#define WM_PAK_PROGRESS (WM_APP + 2)
+#define WM_PAK_COMPLETE (WM_APP + 3)
 
 class PAKWizBuildPage : public CWizard97InteriorPageImpl<PAKWizBuildPage>
 {

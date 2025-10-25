@@ -157,3 +157,33 @@ CIconHandle Util::LoadBitmapAsIcon(_U_STRINGorID id, int cx, int cy, COLORREF tr
 
     return hIcon;
 }
+
+CString Util::MakeUUID(BOOL bHandle)
+{
+    GUID uuid;
+    if (FAILED(CoCreateGuid(&uuid))) {
+        return "";
+    }
+
+    wchar_t buffer[40];
+    StringFromGUID2(uuid, buffer, _countof(buffer));
+
+    // Strip curly braces
+    auto* pbuf = buffer;
+    size_t len = wcslen(buffer);
+    if (buffer[0] == L'{') {
+        buffer[len - 1] = L'\0';
+        pbuf++;
+    }
+
+    // Lowercase
+    std::ranges::transform(pbuf, pbuf + wcslen(pbuf), pbuf, ::towlower);
+
+    CString s(pbuf);
+    if (bHandle) { // Larian handle format
+        s.Replace(L"-", L"g");
+        s.Insert(0, L"h");
+    }
+
+    return s;
+}

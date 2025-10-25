@@ -24,6 +24,18 @@ PAKWizBuildPage::PAKWizBuildPage(PAKWizard* pWiz, _U_STRINGorID title) : BasePag
 
 int PAKWizBuildPage::OnSetActive()
 {
+    m_progress.SetPos(0);
+    m_progress.SetStep(1);
+    m_progress.SetState(PBST_NORMAL);
+
+    auto hThread = CreateThread(nullptr, 0, BuildProc, this, 0, nullptr);
+    if (hThread == nullptr) {
+        ATLTRACE(_T("Unable to create worker thread.\n"));
+        return 0;
+    }
+
+    CloseHandle(hThread);
+
     SetWizardButtons(0);
 
     return 0;
@@ -62,7 +74,7 @@ LRESULT PAKWizBuildPage::OnPAKProgress(UINT uMsg, WPARAM wParam, LPARAM lParam, 
 LRESULT PAKWizBuildPage::OnPAKComplete(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
     if (wParam == 0) {
-        AtlMessageBox(*this, L"Package created successfully.", nullptr, MB_ICONINFORMATION);
+        AtlMessageBox(*this, L"Package created successfully.", L"Success", MB_ICONINFORMATION);
         SetWizardButtons(PSWIZB_FINISH);
     } else {
         auto lower = 0, upper = 0;
@@ -71,7 +83,7 @@ LRESULT PAKWizBuildPage::OnPAKComplete(UINT uMsg, WPARAM wParam, LPARAM lParam, 
         m_progress.SetState(PBST_ERROR);
 
         CString msg;
-        msg.Format(L"An error occurred while creating the package: %s", static_cast<LPCTSTR>(m_lastError));
+        msg.Format(L"An error occurred while creating the package:\n%s", static_cast<LPCTSTR>(m_lastError));
         AtlMessageBox(*this, msg.GetString(), nullptr, MB_ICONERROR);
         SetWizardButtons(PSWIZB_BACK | PSWIZB_FINISH);
     }
@@ -83,17 +95,6 @@ BOOL PAKWizBuildPage::OnInitDialog(HWND hWnd, LPARAM lParam)
 {
     m_progress = GetDlgItem(IDC_PROGRESS_PAKWIZ);
     ATLASSERT(m_progress.IsWindow());
-
-    m_progress.SetPos(0);
-    m_progress.SetStep(1);
-
-    auto hThread = CreateThread(nullptr, 0, BuildProc, this, 0, nullptr);
-    if (hThread == nullptr) {
-        ATLTRACE(_T("Unable to create worker thread.\n"));
-        return 0;
-    }
-
-    CloseHandle(hThread);
 
     return TRUE; // let the system set the focus
 }

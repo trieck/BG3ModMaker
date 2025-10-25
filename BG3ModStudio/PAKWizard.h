@@ -7,7 +7,7 @@ public:
     explicit PAKWizard(const CString& root);
     ~PAKWizard();
 
-    void Execute();
+    INT_PTR DoModal();
     const CString& GetRoot() const;
 
     BOOL GetGenerateLoca() const;

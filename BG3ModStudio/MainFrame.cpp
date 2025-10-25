@@ -9,6 +9,7 @@
 #include "IndexDlg.h"
 #include "Localization.h"
 #include "MainFrame.h"
+#include "NewProjectWizard.h"
 #include "PakExplorerDlg.h"
 #include "PAKWizard.h"
 #include "ResourceUtils.h"
@@ -158,7 +159,7 @@ void MainFrame::OnFolderPack()
     }
 
     PAKWizard wizard(rootPath);
-    wizard.Execute();
+    wizard.DoModal();
 }
 
 void MainFrame::OnGameObject()
@@ -327,6 +328,17 @@ void MainFrame::OnNewFile()
     ATLASSERT(m_filesView.IsWindow());
 
     m_filesView.NewFile();
+}
+
+void MainFrame::OnNewFolder()
+{
+    NewProjectWizard wizard;
+    if (wizard.DoModal() == IDOK && wizard.GetOpenNewProject()) {
+        const auto& projectFolder = wizard.GetProjectFolder();
+        if (!projectFolder.IsEmpty()) {
+            OpenFolder(projectFolder);
+        }
+    }
 }
 
 void MainFrame::OnNewFileHere()

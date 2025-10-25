@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <gdiplus.h>
+#include <algorithm>
 #include <iostream>
 
 #include "Exception.h"
@@ -95,7 +96,7 @@ void makeRibbonBMP(wchar_t* inputImage, wchar_t* outputImage, int size, uint32_t
 
     auto* pixels = static_cast<uint32_t*>(bmpData.Scan0);
     auto pixelCount = resized.GetWidth() * resized.GetHeight();
-    for (auto i = 0u; i < pixelCount; i++) {
+    for (auto i = 0u; i < pixelCount; ++i) {
         auto r = (pixels[i] >> 16) & 0xFF;
         auto g = (pixels[i] >> 8) & 0xFF;
         auto b = pixels[i] & 0xFF;
@@ -104,10 +105,16 @@ void makeRibbonBMP(wchar_t* inputImage, wchar_t* outputImage, int size, uint32_t
         if (r <= threshold && g <= threshold && b <= threshold) {
             pixels[i] = 0x00000000;
         } else {
-            // If alpha is not 255, force RGB to 0
-            uint8_t alpha = (pixels[i] >> 24) & 0xFF;
-            if (alpha < 255) {
-                pixels[i] &= 0xFF000000; // keep alpha, zero RGB
+            auto alpha = (pixels[i] >> 24) & 0xFF;
+            if (alpha < 255 && alpha > 0) {
+                // Un-premultiply to remove black bleed
+                r = (r * 255 + (alpha / 2)) / alpha;
+                g = (g * 255 + (alpha / 2)) / alpha;
+                b = (b * 255 + (alpha / 2)) / alpha;
+                r = std::min<uint32_t>(r, 255);
+                g = std::min<uint32_t>(g, 255);
+                b = std::min<uint32_t>(b, 255);
+                pixels[i] = (alpha << 24) | (r << 16) | (g << 8) | b;
             }
         }
     }

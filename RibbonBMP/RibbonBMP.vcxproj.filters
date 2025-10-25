@@ -23,14 +23,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="resources\cross.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="resources\cross.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="GDIPlus.h">
       <Filter>Header Files</Filter>
     </ClInclude>

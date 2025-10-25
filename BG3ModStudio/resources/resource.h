@@ -40,22 +40,31 @@
 #define IDD_ICON_EXPLORER               134
 #define ID_TOOL_ICON_EXPLORER           135
 #define IDD_ICON                        136
-#define IDD_PAKWIZ_WELCOME              138
-#define IDB_PAK_HEADER                  139
-#define IDB_PAK_LARGE                   140
-#define IDD_PAKWIZ_FILE                 141
-#define IDD_PAKWIZ_BUILD                142
-#define IDD_UUID                        143
-#define ID_TOOL_UUID                    144
-#define IDR_VALUE_CONTEXT               145
-#define IDR_ENTRY_CONTEXT               146
-#define IDI_REGION                      147
-#define IDI_NODE                        148
-#define IDD_PAK_EXPLORER                149
-#define ID_FILE_PAK_OPEN                150
-#define ID_TOOL_BG3                     151
-#define IDD_ABOUT                       152
-#define ID_FILE_RECENT_FILES            153
+#define IDD_PAKWIZ_WELCOME              137
+#define IDB_PAK_HEADER                  138
+#define IDB_PAK_LARGE                   139
+#define IDD_PAKWIZ_FILE                 140
+#define IDD_PAKWIZ_BUILD                141
+#define IDD_UUID                        142
+#define ID_TOOL_UUID                    143
+#define IDR_VALUE_CONTEXT               144
+#define IDR_ENTRY_CONTEXT               145
+#define IDI_REGION                      146
+#define IDI_NODE                        147
+#define IDD_PAK_EXPLORER                148
+#define ID_FILE_PAK_OPEN                149
+#define ID_TOOL_BG3                     150
+#define IDD_ABOUT                       151
+#define ID_FILE_RECENT_FILES            152
+#define IDD_NEW_PROJECT                 153
+#define ID_FILE_NEW_FOLDER              154
+#define IDD_NEW_PROJECT_FOLDER          155
+#define IDB_NEW_PROJECT_LARGE           156
+#define IDD_NEW_PROJECT_BUILD           157
+#define IDR_META_TEMPLATE               158
+#define IDR_LOCA_TEMPLATE               159
+#define IDR_ROOT_TEMPLATES_TEMPLATE     160
+#define IDR_TREASURE_TEMPLATE           161
 #define IDC_PROGRESS_INDEX              1000
 #define IDC_PAKFILE                     1001
 #define IDC_INDEX_FILE                  1002
@@ -107,6 +116,13 @@
 #define IDC_VERSION                     1050
 #define IDC_APPICON                     1051
 #define IDC_CB_COMPRESSION              1052
+#define IDC_NEW_PROJECT_TITLE           1053
+#define IDC_E_NEW_FOLDER                1054
+#define IDC_B_NEW_PROJECT_BROWSE        1055
+#define IDC_PROGRESS_NEW_PROJECT        1056
+#define IDC_E_MOD_NAME                  1057
+#define IDC_E_AUTHOR_NAME               1058
+#define IDC_CHK_OPEN_NEW_PROJECT        1059
 #define ATL_IDC_TAB_CONTROL             0x3020
 #define ID_APPLY_NOW                    0x3021
 #define ID_WIZBACK                      0x3023
@@ -238,9 +254,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        154
+#define _APS_NEXT_RESOURCE_VALUE        162
 #define _APS_NEXT_COMMAND_VALUE         40034
-#define _APS_NEXT_CONTROL_VALUE         1053
+#define _APS_NEXT_CONTROL_VALUE         1060
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
