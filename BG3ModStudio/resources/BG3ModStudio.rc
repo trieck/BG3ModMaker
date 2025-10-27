@@ -43,6 +43,14 @@ BEGIN
     "\0"
 END
 
+4 TEXTINCLUDE
+BEGIN
+"\r\n"
+"#include ""Version.rc2""\r\n"
+"\0"
+END
+
+
 #endif    // APSTUDIO_INVOKED
 
 
@@ -718,6 +726,7 @@ END
 //
 
 #include "ribbon.rc2"
+#include "Version.rc2"
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
