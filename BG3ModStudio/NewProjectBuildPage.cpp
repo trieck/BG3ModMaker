@@ -147,7 +147,6 @@ DWORD NewProjectBuildPage::BuildProc(LPVOID pv)
         pThis->PostMessage(WM_PROJ_COMPLETE, -1, 0);
     }
 
-    Sleep(100); // Simulate work
     pThis->PostMessage(WM_PROJ_PROGRESS, 10);
 
     // Create localization file
@@ -159,7 +158,6 @@ DWORD NewProjectBuildPage::BuildProc(LPVOID pv)
         pThis->PostMessage(WM_PROJ_COMPLETE, -1, 0);
     }
 
-    Sleep(50); // Simulate work
     pThis->PostMessage(WM_PROJ_PROGRESS, 20);
 
     // Create merged.lsx
@@ -171,7 +169,6 @@ DWORD NewProjectBuildPage::BuildProc(LPVOID pv)
         pThis->PostMessage(WM_PROJ_COMPLETE, -1, 0);
     }
 
-    Sleep(50); // Simulate work
     pThis->PostMessage(WM_PROJ_PROGRESS, 30);
 
     // Create TreasureTable.txt
@@ -183,13 +180,7 @@ DWORD NewProjectBuildPage::BuildProc(LPVOID pv)
         pThis->PostMessage(WM_PROJ_COMPLETE, -1, 0);
     }
 
-    Sleep(50); // Simulate work
-    pThis->PostMessage(WM_PROJ_PROGRESS, 40);
-
-    Sleep(50); // Simulate work
     pThis->PostMessage(WM_PROJ_PROGRESS, 100);
-
-    Sleep(1000); // Simulate finalizing
     pThis->PostMessage(WM_PROJ_COMPLETE, 0, 0);
 
     return 0;
