@@ -101,7 +101,7 @@ BOOL FilesView::CloseFileByData(LPVOID data)
     return TRUE;
 }
 
-IFileView::Ptr FilesView::ActiveFile() const
+IFileView::Ptr FilesView::ActiveView() const
 {
     int activePage = GetActivePage();
 
@@ -354,6 +354,16 @@ void FilesView::SetTitle(const IFileView::Ptr& fileView, LPCTSTR lpstrTitle)
             break;
         }
     }
+}
+
+BOOL FilesView::ActiveViewIsEditable() const
+{
+    auto view = ActiveView();
+    if (view == nullptr) {
+        return FALSE;
+    }
+
+    return view->IsText() && view->IsEditable();
 }
 
 IFileView::Ptr FilesView::GetFileView(int index) const

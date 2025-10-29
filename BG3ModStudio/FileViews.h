@@ -25,6 +25,7 @@ public:
 
     BOOL ActivateFile(const CString& path, LPVOID data);
     BOOL ActivateView(const IFileView::Ptr& fileView, LPVOID data);
+    BOOL ActiveViewIsEditable() const;
     BOOL CloseFileByData(LPVOID data);
     BOOL IsDirty() const;
     BOOL IsDirty(int index) const;
@@ -36,7 +37,7 @@ public:
     const std::vector<IFileView::Ptr>& Files() const;
     CString GetTitle(const IFileView::Ptr& fileView) const;
     FileEncoding FileEncoding(int index) const;
-    IFileView::Ptr ActiveFile() const;
+    IFileView::Ptr ActiveView() const;
     IFileView::Ptr GetFileView(const CString& path) const;
     IFileView::Ptr GetFileView(int index) const;
     IFileView::Ptr GetFileView(LPVOID data) const;

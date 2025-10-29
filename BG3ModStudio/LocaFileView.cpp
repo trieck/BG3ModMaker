@@ -146,6 +146,16 @@ BOOL LocaFileView::IsDirty() const
     return FALSE;
 }
 
+BOOL LocaFileView::IsEditable() const
+{
+    return FALSE;
+}
+
+BOOL LocaFileView::IsText() const
+{
+    return FALSE;
+}
+
 const CString& LocaFileView::GetPath() const
 {
     return m_path;

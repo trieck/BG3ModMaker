@@ -40,16 +40,9 @@ END
 BEGIN
     "\r\n"
     "#include ""ribbon.rc2""\r\n"
+    "#include ""Version.rc2""\r\n"
     "\0"
 END
-
-4 TEXTINCLUDE
-BEGIN
-"\r\n"
-"#include ""Version.rc2""\r\n"
-"\0"
-END
-
 
 #endif    // APSTUDIO_INVOKED
 
@@ -158,6 +151,8 @@ IDR_MAINFRAME ACCELERATORS
 BEGIN
     "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
     "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
+    "A",            ID_FILE_SAVE_ALL,       VIRTKEY, CONTROL, NOINVERT
+    "F",            ID_TOOL_FIND_REPLACE,   VIRTKEY, CONTROL, NOINVERT
 END
 
 
@@ -209,6 +204,8 @@ ID_TOOL_BG3             BITMAP                  "bg3.bmp"
 ID_FILE_NEW_FOLDER      BITMAP                  "wizard.bmp"
 
 IDB_NEW_PROJECT_LARGE   BITMAP                  "new-project-large.bmp"
+
+ID_TOOL_FIND_REPLACE    BITMAP                  "find.bmp"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -424,6 +421,24 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,106,160,10
 END
 
+IDD_FIND_REPLACE DIALOGEX 0, 0, 231, 87
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Find and Replace"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    LTEXT           "Find what:",-1,6,10,50,8
+    EDITTEXT        IDC_E_FIND,60,8,160,12,ES_AUTOHSCROLL
+    LTEXT           "Replace with:",-1,6,26,50,8
+    EDITTEXT        IDC_E_REPLACE,60,24,160,12,ES_AUTOHSCROLL
+    CONTROL         "Match case",IDC_B_MATCHCASE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,60,42,46,10
+    CONTROL         "Whole word",IDC_B_WHOLEWORD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,121,42,53,10
+    CONTROL         "Regex",IDC_B_REGEX,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,189,42,31,10
+    DEFPUSHBUTTON   "Find Next",IDC_B_FIND_NEXT,5,64,50,14
+    PUSHBUTTON      "Replace",IDC_B_REPLACE,60,64,50,14
+    PUSHBUTTON      "Replace All",IDC_B_REPLACE_ALL,115,64,60,14
+    PUSHBUTTON      "Cancel",IDCANCEL,180,64,45,14
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -579,6 +594,10 @@ BEGIN
         BOTTOMMARGIN, 136
         HORZGUIDE, 8
     END
+
+    IDD_FIND_REPLACE, DIALOG
+    BEGIN
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -669,6 +688,11 @@ BEGIN
 END
 
 IDD_NEW_PROJECT_BUILD AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_FIND_REPLACE AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

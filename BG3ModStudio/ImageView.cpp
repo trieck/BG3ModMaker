@@ -438,6 +438,16 @@ BOOL ImageView::IsDirty() const
     return FALSE;
 }
 
+BOOL ImageView::IsEditable() const
+{
+    return FALSE;
+}
+
+BOOL ImageView::IsText() const
+{
+    return FALSE;
+}
+
 HRESULT ImageView::CreateDevResources()
 {
     DiscardDevResources();

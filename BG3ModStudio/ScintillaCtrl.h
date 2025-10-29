@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Scintilla.h"
+#include "ScintillaTypes.h"
+#include "ScintillaStructures.h"
 #include "ILexer.h"
 
 extern "C" Scintilla::ILexer5* __stdcall CreateLexer(const char* name);
@@ -120,16 +122,58 @@ public:
         return SendMessage(this->m_hWnd, SCI_SETTEXT, 0, reinterpret_cast<LPARAM>(text));
     }
 
-    CStringA GetText()
+    int GetTextLength() const
     {
-        int length = static_cast<int>(SendMessage(this->m_hWnd, SCI_GETTEXTLENGTH, 0, 0));
+        return static_cast<int>(SendMessage(this->m_hWnd, SCI_GETTEXTLENGTH, 0, 0));
+    }
+
+    int GetSelectionStart() const
+    {
+        return static_cast<int>(SendMessage(this->m_hWnd, SCI_GETSELECTIONSTART, 0, 0));
+    }
+
+    int GetSelectionEnd() const
+    {
+        return static_cast<int>(SendMessage(this->m_hWnd, SCI_GETSELECTIONEND, 0, 0));
+    }
+
+    int GetCurrentPos() const
+    {
+        return static_cast<int>(SendMessage(this->m_hWnd, SCI_GETCURRENTPOS, 0, 0));
+    }
+
+    CStringA GetText() const
+    {
+        auto length = GetTextLength();
         if (length == 0) {
-            return CStringA();
+            return {};
         }
 
         CStringA contents;
         contents.GetBufferSetLength(length + 1);
         SendMessage(this->m_hWnd, SCI_GETTEXT, length, reinterpret_cast<LPARAM>(contents.GetBuffer()));
+        contents.ReleaseBuffer();
+
+        return contents;
+    }
+
+    CStringA GetTextRange(int start, int end) const
+    {
+        if (end <= start) {
+            return {};
+        }
+
+        auto length = end - start;
+        CStringA contents;
+        contents.GetBufferSetLength(length + 1);
+
+        Scintilla::TextRange tr{};
+        tr.chrg.cpMin = start;
+        tr.chrg.cpMax = end;
+        tr.lpstrText = contents.GetBuffer();
+
+        SendMessage(this->m_hWnd, SCI_GETTEXTRANGE, 0, reinterpret_cast<LPARAM>(&tr));
+
         contents.ReleaseBuffer();
 
         return contents;
@@ -143,6 +187,61 @@ public:
     LRESULT SetKeywords(int keywordSet, LPCSTR keywords)
     {
         return SendMessage(this->m_hWnd, SCI_SETKEYWORDS, keywordSet, reinterpret_cast<LPARAM>(keywords));
+    }
+
+    int FindText(int flags, Scintilla::TextToFind* pTextToFind) const
+    {
+        return static_cast<int>(SendMessage(this->m_hWnd, SCI_FINDTEXT, flags, reinterpret_cast<LPARAM>(pTextToFind)));
+    }
+
+    LRESULT SetSel(Scintilla::PositionCR cpMin, Scintilla::PositionCR cpMax)
+    {
+        return SendMessage(this->m_hWnd, SCI_SETSEL, cpMin, cpMax);
+    }
+
+    LRESULT ScrollCaret()
+    {
+        return SendMessage(this->m_hWnd, SCI_SCROLLCARET, 0, 0);
+    }
+
+    LRESULT SetTargetStart(Scintilla::PositionCR start)
+    {
+        return SendMessage(this->m_hWnd, SCI_SETTARGETSTART, start, 0);
+    }
+
+    int GetTargetStart() const
+    {
+        return static_cast<int>(SendMessage(this->m_hWnd, SCI_GETTARGETSTART, 0, 0));
+    }
+
+    int GetTargetEnd() const
+    {
+        return static_cast<int>(SendMessage(this->m_hWnd, SCI_GETTARGETEND, 0, 0));
+    }
+
+    LRESULT SetTargetEnd(Scintilla::PositionCR end)
+    {
+        return SendMessage(this->m_hWnd, SCI_SETTARGETEND, end, 0);
+    }
+
+    LRESULT ReplaceTarget(int length, LPCSTR text)
+    {
+        return SendMessage(this->m_hWnd, SCI_REPLACETARGET, length, reinterpret_cast<LPARAM>(text));
+    }
+
+    LRESULT GotoPos(Scintilla::PositionCR pos)
+    {
+        return SendMessage(this->m_hWnd, SCI_GOTOPOS, pos, 0);
+    }
+
+    LRESULT BeginUndoAction()
+    {
+        return SendMessage(this->m_hWnd, SCI_BEGINUNDOACTION, 0, 0);
+    }
+
+    LRESULT EndUndoAction()
+    {
+        return SendMessage(this->m_hWnd, SCI_ENDUNDOACTION, 0, 0);
     }
 };
 

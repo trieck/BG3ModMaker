@@ -1,5 +1,4 @@
 #include "stdafx.h"
-
 #include "Exception.h"
 #include "FileStream.h"
 #include "TextFileView.h"
@@ -191,6 +190,16 @@ BOOL TextFileView::IsDirty() const
     return m_bDirty;
 }
 
+BOOL TextFileView::IsEditable() const
+{
+    return !m_bReadOnly;
+}
+
+BOOL TextFileView::IsText() const
+{
+    return TRUE;
+}
+
 const CString& TextFileView::GetPath() const
 {
     return m_path;
@@ -199,6 +208,19 @@ const CString& TextFileView::GetPath() const
 void TextFileView::SetPath(const CString& path)
 {
     m_path = path;
+}
+
+BOOL TextFileView::FindReplace(LPFINDREPLACE_PARAMS params)
+{
+    switch (params->cmd) {
+    case FRC_FIND_NEXT:
+        return FindNext(params);
+    case FRC_REPLACE:
+        return Replace(params);
+    case FRC_REPLACE_ALL:
+        return ReplaceAll(params);
+    }
+    return TRUE;
 }
 
 FileEncoding TextFileView::GetEncoding() const
@@ -267,6 +289,129 @@ BOOL TextFileView::WriteBOM(StreamBase& stream) const
     }
 
     return FALSE;
+}
+
+BOOL TextFileView::FindText(LPFINDREPLACE_PARAMS params, Scintilla::TextToFind& ttf)
+{
+    auto flags = 0;
+    if (params->matchCase) {
+        flags |= SCFIND_MATCHCASE;
+    }
+    if (params->wholeWord) {
+        flags |= SCFIND_WHOLEWORD;
+    }
+    if (params->regex) {
+        flags |= SCFIND_REGEXP;
+    }
+
+    auto pos = m_edit.FindText(flags, &ttf);
+    if (pos == -1) {
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+BOOL TextFileView::FindNext(LPFINDREPLACE_PARAMS params)
+{
+    ATLASSERT(params->cmd == FRC_FIND_NEXT);
+
+    if (params->findText.IsEmpty()) {
+        return FALSE;
+    }
+
+    Scintilla::TextToFind ttf{};
+    CStringA findText(params->findText.GetString());
+    ttf.lpstrText = findText;
+    ttf.chrg.cpMin = m_edit.GetCurrentPos();
+    ttf.chrg.cpMax = m_edit.GetTextLength();
+    if (!FindText(params, ttf)) {
+        return FALSE;
+    }
+
+    m_edit.SetSel(ttf.chrgText.cpMin, ttf.chrgText.cpMax);
+    m_edit.ScrollCaret();
+
+    return TRUE;
+}
+
+BOOL TextFileView::Replace(LPFINDREPLACE_PARAMS params)
+{
+    ATLASSERT(params->cmd == FRC_REPLACE);
+
+    if (params->findText.IsEmpty()) {
+        return FALSE;
+    }
+
+    Scintilla::TextToFind ttf{};
+    CStringA findText(params->findText.GetString());
+    ttf.lpstrText = findText;
+    ttf.chrg.cpMin = m_edit.GetCurrentPos();
+    ttf.chrg.cpMax = m_edit.GetTextLength();
+    if (!FindText(params, ttf)) {
+        return FALSE;
+    }
+
+    m_edit.SetSel(ttf.chrgText.cpMin, ttf.chrgText.cpMax);
+
+    // Replace the target (Scintilla uses target range for replacement)
+    m_edit.SetTargetStart(ttf.chrgText.cpMin);
+    m_edit.SetTargetEnd(ttf.chrgText.cpMax);
+
+    CStringA replaceText(params->replaceText);
+    m_edit.ReplaceTarget(-1, replaceText);
+
+    // Select the replaced text
+    auto newStart = m_edit.GetTargetStart();
+    auto newEnd = m_edit.GetTargetEnd();
+
+    m_edit.SetSel(newStart, newEnd);
+    m_edit.ScrollCaret();
+
+    return TRUE;
+}
+
+BOOL TextFileView::ReplaceAll(LPFINDREPLACE_PARAMS params)
+{
+    ATLASSERT(params->cmd == FRC_REPLACE_ALL);
+
+    if (params->findText.IsEmpty()) {
+        return FALSE;
+    }
+
+    m_edit.BeginUndoAction();
+
+    Scintilla::TextToFind ttf{};
+    CStringA findText(params->findText.GetString());
+    ttf.lpstrText = findText;
+    ttf.chrg.cpMin = 0;
+    ttf.chrg.cpMax = m_edit.GetTextLength();
+
+    CStringA replaceText(params->replaceText);
+
+    auto count = 0;
+    while (FindText(params, ttf)) {
+        // Replace the target (Scintilla uses target range for replacement)
+        m_edit.SetTargetStart(ttf.chrgText.cpMin);
+        m_edit.SetTargetEnd(ttf.chrgText.cpMax);
+        m_edit.ReplaceTarget(-1, replaceText);
+
+        // Update search range
+        ttf.chrg.cpMin = m_edit.GetTargetEnd();
+        ttf.chrg.cpMax = m_edit.GetTextLength();
+        count++;
+    }
+
+    m_edit.EndUndoAction();
+
+    if (count == 0) {
+        return FALSE;
+    }
+
+    m_edit.GotoPos(ttf.chrg.cpMin);
+    m_edit.ScrollCaret();
+
+    return TRUE;
 }
 
 BOOL TextFileView::Flush()

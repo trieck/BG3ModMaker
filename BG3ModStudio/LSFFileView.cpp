@@ -276,6 +276,16 @@ BOOL LSFFileView::IsDirty() const
     return FALSE;
 }
 
+BOOL LSFFileView::IsEditable() const
+{
+    return FALSE;
+}
+
+BOOL LSFFileView::IsText() const
+{
+    return FALSE;
+}
+
 const CString& LSFFileView::GetPath() const
 {
     return m_path;

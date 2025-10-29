@@ -7,8 +7,6 @@
 #include "resources/ribbon.h"
 #include "ShellNotifyRegistrar.h"
 
-#define WM_FILE_CHANGED (WM_APP + 1)
-
 class MainFrame : public CRibbonFrameWindowImpl<MainFrame>,
                   public CMessageFilter,
                   public CIdleHandler
@@ -17,10 +15,10 @@ public:
     DECLARE_FRAME_WND_CLASS(nullptr, IDR_MAINFRAME)
 
     BOOL PreTranslateMessage(MSG* pMsg) override;
-    BOOL OnIdle() override;
     BOOL DefCreate();
 
     LRESULT OnCreate(LPCREATESTRUCT pcs);
+    BOOL OnIdle() override;
 
     BEGIN_UPDATE_UI_MAP(MainFrame)
         UPDATE_ELEMENT(ID_FILE_CLOSE, UPDUI_MENUPOPUP)
@@ -28,6 +26,7 @@ public:
         UPDATE_ELEMENT(ID_FILE_SAVE, UPDUI_MENUPOPUP)
         UPDATE_ELEMENT(ID_FILE_SAVE_ALL, UPDUI_MENUPOPUP)
         UPDATE_ELEMENT(ID_TOOL_BG3, UPDUI_MENUPOPUP)
+        UPDATE_ELEMENT(ID_TOOL_FIND_REPLACE, UPDUI_MENUPOPUP)
         UPDATE_ELEMENT(ID_TOOL_LOCA, UPDUI_MENUPOPUP)
         UPDATE_ELEMENT(ID_TOOL_LSF, UPDUI_MENUPOPUP)
         UPDATE_ELEMENT(ID_TOOL_PACKAGE, UPDUI_MENUPOPUP)
@@ -44,8 +43,9 @@ public:
         MSG_WM_CREATE(OnCreate)
         MSG_WM_CLOSE(OnClose)
         MSG_WM_COPYDATA(OnCopyData)
-
         MESSAGE_HANDLER2(WM_FILE_CHANGED, OnFileChanged)
+        MESSAGE_HANDLER4(WM_HAS_EDITABLE_VIEW, OnHasEditableView)
+        MESSAGE_HANDLER2(WM_FIND_REPLACE_COMMAND, OnFindReplace)
         COMMAND_ID_HANDLER3(ID_APP_ABOUT, OnFileAbout)
         COMMAND_ID_HANDLER3(ID_APP_EXIT, OnFileExit)
         COMMAND_ID_HANDLER3(ID_FILE_CLOSE, OnFolderClose)
@@ -56,6 +56,7 @@ public:
         COMMAND_ID_HANDLER3(ID_FILE_SAVE, OnFileSave)
         COMMAND_ID_HANDLER3(ID_FILE_SAVE_ALL, OnFileSaveAll)
         COMMAND_ID_HANDLER3(ID_TOOL_BG3, OnLaunchGame)
+        COMMAND_ID_HANDLER3(ID_TOOL_FIND_REPLACE, OnFindReplace)
         COMMAND_ID_HANDLER3(ID_TOOL_GAMEOBJECT, OnGameObject)
         COMMAND_ID_HANDLER3(ID_TOOL_ICON_EXPLORER, OnIconExplorer)
         COMMAND_ID_HANDLER3(ID_TOOL_INDEX, OnIndex)
@@ -91,6 +92,8 @@ public:
 
 private:
     LRESULT OnCopyData(HWND hWnd, PCOPYDATASTRUCT pcds);
+    LRESULT OnHasEditableView();
+    void OnFindReplace(WPARAM, LPARAM);
     void OnClose();
     void OnConvertLoca();
     void OnConvertLSF();
@@ -99,6 +102,7 @@ private:
     void OnFileExit();
     void OnFileSave();
     void OnFileSaveAll();
+    void OnFindReplace();
     void OnFolderClose();
     void OnFolderOpen();
     void OnFolderPack();
@@ -106,9 +110,10 @@ private:
     void OnIconExplorer();
     void OnIndex();
     void OnLaunchGame();
+    void OnMRUMenuItem(UINT uCode, int nID, HWND hwndCtrl);
     void OnNewFile();
-    void OnNewFolder();
     void OnNewFileHere();
+    void OnNewFolder();
     void OnNewFolderHere();
     void OnPakOpen();
     void OnRenameFile();
@@ -116,7 +121,6 @@ private:
     void OnSettings();
     void OnUUID();
     void OnViewStatusBar();
-    void OnMRUMenuItem(UINT uCode, int nID, HWND hwndCtrl);
 
     LRESULT OnRClick(LPNMHDR pnmh);
     LRESULT OnTabActivated(LPNMHDR pnmhdr);
@@ -129,16 +133,17 @@ private:
 
     using FileCallback = std::function<void(const CStringW& filePath)>;
 
+    BOOL HasEditableView() const;
     BOOL IsFileSelected() const;
     BOOL IsFolderOpen() const;
     BOOL IsFolderSelected() const;
     BOOL IsLSXSelected() const;
     BOOL IsXmlSelected() const;
     BOOL NewFile(LPNMTVDISPINFO pDispInfo);
+    BOOL OpenFolder(const CString& folder);
     BOOL RenameFile(LPNMTVDISPINFO pDispInfo);
     void AddFile(const CString& filename);
     void IterateFiles(HTREEITEM hItem, const FileCallback& callback);
-    void OpenFolder(const CString& folder);
     void ProcessFileChange(LONG event, PIDLIST_ABSOLUTE* pidls);
     void RemoveFile(const CString& filename);
     void RenameFile(const CString& oldname, const CString& newname);

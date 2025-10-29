@@ -2,10 +2,10 @@
 #include "NewProjectSheet.h"
 #include "NewProjectWizard.h"
 
-INT_PTR NewProjectWizard::DoModal()
+INT_PTR NewProjectWizard::DoModal(HWND hWndParent)
 {
     NewProjectSheet sheet(this);
-    return sheet.DoModal();
+    return sheet.DoModal(hWndParent);
 }
 
 void NewProjectWizard::SetProjectFolder(const CString& folder)

@@ -104,6 +104,12 @@
             <Command.TooltipDescription>Launch Game</Command.TooltipDescription>
         </Command>
 
+        <Command Name="TOOL_FIND_REPLACE" Symbol="ID_TOOL_FIND_REPLACE" Id="163">
+            <Command.LabelTitle>Find and Replace</Command.LabelTitle>
+            <Command.TooltipTitle>Find and Replace</Command.TooltipTitle>
+            <Command.TooltipDescription>Find and Replace</Command.TooltipDescription>
+        </Command>
+
         <Command Name="TOOL_SETTINGS" Symbol="ID_TOOL_SETTINGS" Id="123">
             <Command.LabelTitle>Settings</Command.LabelTitle>
             <Command.TooltipTitle>Settings</Command.TooltipTitle>
@@ -295,6 +301,7 @@
                                 <ControlNameDefinition Name="TOOL_GAMEOBJECT" />
                                 <ControlNameDefinition Name="TOOL_ICON_EXPLORER" />
                                 <ControlNameDefinition Name="TOOL_UUID" />
+                                <ControlNameDefinition Name="TOOL_FIND_REPLACE" />
                                 <ControlNameDefinition Name="TOOL_BG3" />
                                 <ControlNameDefinition Name="TOOL_SETTINGS" />
                             </ControlNameMap>
@@ -321,6 +328,9 @@
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="TOOL_UUID"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="TOOL_FIND_REPLACE"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="TOOL_BG3"
@@ -355,6 +365,9 @@
                                 <ControlSizeDefinition ControlName="TOOL_UUID"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="TOOL_FIND_REPLACE"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="TOOL_BG3"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
@@ -387,6 +400,9 @@
                                 <ControlSizeDefinition ControlName="TOOL_UUID"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="TOOL_FIND_REPLACE"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="TOOL_BG3"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
@@ -403,6 +419,7 @@
                         <Button CommandName="TOOL_GAMEOBJECT" />
                         <Button CommandName="TOOL_ICON_EXPLORER" />
                         <Button CommandName="TOOL_UUID" />
+                        <Button CommandName="TOOL_FIND_REPLACE" />
                         <Button CommandName="TOOL_BG3" />
                         <Button CommandName="TOOL_SETTINGS" />
                     </Group>

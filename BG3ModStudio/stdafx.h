@@ -119,9 +119,37 @@ struct RenameInfo
     CString newPath;
 };
 
+enum FindReplaceCmd
+{
+    FRC_FIND_NEXT,
+    FRC_REPLACE,
+    FRC_REPLACE_ALL
+};
+
+typedef struct FINDREPLACE_PARAMS
+{
+    FindReplaceCmd cmd;
+    CString findText;
+    CString replaceText;
+    BOOL matchCase;
+    BOOL wholeWord;
+    BOOL regex;
+} *LPFINDREPLACE_PARAMS;
+
+struct ITextFindable
+{
+    virtual ~ITextFindable() = default;
+    virtual BOOL FindReplace(LPFINDREPLACE_PARAMS params) = 0;
+};
+
 constexpr DWORD CD_RENAME_EVENT = 0x52454E41; // 'RENA'
 
 extern CAppModule _Module;
+
+// Custom Windows Messages
+#define WM_FILE_CHANGED         (WM_APP + 1)
+#define WM_HAS_EDITABLE_VIEW    (WM_APP + 2)
+#define WM_FIND_REPLACE_COMMAND (WM_APP + 3)
 
 #if defined _M_IX86
 #pragma comment(linker, "/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")

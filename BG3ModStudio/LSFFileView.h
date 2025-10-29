@@ -37,6 +37,8 @@ public:
     BOOL SaveFileAs(const CString& path) override;
     BOOL Destroy() override;
     BOOL IsDirty() const override;
+    BOOL IsEditable() const override;
+    BOOL IsText() const override;
     const CString& GetPath() const override;
     VOID SetPath(const CString& path) override;
     FileEncoding GetEncoding() const override;

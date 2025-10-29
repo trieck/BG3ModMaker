@@ -65,6 +65,8 @@
 #define IDR_LOCA_TEMPLATE               159
 #define IDR_ROOT_TEMPLATES_TEMPLATE     160
 #define IDR_TREASURE_TEMPLATE           161
+#define IDD_FIND_REPLACE                162
+#define ID_TOOL_FIND_REPLACE            163
 #define IDC_PROGRESS_INDEX              1000
 #define IDC_PAKFILE                     1001
 #define IDC_INDEX_FILE                  1002
@@ -123,6 +125,14 @@
 #define IDC_E_MOD_NAME                  1057
 #define IDC_E_AUTHOR_NAME               1058
 #define IDC_CHK_OPEN_NEW_PROJECT        1059
+#define IDC_E_FIND                      1060
+#define IDC_E_REPLACE                   1061
+#define IDC_B_MATCHCASE                 1062
+#define IDC_B_WHOLEWORD                 1063
+#define IDC_B_REGEX                     1064
+#define IDC_B_REPLACE                   1065
+#define IDC_B_REPLACE_ALL               1066
+#define IDC_B_FIND_NEXT                 1067
 #define ATL_IDC_TAB_CONTROL             0x3020
 #define ID_APPLY_NOW                    0x3021
 #define ID_WIZBACK                      0x3023
@@ -254,9 +264,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        162
+#define _APS_NEXT_RESOURCE_VALUE        164
 #define _APS_NEXT_COMMAND_VALUE         40034
-#define _APS_NEXT_CONTROL_VALUE         1060
+#define _APS_NEXT_CONTROL_VALUE         1068
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

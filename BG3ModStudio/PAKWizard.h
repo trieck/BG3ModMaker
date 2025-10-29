@@ -7,7 +7,7 @@ public:
     explicit PAKWizard(const CString& root);
     ~PAKWizard();
 
-    INT_PTR DoModal();
+    INT_PTR DoModal(HWND hWndParent = GetActiveWindow());
     const CString& GetRoot() const;
 
     BOOL GetGenerateLoca() const;

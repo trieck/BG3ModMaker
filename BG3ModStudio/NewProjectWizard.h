@@ -6,7 +6,7 @@ public:
     NewProjectWizard() = default;
     ~NewProjectWizard() = default;
 
-    INT_PTR DoModal();
+    INT_PTR DoModal(HWND hWndParent = GetActiveWindow());
 
     void SetProjectFolder(const CString& folder);
     const CString& GetProjectFolder() const;

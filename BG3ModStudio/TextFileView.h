@@ -6,7 +6,10 @@
 #include "StreamBase.h"
 #include "UTF8Stream.h"
 
-class TextFileView : public CWindowImpl<TextFileView>, public IFileView
+class TextFileView :
+    public CWindowImpl<TextFileView>,
+    public IFileView,
+    public ITextFindable
 {
 public:
     using Base = CWindowImpl;
@@ -31,27 +34,36 @@ public:
 
     // IFileView
     BOOL Create(HWND parent, _U_RECT rect = nullptr, DWORD dwStyle = 0, DWORD dwStyleEx = 0) override;
-    BOOL LoadFile(const CString& path) override;
-    BOOL LoadBuffer(const CString& path, const ByteBuffer& buffer) override;
-    BOOL SaveFile() override;
-    BOOL SaveFileAs(const CString& path) override;
     BOOL Destroy() override;
     BOOL IsDirty() const override;
+    BOOL IsEditable() const override;
+    BOOL IsText() const override;
+    BOOL LoadBuffer(const CString& path, const ByteBuffer& buffer) override;
+    BOOL LoadFile(const CString& path) override;
+    BOOL SaveFile() override;
+    BOOL SaveFileAs(const CString& path) override;
     const CString& GetPath() const override;
-    VOID SetPath(const CString& path) override;
     FileEncoding GetEncoding() const override;
     operator HWND() const override;
+    VOID SetPath(const CString& path) override;
+
+    // ITextFindable
+    BOOL FindReplace(LPFINDREPLACE_PARAMS params) override;
 
     void SetReadOnly(BOOL);
 
 private:
-    BOOL Write(LPCWSTR text) const;
-    BOOL Write(LPCWSTR text, size_t length) const;
+    BOOL FindNext(LPFINDREPLACE_PARAMS params);
+    BOOL FindText(LPFINDREPLACE_PARAMS params, Scintilla::TextToFind& ttf);
+    BOOL Flush();
+    BOOL Replace(LPFINDREPLACE_PARAMS params);
+    BOOL ReplaceAll(LPFINDREPLACE_PARAMS params);
     BOOL Write(LPCSTR text) const;
     BOOL Write(LPCSTR text, size_t length) const;
-    static BOOL SkipBOM(LPSTR& str, size_t size);
+    BOOL Write(LPCWSTR text) const;
+    BOOL Write(LPCWSTR text, size_t length) const;
     BOOL WriteBOM(StreamBase& stream) const;
-    BOOL Flush();
+    static BOOL SkipBOM(LPSTR& str, size_t size);
 
     CString m_path;
     FileEncoding m_encoding{UNKNOWN};

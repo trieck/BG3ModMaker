@@ -1,9 +1,9 @@
 #include "stdafx.h"
-
 #include "AboutDlg.h"
 #include "COMError.h"
 #include "FileDialogEx.h"
 #include "FileOperation.h"
+#include "FindReplaceDlg.h"
 #include "GameObjectDlg.h"
 #include "IconExplorerDlg.h"
 #include "IndexDlg.h"
@@ -38,6 +38,15 @@ BOOL MainFrame::DefCreate()
 
 BOOL MainFrame::PreTranslateMessage(MSG* pMsg)
 {
+    if (pMsg->message == WM_KEYDOWN && (GetKeyState(VK_CONTROL) & 0x8000)) {
+        if (pMsg->wParam == 'F') {
+            if (HasEditableView()) {
+                PostMessage(WM_COMMAND, ID_TOOL_FIND_REPLACE);
+            }
+            return TRUE; // suppress default accelerator if not valid
+        }
+    }
+
     return CFrameWindowImpl::PreTranslateMessage(pMsg);
 }
 
@@ -224,7 +233,7 @@ void MainFrame::OnSearch()
 void MainFrame::OnSettings()
 {
     SettingsDlg dlg;
-    dlg.DoModal();
+    dlg.DoModal(*this);
 }
 
 void MainFrame::OnUUID()
@@ -235,17 +244,22 @@ void MainFrame::OnUUID()
 
 void MainFrame::OnFileSave()
 {
-    auto activeFile = m_filesView.ActiveFile();
-    ATLASSERT(activeFile != nullptr);
+    auto view = m_filesView.ActiveView();
+    ATLASSERT(view != nullptr);
 
-    m_filesView.SaveFile(activeFile);
+    m_filesView.SaveFile(view);
 
-    AddFile(activeFile->GetPath());
+    AddFile(view->GetPath());
 }
 
 void MainFrame::OnFileSaveAll()
 {
     m_filesView.SaveAll();
+}
+
+void MainFrame::OnFindReplace()
+{
+    FindReplaceDlg::RunOnce(*this);
 }
 
 void MainFrame::OnFileExit()
@@ -320,7 +334,7 @@ void MainFrame::OnDeleteFile()
 void MainFrame::OnFileAbout()
 {
     AboutDlg dlg;
-    dlg.DoModal();
+    dlg.DoModal(*this);
 }
 
 void MainFrame::OnNewFile()
@@ -333,7 +347,7 @@ void MainFrame::OnNewFile()
 void MainFrame::OnNewFolder()
 {
     NewProjectWizard wizard;
-    if (wizard.DoModal() == IDOK && wizard.GetOpenNewProject()) {
+    if (wizard.DoModal(*this) == IDOK && wizard.GetOpenNewProject()) {
         const auto& projectFolder = wizard.GetProjectFolder();
         if (!projectFolder.IsEmpty()) {
             OpenFolder(projectFolder);
@@ -794,6 +808,11 @@ void MainFrame::OnFileChanged(WPARAM wParam, LPARAM lParam)
     }
 }
 
+BOOL MainFrame::HasEditableView() const
+{
+    return m_filesView.ActiveViewIsEditable();
+}
+
 void MainFrame::ProcessFileChange(LONG event, PIDLIST_ABSOLUTE* pidls)
 {
     if (!m_folderView.IsWindow()) {
@@ -1131,18 +1150,18 @@ void MainFrame::IterateFiles(HTREEITEM hItem, const FileCallback& callback)
     } while (hItem);
 }
 
-void MainFrame::OpenFolder(const CString& folder)
+BOOL MainFrame::OpenFolder(const CString& folder)
 {
+    auto hr = SHParseDisplayName(folder, nullptr, m_rootPIDL.put(), 0, nullptr);
+    if (FAILED(hr)) {
+        CoMessageBox(*this, hr, nullptr, _T("Error"), MB_ICONERROR);
+        return FALSE;
+    }
+
     m_filesView.CloseAllFiles();
     m_folderView.SetFolder(folder);
 
     UpdateTitle();
-
-    auto hr = SHParseDisplayName(folder, nullptr, m_rootPIDL.put(), 0, nullptr);
-    if (FAILED(hr)) {
-        CoMessageBox(*this, hr, nullptr, _T("Failed to get PIDL for folder."), MB_ICONERROR);
-        return;
-    }
 
     SHChangeNotifyEntry entry{m_rootPIDL.get(), TRUE};
     m_notify.reset(SHChangeNotifyRegister(
@@ -1153,6 +1172,8 @@ void MainFrame::OpenFolder(const CString& folder)
         1, &entry));
 
     m_mru.AddToList(folder);
+
+    return TRUE;
 }
 
 void MainFrame::OnViewStatusBar()
@@ -1167,8 +1188,12 @@ void MainFrame::OnMRUMenuItem(UINT /*uCode*/, int nID, HWND /*hwndCtrl*/)
 {
     CString folder;
 
-    if (m_mru.GetFromList(nID, folder)) {
-        OpenFolder(folder);
+    if (!m_mru.GetFromList(nID, folder)) {
+        return;
+    }
+
+    if (!OpenFolder(folder)) {
+        m_mru.RemoveFromList(nID);
     }
 }
 
@@ -1188,10 +1213,36 @@ LRESULT MainFrame::OnCopyData(HWND hWnd, PCOPYDATASTRUCT pcds)
     return FALSE;
 }
 
+LRESULT MainFrame::OnHasEditableView()
+{
+    return HasEditableView();
+}
+
+void MainFrame::OnFindReplace(WPARAM, LPARAM lParam)
+{
+    auto* params = reinterpret_cast<LPFINDREPLACE_PARAMS>(lParam);
+    if (params == nullptr) {
+        return; // invalid params
+    }
+
+    auto pView = m_filesView.ActiveView();
+    if (pView == nullptr) {
+        return; // no active view
+    }
+
+    auto* pfindable = dynamic_cast<ITextFindable*>(pView.get());
+    if (pfindable == nullptr) {
+        return; // not findable
+    }
+
+    pfindable->FindReplace(params);
+}
+
 BOOL MainFrame::OnIdle()
 {
     UIEnable(ID_FILE_CLOSE, IsFolderOpen());
     UIEnable(ID_FILE_NEW, IsFolderOpen());
+    UIEnable(ID_TOOL_FIND_REPLACE, HasEditableView());
     UIEnable(ID_TOOL_LOCA, IsXmlSelected());
     UIEnable(ID_TOOL_LSF, IsLSXSelected());
     UIEnable(ID_TOOL_PACKAGE, IsFolderOpen());

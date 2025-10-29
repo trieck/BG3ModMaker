@@ -10,10 +10,10 @@ PAKWizard::~PAKWizard()
 {
 }
 
-INT_PTR PAKWizard::DoModal()
+INT_PTR PAKWizard::DoModal(HWND hWndParent)
 {
     PAKWizSheet sheet(this);
-    return sheet.DoModal();
+    return sheet.DoModal(hWndParent);
 }
 
 const CString& PAKWizard::GetRoot() const

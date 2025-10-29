@@ -388,6 +388,16 @@ BOOL BinaryFileView::IsDirty() const
     return FALSE;
 }
 
+BOOL BinaryFileView::IsEditable() const
+{
+    return FALSE;
+}
+
+BOOL BinaryFileView::IsText() const
+{
+    return FALSE;
+}
+
 const CString& BinaryFileView::GetPath() const
 {
     return m_path;

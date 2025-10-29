@@ -179,6 +179,9 @@
     <ClInclude Include="ResourceHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FindReplaceDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BG3ModStudio.cpp">
@@ -313,6 +316,9 @@
     <ClCompile Include="ResourceHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FindReplaceDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="ribbon.xml">
@@ -416,12 +422,12 @@
     <Image Include="resources\new-project-large.bmp">
       <Filter>Resources</Filter>
     </Image>
+    <Image Include="resources\find.bmp">
+      <Filter>Resources</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\BG3ModStudio.rc">
-      <Filter>Resources</Filter>
-    </ResourceCompile>
-    <ResourceCompile Include="resources\Version.rc2">
       <Filter>Resources</Filter>
     </ResourceCompile>
   </ItemGroup>

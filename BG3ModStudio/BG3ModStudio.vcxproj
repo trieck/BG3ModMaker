@@ -186,6 +186,7 @@
     <ClInclude Include="DocStyler.h" />
     <ClInclude Include="FileOperation.h" />
     <ClInclude Include="FileViewContainer.h" />
+    <ClInclude Include="FindReplaceDlg.h" />
     <ClInclude Include="FormatToken.h" />
     <ClInclude Include="GameObjectDlg.h" />
     <ClInclude Include="IconDlg.h" />
@@ -243,6 +244,7 @@
     <ClCompile Include="DocStyler.cpp" />
     <ClCompile Include="FileOperation.cpp" />
     <ClCompile Include="FileViewContainer.cpp" />
+    <ClCompile Include="FindReplaceDlg.cpp" />
     <ClCompile Include="GameObjectDlg.cpp" />
     <ClCompile Include="IconDlg.cpp" />
     <ClCompile Include="IconExplorerDlg.cpp" />
@@ -270,9 +272,6 @@
     <ClCompile Include="PIDL.cpp" />
     <ClCompile Include="ResourceHelper.cpp" />
     <ClCompile Include="Win32ErrorMessage.cpp" />
-    <ResourceCompile Include="resources\Version.rc2">
-      <FileType>RC</FileType>
-    </ResourceCompile>
     <ClCompile Include="SearchDlg.cpp" />
     <ClCompile Include="SettingsDlg.cpp" />
     <ClCompile Include="ShellHelper.cpp" />
@@ -315,6 +314,7 @@
     <Image Include="resources\exit.bmp" />
     <Image Include="resources\file.ico" />
     <Image Include="resources\filenew.bmp" />
+    <Image Include="resources\find.bmp" />
     <Image Include="resources\folder.ico" />
     <Image Include="resources\game-object.bmp" />
     <Image Include="resources\gear.bmp" />
