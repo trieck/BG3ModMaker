@@ -67,6 +67,7 @@
 #define IDR_TREASURE_TEMPLATE           161
 #define IDD_FIND_REPLACE                162
 #define ID_TOOL_FIND_REPLACE            163
+#define IDD_VALUE_VIEW                  164
 #define IDC_PROGRESS_INDEX              1000
 #define IDC_PAKFILE                     1001
 #define IDC_INDEX_FILE                  1002
@@ -133,6 +134,8 @@
 #define IDC_B_REPLACE                   1065
 #define IDC_B_REPLACE_ALL               1066
 #define IDC_B_FIND_NEXT                 1067
+#define IDC_EDIT1                       1069
+#define IDC_E_VALUE                     1069
 #define ATL_IDC_TAB_CONTROL             0x3020
 #define ID_APPLY_NOW                    0x3021
 #define ID_WIZBACK                      0x3023
@@ -159,6 +162,8 @@
 #define ID_VALUE_COPYVALUE              40030
 #define ID_TREE_NEWFOLDERHERE           40031
 #define ID_TREE_RENAME_FILE             40032
+#define ID_ATTRIBUTE_VIEWVALUE          40034
+#define ID_ATTRIBUTE_VIEW_VALUE         40035
 #define ATL_IDS_IDLEMESSAGE             0xE001
 #define ID_FILE_NEW                     0xE100
 #define ID_FILE_OPEN                    0xE101
@@ -264,9 +269,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        164
-#define _APS_NEXT_COMMAND_VALUE         40034
-#define _APS_NEXT_CONTROL_VALUE         1068
+#define _APS_NEXT_RESOURCE_VALUE        166
+#define _APS_NEXT_COMMAND_VALUE         40036
+#define _APS_NEXT_CONTROL_VALUE         1070
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

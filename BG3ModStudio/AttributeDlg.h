@@ -15,6 +15,7 @@ public:
         MSG_WM_SIZE(OnSize)
         MSG_WM_MOUSEWHEEL(OnMouseWheel)
         MSG_WM_CONTEXTMENU(OnContextMenu)
+        COMMAND_ID_HANDLER3(IDCANCEL, OnClose)
         NOTIFY_HANDLER(IDC_LST_ATTRIBUTES, NM_DBLCLK, OnDoubleClick)
         CHAIN_MSG_MAP(CDialogResize)
     END_MSG_MAP()
@@ -29,11 +30,12 @@ private:
     void AutoAdjustColumns();
 
     BOOL OnInitDialog(HWND /* hWnd */, LPARAM /*lParam*/);
-    void OnClose();
-    void OnSize(UINT /*uMsg*/, const CSize& size);
-    LRESULT OnMouseWheel(UINT nFlags, short zDelta, const CPoint& /*pt*/);
-    void OnContextMenu(const CWindow& wnd, const CPoint& point);
     LRESULT OnDoubleClick(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
+    LRESULT OnMouseWheel(UINT nFlags, short zDelta, const CPoint& /*pt*/);
+    void OnClose();
+    void OnContextMenu(const CWindow& wnd, const CPoint& point);
+    void OnSize(UINT /*uMsg*/, const CSize& size);
+    void ViewValue();
 
     CListViewCtrl m_list;
     CFont m_font;

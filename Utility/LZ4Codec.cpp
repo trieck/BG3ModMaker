@@ -51,7 +51,7 @@ Stream LZ4Codec::decode(const uint8_t* data, size_t size, size_t outputSize, boo
     auto result = LZ4_decompress_safe(reinterpret_cast<const char*>(data),
                                       reinterpret_cast<char*>(output.get()), static_cast<int>(size),
                                       static_cast<int>(outputSize));
-    if (result <= 0) {
+    if (result != static_cast<int>(outputSize)) {
         throw Exception("Failed to decompress data.");
     }
 

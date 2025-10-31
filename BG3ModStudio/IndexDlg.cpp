@@ -29,8 +29,6 @@ BOOL IndexDlg::OnInitDialog(HWND, LPARAM)
     (void)SetWindowTheme(m_progress, L"", L"");
 
     m_progress.SetBarColor(RGB(0, 51, 128)); // Deep ocean blue
-
-
     m_progress.SetBkColor(GetSysColor(COLOR_APPWORKSPACE));
 
     m_indexButton = GetDlgItem(IDOK);
@@ -150,8 +148,9 @@ void IndexDlg::OnIndexingFinished()
         AtlMessageBox(*this, m_lastError.GetString(), _T("Error"), MB_ICONERROR);
         m_lastError.Empty();
     } else {
-        CString msg;
+        m_progress.SetPos(std::numeric_limits<int>::max());
         CString time = StringHelper::fromUTF8(m_timer.str().c_str());
+        CString msg;
         msg.Format(_T("Indexing completed successfully in %s."), time);
         AtlMessageBox(*this, msg.GetString(), _T("Indexing completed"), MB_ICONINFORMATION);
         OnSetState(IDLE, 0);

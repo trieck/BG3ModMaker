@@ -2,6 +2,7 @@
 #include "AttributeDlg.h"
 #include "IconDlg.h"
 #include "Util.h"
+#include "ValueViewDlg.h"
 
 static constexpr auto COLUMN_PADDING = 12;
 
@@ -103,6 +104,26 @@ LRESULT AttributeDlg::OnMouseWheel(UINT nFlags, short zDelta, const CPoint&)
     return 1;
 }
 
+void AttributeDlg::ViewValue()
+{
+    auto selectedRow = m_list.GetSelectedIndex();
+    if (selectedRow < 0) {
+        return; // No item selected
+    }
+
+    CString name, value;
+    m_list.GetItemText(selectedRow, 0, name);
+    m_list.GetItemText(selectedRow, 1, value);
+    if (value.IsEmpty()) {
+        return; // No value to view
+    }
+
+    ValueViewDlg dlg;
+    dlg.SetTitle(name);
+    dlg.SetValue(value);
+    dlg.DoModal(*this);
+}
+
 void AttributeDlg::OnContextMenu(const CWindow& wnd, const CPoint& point)
 {
     if (wnd != m_list) {
@@ -134,6 +155,9 @@ void AttributeDlg::OnContextMenu(const CWindow& wnd, const CPoint& point)
     case ID_ATTRIBUTE_COPYTYPE: // Copy Type
         m_list.GetItemText(selectedRow, 2, text);
         break;
+    case ID_ATTRIBUTE_VIEW_VALUE: // View Value
+        ViewValue();
+        return;
     default:
         return; // Unknown command
     }

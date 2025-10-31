@@ -27,6 +27,7 @@ public:
         COMMAND_ID_HANDLER3(IDC_B_LAST, OnLast)
         COMMAND_ID_HANDLER3(IDC_B_BROWSE, OnBrowse)
         COMMAND_HANDLER3(IDC_E_QUERY, EN_CHANGE, OnQueryChange)
+        COMMAND_ID_HANDLER3(IDCANCEL, OnClose)
         MSG_WM_CONTEXTMENU(OnContextMenu)
         CHAIN_MSG_MAP(CDialogResize)
     END_MSG_MAP()

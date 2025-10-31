@@ -21,45 +21,90 @@ const std::unordered_set<std::string> STOP_WORDS = {
 
 std::string normalizeText(const std::string& text)
 {
-    std::string lowered = text;
-
-    // only apply case/digit splitting to non-hex strings
-    if (!std::regex_match(lowered, std::regex("^[A-Fa-f0-9\\-]+$"))) {
-        // insert spaces at case-change and letter-digit boundaries
-        lowered = std::regex_replace(lowered, std::regex("([a-z])([A-Z])"), "$1 $2");
-        lowered = std::regex_replace(lowered, std::regex("([A-Za-z])([0-9])"), "$1 $2");
-        lowered = std::regex_replace(lowered, std::regex("([0-9])([A-Za-z])"), "$1 $2");
+    if (text.length() < 2) {
+        return "";
     }
 
-    // lowercase everything
-    std::ranges::transform(lowered, lowered.begin(), tolower);
+    // Handle empty GUID
+    if (text == "00000000-0000-0000-0000-000000000000") {
+        return "";
+    }
+
+    std::string lower = text;
+    std::ranges::transform(lower, lower.begin(), tolower);
 
     std::vector<std::string> tokens;
 
-    // split form
-    auto splitText = std::regex_replace(lowered, std::regex("[^a-z0-9]"), " ");
-    std::istringstream stream(splitText);
+    static const std::regex HEX_WITH_SUFFIX(R"(^[a-f0-9]+;[0-9a-z]+$)");
+    if (std::regex_match(lower, HEX_WITH_SUFFIX)) {
+        auto pos = lower.find(';');
+        tokens.push_back(lower.substr(0, pos));
+        tokens.push_back(lower.substr(pos + 1));
+    } else if (std::regex_match(
+        lower, std::regex(R"(^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$)"))) {
+        tokens.push_back(lower); // full form
+        std::istringstream ss(lower);
+        std::string part;
+        while (std::getline(ss, part, '-')) {
+            if (!part.empty()) {
+                tokens.push_back(part);
+            }
+        }
+    } else if (std::regex_match(text, std::regex(R"(^[A-Za-z0-9_]+$)"))
+        && text.find('_') != std::string::npos) {
+        tokens.push_back(lower); // full form
 
-    std::string word;
-    while (stream >> word) {
-        if (!STOP_WORDS.contains(word) && word.size() > 1) {
-            tokens.push_back(word);
+        // Split on underscores first
+        std::istringstream ss(text);
+        std::string part;
+        while (std::getline(ss, part, '_')) {
+            if (part.size() <= 1) {
+                continue;
+            }
+
+            // Now split case *within each underscore part*
+            if (std::regex_search(part, std::regex("([a-z][A-Z])"))) {
+                std::string split = std::regex_replace(part, std::regex("([a-z])([A-Z])"), "$1 $2");
+                std::ranges::transform(split, split.begin(), tolower);
+                std::istringstream camel(split);
+                std::string w;
+                while (camel >> w) {
+                    if (w.size() > 1) {
+                        tokens.push_back(w);
+                    }
+                }
+            } else if (part.size() > 1) {
+                std::string low = part;
+                std::ranges::transform(low, low.begin(), tolower);
+                tokens.push_back(low);
+            }
+        }
+    } else if (text.find(' ') == std::string::npos &&
+        std::regex_search(text, std::regex("([a-z][A-Z])"))) {
+        std::string split = std::regex_replace(text, std::regex("([a-z])([A-Z])"), "$1 $2");
+        std::ranges::transform(split, split.begin(), tolower);
+        tokens.push_back(lower); // compact form
+
+        std::istringstream ss(split);
+        std::string word;
+        while (ss >> word) {
+            if (word.size() > 1) {
+                tokens.push_back(word);
+            }
+        }
+    } else {
+        std::istringstream ss(lower);
+
+        std::string word;
+        while (ss >> word) {
+            if (word.size() > 1) {
+                tokens.push_back(word);
+            }
         }
     }
 
-    // whole form
-    if (std::regex_search(text, std::regex("[_-]"))) {
-        auto whole = std::regex_replace(text, std::regex("[^A-Za-z0-9_\\-]"), "");
-        auto wholeLower = whole;
-        std::ranges::transform(wholeLower, wholeLower.begin(), tolower);
-        if (wholeLower.size() > 1 && !STOP_WORDS.contains(wholeLower)) {
-            tokens.push_back(wholeLower);
-        }
-    }
-
-    // join
     std::ostringstream out;
-    for (auto i = 0u; i < tokens.size(); ++i) {
+    for (size_t i = 0; i < tokens.size(); ++i) {
         if (i > 0) {
             out << ' ';
         }
@@ -68,6 +113,7 @@ std::string normalizeText(const std::string& text)
 
     return out.str();
 }
+
 
 void addTerms(std::unordered_set<std::string>& terms, const std::string& value)
 {
@@ -83,11 +129,19 @@ void addTerms(std::unordered_set<std::string>& terms, const std::string& value)
     }
 }
 
+
 std::string termsToString(const std::unordered_set<std::string>& terms)
 {
     std::ostringstream values;
+
+    auto i = 0u;
+    const auto count = terms.size();
+
     for (const auto& term : terms) {
-        values << term << " ";
+        values << term;
+        if (++i < count) {
+            values << ' ';
+        }
     }
 
     return values.str();
@@ -210,23 +264,18 @@ void Indexer::indexLSXFile(const PackagedFileInfo& file)
 
             addTerms(terms, value);
 
-            attributes.push_back(attr);
+            attributes.emplace_back(std::move(attr));
         }
 
         if (terms.empty()) {
             continue;
         }
 
-        std::ostringstream values;
-        for (const auto& term : terms) {
-            values << term << " ";
-        }
-
         doc["attributes"] = attributes;
 
         Xapian::Document xdoc;
         m_termgen.set_document(xdoc);
-        m_termgen.index_text(values.str());
+        m_termgen.index_text(termsToString(terms));
         xdoc.set_data(doc.dump(-1, ' ', false, nlohmann::json::error_handler_t::replace));
         m_db->add_document(xdoc);
     }
@@ -347,7 +396,7 @@ void Indexer::indexTXTFile(const PackagedFileInfo& file)
             attr["id"] = "Using";
             attr["value"] = m[1].str();
             attr["type"] = "Using";
-            attributes.push_back(attr);
+            attributes.emplace_back(std::move(attr));
 
             addTerms(terms, m[1].str());
         } else if (std::regex_search(line, m, reData)) {
@@ -358,7 +407,7 @@ void Indexer::indexTXTFile(const PackagedFileInfo& file)
             attr["id"] = id;
             attr["value"] = value;
             attr["type"] = "data";
-            attributes.push_back(attr);
+            attributes.emplace_back(std::move(attr));
 
             addTerms(terms, id);
             addTerms(terms, value);

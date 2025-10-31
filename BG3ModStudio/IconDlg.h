@@ -14,6 +14,7 @@ public:
         MSG_WM_INITDIALOG(OnInitDialog)
         MSG_WM_CLOSE(OnClose)
         MSG_WM_SIZE(OnSize)
+        COMMAND_ID_HANDLER3(IDCANCEL, OnClose)
         CHAIN_MSG_MAP(CDialogResize)
     END_MSG_MAP()
 
