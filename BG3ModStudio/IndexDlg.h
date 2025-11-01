@@ -5,16 +5,16 @@
 #include "ThreadSafeLatest.h"
 #include "Timer.h"
 
-#define WM_SET_STATE            (WM_APP + 1)
-#define WM_GET_OVERWRITE_CHECK  (WM_APP + 2)
-#define WM_GET_PAK_PATH         (WM_APP + 3)
-#define WM_GET_INDEX_PATH       (WM_APP + 4)
-#define WM_INDEXING_FINISHED    (WM_APP + 7)
-
 class IndexDlg : public ModelessDialog<IndexDlg>
 {
 public:
     enum { IDD = IDD_INDEX };
+
+    static constexpr UINT WM_SET_STATE = WM_APP + 1;
+    static constexpr UINT WM_GET_OVERWRITE_CHECK = WM_APP + 2;
+    static constexpr UINT WM_GET_PAK_PATH = WM_APP + 3;
+    static constexpr UINT WM_GET_INDEX_PATH = WM_APP + 4;
+    static constexpr UINT WM_INDEXING_FINISHED = WM_APP + 5;
 
     BEGIN_MSG_MAP(IndexDlg)
         MSG_WM_INITDIALOG(OnInitDialog)

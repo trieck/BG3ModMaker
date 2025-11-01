@@ -142,7 +142,7 @@ typedef struct FINDREPLACE_PARAMS
     BOOL matchCase;
     BOOL wholeWord;
     BOOL regex;
-} *LPFINDREPLACE_PARAMS;
+}* LPFINDREPLACE_PARAMS;
 
 struct ITextFindable
 {

@@ -3,22 +3,11 @@
 #include "Node.h"
 #include "PAKReader.h"
 #include "PageableIterator.h"
+#include "ProgressListener.h"
 #include "Resource.h"
 
 #include <nlohmann/json.hpp>
 #include <rocksdb/db.h>
-
-class ICatalogProgressListener
-{
-public:
-    virtual ~ICatalogProgressListener() = default;
-
-    virtual void onStart(std::size_t totalEntries) = 0;
-    virtual void onFileCataloging(std::size_t currentFile, const std::string& filename) = 0;
-    virtual void onFinished(std::size_t catalogedEntries) = 0;
-    virtual bool isCancelled() = 0;
-    virtual void onCancel() = 0;
-};
 
 class Cataloger
 {
@@ -34,7 +23,7 @@ public:
     nlohmann::json get(const std::string& key);
     void open(const char* dbName);
     void openReadOnly(const char* dbName);
-    void setProgressListener(ICatalogProgressListener* listener);
+    void setProgressListener(IFileProgressListener* listener);
 
 private:
     void catalogLSXFile(const PackagedFileInfo& file);
@@ -44,7 +33,7 @@ private:
     void catalogRegion(const std::string& fileName, const Region::Ptr& region);
 
     PAKReader m_reader;
-    ICatalogProgressListener* m_listener = nullptr;
+    IFileProgressListener* m_listener = nullptr;
     rocksdb::DB* m_db = nullptr;
     rocksdb::WriteBatch m_batch;
 };

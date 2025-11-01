@@ -115,7 +115,7 @@ void Iconizer::iconize(const char* pakFile, const char* dbName, bool overwrite)
 
         if (file.name.ends_with("lsx") || file.name.ends_with("lsf")) {
             if (m_listener) {
-                m_listener->onFileIconizing(i, file.name);
+                m_listener->onFile(i, file.name);
             }
         }
 
@@ -140,6 +140,15 @@ void Iconizer::iconize(const char* pakFile, const char* dbName, bool overwrite)
     auto status = m_db->Flush(rocksdb::FlushOptions());
     if (!status.ok()) {
         throw Exception(std::format("Failed to flush RocksDB database: {}", status.ToString()));
+    }
+
+    if (m_listener) {
+        if (m_listener->isCancelled()) {
+            m_listener->onCancel();
+        }
+        else {
+            m_listener->onFinished(i);
+        }
     }
 }
 
@@ -169,7 +178,7 @@ void Iconizer::openReadOnly(const char* dbName)
     }
 }
 
-void Iconizer::setProgressListener(IIconizerProgressListener* listener)
+void Iconizer::setProgressListener(IFileProgressListener* listener)
 {
     m_listener = listener;
 }

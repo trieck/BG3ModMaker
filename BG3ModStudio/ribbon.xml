@@ -69,9 +69,15 @@
         </Command>
 
         <Command Name="TOOL_INDEX" Symbol="ID_TOOL_INDEX" Id="112">
-            <Command.LabelTitle>Index PAK File...</Command.LabelTitle>
-            <Command.TooltipTitle>Index PAK File</Command.TooltipTitle>
-            <Command.TooltipDescription>Index PAK File</Command.TooltipDescription>
+            <Command.LabelTitle>Generate Index...</Command.LabelTitle>
+            <Command.TooltipTitle>Generate Index</Command.TooltipTitle>
+            <Command.TooltipDescription>Generate Index</Command.TooltipDescription>
+        </Command>
+
+        <Command Name="TOOL_DB" Symbol="ID_TOOL_DB" Id="166">
+            <Command.LabelTitle>Generate database...</Command.LabelTitle>
+            <Command.TooltipTitle>Generate database</Command.TooltipTitle>
+            <Command.TooltipDescription>Generate database</Command.TooltipDescription>
         </Command>
 
         <Command Name="TOOL_SEARCH" Symbol="ID_TOOL_SEARCH" Id="113">
@@ -297,6 +303,7 @@
                                 <ControlNameDefinition Name="TOOL_LOCA" />
                                 <ControlNameDefinition Name="TOOL_LSF" />
                                 <ControlNameDefinition Name="TOOL_INDEX" />
+                                <ControlNameDefinition Name="TOOL_DB" />
                                 <ControlNameDefinition Name="TOOL_SEARCH" />
                                 <ControlNameDefinition Name="TOOL_GAMEOBJECT" />
                                 <ControlNameDefinition Name="TOOL_ICON_EXPLORER" />
@@ -316,6 +323,9 @@
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="TOOL_INDEX"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="TOOL_DB"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="TOOL_SEARCH"
@@ -353,6 +363,9 @@
                                 <ControlSizeDefinition ControlName="TOOL_INDEX"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="TOOL_DB"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="TOOL_SEARCH"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
@@ -388,6 +401,9 @@
                                 <ControlSizeDefinition ControlName="TOOL_INDEX"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
+                                <ControlSizeDefinition ControlName="TOOL_DB"
+                                                       ImageSize="Large"
+                                                       IsLabelVisible="true" />
                                 <ControlSizeDefinition ControlName="TOOL_SEARCH"
                                                        ImageSize="Large"
                                                        IsLabelVisible="true" />
@@ -416,6 +432,7 @@
                         <Button CommandName="TOOL_LSF" />
                         <Button CommandName="TOOL_INDEX" />
                         <Button CommandName="TOOL_SEARCH" />
+                        <Button CommandName="TOOL_DB" />
                         <Button CommandName="TOOL_GAMEOBJECT" />
                         <Button CommandName="TOOL_ICON_EXPLORER" />
                         <Button CommandName="TOOL_UUID" />

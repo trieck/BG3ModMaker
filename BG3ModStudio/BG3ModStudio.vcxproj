@@ -183,6 +183,7 @@
     <ClInclude Include="BG3ModStudio.h" />
     <ClInclude Include="BinaryFileView.h" />
     <ClInclude Include="COMError.h" />
+    <ClInclude Include="DatabaseDlg.h" />
     <ClInclude Include="DocStyler.h" />
     <ClInclude Include="FileOperation.h" />
     <ClInclude Include="FileViewContainer.h" />
@@ -242,6 +243,7 @@
     <ClCompile Include="BG3ModStudio.cpp" />
     <ClCompile Include="BinaryFileView.cpp" />
     <ClCompile Include="COMError.cpp" />
+    <ClCompile Include="DatabaseDlg.cpp" />
     <ClCompile Include="DocStyler.cpp" />
     <ClCompile Include="FileOperation.cpp" />
     <ClCompile Include="FileViewContainer.cpp" />
@@ -313,6 +315,7 @@
     <Image Include="resources\bom.ico" />
     <Image Include="resources\catalog.bmp" />
     <Image Include="resources\close.bmp" />
+    <Image Include="resources\db.bmp" />
     <Image Include="resources\exit.bmp" />
     <Image Include="resources\file.ico" />
     <Image Include="resources\filenew.bmp" />

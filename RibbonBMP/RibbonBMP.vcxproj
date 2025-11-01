@@ -144,6 +144,7 @@
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y "$(TargetPath)" "d:\bin"</Command>
+      <Message>Copying binary to d:\bin...</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -167,6 +168,7 @@
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y "$(TargetPath)" "d:\bin"</Command>
+      <Message>Copying binary to d:\bin...</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

@@ -95,7 +95,7 @@ void Cataloger::catalog(const char* pakFile, const char* dbName, bool overwrite)
 
         if (file.name.ends_with("lsx") || file.name.ends_with("lsf")) {
             if (m_listener) {
-                m_listener->onFileCataloging(i, file.name);
+                m_listener->onFile(i, file.name);
             }
         }
 
@@ -120,6 +120,14 @@ void Cataloger::catalog(const char* pakFile, const char* dbName, bool overwrite)
     auto status = m_db->Flush(rocksdb::FlushOptions());
     if (!status.ok()) {
         throw Exception("Failed to flush RocksDB database: " + status.ToString());
+    }
+
+    if (m_listener) {
+        if (m_listener->isCancelled()) {
+            m_listener->onCancel();
+        } else {
+            m_listener->onFinished(i);
+        }
     }
 }
 
@@ -147,7 +155,7 @@ bool Cataloger::isOpen() const
     return m_db != nullptr;
 }
 
-void Cataloger::setProgressListener(ICatalogProgressListener* listener)
+void Cataloger::setProgressListener(IFileProgressListener* listener)
 {
     m_listener = listener;
 }
@@ -208,18 +216,12 @@ void Cataloger::catalogLSXFile(const PackagedFileInfo& file)
             attributes.emplace_back(std::move(attr));
         }
 
-        std::string mapKey, atype;
+        std::string mapKey;
         for (const auto& attr : attributes) {
             if (attr["id"].get<std::string>() == "MapKey") {
                 mapKey = attr["value"].get<std::string>();
+                break;
             }
-            if (attr["id"].get<std::string>() == "Type") {
-                atype = attr["value"].get<std::string>();
-            }
-        }
-
-        if (atype != "item") {
-            continue; // only catalog items
         }
 
         if (mapKey.empty() || !isUUID(mapKey)) {
@@ -268,17 +270,15 @@ void Cataloger::catalogNode(const std::string& filename, const LSNode::Ptr& node
         attributes.emplace_back(std::move(attr));
     }
 
-    std::string mapKey, type;
+    std::string mapKey;
     for (const auto& attr : attributes) {
         if (attr["id"].get<std::string>() == "MapKey") {
             mapKey = attr["value"].get<std::string>();
-        }
-        if (attr["id"].get<std::string>() == "Type") {
-            type = attr["value"].get<std::string>();
+            break;
         }
     }
 
-    if (type == "item" && isUUID(mapKey) && node->name == "GameObjects") {
+    if (isUUID(mapKey) && node->name == "GameObjects") {
         doc["attributes"] = attributes;
 
         auto s = m_batch.Put(mapKey, doc.dump());

@@ -83,12 +83,12 @@ void IndexDlg::OnPakFile()
 
 void IndexDlg::OnGetPakPath(WPARAM wParam, LPARAM lParam)
 {
-    ::GetWindowText(m_pakFile.m_hWnd, reinterpret_cast<LPTSTR>(lParam), static_cast<int>(wParam));
+    m_pakFile.GetWindowText(reinterpret_cast<LPTSTR>(lParam), static_cast<int>(wParam));
 }
 
 void IndexDlg::OnGetIndexPath(WPARAM wParam, LPARAM lParam)
 {
-    ::GetWindowText(m_indexPath.m_hWnd, reinterpret_cast<LPTSTR>(lParam), static_cast<int>(wParam));
+    m_indexPath.GetWindowText(reinterpret_cast<LPTSTR>(lParam), static_cast<int>(wParam));
 }
 
 void IndexDlg::OnSetState(WPARAM state, LPARAM)
@@ -250,7 +250,7 @@ DWORD IndexDlg::IndexProc(LPVOID pv)
 
     auto overwrite = pThis->SendMessage(WM_GET_OVERWRITE_CHECK, 0, 0) == BST_CHECKED;
 
-    struct IndexListener : IIndexProgressListener
+    struct IndexListener : IFileProgressListener
     {
         IndexDlg* m_pDlg;
 
@@ -270,7 +270,7 @@ DWORD IndexDlg::IndexProc(LPVOID pv)
             m_pDlg->PostMessage(WM_INDEXING_FINISHED, entries, 0);
         }
 
-        void onFileIndexing(std::size_t index, const std::string& filename) override
+        void onFile(std::size_t index, const std::string& filename) override
         {
             m_pDlg->m_progressCur.store(index, std::memory_order_relaxed);
 

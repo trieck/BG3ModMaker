@@ -190,6 +190,7 @@
     <ClInclude Include="PageableIterator.h" />
     <ClInclude Include="PAKReader.h" />
     <ClInclude Include="PAKWriter.h" />
+    <ClInclude Include="ProgressListener.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="ResourceUtils.h" />
     <ClInclude Include="Searcher.h" />

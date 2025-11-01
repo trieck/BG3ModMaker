@@ -184,7 +184,7 @@ void Indexer::index(const char* pakFile, const char* dbName, bool overwrite)
         }
 
         if (m_listener) {
-            m_listener->onFileIndexing(i, file.name);
+            m_listener->onFile(i, file.name);
         }
 
         if (file.name.ends_with(".lsx")) {
@@ -218,7 +218,7 @@ void Indexer::compact() const
     }
 }
 
-void Indexer::setProgressListener(IIndexProgressListener* listener)
+void Indexer::setProgressListener(IFileProgressListener* listener)
 {
     m_listener = listener;
 }

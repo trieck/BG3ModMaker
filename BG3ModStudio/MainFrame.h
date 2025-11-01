@@ -56,6 +56,7 @@ public:
         COMMAND_ID_HANDLER3(ID_FILE_SAVE, OnFileSave)
         COMMAND_ID_HANDLER3(ID_FILE_SAVE_ALL, OnFileSaveAll)
         COMMAND_ID_HANDLER3(ID_TOOL_BG3, OnLaunchGame)
+        COMMAND_ID_HANDLER3(ID_TOOL_DB, OnDatabase)
         COMMAND_ID_HANDLER3(ID_TOOL_FIND_REPLACE, OnFindReplace)
         COMMAND_ID_HANDLER3(ID_TOOL_GAMEOBJECT, OnGameObject)
         COMMAND_ID_HANDLER3(ID_TOOL_ICON_EXPLORER, OnIconExplorer)
@@ -93,16 +94,17 @@ public:
 private:
     LRESULT OnCopyData(HWND hWnd, PCOPYDATASTRUCT pcds);
     LRESULT OnHasEditableView();
-    void OnFindReplace(WPARAM, LPARAM);
     void OnClose();
     void OnConvertLoca();
     void OnConvertLSF();
+    void OnDatabase();
     void OnDeleteFile();
     void OnFileAbout();
     void OnFileExit();
     void OnFileSave();
     void OnFileSaveAll();
     void OnFindReplace();
+    void OnFindReplace(WPARAM, LPARAM);
     void OnFolderClose();
     void OnFolderOpen();
     void OnFolderPack();

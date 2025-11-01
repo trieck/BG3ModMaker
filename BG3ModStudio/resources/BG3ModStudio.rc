@@ -208,6 +208,8 @@ IDB_NEW_PROJECT_LARGE   BITMAP                  "new-project-large.bmp"
 
 ID_TOOL_FIND_REPLACE    BITMAP                  "find.bmp"
 
+ID_TOOL_DB              BITMAP                  "db.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -449,6 +451,27 @@ BEGIN
     EDITTEXT        IDC_E_VALUE,7,7,295,162,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | ES_WANTRETURN | NOT WS_BORDER | WS_VSCROLL,WS_EX_STATICEDGE
 END
 
+IDD_DB DIALOGEX 0, 0, 229, 208
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Generate Database"
+FONT 8, "Segoe UI", 400, 0, 0x1
+BEGIN
+    LTEXT           "PAK File:",IDC_PAKFILE,14,10,208,12,SS_CENTERIMAGE
+    EDITTEXT        IDC_E_PAKFILE,14,22,183,13,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_B_PAKFILE,197,22,25,13
+    LTEXT           "Database Folder:",IDC_DBPATH,14,42,208,12,SS_CENTERIMAGE
+    EDITTEXT        IDC_E_DBPATH,14,55,183,13,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_B_DBPATH,197,55,25,13
+    GROUPBOX        "Database Type",IDC_STATIC,14,79,183,51
+    CONTROL         "Game Object",IDC_RADIO_GAMEOBJECT,"Button",BS_AUTORADIOBUTTON | WS_GROUP,21,94,60,10
+    CONTROL         "Icon",IDC_RADIO_ICON,"Button",BS_AUTORADIOBUTTON,21,110,31,10
+    CONTROL         "Overwrite existing database",IDC_CHK_OVERWRITE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,137,142,10
+    LTEXT           "Status:",IDC_DB_STATUS,14,153,208,12,SS_CENTERIMAGE
+    CONTROL         "",IDC_PROGRESS_DB,"msctls_progress32",WS_BORDER,27,171,174,7
+    PUSHBUTTON      "Generate",IDOK,60,187,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,119,187,50,14
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -616,6 +639,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 169
     END
+
+    IDD_DB, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 222
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 201
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -716,6 +747,11 @@ BEGIN
 END
 
 IDD_VALUE_VIEW AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DB AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

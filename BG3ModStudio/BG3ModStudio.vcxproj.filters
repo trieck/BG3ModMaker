@@ -185,6 +185,9 @@
     <ClInclude Include="ValueViewDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DatabaseDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BG3ModStudio.cpp">
@@ -325,6 +328,9 @@
     <ClCompile Include="ValueViewDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DatabaseDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="ribbon.xml">
@@ -429,6 +435,9 @@
       <Filter>Resources</Filter>
     </Image>
     <Image Include="resources\find.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="resources\db.bmp">
       <Filter>Resources</Filter>
     </Image>
   </ItemGroup>

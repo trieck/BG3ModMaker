@@ -20,6 +20,8 @@
 #include "UUIDDlg.h"
 
 #include <filesystem>
+
+#include "DatabaseDlg.h"
 namespace fs = std::filesystem;
 
 static constexpr auto REGISTRY_KEY = L"Software\\Rieck Enterprises\\BG3ModStudio";
@@ -610,6 +612,12 @@ void MainFrame::OnConvertLSF()
                        lsfFile, error);
         AtlMessageBox(*this, message.GetString(), nullptr, MB_ICONERROR);
     }
+}
+
+void MainFrame::OnDatabase()
+{
+    DatabaseDlg dlg;
+    dlg.RunModal(*this);
 }
 
 void MainFrame::OnClose()
