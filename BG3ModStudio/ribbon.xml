@@ -75,9 +75,9 @@
         </Command>
 
         <Command Name="TOOL_DB" Symbol="ID_TOOL_DB" Id="166">
-            <Command.LabelTitle>Generate database...</Command.LabelTitle>
-            <Command.TooltipTitle>Generate database</Command.TooltipTitle>
-            <Command.TooltipDescription>Generate database</Command.TooltipDescription>
+            <Command.LabelTitle>Generate Database...</Command.LabelTitle>
+            <Command.TooltipTitle>Generate Database</Command.TooltipTitle>
+            <Command.TooltipDescription>Generate Database</Command.TooltipDescription>
         </Command>
 
         <Command Name="TOOL_SEARCH" Symbol="ID_TOOL_SEARCH" Id="113">
