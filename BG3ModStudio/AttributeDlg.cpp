@@ -202,7 +202,7 @@ BOOL AttributeDlg::OnInitDialog(HWND, LPARAM)
     m_list.ModifyStyle(0, LVS_REPORT | LVS_SINGLESEL);
     m_list.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
-    LOGFONT lf = {};
+    LOGFONT lf{};
     lf.lfHeight = -MulDiv(m_fontSize, GetDeviceCaps(GetDC(), LOGPIXELSY), 72);
     _tcscpy_s(lf.lfFaceName, _T("Tahoma"));
     lf.lfWeight = FW_NORMAL;

@@ -113,6 +113,14 @@
         return TRUE; \
     }
 
+#define MESSAGE_HANDLER5(msg, func) \
+    if(uMsg == (msg)) \
+    { \
+        this->SetMsgHandled(TRUE); \
+        lResult = func(wParam, lParam); \
+        return TRUE; \
+    }
+
 struct RenameInfo
 {
     CString oldPath;
