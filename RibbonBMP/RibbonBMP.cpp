@@ -68,9 +68,21 @@ void makeRibbonBMP(wchar_t* inputImage, wchar_t* outputImage, int size, uint32_t
             throw Exception("Failed to extract icon.");
         }
 
-        ICONINFO iconInfo;
-        GetIconInfo(hIcon, &iconInfo);
-        bmp = std::make_unique<Bitmap>(iconInfo.hbmColor, nullptr);
+        ICONINFO iconInfo{};
+        if (!GetIconInfo(hIcon, &iconInfo)) {
+            DestroyIcon(hIcon);
+            throw Exception("Failed to get icon info.");
+        }
+
+        try {
+            bmp = std::make_unique<Bitmap>(iconInfo.hbmColor, nullptr);
+        } catch (...) {
+            // Cleanup resources before re-throwing
+            DeleteObject(iconInfo.hbmColor);
+            DeleteObject(iconInfo.hbmMask);
+            DestroyIcon(hIcon);
+            throw;
+        }
 
         // Cleanup
         DeleteObject(iconInfo.hbmColor);
