@@ -69,7 +69,11 @@ void LocaWriter::Write(const std::string& path, const LocaResource& resource)
     for (auto i = 0ul; i < resource.entries.size(); i++) {
         const auto& entry = resource.entries[i];
         auto& locaEntry = entries[i];
-        memcpy(locaEntry.key, entry.key.c_str(), entry.key.size());
+        auto keySize = std::min(entry.key.size(), sizeof(locaEntry.key));
+        memcpy(locaEntry.key, entry.key.c_str(), keySize);
+        if (keySize < sizeof(locaEntry.key)) {
+            memset(locaEntry.key + keySize, 0, sizeof(locaEntry.key) - keySize);
+        }
         locaEntry.version = entry.version;
         locaEntry.length = static_cast<uint32_t>(entry.text.size() + 1);
     }

@@ -62,17 +62,22 @@ void makeRibbonBMP(wchar_t* inputImage, wchar_t* outputImage, int size, uint32_t
 
     // If the input is an ICO file, extract the best size x size icon
     if (wcsstr(inputImage, L".ico") != nullptr) {
-        HICON hIcon;
+        HICON hIcon = nullptr;
         auto extracted = PrivateExtractIconsW(inputImage, 0, size, size, &hIcon, nullptr, 1, LR_LOADTRANSPARENT);
         if (extracted == 0 || hIcon == nullptr) {
             throw Exception("Failed to extract icon.");
         }
 
-        ICONINFO iconInfo;
-        GetIconInfo(hIcon, &iconInfo);
+        ICONINFO iconInfo{};
+        if (!GetIconInfo(hIcon, &iconInfo)) {
+            DestroyIcon(hIcon);
+            throw Exception("Failed to get icon info.");
+        }
+
+        // Create bitmap from icon info
         bmp = std::make_unique<Bitmap>(iconInfo.hbmColor, nullptr);
 
-        // Cleanup
+        // Cleanup icon resources (always executed whether exception occurs or not)
         DeleteObject(iconInfo.hbmColor);
         DeleteObject(iconInfo.hbmMask);
         DestroyIcon(hIcon);

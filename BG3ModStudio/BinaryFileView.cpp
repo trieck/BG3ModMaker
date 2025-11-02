@@ -19,22 +19,42 @@ std::string FormatLine(uint32_t line, const uint8_t* pdata, size_t size)
 
     // Write address
     int offset = snprintf(buffer.data(), buffer.size(), "%08X  ", line * LINESIZE);
+    if (offset < 0 || static_cast<size_t>(offset) >= buffer.size()) {
+        return "";
+    }
 
     // Write hex bytes
     for (size_t i = 0; i < size; ++i) {
-        offset += snprintf(buffer.data() + offset, buffer.size() - offset, "%02X ", pdata[i]);
+        int written = snprintf(buffer.data() + offset, buffer.size() - offset, "%02X ", pdata[i]);
+        if (written < 0 || offset + written >= static_cast<int>(buffer.size())) {
+            break;
+        }
+        offset += written;
     }
 
     // Fill the rest of the line with spaces
-    offset += snprintf(buffer.data() + offset, buffer.size() - offset, "%*s", static_cast<int>((LINESIZE - size) * 3),
-                       "");
-    offset += snprintf(buffer.data() + offset, buffer.size() - offset, "  ");
+    int written = snprintf(buffer.data() + offset, buffer.size() - offset, "%*s", static_cast<int>((LINESIZE - size) * 3), "");
+    if (written >= 0 && offset + written < static_cast<int>(buffer.size())) {
+        offset += written;
+    }
+    
+    written = snprintf(buffer.data() + offset, buffer.size() - offset, "  ");
+    if (written >= 0 && offset + written < static_cast<int>(buffer.size())) {
+        offset += written;
+    }
 
-    for (size_t i = 0; i < size; ++i) {
+    // Add ASCII representation
+    for (size_t i = 0; i < size && offset + 1 < static_cast<int>(buffer.size()); ++i) {
         buffer[offset++] = std::isprint(pdata[i]) ? static_cast<char>(pdata[i]) : '.';
     }
 
-    buffer[offset] = '\0';
+    // Add null terminator
+    if (offset < static_cast<int>(buffer.size())) {
+        buffer[offset] = '\0';
+    } else {
+        buffer[buffer.size() - 1] = '\0';
+        offset = static_cast<int>(buffer.size() - 1);
+    }
 
     return std::string(buffer.data(), offset);
 }
