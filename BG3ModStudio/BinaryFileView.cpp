@@ -43,19 +43,20 @@ std::string FormatLine(uint32_t line, const uint8_t* pdata, size_t size)
         offset += written;
     }
 
-    for (size_t i = 0; i < size && buffer.size() > 0 && static_cast<size_t>(offset) + 1 < buffer.size(); ++i) {
+    for (size_t i = 0; i < size && static_cast<size_t>(offset) + 1 < buffer.size(); ++i) {
         buffer[offset++] = std::isprint(pdata[i]) ? static_cast<char>(pdata[i]) : '.';
     }
 
-    // Ensure offset doesn't exceed buffer bounds
+    // Ensure offset doesn't exceed buffer bounds and add null terminator
     if (buffer.size() > 0) {
         if (static_cast<size_t>(offset) >= buffer.size()) {
             offset = static_cast<int>(buffer.size() - 1);
         }
         buffer[offset] = '\0';
+        return std::string(buffer.data(), offset);
     }
 
-    return std::string(buffer.data(), std::max(0, offset));
+    return std::string();
 }
 } // anonymous namespace
 
