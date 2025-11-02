@@ -16,7 +16,7 @@
 
         <Command Name="FILE_OPEN" Symbol="ID_FILE_OPEN" Id="0xE101">
             <Command.LabelTitle>Open a Project...</Command.LabelTitle>
-            <Command.TooltipTitle>Open a Project</Command.TooltipTitle>
+            <Command.TooltipTitle>Open a Project (Ctrl+O)</Command.TooltipTitle>
             <Command.TooltipDescription>Open a Project</Command.TooltipDescription>
         </Command>
 
@@ -34,13 +34,13 @@
 
         <Command Name="FILE_SAVE" Symbol="ID_FILE_SAVE" Id="0xE103">
             <Command.LabelTitle>Save Current File...</Command.LabelTitle>
-            <Command.TooltipTitle>Save Current File</Command.TooltipTitle>
+            <Command.TooltipTitle>Save Current File (Ctrl+S)</Command.TooltipTitle>
             <Command.TooltipDescription>Save Current File</Command.TooltipDescription>
         </Command>
 
         <Command Name="FILE_SAVE_ALL" Symbol="ID_FILE_SAVE_ALL" Id="107">
             <Command.LabelTitle>Save All Files...</Command.LabelTitle>
-            <Command.TooltipTitle>Save All File</Command.TooltipTitle>
+            <Command.TooltipTitle>Save All File (Ctrl+Shift+S)</Command.TooltipTitle>
             <Command.TooltipDescription>Save All File</Command.TooltipDescription>
         </Command>
 
@@ -112,7 +112,7 @@
 
         <Command Name="TOOL_FIND_REPLACE" Symbol="ID_TOOL_FIND_REPLACE" Id="163">
             <Command.LabelTitle>Find and Replace</Command.LabelTitle>
-            <Command.TooltipTitle>Find and Replace</Command.TooltipTitle>
+            <Command.TooltipTitle>Find and Replace (Ctrl+F)</Command.TooltipTitle>
             <Command.TooltipDescription>Find and Replace</Command.TooltipDescription>
         </Command>
 

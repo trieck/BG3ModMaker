@@ -28,7 +28,7 @@ int MessageLoopEx::Run()
         try {
             if (!PreTranslateMessage(&m_msg)) {
                 TranslateMessage(&m_msg);
-                ::DispatchMessage(&m_msg);
+                DispatchMessage(&m_msg);
             }
         } catch (...) {
             ATLTRACE(_T("Unexpected error.\n"));

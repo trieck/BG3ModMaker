@@ -40,12 +40,9 @@ BOOL MainFrame::DefCreate()
 
 BOOL MainFrame::PreTranslateMessage(MSG* pMsg)
 {
-    if (pMsg->message == WM_KEYDOWN && (GetKeyState(VK_CONTROL) & 0x8000)) {
-        if (pMsg->wParam == 'F') {
-            if (HasEditableView()) {
-                PostMessage(WM_COMMAND, ID_TOOL_FIND_REPLACE);
-            }
-            return TRUE; // suppress default accelerator if not valid
+    if (m_accel != nullptr) {
+        if (m_accel.TranslateAccelerator(m_hWnd, pMsg)) {
+            return TRUE;
         }
     }
 
@@ -54,6 +51,8 @@ BOOL MainFrame::PreTranslateMessage(MSG* pMsg)
 
 LRESULT MainFrame::OnCreate(LPCREATESTRUCT pcs)
 {
+    m_accel.LoadAccelerators(IDR_MAINFRAME);
+
     m_cmdBar.Create(m_hWnd, rcDefault, nullptr, ATL_SIMPLE_CMDBAR_PANE_STYLE);
     m_cmdBar.LoadImages(IDR_MAINFRAME);
     m_cmdBar.AttachMenu(GetMenu());

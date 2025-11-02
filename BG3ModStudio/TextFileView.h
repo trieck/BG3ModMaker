@@ -28,10 +28,6 @@ public:
     {
     }
 
-    LRESULT OnCreate(LPCREATESTRUCT pcs);
-    LRESULT OnModified(LPNMHDR pnmh);
-    void OnSize(UINT nType, CSize size);
-
     // IFileView
     BOOL Create(HWND parent, _U_RECT rect = nullptr, DWORD dwStyle = 0, DWORD dwStyleEx = 0) override;
     BOOL Destroy() override;
@@ -53,6 +49,10 @@ public:
     void SetReadOnly(BOOL);
 
 private:
+    LRESULT OnCreate(LPCREATESTRUCT pcs);
+    LRESULT OnModified(LPNMHDR pnmh);
+    void OnSize(UINT nType, CSize size);
+
     BOOL FindNext(LPFINDREPLACE_PARAMS params);
     BOOL FindText(LPFINDREPLACE_PARAMS params, Scintilla::TextToFind& ttf);
     BOOL Flush();

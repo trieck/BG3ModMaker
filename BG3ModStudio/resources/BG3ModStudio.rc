@@ -150,12 +150,11 @@ END
 
 IDR_MAINFRAME ACCELERATORS
 BEGIN
+    "F",            ID_TOOL_FIND_REPLACE,   VIRTKEY, CONTROL, NOINVERT
     "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
     "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
-    "A",            ID_FILE_SAVE_ALL,       VIRTKEY, CONTROL, NOINVERT
-    "F",            ID_TOOL_FIND_REPLACE,   VIRTKEY, CONTROL, NOINVERT
+    "S",            ID_FILE_SAVE_ALL,       VIRTKEY, SHIFT, CONTROL, NOINVERT
 END
-
 
 /////////////////////////////////////////////////////////////////////////////
 //

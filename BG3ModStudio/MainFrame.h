@@ -161,4 +161,5 @@ private:
     FolderView m_folderView{};
     PIDL m_rootPIDL;
     ShellNotifyRegistration m_notify;
+    CAccelerator m_accel;
 };
