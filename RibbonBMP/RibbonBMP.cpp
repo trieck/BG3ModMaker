@@ -62,7 +62,7 @@ void makeRibbonBMP(wchar_t* inputImage, wchar_t* outputImage, int size, uint32_t
 
     // If the input is an ICO file, extract the best size x size icon
     if (wcsstr(inputImage, L".ico") != nullptr) {
-        HICON hIcon;
+        HICON hIcon = nullptr;
         auto extracted = PrivateExtractIconsW(inputImage, 0, size, size, &hIcon, nullptr, 1, LR_LOADTRANSPARENT);
         if (extracted == 0 || hIcon == nullptr) {
             throw Exception("Failed to extract icon.");
