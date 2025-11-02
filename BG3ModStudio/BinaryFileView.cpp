@@ -47,11 +47,12 @@ std::string FormatLine(uint32_t line, const uint8_t* pdata, size_t size)
         buffer[offset++] = std::isprint(pdata[i]) ? static_cast<char>(pdata[i]) : '.';
     }
 
-    if (static_cast<size_t>(offset) < buffer.size()) {
-        buffer[offset] = '\0';
-    } else {
-        buffer[buffer.size() - 1] = '\0';
+    // Ensure offset doesn't exceed buffer bounds
+    if (static_cast<size_t>(offset) >= buffer.size()) {
+        offset = static_cast<int>(buffer.size() - 1);
     }
+
+    buffer[offset] = '\0';
 
     return std::string(buffer.data(), offset);
 }
