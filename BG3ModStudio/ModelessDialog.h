@@ -12,6 +12,8 @@ public:
     static HWND FindWindow();
     static void RunOnce(HWND hWndParent = GetActiveWindow(), LPARAM lParam = 0);
 
+    void OnFinalMessage(HWND hWnd) override;
+
 private:
     static LPCWSTR GetDialogID();
 
@@ -32,13 +34,6 @@ void ModelessDialog<T, TBase>::Run(HWND hWndParent, LPARAM lParam)
 
     this->ShowWindow(SW_SHOWNORMAL);
     this->UpdateWindow();
-
-    while (this->IsWindow()) {
-        this->PumpMessages();
-        WaitMessage();
-    }
-
-    this->Destroy();
 }
 
 template <class T, class TBase>
@@ -115,11 +110,23 @@ void ModelessDialog<T, TBase>::RunOnce(HWND hWndParent, LPARAM lParam)
 {
     auto hWnd = FindWindow();
     if (hWnd) {
-        ::ShowWindow(hWnd, SW_RESTORE);
-        ::SetActiveWindow(hWnd);
+        ShowWindow(hWnd, SW_RESTORE);
+        SetActiveWindow(hWnd);
     } else {
-        T dlg;
-        dlg.Run(hWndParent, lParam);
+        auto* dlg = new T();
+        dlg->Run(hWndParent, lParam);
+    }
+}
+
+template <class T, class TBase>
+void ModelessDialog<T, TBase>::OnFinalMessage(HWND hWnd)
+{
+    CDialogImpl<T, TBase>::OnFinalMessage(hWnd);
+
+    RemoveProp(hWnd, GetDialogID());
+
+    if (!m_bPseudoModal) {
+        delete this;
     }
 }
 
@@ -141,7 +148,7 @@ void ModelessDialog<T, TBase>::PumpMessages()
 
         if (!this->IsWindow() || !this->IsDialogMessage(&msg)) {
             TranslateMessage(&msg);
-            ::DispatchMessage(&msg);
+            DispatchMessage(&msg);
         }
     }
 
