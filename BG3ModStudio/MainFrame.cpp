@@ -454,9 +454,9 @@ void MainFrame::OnPakOpen()
         return;
     }
 
-    PakExplorerDlg pakDlg;
-    pakDlg.SetPAKReader(std::move(reader));
-    pakDlg.Run(*this);
+    auto* pakDlg = new PakExplorerDlg();
+    pakDlg->SetPAKReader(std::move(reader));
+    pakDlg->Run(*this);
 }
 
 void MainFrame::OnRenameFile()
