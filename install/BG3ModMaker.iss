@@ -28,9 +28,6 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 Source: "{#ReleaseDir}{#AppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#ReleaseDir}Catalog.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#ReleaseDir}Iconizer.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#ReleaseDir}Index.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#ReleaseDir}DirectXTex.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#ReleaseDir}Lexilla.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#ReleaseDir}lz4.dll"; DestDir: "{app}"; Flags: ignoreversion
