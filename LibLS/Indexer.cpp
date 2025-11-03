@@ -34,25 +34,26 @@ std::string normalizeText(const std::string& text)
     std::ranges::transform(lower, lower.begin(), tolower);
 
     std::vector<std::string> tokens;
+    std::smatch m;
 
-    static const std::regex HEX_WITH_SUFFIX(R"(^[a-f0-9]+;[0-9a-z]+$)");
-    if (std::regex_match(lower, HEX_WITH_SUFFIX)) {
-        auto pos = lower.find(';');
-        tokens.push_back(lower.substr(0, pos));
-        tokens.push_back(lower.substr(pos + 1));
+    static const std::regex handleRegex(
+        "(h(?:[0-9A-Fa-f]{32}|[0-9A-Fa-f]{8}g[0-9A-Fa-f]{4}g[0-9A-Fa-f]{4}g[0-9A-Fa-f]{4}g[0-9A-Fa-f]{12}))(?:;\\d+)?");
+
+    if (std::regex_match(lower, m, handleRegex)) {
+        tokens.emplace_back(m[1].str());
     } else if (std::regex_match(
         lower, std::regex(R"(^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$)"))) {
-        tokens.push_back(lower); // full form
+        tokens.emplace_back(lower); // full form
         std::istringstream ss(lower);
         std::string part;
         while (std::getline(ss, part, '-')) {
             if (!part.empty()) {
-                tokens.push_back(part);
+                tokens.emplace_back(part);
             }
         }
     } else if (std::regex_match(text, std::regex(R"(^[A-Za-z0-9_]+$)"))
         && text.find('_') != std::string::npos) {
-        tokens.push_back(lower); // full form
+        tokens.emplace_back(lower); // full form
 
         // Split on underscores first
         std::istringstream ss(text);
@@ -70,26 +71,26 @@ std::string normalizeText(const std::string& text)
                 std::string w;
                 while (camel >> w) {
                     if (w.size() > 1) {
-                        tokens.push_back(w);
+                        tokens.emplace_back(w);
                     }
                 }
             } else if (part.size() > 1) {
                 std::string low = part;
                 std::ranges::transform(low, low.begin(), tolower);
-                tokens.push_back(low);
+                tokens.emplace_back(low);
             }
         }
     } else if (text.find(' ') == std::string::npos &&
         std::regex_search(text, std::regex("([a-z][A-Z])"))) {
         std::string split = std::regex_replace(text, std::regex("([a-z])([A-Z])"), "$1 $2");
         std::ranges::transform(split, split.begin(), tolower);
-        tokens.push_back(lower); // compact form
+        tokens.emplace_back(lower); // compact form
 
         std::istringstream ss(split);
         std::string word;
         while (ss >> word) {
             if (word.size() > 1) {
-                tokens.push_back(word);
+                tokens.emplace_back(word);
             }
         }
     } else {
@@ -98,7 +99,7 @@ std::string normalizeText(const std::string& text)
         std::string word;
         while (ss >> word) {
             if (word.size() > 1) {
-                tokens.push_back(word);
+                tokens.emplace_back(word);
             }
         }
     }
