@@ -1,8 +1,10 @@
 #pragma once
+
+#include "ModelessDialog.h"
 #include "ImageView.h"
 #include "resources/resource.h"
 
-class IconDlg : public CDialogImpl <IconDlg>,
+class IconDlg : public ModelessDialog <IconDlg>,
                 public CDialogResize<IconDlg>
 {
 public:

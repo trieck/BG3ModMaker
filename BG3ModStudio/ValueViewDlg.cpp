@@ -97,7 +97,7 @@ LRESULT ValueViewDlg::OnMouseWheel(UINT nFlags, short zDelta, const CPoint&)
 
 void ValueViewDlg::OnClose()
 {
-    EndDialog(0);
+    Destroy();
 }
 
 void ValueViewDlg::OnSize(UINT, const CSize& size)

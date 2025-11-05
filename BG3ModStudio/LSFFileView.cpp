@@ -192,13 +192,13 @@ LRESULT LSFFileView::OnDoubleClick(LPNMHDR pnmh)
     }
 
     CWaitCursor cursor;
-
-    IconDlg dlg(value);
-    if (!dlg.HasImage()) {
+    auto pDlg = std::make_unique<IconDlg>(value);
+    if (!pDlg->HasImage()) {
         return 0;
     }
 
-    dlg.DoModal(*this);
+    pDlg->Run(*this);
+    pDlg.release();
 
     return 0;
 }

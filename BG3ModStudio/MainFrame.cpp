@@ -240,7 +240,7 @@ void MainFrame::OnSettings()
 void MainFrame::OnUUID()
 {
     UUIDDlg dlg;
-    dlg.DoModal();
+    dlg.DoModal(*this);
 }
 
 void MainFrame::OnFileSave()
@@ -996,7 +996,7 @@ void MainFrame::UpdateTitle()
     SetWindowText(strTitle);
 }
 
-BOOL MainFrame::NewFile(LPNMTVDISPINFOW pDispInfo)
+BOOL MainFrame::NewFile(LPNMTVDISPINFO pDispInfo)
 {
     auto type = static_cast<TreeItemType>(pDispInfo->item.lParam);
     if (type != TIT_FILE && type != TIT_FOLDER) {
@@ -1065,7 +1065,7 @@ BOOL MainFrame::NewFile(LPNMTVDISPINFOW pDispInfo)
     return TRUE;
 }
 
-BOOL MainFrame::RenameFile(LPNMTVDISPINFOW pDispInfo)
+BOOL MainFrame::RenameFile(LPNMTVDISPINFO pDispInfo)
 {
     auto* pData = reinterpret_cast<TREEITEMDATA*>(pDispInfo->item.lParam);
     if (!pData) {

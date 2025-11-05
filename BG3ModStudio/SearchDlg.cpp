@@ -310,13 +310,14 @@ LRESULT SearchDlg::OnDoubleClick(int idCtrl, LPNMHDR pnmh, BOOL& bHandled)
         return 0;
     }
 
-    CString text;
+    CString entry, text;
+    m_listResults.GetItemText(pia->iItem, 2, entry);
     m_listResults.GetItemText(pia->iItem, 3, text);
 
-    AttributeDlg dlg;
-    dlg.SetAttributeJson(StringHelper::toUTF8(text).GetString());
-
-    dlg.DoModal();
+    auto* pDlg = new AttributeDlg();
+    pDlg->SetEntry(entry);
+    pDlg->SetAttributeJson(StringHelper::toUTF8(text).GetString());
+    pDlg->Run(*this);
 
     return 0;
 }

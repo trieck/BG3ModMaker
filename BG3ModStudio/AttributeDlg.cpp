@@ -18,6 +18,19 @@ static int CALLBACK AttributeListCompare(LPARAM lParam1, LPARAM lParam2, LPARAM 
     return text1.CompareNoCase(text2);
 }
 
+void AttributeDlg::SetEntry(const CString& entry)
+{
+    if (entry.IsEmpty()) {
+        return;
+    }
+
+    m_title.Format(_T("Attributes - %s"), entry);
+
+    if (IsWindow()) {
+        SetWindowText(m_title);
+    }
+}
+
 void AttributeDlg::SetAttributeJson(const std::string& json)
 {
     m_attributes = nlohmann::json::parse(json);
@@ -65,7 +78,7 @@ void AttributeDlg::AutoAdjustColumns()
 
 void AttributeDlg::OnClose()
 {
-    EndDialog(0);
+    Destroy();
 }
 
 void AttributeDlg::OnSize(UINT, const CSize& size)
@@ -118,10 +131,10 @@ void AttributeDlg::ViewValue()
         return; // No value to view
     }
 
-    ValueViewDlg dlg;
-    dlg.SetTitle(name);
-    dlg.SetValue(value);
-    dlg.DoModal(*this);
+    auto *pDlg = new ValueViewDlg();
+    pDlg->SetTitle(name);
+    pDlg->SetValue(value);
+    pDlg->Run(*this);
 }
 
 void AttributeDlg::OnContextMenu(const CWindow& wnd, const CPoint& point)
@@ -183,13 +196,13 @@ LRESULT AttributeDlg::OnDoubleClick(int idCtrl, LPNMHDR pnmh, BOOL& bHandled)
     }
 
     CWaitCursor cursor;
-
-    IconDlg dlg(value);
-    if (!dlg.HasImage()) {
+    auto pDlg = std::make_unique<IconDlg>(value);
+    if (!pDlg->HasImage()) {
         return 0;
     }
 
-    dlg.DoModal(*this);
+    pDlg->Run(*this);
+    pDlg.release();
 
     return 0;
 }
@@ -226,6 +239,10 @@ BOOL AttributeDlg::OnInitDialog(HWND, LPARAM)
     }
 
     m_list.SortItemsEx(AttributeListCompare, reinterpret_cast<LPARAM>(&m_list));
+
+    if (!m_title.IsEmpty()) {
+        SetWindowText(m_title);
+    }
 
     DlgResize_Init();
     AutoAdjustColumns();

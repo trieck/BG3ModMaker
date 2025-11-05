@@ -1,9 +1,10 @@
 #pragma once
 
+#include "ModelessDialog.h"
 #include "resources/resource.h"
 #include <nlohmann/json.hpp>
 
-class AttributeDlg : public CDialogImpl<AttributeDlg>,
+class AttributeDlg : public ModelessDialog<AttributeDlg>,
                      public CDialogResize<AttributeDlg>
 {
 public:
@@ -24,6 +25,7 @@ public:
         DLGRESIZE_CONTROL(IDC_LST_ATTRIBUTES, DLSZ_SIZE_X | DLSZ_SIZE_Y)
     END_DLGRESIZE_MAP()
 
+    void SetEntry(const CString& entry);
     void SetAttributeJson(const std::string& json);
 
 private:
@@ -37,8 +39,9 @@ private:
     void OnSize(UINT /*uMsg*/, const CSize& size);
     void ViewValue();
 
-    CListViewCtrl m_list;
     CFont m_font;
+    CListViewCtrl m_list;
+    CString m_title;
     int m_fontSize = 8;
     nlohmann::json m_attributes;
 };

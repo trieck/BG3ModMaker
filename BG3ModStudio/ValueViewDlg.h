@@ -1,7 +1,9 @@
 #pragma once
+
+#include "ModelessDialog.h"
 #include "resources/resource.h"
 
-class ValueViewDlg : public CDialogImpl<ValueViewDlg>,
+class ValueViewDlg : public ModelessDialog<ValueViewDlg>,
                      public CDialogResize<ValueViewDlg>
 {
 public:

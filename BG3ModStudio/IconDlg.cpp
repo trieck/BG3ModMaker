@@ -58,7 +58,7 @@ BOOL IconDlg::OnInitDialog(HWND hWnd, LPARAM lParam)
 
 void IconDlg::OnClose()
 {
-    EndDialog(0);
+    Destroy();
 }
 
 void IconDlg::OnSize(UINT, const CSize& size)
