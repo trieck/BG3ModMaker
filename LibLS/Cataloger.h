@@ -1,13 +1,15 @@
 ﻿#pragma once
 
 #include "Node.h"
-#include "PAKReader.h"
+#include "ObjectManager.h"
 #include "PageableIterator.h"
+#include "PAKReader.h"
 #include "ProgressListener.h"
 #include "Resource.h"
 
 #include <nlohmann/json.hpp>
 #include <rocksdb/db.h>
+
 
 class Cataloger
 {
@@ -15,12 +17,16 @@ public:
     Cataloger();
     virtual ~Cataloger();
 
-    void close();
     bool isOpen() const;
-    PageableIterator::Ptr newIterator(size_t pageSize = 25);
-    PageableIterator::Ptr newIterator(const char* key, size_t pageSize = 25);
-    void catalog(const char* pakFile, const char* dbName, bool overwrite = false);
     nlohmann::json get(const std::string& key);
+    PageableIterator::Ptr newIterator(const char* key, size_t pageSize = 25);
+    PageableIterator::Ptr newIterator(size_t pageSize = 25);
+    PrefixIterator::Ptr getChildren(const char* parent) const;
+    PrefixIterator::Ptr getRoots() const;
+    PrefixIterator::Ptr getRoots(const char* type) const;
+    PrefixIterator::Ptr getTypes() const;
+    void catalog(const char* pakFile, const char* dbName, bool overwrite = false);
+    void close();
     void open(const char* dbName);
     void openReadOnly(const char* dbName);
     void setProgressListener(IFileProgressListener* listener);
@@ -34,6 +40,5 @@ private:
 
     PAKReader m_reader;
     IFileProgressListener* m_listener = nullptr;
-    rocksdb::DB* m_db = nullptr;
-    rocksdb::WriteBatch m_batch;
+    ObjectManager m_objectManager;
 };

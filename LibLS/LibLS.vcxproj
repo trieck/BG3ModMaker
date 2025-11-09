@@ -186,10 +186,12 @@
     <ClInclude Include="LZ4Compressor.h" />
     <ClInclude Include="Node.h" />
     <ClInclude Include="NodeAttribute.h" />
+    <ClInclude Include="ObjectManager.h" />
     <ClInclude Include="Package.h" />
     <ClInclude Include="PageableIterator.h" />
     <ClInclude Include="PAKReader.h" />
     <ClInclude Include="PAKWriter.h" />
+    <ClInclude Include="PrefixIterator.h" />
     <ClInclude Include="ProgressListener.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="ResourceUtils.h" />
@@ -217,6 +219,7 @@
     <ClCompile Include="LZ4Compressor.cpp" />
     <ClCompile Include="Node.cpp" />
     <ClCompile Include="NodeAttribute.cpp" />
+    <ClCompile Include="ObjectManager.cpp" />
     <ClCompile Include="Package.cpp" />
     <ClCompile Include="PageableIterator.cpp" />
     <ClCompile Include="PAKReader.cpp">
@@ -226,6 +229,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="PAKWriter.cpp" />
+    <ClCompile Include="PrefixIterator.cpp" />
     <ClCompile Include="Resource.cpp" />
     <ClCompile Include="ResourceUtils.cpp" />
     <ClCompile Include="Searcher.cpp" />

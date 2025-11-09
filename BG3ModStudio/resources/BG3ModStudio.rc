@@ -68,6 +68,8 @@ IDI_REGION              ICON                    "region.ico"
 
 IDI_NODE                ICON                    "node.ico"
 
+IDI_GAME_OBJECT         ICON                    "game-object.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -155,6 +157,7 @@ BEGIN
     "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
     "S",            ID_FILE_SAVE_ALL,       VIRTKEY, SHIFT, CONTROL, NOINVERT
 END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -471,6 +474,14 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,119,187,50,14
 END
 
+IDD_GAMEOBJECT2 DIALOGEX 0, 0, 591, 334
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "Game Objects"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_ST_GAMEOBJECT,7,7,577,320,0,WS_EX_STATICEDGE
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -646,6 +657,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 201
     END
+
+    IDD_GAMEOBJECT2, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 584
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 327
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -751,6 +770,11 @@ BEGIN
 END
 
 IDD_DB AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_GAMEOBJECT2 AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

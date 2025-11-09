@@ -214,3 +214,8 @@ INT_PTR FileDialogEx::DoModal()
 
     return IDOK;
 }
+
+const std::vector<CString>& FileDialogEx::paths() const
+{
+    return m_strPaths;
+}

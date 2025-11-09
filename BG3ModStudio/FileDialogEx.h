@@ -20,10 +20,7 @@ public:
     HRESULT SetFolder(const CString& folder);
 
     INT_PTR DoModal();
-    const std::vector<CString>& paths() const
-    {
-        return m_strPaths;
-    }
+    const std::vector<CString>& paths() const;
 
 private:
     CComPtr<IFileDialog> m_pfd;

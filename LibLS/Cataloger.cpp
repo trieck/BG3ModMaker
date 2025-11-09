@@ -8,8 +8,6 @@
 
 using json = nlohmann::json;
 
-static constexpr auto COMMIT_SIZE = 10000;
-
 static bool isUUID(const std::string& s)
 {
     static constexpr auto NUL_UUID = "00000000-0000-0000-0000-000000000000";
@@ -39,34 +37,19 @@ void Cataloger::open(const char* dbName)
 {
     close();
 
-    rocksdb::Options options;
-    options.create_if_missing = true;
-
-    auto status = rocksdb::DB::Open(options, dbName, &m_db);
-    if (!status.ok()) {
-        throw Exception("Failed to open RocksDB database: " + status.ToString());
-    }
+    m_objectManager.open(dbName);
 }
 
 void Cataloger::openReadOnly(const char* dbName)
 {
     close();
 
-    rocksdb::Options options;
-    options.create_if_missing = false;
-
-    auto status = rocksdb::DB::OpenForReadOnly(options, dbName, &m_db, false);
-    if (!status.ok()) {
-        throw Exception("Failed to open RocksDB database in read-only mode: " + status.ToString());
-    }
+    m_objectManager.openReadOnly(dbName);
 }
 
 void Cataloger::close()
 {
-    if (m_db) {
-        delete m_db;
-        m_db = nullptr;
-    }
+    m_objectManager.close();
 }
 
 void Cataloger::catalog(const char* pakFile, const char* dbName, bool overwrite)
@@ -84,8 +67,6 @@ void Cataloger::catalog(const char* pakFile, const char* dbName, bool overwrite)
     }
 
     open(dbName);
-
-    m_batch.Clear();
 
     auto i = 0;
     for (const auto& file : m_reader.files()) {
@@ -106,21 +87,9 @@ void Cataloger::catalog(const char* pakFile, const char* dbName, bool overwrite)
         }
 
         ++i;
-
-        auto count = m_batch.Count();
-        if (count > 0 && count % COMMIT_SIZE == 0) {
-            m_db->Write(rocksdb::WriteOptions(), &m_batch);
-            m_batch.Clear();
-        }
     }
 
-    m_db->Write(rocksdb::WriteOptions(), &m_batch);
-    m_batch.Clear();
-
-    auto status = m_db->Flush(rocksdb::FlushOptions());
-    if (!status.ok()) {
-        throw Exception("Failed to flush RocksDB database: " + status.ToString());
-    }
+    m_objectManager.flush();
 
     if (m_listener) {
         if (m_listener->isCancelled()) {
@@ -133,26 +102,12 @@ void Cataloger::catalog(const char* pakFile, const char* dbName, bool overwrite)
 
 nlohmann::json Cataloger::get(const std::string& key)
 {
-    if (m_db == nullptr) {
-        throw Exception("Database is not open");
-    }
-
-    std::string value;
-    auto s = m_db->Get(rocksdb::ReadOptions(), key, &value);
-
-    if (!s.ok()) {
-        if (s.IsNotFound()) {
-            return {};
-        }
-        throw Exception("Failed to read from RocksDB database: " + s.ToString());
-    }
-
-    return json::parse(value);
+    return m_objectManager.get(key);
 }
 
 bool Cataloger::isOpen() const
 {
-    return m_db != nullptr;
+    return m_objectManager.isOpen();
 }
 
 void Cataloger::setProgressListener(IFileProgressListener* listener)
@@ -162,20 +117,40 @@ void Cataloger::setProgressListener(IFileProgressListener* listener)
 
 PageableIterator::Ptr Cataloger::newIterator(const char* key, size_t pageSize)
 {
-    if (m_db == nullptr) {
+    if (!m_objectManager.isOpen()) {
         throw Exception("Database is not open");
     }
 
-    return PageableIterator::create(m_db, key, pageSize);
+    return PageableIterator::create(m_objectManager.getDB(), key, pageSize);
 }
 
 PageableIterator::Ptr Cataloger::newIterator(size_t pageSize)
 {
-    if (m_db == nullptr) {
+    if (!m_objectManager.isOpen()) {
         throw Exception("Database is not open");
     }
 
-    return PageableIterator::create(m_db, pageSize);
+    return PageableIterator::create(m_objectManager.getDB(), pageSize);
+}
+
+PrefixIterator::Ptr Cataloger::getChildren(const char* parent) const
+{
+    return m_objectManager.getChildren(parent);
+}
+
+PrefixIterator::Ptr Cataloger::getRoots() const
+{
+    return m_objectManager.getRoots();
+}
+
+PrefixIterator::Ptr Cataloger::getRoots(const char* type) const
+{
+    return m_objectManager.getRoots(type);
+}
+
+PrefixIterator::Ptr Cataloger::getTypes() const
+{
+    return m_objectManager.getTypes();
 }
 
 void Cataloger::catalogLSXFile(const PackagedFileInfo& file)
@@ -222,6 +197,11 @@ void Cataloger::catalogLSXFile(const PackagedFileInfo& file)
                 mapKey = attr["value"].get<std::string>();
                 break;
             }
+
+            if (attr["id"].get<std::string>() == "ValueUUID") {
+                mapKey = attr["value"].get<std::string>();
+                break;
+            }
         }
 
         if (mapKey.empty() || !isUUID(mapKey)) {
@@ -230,10 +210,7 @@ void Cataloger::catalogLSXFile(const PackagedFileInfo& file)
 
         doc["attributes"] = attributes;
 
-        auto s = m_batch.Put(mapKey, doc.dump());
-        if (!s.ok()) {
-            throw Exception("Failed to write to RocksDB database: " + s.ToString());
-        }
+        m_objectManager.insert(mapKey, doc);
     }
 }
 
@@ -276,15 +253,17 @@ void Cataloger::catalogNode(const std::string& filename, const LSNode::Ptr& node
             mapKey = attr["value"].get<std::string>();
             break;
         }
+
+        if (attr["id"].get<std::string>() == "ValueUUID") {
+            mapKey = attr["value"].get<std::string>();
+            break;
+        }
     }
 
     if (isUUID(mapKey) && node->name == "GameObjects") {
         doc["attributes"] = attributes;
 
-        auto s = m_batch.Put(mapKey, doc.dump());
-        if (!s.ok()) {
-            throw Exception("Failed to write to RocksDB database: " + s.ToString());
-        }
+        m_objectManager.insert(mapKey, doc);
     }
 
     for (const auto& val : node->children | std::views::values) {

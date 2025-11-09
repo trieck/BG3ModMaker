@@ -210,7 +210,7 @@ BOOL PakExplorerDlg::OnInitDialog(HWND, LPARAM lParam)
         IDI_FILE
     };
 
-    m_imageList = ImageList_Create(16, 16, ILC_MASK | ILC_COLOR32, static_cast<uint32_t>(icons.size()), 0);
+    m_imageList = ImageList_Create(16, 16, ILC_MASK | ILC_COLOR32, static_cast<int>(icons.size()), 0);
     for (auto icon : icons) {
         auto hIcon = LoadIcon(_Module.GetResourceInstance(), MAKEINTRESOURCE(icon));
         ATLASSERT(hIcon);

@@ -315,6 +315,7 @@
     <Image Include="resources\bom.ico" />
     <Image Include="resources\catalog.bmp" />
     <Image Include="resources\close.bmp" />
+    <Image Include="resources\game-object.ico" />
     <Image Include="resources\db.bmp" />
     <Image Include="resources\exit.bmp" />
     <Image Include="resources\file.ico" />

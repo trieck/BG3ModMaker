@@ -15,7 +15,7 @@ void SetDlgItemFont(HWND hDlg, int nIDDlgItem, HFONT hFont)
 
 LRESULT AboutDlg::OnInitDialog(HWND, LPARAM)
 {
-    auto icon = LoadIcon(_AtlBaseModule.GetResourceInstance(), MAKEINTRESOURCE(IDR_MAINFRAME));
+    auto icon = LoadIcon(_Module.GetResourceInstance(), MAKEINTRESOURCE(IDR_MAINFRAME));
     if (icon != nullptr) {
         SetIcon(icon, TRUE);
         SetIcon(icon, FALSE);

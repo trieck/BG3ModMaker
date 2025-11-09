@@ -70,6 +70,8 @@
 #define IDD_VALUE_VIEW                  164
 #define IDD_DB                          165
 #define ID_TOOL_DB                      166
+#define IDI_GAME_OBJECT                 167
+#define IDD_GAMEOBJECT2                 168
 #define IDC_PROGRESS_INDEX              1000
 #define IDC_PAKFILE                     1001
 #define IDC_INDEX_FILE                  1002
@@ -278,7 +280,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        167
+#define _APS_NEXT_RESOURCE_VALUE        170
 #define _APS_NEXT_COMMAND_VALUE         40036
 #define _APS_NEXT_CONTROL_VALUE         1080
 #define _APS_NEXT_SYMED_VALUE           101
