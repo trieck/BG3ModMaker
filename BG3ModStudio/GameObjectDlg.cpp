@@ -365,6 +365,15 @@ void GameObjectDlg::ExpandNode(const CTreeItem& node)
         auto utf8Type = StringHelper::toUTF8(type).GetString();
 
         auto it = m_cataloger.getRoots(utf8Type);
+        if (!it->isValid()) {
+            TVITEMEX item{};
+            item.mask = TVIF_CHILDREN;
+            item.hItem = node.m_hTreeItem;
+            item.cChildren = 0; // no children
+            m_tree.SetItem(&item);
+            return;
+        }
+
         for (; it->isValid(); it->next()) {
             auto uuid = it->value();
             auto wideUuid = StringHelper::fromUTF8(uuid.c_str());

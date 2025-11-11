@@ -10,8 +10,9 @@ int MessageLoopEx::Run()
 
     for (;;) {
         while (bDoIdle && !::PeekMessage(&m_msg, nullptr, 0, 0, PM_NOREMOVE)) {
-            if (!OnIdle(nIdleCount++))
+            if (!OnIdle(nIdleCount++)) {
                 bDoIdle = FALSE;
+            }
         }
 
         auto bRet = ::GetMessage(&m_msg, nullptr, 0, 0);
@@ -25,6 +26,7 @@ int MessageLoopEx::Run()
             ATLTRACE(_T("MessageLoopEx::Run - exiting\n"));
             break; // WM_QUIT, exit message loop
         }
+
         try {
             if (!PreTranslateMessage(&m_msg)) {
                 TranslateMessage(&m_msg);

@@ -28,7 +28,7 @@ static constexpr auto REGISTRY_KEY = L"Software\\Rieck Enterprises\\BG3ModStudio
 
 BOOL MainFrame::DefCreate()
 {
-    RECT rect = {0, 0, 1024, 600};
+    RECT rect = { 0, 0, 1024, 600 };
     auto hWnd = CreateEx(nullptr, rect);
     if (hWnd == nullptr) {
         ATLTRACE(_T("Unable to create main frame.\n"));
@@ -40,10 +40,8 @@ BOOL MainFrame::DefCreate()
 
 BOOL MainFrame::PreTranslateMessage(MSG* pMsg)
 {
-    if (m_accel != nullptr) {
-        if (m_accel.TranslateAccelerator(m_hWnd, pMsg)) {
-            return TRUE;
-        }
+    if (IsDialogMessage(pMsg)) {
+        return TRUE;
     }
 
     return CFrameWindowImpl::PreTranslateMessage(pMsg);
@@ -51,8 +49,6 @@ BOOL MainFrame::PreTranslateMessage(MSG* pMsg)
 
 LRESULT MainFrame::OnCreate(LPCREATESTRUCT pcs)
 {
-    m_accel.LoadAccelerators(IDR_MAINFRAME);
-
     m_cmdBar.Create(m_hWnd, rcDefault, nullptr, ATL_SIMPLE_CMDBAR_PANE_STYLE);
     m_cmdBar.LoadImages(IDR_MAINFRAME);
     m_cmdBar.AttachMenu(GetMenu());
@@ -89,7 +85,7 @@ LRESULT MainFrame::OnCreate(LPCREATESTRUCT pcs)
     ATLASSERT(::IsWindow(m_hWndStatusBar));
     m_statusBar.Attach(m_hWndStatusBar);
 
-    int parts[] = {200, -1};
+    int parts[] = { 200, -1 };
     m_statusBar.SetParts(2, parts);
     m_statusBar.SetSimple(FALSE);
 
@@ -97,20 +93,20 @@ LRESULT MainFrame::OnCreate(LPCREATESTRUCT pcs)
     m_nobom.LoadIcon(IDI_NOBOM, 12, 12);
 
     m_hWndClient = m_splitter.Create(*this, rcDefault, nullptr,
-                                     WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
+        WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
     if (m_hWndClient == nullptr) {
         ATLTRACE("Unable to create splitter window.\n");
         return -1;
     }
 
     if (!m_folderView.Create(m_splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
-                             WS_EX_CLIENTEDGE)) {
+        WS_EX_CLIENTEDGE)) {
         ATLTRACE("Unable to create folder view window.\n");
         return -1;
     }
 
     if (!m_filesView.Create(m_splitter, rcDefault, nullptr,
-                            WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, WS_EX_CLIENTEDGE)) {
+        WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, WS_EX_CLIENTEDGE)) {
         ATLTRACE("Unable to create files view window.\n");
         return -1;
     }
@@ -304,7 +300,7 @@ void MainFrame::OnDeleteFile()
     }
 
     auto result = AtlMessageBox(*this, static_cast<LPCTSTR>(message), nullptr,
-                                MB_ICONWARNING | MB_ICONQUESTION | MB_YESNO);
+        MB_ICONWARNING | MB_ICONQUESTION | MB_YESNO);
     if (result != IDYES) {
         return;
     }
@@ -373,13 +369,13 @@ void MainFrame::OnNewFileHere()
     TreeView_SetItem(m_folderView, &tvi);
 
     auto newItem = m_folderView.InsertItem(TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM/*mask*/,
-                                           L"New File",
-                                           1, /* image */
-                                           1, /* selected image */
-                                           0 /*state*/,
-                                           0 /*state mask */,
-                                           TIT_FILE /*lparam*/,
-                                           parent, TVI_LAST);
+        L"New File",
+        1, /* image */
+        1, /* selected image */
+        0 /*state*/,
+        0 /*state mask */,
+        TIT_FILE /*lparam*/,
+        parent, TVI_LAST);
     ATLASSERT(newItem != nullptr);
 
     m_folderView.EnsureVisible(newItem);
@@ -403,13 +399,13 @@ void MainFrame::OnNewFolderHere()
     TreeView_SetItem(m_folderView, &tvi);
 
     auto newItem = m_folderView.InsertItem(TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM /*mask*/,
-                                           L"New Folder",
-                                           0, /* image */
-                                           0, /* selected image */
-                                           0 /*state*/,
-                                           0 /*state mask */,
-                                           TIT_FOLDER /*lparam*/,
-                                           parent, TVI_LAST);
+        L"New Folder",
+        0, /* image */
+        0, /* selected image */
+        0 /*state*/,
+        0 /*state mask */,
+        TIT_FOLDER /*lparam*/,
+        parent, TVI_LAST);
     ATLASSERT(newItem != nullptr);
 
     m_folderView.EnsureVisible(newItem);
@@ -419,7 +415,7 @@ void MainFrame::OnNewFolderHere()
 void MainFrame::OnPakOpen()
 {
     FileDialogEx dlg(FileDialogEx::Open, m_hWnd, _T("pak"), nullptr, OFN_HIDEREADONLY,
-                     _T("Pak Files (*.pak)\0*.pak\0All Files (*.*)\0*.*\0"));
+        _T("Pak Files (*.pak)\0*.pak\0All Files (*.*)\0*.*\0"));
     auto hr = dlg.Construct();
     if (FAILED(hr)) {
         return;
@@ -530,7 +526,7 @@ void MainFrame::OnConvertLoca()
         CString error = StringHelper::fromUTF8(e.what());
         CString message;
         message.Format(L"An error occurred while reading the file: \"%s\": \"%s\".",
-                       path, error);
+            path, error);
         AtlMessageBox(*this, message.GetString(), nullptr, MB_ICONERROR);
         return;
     }
@@ -541,7 +537,7 @@ void MainFrame::OnConvertLoca()
         CString error = StringHelper::fromUTF8(e.what());
         CString message;
         message.Format(L"An error occurred while writing the file: \"%s\": \"%s\".",
-                       dlg.paths().front(), error);
+            dlg.paths().front(), error);
         AtlMessageBox(*this, message.GetString(), nullptr, MB_ICONERROR);
         return;
     }
@@ -608,7 +604,7 @@ void MainFrame::OnConvertLSF()
         CString error = StringHelper::fromUTF8(e.what());
         CString message;
         message.Format(L"An error occurred while writing the file: \"%s\": \"%s\".",
-                       lsfFile, error);
+            lsfFile, error);
         AtlMessageBox(*this, message.GetString(), nullptr, MB_ICONERROR);
     }
 }
@@ -820,6 +816,32 @@ BOOL MainFrame::HasEditableView() const
     return m_filesView.ActiveViewIsEditable();
 }
 
+BOOL MainFrame::IsDialogMessage(PMSG pMsg)
+{
+    if (!pMsg) {
+        return FALSE;
+    }
+
+    auto hWnd = pMsg->hwnd;
+    if (!::IsWindow(hWnd)) {
+        return FALSE;
+    }
+
+    // Find the root ancestor (top-level dialog or frame)
+    auto hRoot = ::GetAncestor(hWnd, GA_ROOT);
+    if (!::IsWindow(hRoot)) {
+        return FALSE;
+    }
+
+    // Verify the root is a dialog window (WC_DIALOG == #32770)
+    if (::GetClassLongPtr(hRoot, GCW_ATOM) != (LONG_PTR)WC_DIALOG) {
+        return FALSE;
+    }
+
+    // Let Windows handle dialog navigation (TAB, ESC, ENTER, etc.)
+    return ::IsDialogMessage(hRoot, pMsg);
+}
+
 void MainFrame::ProcessFileChange(LONG event, PIDLIST_ABSOLUTE* pidls)
 {
     if (!m_folderView.IsWindow()) {
@@ -842,7 +864,7 @@ void MainFrame::ProcessFileChange(LONG event, PIDLIST_ABSOLUTE* pidls)
         CoTaskMemFree(p);
 
         return s;
-    };
+        };
 
     CString oldPath, newPath;
     oldPath = PidlToString(pidls[0]);
@@ -1056,7 +1078,7 @@ BOOL MainFrame::NewFile(LPNMTVDISPINFO pDispInfo)
         }
     }
 
-    auto* data = new TreeItemData{.type = type, .path = fullPath};
+    auto* data = new TreeItemData{ .type = type, .path = fullPath };
 
     m_folderView.SetItemData(hItem, reinterpret_cast<DWORD_PTR>(data));
 
@@ -1170,7 +1192,7 @@ BOOL MainFrame::OpenFolder(const CString& folder)
 
     UpdateTitle();
 
-    SHChangeNotifyEntry entry{m_rootPIDL.get(), TRUE};
+    SHChangeNotifyEntry entry{ m_rootPIDL.get(), TRUE };
     m_notify.reset(SHChangeNotifyRegister(
         m_hWnd,
         SHCNRF_ShellLevel | SHCNRF_InterruptLevel | SHCNRF_NewDelivery,

@@ -94,7 +94,7 @@ void SearchDlg::OnContextMenu(const CWindow& wnd, const CPoint& point)
     }
 
     CMenu menu;
-    menu.LoadMenuW(IDR_ENTRY_CONTEXT);
+    menu.LoadMenu(IDR_ENTRY_CONTEXT);
 
     CMenuHandle popup = menu.GetSubMenu(0);
     auto cmd = popup.TrackPopupMenu(TPM_RETURNCMD | TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, *this);

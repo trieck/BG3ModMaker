@@ -8,8 +8,8 @@
 #include "ShellNotifyRegistrar.h"
 
 class MainFrame : public CRibbonFrameWindowImpl<MainFrame>,
-                  public CMessageFilter,
-                  public CIdleHandler
+    public CMessageFilter,
+    public CIdleHandler
 {
 public:
     DECLARE_FRAME_WND_CLASS(nullptr, IDR_MAINFRAME)
@@ -136,6 +136,7 @@ private:
     using FileCallback = std::function<void(const CStringW& filePath)>;
 
     BOOL HasEditableView() const;
+    BOOL IsDialogMessage(PMSG pMsg);
     BOOL IsFileSelected() const;
     BOOL IsFolderOpen() const;
     BOOL IsFolderSelected() const;
@@ -161,5 +162,4 @@ private:
     FolderView m_folderView{};
     PIDL m_rootPIDL;
     ShellNotifyRegistration m_notify;
-    CAccelerator m_accel;
 };
