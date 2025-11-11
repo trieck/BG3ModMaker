@@ -5,6 +5,7 @@
 #include "Settings.h"
 #include "StringHelper.h"
 #include "Util.h"
+#include "ValueViewDlg.h"
 
 static constexpr auto COLUMN_PADDING = 12;
 
@@ -193,36 +194,7 @@ void GameObjectDlg::OnContextMenu(const CWindow& wnd, const CPoint& point)
 
     if (rc.PtInRect(point)) {
         OnContextAttributes(point);
-        return;
     }
-
-    /*m_list.GetWindowRect(&rc);
-    if (!rc.PtInRect(point)) {
-        return; // Click was outside the list
-    }
-
-    CMenu menu;
-    menu.LoadMenuW(IDR_VALUE_CONTEXT);
-
-    CMenuHandle popup = menu.GetSubMenu(0);
-    auto cmd = popup.TrackPopupMenu(TPM_RETURNCMD | TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, *this);
-    if (cmd == 0) {
-        return; // No command selected
-    }
-
-    auto curSel = m_list.GetCurSel();
-    if (curSel == LB_ERR) {
-        return; // No selection
-    }
-
-    CString text;
-    m_list.GetText(curSel, text);
-
-    if (text.IsEmpty()) {
-        return; // Nothing to copy
-    }
-
-    Util::CopyToClipboard(*this, text);*/
 }
 
 void GameObjectDlg::OnContextAttributes(const CPoint& point)
@@ -252,6 +224,9 @@ void GameObjectDlg::OnContextAttributes(const CPoint& point)
     case ID_ATTRIBUTE_COPYTYPE: // Copy Type
         m_attributes.GetItemText(selectedRow, 2, text);
         break;
+    case ID_ATTRIBUTE_VIEW_VALUE: // View Value
+        ViewValue();
+        return;
     default:
         return; // Unknown command
     }
@@ -261,6 +236,26 @@ void GameObjectDlg::OnContextAttributes(const CPoint& point)
     }
 
     Util::CopyToClipboard(*this, text);
+}
+
+void GameObjectDlg::ViewValue()
+{
+    auto selectedRow = m_attributes.GetSelectedIndex();
+    if (selectedRow < 0) {
+        return; // No item selected
+    }
+
+    CString name, value;
+    m_attributes.GetItemText(selectedRow, 0, name);
+    m_attributes.GetItemText(selectedRow, 1, value);
+    if (value.IsEmpty()) {
+        return; // No value to view
+    }
+
+    auto* pDlg = new ValueViewDlg();
+    pDlg->SetTitle(name);
+    pDlg->SetValue(value);
+    pDlg->Run(*this);
 }
 
 void GameObjectDlg::OnSize(UINT, const CSize& size)

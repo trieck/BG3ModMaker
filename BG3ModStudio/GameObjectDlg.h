@@ -12,7 +12,7 @@ class GameObjectDlg : public ModelessDialog<GameObjectDlg>,
                       public CIdleHandler
 {
 public:
-    enum { IDD = IDD_GAMEOBJECT2 };
+    enum { IDD = IDD_GAMEOBJECT };
 
     BEGIN_MSG_MAP(GameObjectDlg)
         MSG_WM_INITDIALOG(OnInitDialog)
@@ -53,6 +53,7 @@ private:
     void OnSize(UINT /*uMsg*/, const CSize& size);
     void Populate();
     void PopulateTypes();
+    void ViewValue();
 
     Cataloger m_cataloger;
     CFont m_font;

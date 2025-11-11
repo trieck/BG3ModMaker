@@ -45,12 +45,13 @@ public:
     operator HWND() const override;
 
 private:
-    void Populate();
-    void Expand(const CTreeItem& item);
-    void ExpandRegion(const CTreeItem& item, const Region& region);
-    void ExpandNode(const CTreeItem& item, const LSNode& node);
     void AddAttributes(const LSNode& node);
     void AutoAdjustColumns();
+    void Expand(const CTreeItem& item);
+    void ExpandNode(const CTreeItem& item, const LSNode& node);
+    void ExpandRegion(const CTreeItem& item, const Region& region);
+    void Populate();
+    void ViewValue();
 
     CImageList m_imageList;
     CTreeViewCtrlEx m_tree;

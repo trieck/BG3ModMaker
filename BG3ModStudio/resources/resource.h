@@ -71,7 +71,6 @@
 #define IDD_DB                          165
 #define ID_TOOL_DB                      166
 #define IDI_GAME_OBJECT                 167
-#define IDD_GAMEOBJECT2                 168
 #define IDC_PROGRESS_INDEX              1000
 #define IDC_PAKFILE                     1001
 #define IDC_INDEX_FILE                  1002
@@ -90,13 +89,6 @@
 #define IDC_B_LAST                      1015
 #define IDC_PAGEINFO                    1016
 #define IDC_ST_GAMEOBJECT               1019
-#define IDC_B_FIRST_PAGE                1020
-#define IDC_B_PREV_PAGE                 1021
-#define IDC_B_NEXT_PAGE                 1022
-#define IDC_B_LAST_PAGE                 1023
-#define IDC_E_QUERY_GAMEOBJECT          1024
-#define IDC_GAMEOBJECT_PAGEINFO         1025
-#define IDC_B_SEARCH_GAMEOBJECT         1026
 #define IDC_E_QUERY_ICON                1027
 #define IDC_B_SEARCH_ICON               1028
 #define IDC_B_ICON_FIRST_PAGE           1029
@@ -280,7 +272,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        170
+#define _APS_NEXT_RESOURCE_VALUE        168
 #define _APS_NEXT_COMMAND_VALUE         40036
 #define _APS_NEXT_CONTROL_VALUE         1080
 #define _APS_NEXT_SYMED_VALUE           101

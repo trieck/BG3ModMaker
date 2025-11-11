@@ -7,6 +7,7 @@
 #include "resources/resource.h"
 #include "StringHelper.h"
 #include "Util.h"
+#include "ValueViewDlg.h"
 
 enum NodeItemType
 {
@@ -163,6 +164,9 @@ void LSFFileView::OnContextMenu(const CWindow& wnd, const CPoint& point)
     case ID_ATTRIBUTE_COPYTYPE: // Copy Type
         m_list.GetItemText(selectedRow, 2, text);
         break;
+    case ID_ATTRIBUTE_VIEW_VALUE: // View Value
+        ViewValue();
+        return;
     default:
         return; // Unknown command
     }
@@ -172,6 +176,26 @@ void LSFFileView::OnContextMenu(const CWindow& wnd, const CPoint& point)
     }
 
     Util::CopyToClipboard(*this, text);
+}
+
+void LSFFileView::ViewValue()
+{
+    auto selectedRow = m_list.GetSelectedIndex();
+    if (selectedRow < 0) {
+        return; // No item selected
+    }
+
+    CString name, value;
+    m_list.GetItemText(selectedRow, 0, name);
+    m_list.GetItemText(selectedRow, 1, value);
+    if (value.IsEmpty()) {
+        return; // No value to view
+    }
+
+    auto* pDlg = new ValueViewDlg();
+    pDlg->SetTitle(name);
+    pDlg->SetValue(value);
+    pDlg->Run(*this);
 }
 
 LRESULT LSFFileView::OnDoubleClick(LPNMHDR pnmh)
