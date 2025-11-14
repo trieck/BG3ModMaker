@@ -739,7 +739,7 @@ LRESULT MainFrame::OnTabContextMenu(LPNMHDR pnmh)
     auto tab = static_cast<int>(pnmh->idFrom);
 
     CMenu menu;
-    menu.LoadMenuW(IDR_TAB_CONTEXT);
+    menu.LoadMenu(IDR_TAB_CONTEXT);
 
     CMenuHandle popup = menu.GetSubMenu(0);
 

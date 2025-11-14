@@ -144,6 +144,14 @@ BEGIN
     END
 END
 
+IDR_PAK_CONTEXT MENU
+BEGIN
+    POPUP "PAK_CONTEXT"
+    BEGIN
+        MENUITEM "Extract File",                ID_PAK_EXTRACT_FILE
+    END
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

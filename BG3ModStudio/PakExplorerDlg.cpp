@@ -1,9 +1,8 @@
 #include "stdafx.h"
+#include "FileDialogEx.h"
 #include "PakExplorerDlg.h"
 #include "StringHelper.h"
 #include "Util.h"
-
-#include <algorithm>
 
 BOOL PakExplorerDlg::OnIdle()
 {
@@ -19,6 +18,65 @@ void PakExplorerDlg::SetPAKReader(PAKReader&& reader)
 void PakExplorerDlg::OnClose()
 {
     Destroy();
+}
+
+void PakExplorerDlg::OnContextMenu(const CWindow& wnd, const CPoint& point)
+{
+    auto item = m_treeView.GetSelectedItem();
+    if (item.IsNull()) {
+        return;
+    }
+
+    auto* data = reinterpret_cast<NodeParam*>(item.GetData());
+    if (data == nullptr || data->type == NodeType::Folder) {
+        return;
+    }
+
+    CMenu menu;
+    menu.LoadMenu(IDR_PAK_CONTEXT);
+
+    CMenuHandle popup = menu.GetSubMenu(0);
+    auto cmd = popup.TrackPopupMenu(TPM_RETURNCMD | TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, *this);
+    if (cmd != ID_PAK_EXTRACT_FILE) {
+        return;
+    }
+
+    CString name;
+    item.GetText(name);
+
+    CWaitCursor cursor;
+
+    CString fullPath;
+    fullPath.Format(L"%s/%s", data->prefix.GetString(), name.GetString());
+    auto utf8File = StringHelper::toUTF8(fullPath);
+
+    auto filter = L"All Files(*.*)\0*.*\0\0";
+
+    try {
+        auto contents = m_pakReader.readFile(utf8File.GetString());
+
+        FileDialogEx dlg(FileDialogEx::Save, *this, nullptr, name, 0, filter);
+        auto hr = dlg.Construct();
+        if (FAILED(hr)) {
+            return;
+        }
+
+        if (dlg.DoModal() != IDOK) {
+            return;
+        }
+
+        const auto& filename = dlg.paths().front();
+        auto utf8Filename = StringHelper::toUTF8(filename);
+
+        FileStream fs;
+        fs.open(utf8Filename.GetString(), "wb");
+        fs.write(contents.first.get(), contents.second);
+
+    } catch (const std::exception& e) {
+        CString msg;
+        msg.Format(L"Failed to read file '%s': %S", fullPath.GetString(), e.what());
+        AtlMessageBox(*this, msg.GetString());
+    }
 }
 
 void PakExplorerDlg::OnDestroy()
@@ -100,7 +158,7 @@ LRESULT PakExplorerDlg::OnTVSelChanged(LPNMHDR pnmh)
 }
 
 HTREEITEM PakExplorerDlg::Insert(HTREEITEM hParent, const CString& path, uint32_t startIndex, uint32_t endIndex,
-                                 const CString& prefix, int iImage, int cChildren)
+    const CString& prefix, int iImage, int cChildren)
 {
     TVINSERTSTRUCTW tvis{};
     tvis.hParent = hParent;
@@ -200,7 +258,7 @@ BOOL PakExplorerDlg::OnInitDialog(HWND, LPARAM lParam)
     ATLASSERT(m_splitter.IsWindow());
 
     if (!m_treeView.Create(m_splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
-                           WS_EX_CLIENTEDGE)) {
+        WS_EX_CLIENTEDGE)) {
         ATLTRACE("Unable to create tree view window.\n");
         return -1;
     }
@@ -225,7 +283,7 @@ BOOL PakExplorerDlg::OnInitDialog(HWND, LPARAM lParam)
     m_treeView.ModifyStyle(0, style);
 
     if (!m_fileView.Create(m_splitter, rcDefault, nullptr,
-                           WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, WS_EX_CLIENTEDGE)) {
+        WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, WS_EX_CLIENTEDGE)) {
         ATLTRACE("Unable to create files view window.\n");
         return -1;
     }

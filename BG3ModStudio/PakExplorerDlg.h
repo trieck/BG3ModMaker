@@ -20,23 +20,24 @@ struct NodeParam
 };
 
 class PakExplorerDlg : public ModelessDialog<PakExplorerDlg>,
-                       public CDialogResize<PakExplorerDlg>,
-                       public CUpdateUI<PakExplorerDlg>,
-                       public CIdleHandler
+    public CDialogResize<PakExplorerDlg>,
+    public CUpdateUI<PakExplorerDlg>,
+    public CIdleHandler
 {
 public:
     enum { IDD = IDD_PAK_EXPLORER };
 
     BEGIN_MSG_MAP(PakExplorerDlg)
+        COMMAND_ID_HANDLER3(IDCANCEL, OnClose)
+        MSG_WM_CLOSE(OnClose)
+        MSG_WM_CONTEXTMENU(OnContextMenu)
+        MSG_WM_DESTROY(OnDestroy)
+        MSG_WM_INITDIALOG(OnInitDialog)
         MSG_WM_INITDIALOG(OnInitDialog)
         MSG_WM_SIZE(OnSize)
-        MSG_WM_INITDIALOG(OnInitDialog)
-        MSG_WM_CLOSE(OnClose)
-        MSG_WM_DESTROY(OnDestroy)
         NOTIFY_CODE_HANDLER_EX(TVN_DELETEITEM, OnDelete)
         NOTIFY_CODE_HANDLER_EX(TVN_ITEMEXPANDING, OnItemExpanding)
         NOTIFY_CODE_HANDLER_EX(TVN_SELCHANGED, OnTVSelChanged)
-        COMMAND_ID_HANDLER3(IDCANCEL, OnClose)
         CHAIN_MSG_MAP(CDialogResize)
     END_MSG_MAP()
 
@@ -50,15 +51,16 @@ public:
     void SetPAKReader(PAKReader&& reader);
 
 private:
-    void OnClose();
-    void OnDestroy();
-    void OnSize(UINT nType, CSize size);
     LRESULT OnDelete(LPNMHDR pnmh);
     LRESULT OnItemExpanding(LPNMHDR pnmh);
     LRESULT OnTVSelChanged(LPNMHDR pnmh);
+    void OnClose();
+    void OnContextMenu(const CWindow& wnd, const CPoint& point);
+    void OnDestroy();
+    void OnSize(UINT nType, CSize size);
 
     HTREEITEM Insert(HTREEITEM hParent, const CString& path, uint32_t startIndex, uint32_t endIndex,
-                     const CString& prefix, int iImage, int cChildren);
+        const CString& prefix, int iImage, int cChildren);
 
     void Populate();
     void SetTitle();

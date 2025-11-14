@@ -71,6 +71,7 @@
 #define IDD_DB                          165
 #define ID_TOOL_DB                      166
 #define IDI_GAME_OBJECT                 167
+#define IDR_PAK_CONTEXT                 168
 #define IDC_PROGRESS_INDEX              1000
 #define IDC_PAKFILE                     1001
 #define IDC_INDEX_FILE                  1002
@@ -167,6 +168,7 @@
 #define ID_TREE_RENAME_FILE             40032
 #define ID_ATTRIBUTE_VIEWVALUE          40034
 #define ID_ATTRIBUTE_VIEW_VALUE         40035
+#define ID_PAK_EXTRACT_FILE             40036
 #define ATL_IDS_IDLEMESSAGE             0xE001
 #define ID_FILE_NEW                     0xE100
 #define ID_FILE_OPEN                    0xE101
@@ -272,8 +274,8 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        168
-#define _APS_NEXT_COMMAND_VALUE         40036
+#define _APS_NEXT_RESOURCE_VALUE        169
+#define _APS_NEXT_COMMAND_VALUE         40037
 #define _APS_NEXT_CONTROL_VALUE         1080
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

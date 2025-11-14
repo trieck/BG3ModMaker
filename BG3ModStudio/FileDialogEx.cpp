@@ -3,41 +3,40 @@
 
 namespace { // anonymous namespace
 
-std::vector<COMDLG_FILTERSPEC> parseFilters(LPCTSTR lpszFilter)
-{
-    std::vector<COMDLG_FILTERSPEC> filters;
-    if (lpszFilter == nullptr) {
-        return filters;
-    }
-
-    auto len = _tcslen(lpszFilter);
-    if (len == 0) {
-        return filters;
-    }
-
-    auto p = lpszFilter;
-    while (*p) {
-        COMDLG_FILTERSPEC filter;
-        filter.pszName = p;
-        p += _tcslen(p) + 1;
-        if (*p == _T('\0')) {
-            break;
+    std::vector<COMDLG_FILTERSPEC> parseFilters(LPCTSTR lpszFilter)
+    {
+        std::vector<COMDLG_FILTERSPEC> filters;
+        if (lpszFilter == nullptr) {
+            return filters;
         }
 
-        filter.pszSpec = p;
-        filters.push_back(filter);
+        auto len = _tcslen(lpszFilter);
+        if (len == 0) {
+            return filters;
+        }
 
-        p += _tcslen(p) + 1;
+        auto p = lpszFilter;
+        while (*p) {
+            COMDLG_FILTERSPEC filter;
+            filter.pszName = p;
+            p += _tcslen(p) + 1;
+            if (*p == _T('\0')) {
+                break;
+            }
+
+            filter.pszSpec = p;
+            filters.push_back(filter);
+
+            p += _tcslen(p) + 1;
+        }
+
+        return filters;
     }
-
-    return filters;
-}
 } // anonymous namespace
 
 FileDialogEx::FileDialogEx(DialogType type, HWND hWndParent, LPCTSTR lpszDefExt, LPCTSTR lpszFileName, DWORD dwFlags,
-                           LPCTSTR lpszFilter) : m_type(type), m_strDefExt(lpszDefExt), m_strFilename(lpszFileName),
-                                                 m_filters(parseFilters(lpszFilter)),
-                                                 m_dwFlags(dwFlags), m_hWndParent(hWndParent)
+    LPCTSTR lpszFilter) : m_type(type), m_strDefExt(lpszDefExt), m_strFilename(lpszFileName),
+    m_filters(parseFilters(lpszFilter)), m_dwFlags(dwFlags), m_hWndParent(hWndParent)
 {
 }
 

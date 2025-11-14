@@ -105,7 +105,7 @@ void IconExplorerDlg::OnContextMenu(const CWindow& wnd, const CPoint& point)
     }
 
     CMenu menu;
-    menu.LoadMenuW(IDR_VALUE_CONTEXT);
+    menu.LoadMenu(IDR_VALUE_CONTEXT);
 
     CMenuHandle popup = menu.GetSubMenu(0);
     auto cmd = popup.TrackPopupMenu(TPM_RETURNCMD | TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, *this);
