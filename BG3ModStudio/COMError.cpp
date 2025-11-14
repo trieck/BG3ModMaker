@@ -26,7 +26,7 @@ void COMError::SetErrorMessage(HRESULT hr, LPUNKNOWN pUnknown, const IID& iid)
 
     ISupportErrorInfoPtr pSupportErrorInfo;
     hr = pUnknown->QueryInterface(IID_ISupportErrorInfo,
-                                  IID_PPV_ARGS_Helper(&pSupportErrorInfo));
+        IID_PPV_ARGS_Helper(&pSupportErrorInfo));
     if (FAILED(hr)) {
         return;
     }
@@ -53,10 +53,10 @@ void COMError::SetErrorMessage(HRESULT hr, LPUNKNOWN pUnknown, const IID& iid)
 
 /////////////////////////////////////////////////////////////////////////////
 int CoMessageBox(HWND hWndOwner, HRESULT hr, LPUNKNOWN pUnknown,
-                 _U_STRINGorID title, UINT uType)
+    _U_STRINGorID title, UINT uType)
 {
     auto message = COM_ERROR_DESC(hr, pUnknown);
 
     return AtlMessageBox(hWndOwner, static_cast<LPCTSTR>(message), title,
-                         uType);
+        uType);
 }
