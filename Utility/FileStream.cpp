@@ -176,6 +176,18 @@ size_t FileStream::size() const
     return static_cast<size_t>(size.QuadPart);
 }
 
+ByteBuffer FileStream::read()
+{
+    auto sz = size();
+    auto buf = std::make_unique<uint8_t[]>(sz);
+
+    read(buf.get(), sz);
+
+    ByteBuffer buffer{std::move(buf), sz};
+
+    return buffer;
+}
+
 Stream FileStream::read(size_t bytes)
 {
     auto buf = std::make_unique<char[]>(bytes);

@@ -21,13 +21,14 @@ public:
     void open(const char* path, const char* mode);
     void close();
 
-    // IStreamBase
+    // StreamBase
     size_t read(char* buf, size_t size) override;
     size_t write(const char* buf, size_t size) override;
     void seek(int64_t offset, SeekMode mode) override;
     size_t tell() const override;
     size_t size() const override;
 
+    ByteBuffer read();
     Stream read(size_t bytes);
     void write(const void* data, size_t size) const;
     void write(StreamBase& stream) const;

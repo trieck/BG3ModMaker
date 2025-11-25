@@ -105,6 +105,9 @@
     <ClInclude Include="PrefixIterator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GR2Reader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -180,6 +183,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PrefixIterator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GR2Reader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
