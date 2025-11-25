@@ -5,8 +5,6 @@
 
 void GR2Reader::read(const char* filename)
 {
-    m_sectionHeaders = std::vector<GR2SectionHeader>(8);
-
     FileStream stream;
     stream.open(filename, "rb");
     m_data = stream.read();
@@ -189,7 +187,7 @@ GR2Object::Ptr GR2Reader::makeReference(const GR2TypeNode* node, const GR2Object
         obj->data = rootResolve(); // root reference
         m_rootOffset += is64Bit() ? sizeof(uint64_t) : sizeof(uint32_t);
     } else if (parent->data) {
-        obj->data = parent->data;
+        obj->data = resolve<uint8_t*>(*reinterpret_cast<uint64_t*>(parent->data));
         parent->data += is64Bit() ? sizeof(uint64_t) : sizeof(uint32_t);
     }
 
@@ -277,14 +275,15 @@ GR2Object::Ptr GR2Reader::makeReferenceVarArray(const GR2TypeNode* node, const G
         m_rootOffset += sizeof(uint64_t); // offset
         obj->size = *rootGet<uint32_t*>();
         m_rootOffset += sizeof(uint32_t); // size
-        obj->data = rootResolve(); // FIXME: handle offset
+        obj->data = rootResolve();
+        abort(); // FIXME: handle offset
         m_rootOffset += is64Bit() ? sizeof(uint64_t) : sizeof(uint32_t);
     } else if (parent->data) {
         obj->offset = *reinterpret_cast<uint64_t*>(parent->data);
         parent->data += sizeof(uint64_t); // advance parent data pointer
         obj->size = *reinterpret_cast<uint32_t*>(parent->data);
         parent->data += sizeof(uint32_t); // advance parent data pointer
-        obj->data = resolve<uint8_t*>(*reinterpret_cast<uint64_t*>(parent->data + +obj->offset));
+        obj->data = resolve<uint8_t*>(*reinterpret_cast<uint64_t*>(parent->data + obj->offset));
         // FIXME: no idea if this is correct
         parent->data += is64Bit() ? sizeof(uint64_t) : sizeof(uint32_t);
     }
@@ -408,18 +407,18 @@ GR2Object::Ptr GR2Reader::makeVarReference(const GR2TypeNode* node, const GR2Obj
     if (parent == nullptr) {
         obj->offset = *rootGet<uint64_t*>();
         m_rootOffset += sizeof(uint64_t);
-        obj->data = rootResolve<uint8_t*>();
+        obj->data = rootResolve<uint8_t*>() + obj->offset;
         m_rootOffset += is64Bit() ? sizeof(uint64_t) : sizeof(uint32_t);
     } else if (parent->data) {
         if (is64Bit()) {
             obj->offset = *reinterpret_cast<uint64_t*>(parent->data);
             parent->data += sizeof(uint64_t);
-            obj->data = resolve<uint8_t*>(*reinterpret_cast<uint64_t*>(parent->data));
+            obj->data = resolve<uint8_t*>(*reinterpret_cast<uint64_t*>(parent->data + obj->offset));
             parent->data += sizeof(uint64_t);
         } else {
             obj->offset = *reinterpret_cast<uint32_t*>(parent->data);
             parent->data += sizeof(uint32_t);
-            obj->data = resolve<uint8_t*>(*reinterpret_cast<uint32_t*>(parent->data));
+            obj->data = resolve<uint8_t*>(*reinterpret_cast<uint32_t*>(parent->data + obj->offset));
             parent->data += sizeof(uint32_t);
         }
     }
@@ -466,11 +465,6 @@ GR2Object::Ptr GR2Reader::makeArrayReference(const GR2TypeNode* node, const GR2O
         parent->data += size * (is64Bit() ? sizeof(uint64_t) : sizeof(uint32_t));
     }
 
-    if (obj->data != nullptr) {
-        // resolve each reference in the array
-        obj->data = resolve<uint8_t*>(*reinterpret_cast<uint64_t*>(obj->data));
-    }
-
     std::cout << ", Value: ";
 
     if (obj->data == nullptr) {
@@ -489,9 +483,15 @@ GR2Object::Ptr GR2Reader::makeArrayReference(const GR2TypeNode* node, const GR2O
         return obj;
     }
 
+    auto* pdata = reinterpret_cast<uint64_t*>(obj->data);
     auto* fields = resolve<GR2TypeNode*>(node->fields);
     for (auto i = 0u; i < size; ++i) {
-        traverseFields(&fields[i], obj, level + 1);
+        auto ptr = pdata[i];
+
+        // resolve each reference in the array
+        obj->data = resolve<uint8_t*>(ptr);
+
+        traverseFields(fields, obj, level + 1);
     }
 
     if (size == 0) {
