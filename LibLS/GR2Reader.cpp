@@ -12,6 +12,7 @@ void GR2Reader::read(const char* filename)
     readHeader();
     readFileInfo();
     readSections();
+    makeRootStream();
 }
 
 bool GR2Reader::isValid(const GR2TypeNode* node) const
@@ -19,105 +20,73 @@ bool GR2Reader::isValid(const GR2TypeNode* node) const
     return node != nullptr && node->type > TYPE_NONE && node->type <= TYPE_MAX;
 }
 
-void GR2Reader::traverse()
+void GR2Reader::traverse(const GR2Callback& callback)
 {
-    m_visitedNodes.clear();
-
     auto* node = get<GR2TypeNode*>(m_fileInfo.type);
     while (isValid(node)) {
-        traverse(node, nullptr, 0);
+        traverse(node, nullptr, 0, callback);
         node++;
     }
 }
 
-std::string GR2Reader::typeToString(GR2NodeType type)
+const std::vector<GR2Object::Ptr>& GR2Reader::rootObjects() const
 {
-    switch (type) {
-    case TYPE_NONE:
-        return "NONE";
-    case TYPE_INLINE:
-        return "INLINE";
-    case TYPE_REFERENCE:
-        return "REFERENCE";
-    case TYPE_REFERENCE_TO_ARRAY:
-        return "REFERENCE_TO_ARRAY";
-    case TYPE_ARRAY_OF_REFERENCES:
-        return "ARRAY_OF_REFERENCES";
-    case TYPE_VARIANT_REFERENCE:
-        return "VARIANT_REFERENCE";
-    case TYPE_REMOVED:
-        return "REMOVED";
-    case TYPE_REFERENCE_TO_VARIANT_ARRAY:
-        return "REFERENCE_TO_VARIANT_ARRAY";
-    case TYPE_STRING:
-        return "STRING";
-    case TYPE_TRANSFORM:
-        return "TRANSFORM";
-    case TYPE_REAL32:
-        return "REAL32";
-    case TYPE_INT8:
-        return "INT8";
-    case TYPE_UINT8:
-        return "UINT8";
-    case TYPE_BINORMAL_INT8:
-        return "BINORMAL_INT8";
-    case TYPE_NORMAL_UINT8:
-        return "NORMAL_UINT8";
-    case TYPE_INT16:
-        return "INT16";
-    case TYPE_UINT16:
-        return "UINT16";
-    case TYPE_BINORMAL_INT16:
-        return "BINORMAL_INT16";
-    case TYPE_NORMAL_UINT16:
-        return "NORMAL_UINT16";
-    case TYPE_INT32:
-        return "INT32";
-    case TYPE_UINT32:
-        return "UINT32";
-    case TYPE_REAL16:
-        return "REAL16";
-    case TYPE_EMPTY_REFERENCE:
-        return "EMPTY_REFERENCE";
-    }
-
-    return "UNKNOWN";
+    return m_rootObjects;
 }
 
-GR2Object::Ptr GR2Reader::traverse(const GR2TypeNode* node, const GR2Object::Ptr& parent, uint32_t level)
+GR2Object::Ptr GR2Reader::traverse(const GR2TypeNode* node, const GR2Object::Ptr& parent, uint32_t level,
+                                   const GR2Callback& callback)
 {
     if (!isValid(node)) {
         return nullptr;
     }
 
-    auto* name = resolve<char*>(node->name);
+    auto obj = makeObject(node, parent, level, callback);
 
-    std::cout << std::string(static_cast<size_t>(level) * 3, ' ');
-    std::cout << "Name: " << name
-        << ", type: " << typeToString(node->type);
-    if (node->arraySize != 0) {
-        std::cout << ", arraySize: " << node->arraySize;
-    }
+    if (!isArrayType(*node)) { // Arrays handle their own fields and callbacks
+        if (callback) {
+            callback({.object = obj, .level = level});
+        }
 
-    auto obj = makeObject(node, parent, level);
-
-    if (node->type != TYPE_ARRAY_OF_REFERENCES && node->type != TYPE_REFERENCE_TO_ARRAY) {
         auto* fields = resolve<GR2TypeNode*>(node->fields);
-        traverseFields(fields, obj, level + 1);
+        traverseFields(fields, obj, level + 1, callback);
     }
 
     return obj;
 }
 
-void GR2Reader::traverseFields(const GR2TypeNode* fields, const GR2Object::Ptr& parent, uint32_t level)
+void GR2Reader::traverseFields(const GR2TypeNode* fields, const GR2Object::Ptr& parent, uint32_t level,
+                               const GR2Callback& callback)
 {
     while (isValid(fields)) {
-        traverse(fields, parent, level);
+        traverse(fields, parent, level, callback);
         fields++;
     }
 }
 
-GR2Object::Ptr GR2Reader::makeObject(const GR2TypeNode* node, const GR2Object::Ptr& parent, uint32_t level)
+void GR2Reader::makeRootStream()
+{
+    const auto& root = m_fileInfo.root;
+    auto* base = m_data.first.get() + m_sectionHeaders[root.section].dataOffset + root.offset;
+
+    m_rootStream = GR2Stream(base);
+}
+
+GR2RefStream GR2Reader::getStream(const GR2Object::Ptr& parent)
+{
+    auto* data = parent == nullptr ? &m_rootStream.data() : &parent->data;
+
+    return GR2RefStream(data);
+}
+
+bool GR2Reader::isArrayType(const GR2TypeNode& node) const
+{
+    return node.type == TYPE_ARRAY_OF_REFERENCES || node.type == TYPE_REFERENCE_TO_ARRAY ||
+        node.type == TYPE_REFERENCE_TO_VARIANT_ARRAY;
+}
+
+GR2Object::Ptr GR2Reader::makeObject(const GR2TypeNode* node, const GR2Object::Ptr& parent, uint32_t level,
+                                     const GR2Callback& callback)
 {
     GR2Object::Ptr obj = nullptr;
 
@@ -132,13 +101,13 @@ GR2Object::Ptr GR2Reader::makeObject(const GR2TypeNode* node, const GR2Object::P
         obj = makeVarReference(node, parent);
         break;
     case TYPE_ARRAY_OF_REFERENCES:
-        obj = makeArrayReference(node, parent, level);
+        obj = makeArrayReference(node, parent, level, callback);
         break;
     case TYPE_REFERENCE_TO_ARRAY:
-        obj = makeReferenceArray(node, parent, level);
+        obj = makeReferenceArray(node, parent, level, callback);
         break;
     case TYPE_REFERENCE_TO_VARIANT_ARRAY:
-        obj = makeReferenceVarArray(node, parent, level);
+        obj = makeReferenceVarArray(node, parent, level, callback);
         break;
     case TYPE_STRING:
         obj = makeString(node, parent);
@@ -156,10 +125,10 @@ GR2Object::Ptr GR2Reader::makeObject(const GR2TypeNode* node, const GR2Object::P
         obj = makeUInt8(node, parent);
         break;
     case TYPE_TRANSFORM:
-        obj = makeTransform(node, parent, level);
+        obj = makeTransform(node, parent);
         break;
     default:
-        abort(); // not yet supported
+        throw Exception(std::format("Unsupported GR2 node type: {}", static_cast<uint32_t>(node->type)));
     }
 
     if (parent == nullptr) {
@@ -176,39 +145,19 @@ GR2Object::Ptr GR2Reader::makeReference(const GR2TypeNode* node, const GR2Object
     ATLASSERT(isValid(node));
     ATLASSERT(node->type == TYPE_REFERENCE);
 
-    // Create a new object for the reference
+    auto stream = getStream(parent);
+
     auto obj = std::make_shared<GR2Object>();
     obj->typeNode = node;
     obj->parent = parent;
     obj->name = resolve<char*>(node->name);
-    obj->rootOffset = m_rootOffset;
-
-    if (parent == nullptr) {
-        obj->data = rootResolve(); // root reference
-        m_rootOffset += is64Bit() ? sizeof(uint64_t) : sizeof(uint32_t);
-    } else if (parent->data) {
-        obj->data = resolve<uint8_t*>(*reinterpret_cast<uint64_t*>(parent->data));
-        parent->data += is64Bit() ? sizeof(uint64_t) : sizeof(uint32_t);
-    }
-
-    std::cout << ", Value: ";
-
-    if (obj->data == nullptr) {
-        std::cout << "NULL";
-    } else {
-        std::cout << "0x"
-            << std::setw(16) << std::setfill('0') << std::hex
-            << reinterpret_cast<uint64_t>(obj->data)
-            << std::dec
-            << std::setfill(' ');
-    }
-
-    std::cout << "\n";
+    obj->data = resolve<uint8_t*>(stream);
 
     return obj;
 }
 
-GR2Object::Ptr GR2Reader::makeReferenceArray(const GR2TypeNode* node, const GR2Object::Ptr& parent, uint32_t level)
+GR2Object::Ptr GR2Reader::makeReferenceArray(const GR2TypeNode* node, const GR2Object::Ptr& parent, uint32_t level,
+                                             const GR2Callback& callback)
 {
     ATLASSERT(isValid(node));
     ATLASSERT(node->type == TYPE_REFERENCE_TO_ARRAY);
@@ -218,47 +167,31 @@ GR2Object::Ptr GR2Reader::makeReferenceArray(const GR2TypeNode* node, const GR2O
     obj->typeNode = node;
     obj->parent = parent;
     obj->name = resolve<char*>(node->name);
-    obj->rootOffset = m_rootOffset;
 
-    if (parent == nullptr) {
-        obj->size = *rootGet<uint32_t*>();
-        m_rootOffset += sizeof(uint32_t); // size
-        obj->data = rootResolve<uint8_t*>(); // data pointer
-        m_rootOffset += is64Bit() ? sizeof(uint64_t) : sizeof(uint32_t);
-    } else if (parent->data) {
-        obj->size = *reinterpret_cast<uint32_t*>(parent->data);
-        parent->data += sizeof(uint32_t); // advance parent data pointer
-        obj->data = resolve<uint8_t*>(*reinterpret_cast<uint64_t*>(parent->data));
-        parent->data += is64Bit() ? sizeof(uint64_t) : sizeof(uint32_t);
+    auto stream = getStream(parent);
+    if (!stream.isNull()) {
+        obj->size = stream.read<uint32_t>();
+        obj->data = resolve<uint8_t*>(stream);
     }
 
-    std::cout << ", Value: ";
-
-    if (obj->data == nullptr) {
-        std::cout << "NULL";
-    } else {
-        std::cout << "0x"
-            << std::setw(16) << std::setfill('0') << std::hex
-            << reinterpret_cast<uint64_t>(obj->data)
-            << std::dec
-            << std::setfill(' ');
-    }
-
-    std::cout << "\n";
-
-    if (obj->data == nullptr) {
-        return obj;
+    if (callback) {
+        callback({.object = obj, .level = level});
     }
 
     auto* fields = resolve<GR2TypeNode*>(node->fields);
+    if (!isValid(fields)) {
+        return obj;
+    }
+
     for (auto i = 0u; i < obj->size; ++i) {
-        traverseFields(fields, obj, level + 1);
+        traverseFields(fields, obj, level + 1, callback);
     }
 
     return obj;
 }
 
-GR2Object::Ptr GR2Reader::makeReferenceVarArray(const GR2TypeNode* node, const GR2Object::Ptr& parent, uint32_t level)
+GR2Object::Ptr GR2Reader::makeReferenceVarArray(const GR2TypeNode* node, const GR2Object::Ptr& parent, uint32_t level,
+                                                const GR2Callback& callback)
 {
     ATLASSERT(isValid(node));
     ATLASSERT(node->type == TYPE_REFERENCE_TO_VARIANT_ARRAY);
@@ -268,46 +201,30 @@ GR2Object::Ptr GR2Reader::makeReferenceVarArray(const GR2TypeNode* node, const G
     obj->typeNode = node;
     obj->parent = parent;
     obj->name = resolve<char*>(node->name);
-    obj->rootOffset = m_rootOffset;
 
-    if (parent == nullptr) {
-        obj->offset = *rootGet<uint64_t*>();
-        m_rootOffset += sizeof(uint64_t); // offset
-        obj->size = *rootGet<uint32_t*>();
-        m_rootOffset += sizeof(uint32_t); // size
-        obj->data = rootResolve();
-        abort(); // FIXME: handle offset
-        m_rootOffset += is64Bit() ? sizeof(uint64_t) : sizeof(uint32_t);
-    } else if (parent->data) {
-        obj->offset = *reinterpret_cast<uint64_t*>(parent->data);
-        parent->data += sizeof(uint64_t); // advance parent data pointer
-        obj->size = *reinterpret_cast<uint32_t*>(parent->data);
-        parent->data += sizeof(uint32_t); // advance parent data pointer
-        obj->data = resolve<uint8_t*>(*reinterpret_cast<uint64_t*>(parent->data + obj->offset));
-        // FIXME: no idea if this is correct
-        parent->data += is64Bit() ? sizeof(uint64_t) : sizeof(uint32_t);
+    auto stream = getStream(parent);
+    if (!stream.isNull()) {
+        if (is64Bit()) {
+            obj->offset = stream.read<uint64_t>();
+        } else {
+            obj->offset = stream.read<uint32_t>();
+        }
+
+        obj->size = stream.read<uint32_t>();
+        obj->data = resolve<uint8_t*>(stream);
     }
 
-    std::cout << ", Value: ";
-    if (obj->data == nullptr) {
-        std::cout << "NULL";
-    } else {
-        std::cout << "0x"
-            << std::setw(16) << std::setfill('0') << std::hex
-            << reinterpret_cast<uint64_t>(obj->data)
-            << std::dec
-            << std::setfill(' ');
-    }
-
-    std::cout << "\n";
-
-    if (obj->data == nullptr) {
-        return obj;
+    if (callback) {
+        callback({.object = obj, .level = level});
     }
 
     auto* fields = resolve<GR2TypeNode*>(node->fields);
+    if (!isValid(fields)) {
+        return obj;
+    }
+
     for (auto i = 0u; i < obj->size && isValid(fields); ++i) {
-        traverseFields(fields, obj, level + 1);
+        traverseFields(fields, obj, level + 1, callback);
     }
 
     return obj;
@@ -318,39 +235,23 @@ GR2Object::Ptr GR2Reader::makeString(const GR2TypeNode* node, const GR2Object::P
     ATLASSERT(isValid(node));
     ATLASSERT(node->type == TYPE_STRING);
 
-    // Create a new object for the string
+    auto stream = getStream(parent);
+
     auto obj = std::make_shared<GR2String>();
     obj->typeNode = node;
     obj->parent = parent;
     obj->name = resolve<char*>(node->name);
-    obj->rootOffset = m_rootOffset;
-
-    if (parent == nullptr) {
-        obj->data = rootResolve(); // root string
-        auto* pvalue = reinterpret_cast<const char*>(obj->data);
-        obj->value = pvalue;
-        m_rootOffset += is64Bit() ? sizeof(uint64_t) : sizeof(uint32_t);
-    } else if (parent->data) {
-        obj->data = parent->data;
-        auto* pvalue = resolve<const char*>(*reinterpret_cast<uint64_t*>(obj->data));
-        obj->value = pvalue;
-        parent->data += sizeof(uint64_t);
-    }
-
-    std::cout << ", Value: ";
-
+    obj->data = resolve<uint8_t*>(stream);
     if (obj->data == nullptr) {
-        std::cout << "NULL";
-    } else {
-        std::cout << "\"" << obj->value << "\"";
+        return obj;
     }
 
-    std::cout << "\n";
+    obj->value = reinterpret_cast<const char*>(obj->data);
 
     return obj;
 }
 
-GR2Object::Ptr GR2Reader::makeTransform(const GR2TypeNode* node, const GR2Object::Ptr& parent, uint32_t level)
+GR2Object::Ptr GR2Reader::makeTransform(const GR2TypeNode* node, const GR2Object::Ptr& parent)
 {
     ATLASSERT(isValid(node));
     ATLASSERT(node->type == TYPE_TRANSFORM);
@@ -360,35 +261,14 @@ GR2Object::Ptr GR2Reader::makeTransform(const GR2TypeNode* node, const GR2Object
     obj->typeNode = node;
     obj->parent = parent;
     obj->name = resolve<char*>(node->name);
-    obj->rootOffset = m_rootOffset;
 
-    if (parent == nullptr) {
-        obj->data = rootResolve(); // root transform
-        obj->transform = *reinterpret_cast<GR2TransformData*>(obj->data);
-        m_rootOffset += sizeof(GR2TransformData);
-    } else if (parent->data) {
-        obj->data = parent->data;
-        obj->transform = *reinterpret_cast<GR2TransformData*>(parent->data);
-        parent->data += sizeof(GR2TransformData);
+    auto stream = getStream(parent);
+    if (stream.isNull()) {
+        return obj;
     }
 
-    const auto& tr = obj->transform;
-
-    std::cout << '\n';
-    std::cout << std::string(static_cast<size_t>(level + 1) * 3, ' ');
-    std::cout << std::fixed
-        << "Flags: " << tr.flags << ",\n";
-    std::cout << std::string(static_cast<size_t>(level + 1) * 3, ' ')
-        << "Translation: (" << tr.translation[0] << ", " << tr.translation[1] << ", " << tr.translation[2] << "),\n";
-    std::cout << std::string(static_cast<size_t>(level + 1) * 3, ' ')
-        << "Rotation: (" << tr.rotation[0] << ", " << tr.rotation[1] << ", " << tr.rotation[2]
-        << "),\n";
-    std::cout << std::string(static_cast<size_t>(level + 1) * 3, ' ')
-        << "Scale/Shear: (" << tr.scaleShear[0][0] << ", " << tr.scaleShear[0][1] << ", " << tr.scaleShear[0][2] << ", "
-        << tr.scaleShear[1][0] << ", " << tr.scaleShear[1][1] << ", " << tr.scaleShear[1][2] << ", "
-        << tr.scaleShear[2][0] << ", " << tr.scaleShear[2][1] << ", " << tr.scaleShear[2][2] << ")"
-        << std::dec << '\n';
-
+    obj->transform = stream.read<GR2TransformData>();
+    obj->data = reinterpret_cast<uint8_t*>(&obj->transform);
 
     return obj;
 }
@@ -402,82 +282,46 @@ GR2Object::Ptr GR2Reader::makeVarReference(const GR2TypeNode* node, const GR2Obj
     obj->typeNode = node;
     obj->parent = parent;
     obj->name = resolve<char*>(node->name);
-    obj->rootOffset = m_rootOffset;
 
-    if (parent == nullptr) {
-        obj->offset = *rootGet<uint64_t*>();
-        m_rootOffset += sizeof(uint64_t);
-        obj->data = rootResolve<uint8_t*>() + obj->offset;
-        m_rootOffset += is64Bit() ? sizeof(uint64_t) : sizeof(uint32_t);
-    } else if (parent->data) {
-        if (is64Bit()) {
-            obj->offset = *reinterpret_cast<uint64_t*>(parent->data);
-            parent->data += sizeof(uint64_t);
-            obj->data = resolve<uint8_t*>(*reinterpret_cast<uint64_t*>(parent->data + obj->offset));
-            parent->data += sizeof(uint64_t);
-        } else {
-            obj->offset = *reinterpret_cast<uint32_t*>(parent->data);
-            parent->data += sizeof(uint32_t);
-            obj->data = resolve<uint8_t*>(*reinterpret_cast<uint32_t*>(parent->data + obj->offset));
-            parent->data += sizeof(uint32_t);
-        }
+    auto stream = getStream(parent);
+    if (stream.isNull()) {
+        return obj;
     }
 
-    std::cout << ", Value: ";
-
-    if (obj->data == nullptr) {
-        std::cout << "NULL";
+    if (is64Bit()) {
+        obj->offset = stream.read<uint64_t>();
     } else {
-        std::cout << "0x"
-            << std::setw(16) << std::setfill('0') << std::hex
-            << reinterpret_cast<uint64_t>(obj->data)
-            << std::dec
-            << std::setfill(' ');
+        obj->offset = stream.read<uint32_t>();
     }
 
-    std::cout << "\n";
+    obj->data = resolve<uint8_t*>(stream);
 
     return obj;
 }
 
-GR2Object::Ptr GR2Reader::makeArrayReference(const GR2TypeNode* node, const GR2Object::Ptr& parent, uint32_t level)
+GR2Object::Ptr GR2Reader::makeArrayReference(const GR2TypeNode* node, const GR2Object::Ptr& parent, uint32_t level,
+                                             const GR2Callback& callback)
 {
     ATLASSERT(isValid(node));
     ATLASSERT(node->type == TYPE_ARRAY_OF_REFERENCES);
 
-    // Create a new object for the array of references
     auto obj = std::make_shared<GR2ArrayReference>();
     obj->typeNode = node;
     obj->parent = parent;
     obj->name = resolve<char*>(node->name);
-    obj->rootOffset = m_rootOffset;
 
-    uint32_t size = 0;
-    if (parent == nullptr) {
-        size = *rootGet<uint32_t*>();
-        m_rootOffset += sizeof(uint32_t);
-        obj->data = rootResolve<>();
-        m_rootOffset += is64Bit() ? sizeof(uint64_t) : sizeof(uint32_t);
-    } else if (parent->data) {
-        size = *reinterpret_cast<uint32_t*>(parent->data);
-        parent->data += sizeof(uint32_t);
-        obj->data = parent->data;
-        parent->data += size * (is64Bit() ? sizeof(uint64_t) : sizeof(uint32_t));
+    auto stream = getStream(parent);
+    if (stream.isNull()) {
+        return obj;
     }
 
-    std::cout << ", Value: ";
+    auto size = stream.read<uint32_t>();
 
-    if (obj->data == nullptr) {
-        std::cout << "NULL";
-    } else {
-        std::cout << "0x"
-            << std::setw(16) << std::setfill('0') << std::hex
-            << reinterpret_cast<uint64_t>(obj->data)
-            << std::dec
-            << std::setfill(' ');
+    obj->data = resolve<uint8_t*>(stream);
+
+    if (callback) {
+        callback({.object = obj, .level = level});
     }
-
-    std::cout << "\n";
 
     if (obj->data == nullptr) {
         return obj;
@@ -485,17 +329,43 @@ GR2Object::Ptr GR2Reader::makeArrayReference(const GR2TypeNode* node, const GR2O
 
     auto* pdata = reinterpret_cast<uint64_t*>(obj->data);
     auto* fields = resolve<GR2TypeNode*>(node->fields);
-    for (auto i = 0u; i < size; ++i) {
-        auto ptr = pdata[i];
-
-        // resolve each reference in the array
-        obj->data = resolve<uint8_t*>(ptr);
-
-        traverseFields(fields, obj, level + 1);
+    if (!isValid(fields)) {
+        return obj;
     }
 
-    if (size == 0) {
-        std::cout << "\n";
+    for (auto i = 0u; i < size; ++i) {
+        auto ptr = pdata[i];
+        obj->data = resolve<uint8_t*>(ptr);
+        traverseFields(fields, obj, level + 1, callback);
+    }
+
+    return obj;
+}
+
+GR2Object::Ptr GR2Reader::makeInt16(const GR2TypeNode* node, const GR2Object::Ptr& parent)
+{
+    ATLASSERT(isValid(node));
+    ATLASSERT(node->type == TYPE_INT16);
+
+    auto obj = std::make_shared<GRInt16>();
+    obj->typeNode = node;
+    obj->parent = parent;
+    obj->name = resolve<char*>(node->name);
+
+    auto count = node->arraySize != 0 ? node->arraySize : 1;
+    if (count == 0) {
+        return obj;
+    }
+
+    auto stream = getStream(parent);
+    if (stream.isNull()) {
+        return obj;
+    }
+
+    obj->values.resize(count);
+
+    for (auto i = 0; i < count; ++i) {
+        obj->values[i] = stream.read<int16_t>();
     }
 
     return obj;
@@ -505,33 +375,27 @@ GR2Object::Ptr GR2Reader::makeInt32(const GR2TypeNode* node, const GR2Object::Pt
 {
     ATLASSERT(isValid(node));
     ATLASSERT(node->type == TYPE_INT32);
-    ATLASSERT(parent != nullptr); // root integer not supported
 
     auto obj = std::make_shared<GRInt32>();
     obj->typeNode = node;
     obj->parent = parent;
     obj->name = resolve<char*>(node->name);
-    obj->data = parent->data;
-    obj->rootOffset = m_rootOffset;
 
-    if (obj->data) {
-        auto count = node->arraySize != 0 ? node->arraySize : 1;
-        obj->values.resize(count);
-        for (auto i = 0; i < count; ++i) {
-            obj->values[i] = *reinterpret_cast<int32_t*>(parent->data);
-            parent->data += sizeof(int32_t);
-        }
+    auto count = node->arraySize != 0 ? node->arraySize : 1;
+    if (count == 0) {
+        return obj;
     }
 
-    std::cout << ", Value: ";
-
-    if (obj->data == nullptr) {
-        std::cout << "NULL";
-    } else {
-        printValues<int32_t>(obj->values);
+    auto stream = getStream(parent);
+    if (stream.isNull()) {
+        return obj;
     }
 
-    std::cout << "\n";
+    obj->values.resize(count);
+
+    for (auto i = 0; i < count; ++i) {
+        obj->values[i] = stream.read<int32_t>();
+    }
 
     return obj;
 }
@@ -540,33 +404,27 @@ GR2Object::Ptr GR2Reader::makeUInt8(const GR2TypeNode* node, const GR2Object::Pt
 {
     ATLASSERT(isValid(node));
     ATLASSERT(node->type == TYPE_UINT8);
-    ATLASSERT(parent != nullptr); // root uint8 not supported
 
     auto obj = std::make_shared<GRUInt8>();
     obj->typeNode = node;
     obj->parent = parent;
     obj->name = resolve<char*>(node->name);
-    obj->data = parent->data;
-    obj->rootOffset = m_rootOffset;
 
-    if (obj->data) {
-        auto count = node->arraySize != 0 ? node->arraySize : 1;
-        obj->values.resize(count);
-        for (auto i = 0; i < count; ++i) {
-            obj->values[i] = *reinterpret_cast<uint8_t*>(parent->data);
-            parent->data += sizeof(uint8_t);
-        }
+    auto count = node->arraySize != 0 ? node->arraySize : 1;
+    if (count == 0) {
+        return obj;
     }
 
-    std::cout << ", Value: ";
-
-    if (obj->data == nullptr) {
-        std::cout << "NULL";
-    } else {
-        printValues<uint8_t>(obj->values);
+    auto stream = getStream(parent);
+    if (stream.isNull()) {
+        return obj;
     }
 
-    std::cout << "\n";
+    obj->values.resize(count);
+
+    for (auto i = 0; i < count; ++i) {
+        obj->values[i] = stream.read<uint8_t>();
+    }
 
     return obj;
 }
@@ -575,33 +433,27 @@ GR2Object::Ptr GR2Reader::makeFloat(const GR2TypeNode* node, const GR2Object::Pt
 {
     ATLASSERT(isValid(node));
     ATLASSERT(node->type == TYPE_REAL32);
-    ATLASSERT(parent != nullptr); // root float not supported
 
     auto obj = std::make_shared<GRFloat>();
     obj->typeNode = node;
     obj->parent = parent;
     obj->name = resolve<char*>(node->name);
-    obj->data = parent->data;
-    obj->rootOffset = m_rootOffset;
 
-    if (obj->data) {
-        auto count = node->arraySize != 0 ? node->arraySize : 1;
-        obj->values.resize(count);
-        for (auto i = 0; i < count; ++i) {
-            obj->values[i] = *reinterpret_cast<float*>(parent->data);
-            parent->data += sizeof(float);
-        }
+    auto count = node->arraySize != 0 ? node->arraySize : 1;
+    if (count == 0) {
+        return obj;
     }
 
-    std::cout << ", Value: ";
-
-    if (obj->data == nullptr) {
-        std::cout << "NULL";
-    } else {
-        printValues<float>(obj->values);
+    auto stream = getStream(parent);
+    if (stream.isNull()) {
+        return obj;
     }
 
-    std::cout << "\n";
+    obj->values.resize(count);
+
+    for (auto i = 0; i < count; ++i) {
+        obj->values[i] = stream.read<float>();
+    }
 
     return obj;
 }
@@ -616,62 +468,12 @@ GR2Object::Ptr GR2Reader::makeInline(const GR2TypeNode* node, const GR2Object::P
     obj->typeNode = node;
     obj->parent = parent;
     obj->name = resolve<char*>(node->name);
-    obj->rootOffset = m_rootOffset;
 
-    if (parent == nullptr) {
+    /*if (parent == nullptr) {
         obj->data = rootResolve();
     } else {
         obj->data = parent->data;
-    }
-
-    std::cout << ", Value: ";
-
-    if (obj->data == nullptr) {
-        std::cout << "NULL";
-    } else {
-        std::cout << "0x"
-            << std::setw(16) << std::setfill('0') << std::hex
-            << reinterpret_cast<uint64_t>(obj->data)
-            << std::dec
-            << std::setfill(' ');
-    }
-
-    std::cout << "\n";
-
-    return obj;
-}
-
-GR2Object::Ptr GR2Reader::makeInt16(const GR2TypeNode* node, const GR2Object::Ptr& parent)
-{
-    ATLASSERT(isValid(node));
-    ATLASSERT(node->type == TYPE_INT16);
-    ATLASSERT(parent != nullptr); // root integer not supported
-
-    auto obj = std::make_shared<GRInt16>();
-    obj->typeNode = node;
-    obj->parent = parent;
-    obj->name = resolve<char*>(node->name);
-    obj->data = parent->data;
-    obj->rootOffset = m_rootOffset;
-
-    if (obj->data) {
-        auto count = node->arraySize != 0 ? node->arraySize : 1;
-        obj->values.resize(count);
-        for (auto i = 0; i < count; ++i) {
-            obj->values[i] = *reinterpret_cast<int16_t*>(parent->data);
-            parent->data += sizeof(int16_t);
-        }
-    }
-
-    std::cout << ", Value: ";
-
-    if (obj->data == nullptr) {
-        std::cout << "NULL";
-    } else {
-        printValues<int16_t>(obj->values);
-    }
-
-    std::cout << "\n";
+    }*/
 
     return obj;
 }
@@ -750,7 +552,6 @@ void GR2Reader::readSections()
 
     for (auto i = 0u; i < m_sectionHeaders.size(); ++i) {
         auto& section = m_sectionHeaders[i];
-
         for (auto j = 0u; j < section.fixupSize; ++j) {
             auto* fixup = reinterpret_cast<GR2FixUp*>(pdata + section.fixupOffset + j * sizeof(GR2FixUp));
             addFixup(i, *fixup);

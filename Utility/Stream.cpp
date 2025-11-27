@@ -231,6 +231,11 @@ ByteBuffer Stream::detach()
     return buffer;
 }
 
+uint8_t* Stream::data() const
+{
+    return m_bytes.get();
+}
+
 Stream::Stream(Stream&& rhs) noexcept
 {
     *this = std::move(rhs);

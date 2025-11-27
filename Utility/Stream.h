@@ -37,13 +37,13 @@ public:
     static Stream makeStream(const std::string& str);
     static Stream makeStream(StreamBase& stream);
 
-    Stream read(size_t bytes);
-    std::string str() const;
     ByteBuffer bytes() const;
-    size_t capacity() const;
-
-    void attach(ByteBuffer buffer);
     ByteBuffer detach();
+    size_t capacity() const;
+    std::string str() const;
+    Stream read(size_t bytes);
+    uint8_t* data() const;
+    void attach(ByteBuffer buffer);
 
 private:
     void alloc(size_t size);

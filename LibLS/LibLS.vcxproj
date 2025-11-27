@@ -175,6 +175,7 @@
     <ClInclude Include="CRC32.h" />
     <ClInclude Include="Exception.h" />
     <ClInclude Include="GR2Reader.h" />
+    <ClInclude Include="GR2Stream.h" />
     <ClInclude Include="ICompressor.h" />
     <ClInclude Include="Iconizer.h" />
     <ClInclude Include="Indexer.h" />
@@ -211,6 +212,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="GR2Reader.cpp" />
+    <ClCompile Include="GR2Stream.cpp" />
     <ClCompile Include="Iconizer.cpp" />
     <ClCompile Include="Indexer.cpp" />
     <ClCompile Include="Localization.cpp" />

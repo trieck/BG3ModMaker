@@ -180,7 +180,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="FibTreeTests.cpp" />
-    <ClCompile Include="GR2Tests.cpp" />
     <ClCompile Include="LocaTests.cpp" />
     <ClCompile Include="MD5Tests.cpp" />
     <ClCompile Include="MemStreamTests.cpp" />

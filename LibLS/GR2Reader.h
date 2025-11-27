@@ -1,5 +1,7 @@
 #pragma once
 
+#include "GR2Stream.h"
+
 enum GR2MagicFlags : uint8_t
 {
     FLAG_NONE = 0,
@@ -25,11 +27,12 @@ static constexpr GR2MagicInfo MAGIC[] = {
         .flags = FLAG_BIG_ENDIAN,
         .magic = {3093803210, 4167938319, 2222099582, 1578696734}
     },
+    /* Little Endian 32-bit File Format 7 (Granny 2.9) */
     {
         .flags = FLAG_EXTRA_16,
         .magic = {3228360233, 726901946, 2780296485, 4007814902},
     },
-    /* Little Endian 32-bit File Format 7 (Granny 2.9) */
+    /* Little Endian 64-bit File Format 7 (Granny 2.9) */
     {
         .flags = FLAG_EXTRA_16 | FLAG_64_BIT,
         .magic = {1581882341, 337601391, 2850755358, 3303915152},
@@ -155,8 +158,7 @@ struct GR2Object
     std::string name;
     std::vector<Ptr> children;
 
-    uint32_t rootOffset{0}; // instance offset for root objects
-    uint8_t* data{nullptr}; // transient data pointer while traversing
+    uint8_t* data{nullptr}; // pointer to the data
 };
 
 struct GR2VarReference : GR2Object
@@ -209,6 +211,14 @@ struct GRTransform : GR2Object
     GR2TransformData transform{};
 };
 
+struct GR2ObjectInfo
+{
+    GR2Object::Ptr object;
+    uint32_t level;
+};
+
+using GR2Callback = std::function<void(const GR2ObjectInfo& info)>;
+
 class GR2Reader
 {
 public:
@@ -216,9 +226,44 @@ public:
     ~GR2Reader() = default;
 
     void read(const char* filename);
-    void traverse();
+    void traverse(const GR2Callback& callback = {});
+
+    const std::vector<GR2Object::Ptr>& rootObjects() const;
 
 private:
+    bool is64Bit() const;
+    bool isExtra16() const;
+    bool isValid(const GR2TypeNode* node) const;
+    GR2Object::Ptr makeArrayReference(const GR2TypeNode* node, const GR2Object::Ptr& parent, uint32_t level,
+                                      const GR2Callback& callback = {});
+    GR2Object::Ptr makeFloat(const GR2TypeNode* node, const GR2Object::Ptr& parent);
+    GR2Object::Ptr makeInline(const GR2TypeNode* node, const GR2Object::Ptr& parent);
+    GR2Object::Ptr makeInt16(const GR2TypeNode* node, const GR2Object::Ptr& parent);
+    GR2Object::Ptr makeInt32(const GR2TypeNode* node, const GR2Object::Ptr& parent);
+    GR2Object::Ptr makeObject(const GR2TypeNode* node, const GR2Object::Ptr& parent, uint32_t level,
+                              const GR2Callback& callback = {});
+    GR2Object::Ptr makeReference(const GR2TypeNode* node, const GR2Object::Ptr& parent);
+    GR2Object::Ptr makeReferenceArray(const GR2TypeNode* node, const GR2Object::Ptr& parent, uint32_t level,
+                                      const GR2Callback& callback = {});
+    GR2Object::Ptr makeReferenceVarArray(const GR2TypeNode* node, const GR2Object::Ptr& parent, uint32_t level,
+                                         const GR2Callback& callback = {});
+    GR2Object::Ptr makeString(const GR2TypeNode* node, const GR2Object::Ptr& parent);
+    GR2Object::Ptr makeTransform(const GR2TypeNode* node, const GR2Object::Ptr& parent);
+    GR2Object::Ptr makeUInt8(const GR2TypeNode* node, const GR2Object::Ptr& parent);
+    GR2Object::Ptr makeVarReference(const GR2TypeNode* node, const GR2Object::Ptr& parent);
+    GR2Object::Ptr traverse(const GR2TypeNode* node, const GR2Object::Ptr& parent, uint32_t level,
+                            const GR2Callback& callback = {});
+    void addFixup(uint32_t srcSection, GR2FixUp& fixup);
+    void readFileInfo();
+    void readHeader();
+    void readSections();
+    void traverseFields(const GR2TypeNode* fields, const GR2Object::Ptr& parent, uint32_t level,
+                        const GR2Callback& callback = {});
+    void makeRootStream();
+    GR2RefStream getStream(const GR2Object::Ptr& parent);
+
+    bool isArrayType(const GR2TypeNode& node) const;
+
     template <typename T>
     T get(const GR2Reference& ref);
 
@@ -228,50 +273,20 @@ private:
     template <typename T>
     T resolve(const GR2Reference& ref);
 
-    template <typename T = uint8_t*>
-    T rootGet();
-
-    template <typename T = uint8_t*>
-    T rootResolve();
+    template <typename T>
+    T resolve(GR2Stream& stream);
 
     template <typename T>
-    void printValues(const std::vector<T>& values);
-
-    bool is64Bit() const;
-    bool isExtra16() const;
-    bool isValid(const GR2TypeNode* node) const;
-    GR2Object::Ptr makeArrayReference(const GR2TypeNode* node, const GR2Object::Ptr& parent, uint32_t level);
-    GR2Object::Ptr makeFloat(const GR2TypeNode* node, const GR2Object::Ptr& parent);
-    GR2Object::Ptr makeInline(const GR2TypeNode* node, const GR2Object::Ptr& parent);
-    GR2Object::Ptr makeInt16(const GR2TypeNode* node, const GR2Object::Ptr& parent);
-    GR2Object::Ptr makeInt32(const GR2TypeNode* node, const GR2Object::Ptr& parent);
-    GR2Object::Ptr makeObject(const GR2TypeNode* node, const GR2Object::Ptr& parent, uint32_t level);
-    GR2Object::Ptr makeReference(const GR2TypeNode* node, const GR2Object::Ptr& parent);
-    GR2Object::Ptr makeReferenceArray(const GR2TypeNode* node, const GR2Object::Ptr& parent, uint32_t level);
-    GR2Object::Ptr makeReferenceVarArray(const GR2TypeNode* node, const GR2Object::Ptr& parent, uint32_t level);
-    GR2Object::Ptr makeString(const GR2TypeNode* node, const GR2Object::Ptr& parent);
-    GR2Object::Ptr makeTransform(const GR2TypeNode* node, const GR2Object::Ptr& parent, uint32_t level);
-    GR2Object::Ptr makeUInt8(const GR2TypeNode* node, const GR2Object::Ptr& parent);
-    GR2Object::Ptr makeVarReference(const GR2TypeNode* node, const GR2Object::Ptr& parent);
-    GR2Object::Ptr traverse(const GR2TypeNode* node, const GR2Object::Ptr& parent, uint32_t level);
-    std::string typeToString(GR2NodeType type);
-    void addFixup(uint32_t srcSection, GR2FixUp& fixup);
-    void readFileInfo();
-    void readHeader();
-    void readSections();
-    void traverseFields(const GR2TypeNode* fields, const GR2Object::Ptr& parent, uint32_t level);
+    T resolve(GR2RefStream& stream);
 
     ByteBuffer m_data;
     GR2FileInfo m_fileInfo{};
     GR2Header m_header{};
-    std::unordered_set<const GR2TypeNode*> m_visitedNodes;
+    std::vector<GR2Object::Ptr> m_rootObjects;
     std::vector<GR2SectionHeader> m_sectionHeaders;
     std::vector<void*> m_fixups;
-
+    GR2Stream m_rootStream;
     uint8_t m_flags{0};
-    uint32_t m_rootOffset{0};
-
-    std::vector<GR2Object::Ptr> m_rootObjects;
 };
 
 template <typename T>
@@ -307,8 +322,16 @@ T GR2Reader::resolve(uint64_t vptr)
 template <typename T>
 T GR2Reader::resolve(const GR2Reference& ref)
 {
-    auto vptr = get<uint64_t*>(ref); // TODO: has to handle 32-bit pointers too
+    if (is64Bit()) {
+        auto vptr = get<uint64_t*>(ref);
+        if (vptr == nullptr || *vptr == 0) {
+            return nullptr;
+        }
 
+        return resolve<T>(*vptr);
+    }
+
+    auto vptr = get<uint32_t*>(ref);
     if (vptr == nullptr || *vptr == 0) {
         return nullptr;
     }
@@ -317,52 +340,43 @@ T GR2Reader::resolve(const GR2Reference& ref)
 }
 
 template <typename T>
-T GR2Reader::rootGet()
+T GR2Reader::resolve(GR2Stream& stream)
 {
-    return get<T>(
-        {.section = m_fileInfo.root.section, .offset = m_rootOffset}
-    );
+    if (is64Bit()) {
+        auto vptr = stream.read<uint64_t>();
+        if (vptr == 0) {
+            return nullptr;
+        }
+        return resolve<T>(vptr);
+    }
+
+    auto vptr = stream.read<uint32_t>();
+    if (vptr == 0) {
+        return nullptr;
+    }
+
+    return resolve<T>(vptr);
 }
 
 template <typename T>
-T GR2Reader::rootResolve()
+T GR2Reader::resolve(GR2RefStream& stream)
 {
-    return resolve<T>(
-        {.section = m_fileInfo.root.section, .offset = m_rootOffset}
-    );
-}
-
-template <typename T>
-void GR2Reader::printValues(const std::vector<T>& values)
-{
-    if (values.size() == 1) {
-        if constexpr (std::is_floating_point_v<T>) {
-            std::cout << std::fixed << values[0];
-        } else {
-            std::cout << +values[0];
-        }
-    } else {
-        std::cout << "[ ";
-        for (auto i = 0u; i < values.size(); ++i) {
-            if constexpr (std::is_floating_point_v<T>) {
-                std::cout << std::fixed;
-            }
-
-            if constexpr (std::is_floating_point_v<T>) {
-                std::cout << std::fixed << values[i];
-            } else {
-                std::cout << +values[i];
-            }
-
-            if (i < values.size() - 1) {
-                std::cout << ", ";
-            }
-        }
-
-        std::cout << " ]";
+    if (stream.isNull()) {
+        return nullptr;
     }
 
-    if constexpr (std::is_floating_point_v<T>) {
-        std::cout.unsetf(std::ios::floatfield);
+    if (is64Bit()) {
+        auto vptr = stream.read<uint64_t>();
+        if (vptr == 0) {
+            return nullptr;
+        }
+        return resolve<T>(vptr);
     }
+
+    auto vptr = stream.read<uint32_t>();
+    if (vptr == 0) {
+        return nullptr;
+    }
+
+    return resolve<T>(vptr);
 }
