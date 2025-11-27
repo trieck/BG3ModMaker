@@ -162,7 +162,6 @@ GR2Object::Ptr GR2Reader::makeReferenceArray(const GR2TypeNode* node, const GR2O
     ATLASSERT(isValid(node));
     ATLASSERT(node->type == TYPE_REFERENCE_TO_ARRAY);
 
-    // Create a new object for the reference to array
     auto obj = std::make_shared<GR2ReferenceArray>();
     obj->typeNode = node;
     obj->parent = parent;
@@ -196,7 +195,6 @@ GR2Object::Ptr GR2Reader::makeReferenceVarArray(const GR2TypeNode* node, const G
     ATLASSERT(isValid(node));
     ATLASSERT(node->type == TYPE_REFERENCE_TO_VARIANT_ARRAY);
 
-    // Create a new object for the reference to variant array
     auto obj = std::make_shared<GR2ReferenceVarArray>();
     obj->typeNode = node;
     obj->parent = parent;
@@ -211,7 +209,7 @@ GR2Object::Ptr GR2Reader::makeReferenceVarArray(const GR2TypeNode* node, const G
         }
 
         obj->size = stream.read<uint32_t>();
-        obj->data = resolve<uint8_t*>(stream);
+        obj->data = resolve<uint8_t*>(stream) + obj->offset;
     }
 
     if (callback) {
@@ -223,7 +221,7 @@ GR2Object::Ptr GR2Reader::makeReferenceVarArray(const GR2TypeNode* node, const G
         return obj;
     }
 
-    for (auto i = 0u; i < obj->size && isValid(fields); ++i) {
+    for (auto i = 0u; i < obj->size; ++i) {
         traverseFields(fields, obj, level + 1, callback);
     }
 
@@ -256,7 +254,6 @@ GR2Object::Ptr GR2Reader::makeTransform(const GR2TypeNode* node, const GR2Object
     ATLASSERT(isValid(node));
     ATLASSERT(node->type == TYPE_TRANSFORM);
 
-    // Create a new object for the transform
     auto obj = std::make_shared<GRTransform>();
     obj->typeNode = node;
     obj->parent = parent;
@@ -294,7 +291,7 @@ GR2Object::Ptr GR2Reader::makeVarReference(const GR2TypeNode* node, const GR2Obj
         obj->offset = stream.read<uint32_t>();
     }
 
-    obj->data = resolve<uint8_t*>(stream);
+    obj->data = resolve<uint8_t*>(stream) + obj->offset;
 
     return obj;
 }
@@ -463,7 +460,6 @@ GR2Object::Ptr GR2Reader::makeInline(const GR2TypeNode* node, const GR2Object::P
     ATLASSERT(isValid(node));
     ATLASSERT(node->type == TYPE_INLINE);
 
-    // Create a new object for the inline node
     auto obj = std::make_shared<GR2Object>();
     obj->typeNode = node;
     obj->parent = parent;
