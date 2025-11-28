@@ -177,7 +177,7 @@ struct GR2ReferenceArray : GR2Object
 
 struct GR2ReferenceVarArray : GR2Object
 {
-    uint64_t offset;
+    uint64_t typePtr; // virtual pointer to the type
     uint32_t size;
 };
 
@@ -191,9 +191,19 @@ struct GRInt16 : GR2Object
     std::vector<int16_t> values;
 };
 
+struct GRUInt16 : GR2Object
+{
+    std::vector<uint16_t> values;
+};
+
 struct GRInt32 : GR2Object
 {
     std::vector<int32_t> values;
+};
+
+struct GRUInt32 : GR2Object
+{
+    std::vector<uint32_t> values;
 };
 
 struct GRFloat : GR2Object
@@ -258,6 +268,8 @@ private:
                                          const GR2Callback& callback = {});
     GR2Object::Ptr makeString(const GR2TypeNode* node, const GR2Object::Ptr& parent);
     GR2Object::Ptr makeTransform(const GR2TypeNode* node, const GR2Object::Ptr& parent);
+    GR2Object::Ptr makeUInt16(const GR2TypeNode* node, const GR2Object::Ptr& parent);
+    GR2Object::Ptr makeUInt32(const GR2TypeNode* node, const GR2Object::Ptr& parent);
     GR2Object::Ptr makeUInt8(const GR2TypeNode* node, const GR2Object::Ptr& parent);
     GR2Object::Ptr makeVarReference(const GR2TypeNode* node, const GR2Object::Ptr& parent);
     void addFixup(uint32_t srcSection, GR2FixUp& fixup);

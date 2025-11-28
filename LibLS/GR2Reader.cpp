@@ -120,15 +120,25 @@ GR2Object::Ptr GR2Reader::makeObject(const GR2TypeNode* node, const GR2Object::P
         obj = makeString(node, parent);
         break;
     case TYPE_INT16:
+    case TYPE_BINORMAL_INT16:
         obj = makeInt16(node, parent);
+        break;
+    case TYPE_UINT16:
+    case TYPE_NORMAL_UINT16:
+    case TYPE_REAL16:
+        obj = makeUInt16(node, parent);
         break;
     case TYPE_INT32:
         obj = makeInt32(node, parent);
+        break;
+    case TYPE_UINT32:
+        obj = makeUInt32(node, parent);
         break;
     case TYPE_REAL32:
         obj = makeFloat(node, parent);
         break;
     case TYPE_UINT8:
+    case TYPE_NORMAL_UINT8:
         obj = makeUInt8(node, parent);
         break;
     case TYPE_TRANSFORM:
@@ -210,20 +220,20 @@ GR2Object::Ptr GR2Reader::makeReferenceVarArray(const GR2TypeNode* node, const G
     auto stream = getStream(parent);
     if (!stream.isNull()) {
         if (is64Bit()) {
-            obj->offset = stream.read<uint64_t>();
+            obj->typePtr = stream.read<uint64_t>();
         } else {
-            obj->offset = stream.read<uint32_t>();
+            obj->typePtr = stream.read<uint32_t>();
         }
 
         obj->size = stream.read<uint32_t>();
-        obj->data = resolve<uint8_t*>(stream) + obj->offset;
+        obj->data = resolve<uint8_t*>(stream);
     }
 
     if (callback) {
         callback({.object = obj, .level = level});
     }
 
-    auto* fields = resolve<GR2TypeNode*>(node->fields);
+    auto* fields = resolve<GR2TypeNode*>(obj->typePtr);
     if (!isValid(fields)) {
         return obj;
     }
@@ -277,6 +287,34 @@ GR2Object::Ptr GR2Reader::makeTransform(const GR2TypeNode* node, const GR2Object
     return obj;
 }
 
+GR2Object::Ptr GR2Reader::makeUInt16(const GR2TypeNode* node, const GR2Object::Ptr& parent)
+{
+    ATLASSERT(isValid(node));
+    ATLASSERT(node->type == TYPE_UINT16 || node->type == TYPE_NORMAL_UINT16 || node->type == TYPE_REAL16);
+
+    auto obj = std::make_shared<GRUInt16>();
+    obj->typeNode = node;
+    obj->parent = parent;
+    obj->name = resolve<char*>(node->name);
+
+    auto count = node->arraySize != 0 ? node->arraySize : 1;
+    if (count == 0) {
+        return obj;
+    }
+
+    auto stream = getStream(parent);
+    if (stream.isNull()) {
+        return obj;
+    }
+
+    obj->values.resize(count);
+    for (auto i = 0; i < count; ++i) {
+        obj->values[i] = stream.read<uint16_t>();
+    }
+
+    return obj;
+}
+
 GR2Object::Ptr GR2Reader::makeVarReference(const GR2TypeNode* node, const GR2Object::Ptr& parent)
 {
     ATLASSERT(isValid(node));
@@ -297,6 +335,8 @@ GR2Object::Ptr GR2Reader::makeVarReference(const GR2TypeNode* node, const GR2Obj
     } else {
         obj->offset = stream.read<uint32_t>();
     }
+
+    // FIXME: is offset a virtual pointer to the type?
 
     obj->data = resolve<uint8_t*>(stream) + obj->offset;
 
@@ -346,7 +386,7 @@ GR2Object::Ptr GR2Reader::makeArrayReference(const GR2TypeNode* node, const GR2O
 GR2Object::Ptr GR2Reader::makeInt16(const GR2TypeNode* node, const GR2Object::Ptr& parent)
 {
     ATLASSERT(isValid(node));
-    ATLASSERT(node->type == TYPE_INT16);
+    ATLASSERT(node->type == TYPE_INT16 || node->type == TYPE_BINORMAL_INT16);
 
     auto obj = std::make_shared<GRInt16>();
     obj->typeNode = node;
@@ -404,7 +444,7 @@ GR2Object::Ptr GR2Reader::makeInt32(const GR2TypeNode* node, const GR2Object::Pt
 GR2Object::Ptr GR2Reader::makeUInt8(const GR2TypeNode* node, const GR2Object::Ptr& parent)
 {
     ATLASSERT(isValid(node));
-    ATLASSERT(node->type == TYPE_UINT8);
+    ATLASSERT(node->type == TYPE_UINT8 || node->type == TYPE_NORMAL_UINT8);
 
     auto obj = std::make_shared<GRUInt8>();
     obj->typeNode = node;
@@ -425,6 +465,33 @@ GR2Object::Ptr GR2Reader::makeUInt8(const GR2TypeNode* node, const GR2Object::Pt
 
     for (auto i = 0; i < count; ++i) {
         obj->values[i] = stream.read<uint8_t>();
+    }
+
+    return obj;
+}
+
+GR2Object::Ptr GR2Reader::makeUInt32(const GR2TypeNode* node, const GR2Object::Ptr& parent)
+{
+    ATLASSERT(isValid(node));
+    ATLASSERT(node->type == TYPE_UINT32);
+    auto obj = std::make_shared<GRUInt32>();
+    obj->typeNode = node;
+    obj->parent = parent;
+    obj->name = resolve<char*>(node->name);
+
+    auto count = node->arraySize != 0 ? node->arraySize : 1;
+    if (count == 0) {
+        return obj;
+    }
+
+    auto stream = getStream(parent);
+    if (stream.isNull()) {
+        return obj;
+    }
+
+    obj->values.resize(count);
+    for (auto i = 0; i < count; ++i) {
+        obj->values[i] = stream.read<uint32_t>();
     }
 
     return obj;

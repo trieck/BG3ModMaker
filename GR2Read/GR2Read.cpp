@@ -2,6 +2,9 @@
 #include "GR2Reader.h"
 #include "Timer.h"
 
+#include <DirectXPackedVector.h>
+using namespace DirectX::PackedVector;
+
 static std::string typeToString(GR2NodeType type)
 {
     switch (type) {
@@ -141,7 +144,14 @@ static void printValue(const GR2ObjectInfo& info)
         std::cout << "\"" << strObj->value << "\"";
         break;
     }
-    case TYPE_INT16: {
+    case TYPE_UINT8:
+    case TYPE_NORMAL_UINT8: {
+        auto uint8Obj = std::static_pointer_cast<GRUInt8>(obj);
+        printNumber(uint8Obj->values);
+        break;
+    }
+    case TYPE_INT16:
+    case TYPE_BINORMAL_INT16: {
         auto intObj = std::static_pointer_cast<GRInt16>(obj);
         printNumber(intObj->values);
         break;
@@ -149,6 +159,16 @@ static void printValue(const GR2ObjectInfo& info)
     case TYPE_INT32: {
         auto intObj = std::static_pointer_cast<GRInt32>(obj);
         printNumber(intObj->values);
+        break;
+    }
+    case TYPE_REAL16: {
+        auto real16Obj = std::static_pointer_cast<GRUInt16>(obj);
+        std::vector<float> floatValues(real16Obj->values.size());
+        for (auto i = 0u; i < real16Obj->values.size(); ++i) {
+            floatValues[i] = XMConvertHalfToFloat(real16Obj->values[i]);
+        }
+
+        printNumber(floatValues);
         break;
     }
     case TYPE_REAL32: {
@@ -192,11 +212,6 @@ static void printObject(const GR2ObjectInfo& info)
     std::cout << "\n";
 }
 
-static void callback(const GR2ObjectInfo& info)
-{
-    printObject(info);
-}
-
 int main(int argc, char* argv[])
 {
     if (argc < 2) {
@@ -207,7 +222,7 @@ int main(int argc, char* argv[])
     try {
         Timer timer;
         GR2Reader reader;
-        reader.load(argv[1], callback);
+        reader.load(argv[1], printObject);
 
         std::cout << "   Reading took: " << timer.str() << std::endl;
     } catch (const std::exception& e) {
