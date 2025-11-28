@@ -465,11 +465,8 @@ GR2Object::Ptr GR2Reader::makeInline(const GR2TypeNode* node, const GR2Object::P
     obj->parent = parent;
     obj->name = resolve<char*>(node->name);
 
-    /*if (parent == nullptr) {
-        obj->data = rootResolve();
-    } else {
-        obj->data = parent->data;
-    }*/
+    auto stream = getStream(parent);
+    obj->data = get<uint8_t*>(stream);
 
     return obj;
 }
@@ -547,7 +544,7 @@ void GR2Reader::readSections()
     pdata = m_data.first.get();
 
     for (auto i = 0u; i < m_sectionHeaders.size(); ++i) {
-        auto& section = m_sectionHeaders[i];
+        const auto& section = m_sectionHeaders[i];
         for (auto j = 0u; j < section.fixupSize; ++j) {
             auto* fixup = reinterpret_cast<GR2FixUp*>(pdata + section.fixupOffset + j * sizeof(GR2FixUp));
             addFixup(i, *fixup);

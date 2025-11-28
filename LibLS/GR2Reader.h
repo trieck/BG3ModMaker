@@ -219,6 +219,9 @@ struct GR2ObjectInfo
 
 using GR2Callback = std::function<void(const GR2ObjectInfo& info)>;
 
+template <class T>
+concept TPtr = std::is_pointer_v<T>;
+
 class GR2Reader
 {
 public:
@@ -264,19 +267,19 @@ private:
 
     bool isArrayType(const GR2TypeNode& node) const;
 
-    template <typename T>
+    template <TPtr T>
     T get(const GR2Reference& ref);
 
-    template <typename T>
+    template <TPtr T>
+    T get(GR2RefStream& stream);
+
+    template <TPtr T>
     T resolve(uint64_t vptr);
 
-    template <typename T>
+    template <TPtr T>
     T resolve(const GR2Reference& ref);
 
-    template <typename T>
-    T resolve(GR2Stream& stream);
-
-    template <typename T>
+    template <TPtr T>
     T resolve(GR2RefStream& stream);
 
     ByteBuffer m_data;
@@ -289,7 +292,7 @@ private:
     uint8_t m_flags{0};
 };
 
-template <typename T>
+template <TPtr T>
 T GR2Reader::get(const GR2Reference& ref)
 {
     // Bounds check section index
@@ -302,8 +305,18 @@ T GR2Reader::get(const GR2Reference& ref)
     return reinterpret_cast<T>(base + ref.offset);
 }
 
+template <TPtr T>
+T GR2Reader::get(GR2RefStream& stream)
+{
+    if (stream.isNull()) {
+        return nullptr;
+    }
+
+    return stream.read<T>();
+}
+
 // Resolve a virtual pointer to an actual pointer
-template <typename T>
+template <TPtr T>
 T GR2Reader::resolve(uint64_t vptr)
 {
     if (vptr == 0) { // null pointer
@@ -319,7 +332,7 @@ T GR2Reader::resolve(uint64_t vptr)
     return static_cast<T>(ptr);
 }
 
-template <typename T>
+template <TPtr T>
 T GR2Reader::resolve(const GR2Reference& ref)
 {
     if (is64Bit()) {
@@ -339,26 +352,7 @@ T GR2Reader::resolve(const GR2Reference& ref)
     return resolve<T>(*vptr);
 }
 
-template <typename T>
-T GR2Reader::resolve(GR2Stream& stream)
-{
-    if (is64Bit()) {
-        auto vptr = stream.read<uint64_t>();
-        if (vptr == 0) {
-            return nullptr;
-        }
-        return resolve<T>(vptr);
-    }
-
-    auto vptr = stream.read<uint32_t>();
-    if (vptr == 0) {
-        return nullptr;
-    }
-
-    return resolve<T>(vptr);
-}
-
-template <typename T>
+template <TPtr T>
 T GR2Reader::resolve(GR2RefStream& stream)
 {
     if (stream.isNull()) {
