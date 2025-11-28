@@ -3,6 +3,12 @@
 #include "FileStream.h"
 #include "GR2Reader.h"
 
+void GR2Reader::load(const char* filename, const GR2Callback& callback)
+{
+    read(filename);
+    build(callback);
+}
+
 void GR2Reader::read(const char* filename)
 {
     FileStream stream;
@@ -20,11 +26,11 @@ bool GR2Reader::isValid(const GR2TypeNode* node) const
     return node != nullptr && node->type > TYPE_NONE && node->type <= TYPE_MAX;
 }
 
-void GR2Reader::traverse(const GR2Callback& callback)
+void GR2Reader::build(const GR2Callback& callback)
 {
     auto* node = get<GR2TypeNode*>(m_fileInfo.type);
     while (isValid(node)) {
-        traverse(node, nullptr, 0, callback);
+        build(node, nullptr, 0, callback);
         node++;
     }
 }
@@ -34,8 +40,8 @@ const std::vector<GR2Object::Ptr>& GR2Reader::rootObjects() const
     return m_rootObjects;
 }
 
-GR2Object::Ptr GR2Reader::traverse(const GR2TypeNode* node, const GR2Object::Ptr& parent, uint32_t level,
-                                   const GR2Callback& callback)
+GR2Object::Ptr GR2Reader::build(const GR2TypeNode* node, const GR2Object::Ptr& parent, uint32_t level,
+                                const GR2Callback& callback)
 {
     if (!isValid(node)) {
         return nullptr;
@@ -49,17 +55,17 @@ GR2Object::Ptr GR2Reader::traverse(const GR2TypeNode* node, const GR2Object::Ptr
         }
 
         auto* fields = resolve<GR2TypeNode*>(node->fields);
-        traverseFields(fields, obj, level + 1, callback);
+        buildFields(fields, obj, level + 1, callback);
     }
 
     return obj;
 }
 
-void GR2Reader::traverseFields(const GR2TypeNode* fields, const GR2Object::Ptr& parent, uint32_t level,
-                               const GR2Callback& callback)
+void GR2Reader::buildFields(const GR2TypeNode* fields, const GR2Object::Ptr& parent, uint32_t level,
+                            const GR2Callback& callback)
 {
     while (isValid(fields)) {
-        traverse(fields, parent, level, callback);
+        build(fields, parent, level, callback);
         fields++;
     }
 }
@@ -74,6 +80,7 @@ void GR2Reader::makeRootStream()
 
 GR2RefStream GR2Reader::getStream(const GR2Object::Ptr& parent)
 {
+    // A node's data pointer is interpreted relative to its parent's instance stream.
     auto* data = parent == nullptr ? &m_rootStream.data() : &parent->data;
 
     return GR2RefStream(data);
@@ -183,7 +190,7 @@ GR2Object::Ptr GR2Reader::makeReferenceArray(const GR2TypeNode* node, const GR2O
     }
 
     for (auto i = 0u; i < obj->size; ++i) {
-        traverseFields(fields, obj, level + 1, callback);
+        buildFields(fields, obj, level + 1, callback);
     }
 
     return obj;
@@ -222,7 +229,7 @@ GR2Object::Ptr GR2Reader::makeReferenceVarArray(const GR2TypeNode* node, const G
     }
 
     for (auto i = 0u; i < obj->size; ++i) {
-        traverseFields(fields, obj, level + 1, callback);
+        buildFields(fields, obj, level + 1, callback);
     }
 
     return obj;
@@ -324,19 +331,16 @@ GR2Object::Ptr GR2Reader::makeArrayReference(const GR2TypeNode* node, const GR2O
         return obj;
     }
 
-    auto* pdata = reinterpret_cast<uint64_t*>(obj->data);
     auto* fields = resolve<GR2TypeNode*>(node->fields);
     if (!isValid(fields)) {
         return obj;
     }
 
-    for (auto i = 0u; i < size; ++i) {
-        auto ptr = pdata[i];
-        obj->data = resolve<uint8_t*>(ptr);
-        traverseFields(fields, obj, level + 1, callback);
+    if (is64Bit()) {
+        return processArrayReference<uint64_t>(obj, size, fields, level, callback);
     }
 
-    return obj;
+    return processArrayReference<uint32_t>(obj, size, fields, level, callback);
 }
 
 GR2Object::Ptr GR2Reader::makeInt16(const GR2TypeNode* node, const GR2Object::Ptr& parent)
@@ -554,6 +558,16 @@ void GR2Reader::readSections()
 
 void GR2Reader::addFixup(uint32_t srcSection, GR2FixUp& fixup)
 {
+    // Bounds check source section index
+    if (srcSection >= m_sectionHeaders.size()) {
+        throw Exception("GR2 fixup: invalid source section");
+    }
+
+    // Bounds check destination section index
+    if (fixup.dstSection >= m_sectionHeaders.size()) {
+        throw Exception("GR2 fixup: invalid destination section");
+    }
+
     auto pdata = m_data.first.get();
     auto* srcPtr = pdata + m_sectionHeaders[srcSection].dataOffset + fixup.srcOffset;
     auto* dstPtr = pdata + m_sectionHeaders[fixup.dstSection].dataOffset + fixup.dstOffset;

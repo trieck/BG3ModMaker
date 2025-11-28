@@ -158,7 +158,7 @@ struct GR2Object
     std::string name;
     std::vector<Ptr> children;
 
-    uint8_t* data{nullptr}; // pointer to the data
+    uint8_t* data{nullptr}; // transient data pointer 
 };
 
 struct GR2VarReference : GR2Object
@@ -222,14 +222,18 @@ using GR2Callback = std::function<void(const GR2ObjectInfo& info)>;
 template <class T>
 concept TPtr = std::is_pointer_v<T>;
 
+template <typename T>
+concept VPtr = std::same_as<T, uint32_t> || std::same_as<T, uint64_t>;
+
 class GR2Reader
 {
 public:
     GR2Reader() = default;
     ~GR2Reader() = default;
 
+    void load(const char* filename, const GR2Callback& callback = {});
     void read(const char* filename);
-    void traverse(const GR2Callback& callback = {});
+    void build(const GR2Callback& callback = {});
 
     const std::vector<GR2Object::Ptr>& rootObjects() const;
 
@@ -237,6 +241,8 @@ private:
     bool is64Bit() const;
     bool isExtra16() const;
     bool isValid(const GR2TypeNode* node) const;
+    GR2Object::Ptr build(const GR2TypeNode* node, const GR2Object::Ptr& parent, uint32_t level,
+                         const GR2Callback& callback = {});
     GR2Object::Ptr makeArrayReference(const GR2TypeNode* node, const GR2Object::Ptr& parent, uint32_t level,
                                       const GR2Callback& callback = {});
     GR2Object::Ptr makeFloat(const GR2TypeNode* node, const GR2Object::Ptr& parent);
@@ -254,14 +260,12 @@ private:
     GR2Object::Ptr makeTransform(const GR2TypeNode* node, const GR2Object::Ptr& parent);
     GR2Object::Ptr makeUInt8(const GR2TypeNode* node, const GR2Object::Ptr& parent);
     GR2Object::Ptr makeVarReference(const GR2TypeNode* node, const GR2Object::Ptr& parent);
-    GR2Object::Ptr traverse(const GR2TypeNode* node, const GR2Object::Ptr& parent, uint32_t level,
-                            const GR2Callback& callback = {});
     void addFixup(uint32_t srcSection, GR2FixUp& fixup);
     void readFileInfo();
     void readHeader();
     void readSections();
-    void traverseFields(const GR2TypeNode* fields, const GR2Object::Ptr& parent, uint32_t level,
-                        const GR2Callback& callback = {});
+    void buildFields(const GR2TypeNode* fields, const GR2Object::Ptr& parent, uint32_t level,
+                     const GR2Callback& callback = {});
     void makeRootStream();
     GR2RefStream getStream(const GR2Object::Ptr& parent);
 
@@ -281,6 +285,10 @@ private:
 
     template <TPtr T>
     T resolve(GR2RefStream& stream);
+
+    template <VPtr T>
+    GR2Object::Ptr processArrayReference(const GR2ArrayReference::Ptr& obj, uint32_t size, const GR2TypeNode* fields,
+                                         uint32_t level, const GR2Callback& callback);
 
     ByteBuffer m_data;
     GR2FileInfo m_fileInfo{};
@@ -373,4 +381,22 @@ T GR2Reader::resolve(GR2RefStream& stream)
     }
 
     return resolve<T>(vptr);
+}
+
+template <VPtr T>
+GR2Object::Ptr GR2Reader::processArrayReference(const GR2ArrayReference::Ptr& obj, uint32_t size,
+                                                const GR2TypeNode* fields, uint32_t level,
+                                                const GR2Callback& callback)
+{
+    ATLASSERT(isValid(fields));
+
+    auto* table = reinterpret_cast<T*>(obj->data);
+
+    for (auto i = 0u; i < size; ++i) {
+        auto ptr = table[i];
+        obj->data = resolve<uint8_t*>(ptr);
+        buildFields(fields, obj, level + 1, callback);
+    }
+
+    return obj;
 }

@@ -206,10 +206,8 @@ int main(int argc, char* argv[])
 
     try {
         Timer timer;
-
         GR2Reader reader;
-        reader.read(argv[1]);
-        reader.traverse(callback);
+        reader.load(argv[1], callback);
 
         std::cout << "   Reading took: " << timer.str() << std::endl;
     } catch (const std::exception& e) {
