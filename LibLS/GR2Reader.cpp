@@ -271,7 +271,7 @@ GR2Object::Ptr GR2Reader::makeTransform(const GR2TypeNode* node, const GR2Object
     ATLASSERT(isValid(node));
     ATLASSERT(node->type == TYPE_TRANSFORM);
 
-    auto obj = std::make_shared<GRTransform>();
+    auto obj = std::make_shared<GR2Transform>();
     obj->typeNode = node;
     obj->parent = parent;
     obj->name = resolve<char*>(node->name);
@@ -292,7 +292,7 @@ GR2Object::Ptr GR2Reader::makeUInt16(const GR2TypeNode* node, const GR2Object::P
     ATLASSERT(isValid(node));
     ATLASSERT(node->type == TYPE_UINT16 || node->type == TYPE_NORMAL_UINT16 || node->type == TYPE_REAL16);
 
-    auto obj = std::make_shared<GRUInt16>();
+    auto obj = std::make_shared<GR2UInt16>();
     obj->typeNode = node;
     obj->parent = parent;
     obj->name = resolve<char*>(node->name);
@@ -388,7 +388,7 @@ GR2Object::Ptr GR2Reader::makeInt16(const GR2TypeNode* node, const GR2Object::Pt
     ATLASSERT(isValid(node));
     ATLASSERT(node->type == TYPE_INT16 || node->type == TYPE_BINORMAL_INT16);
 
-    auto obj = std::make_shared<GRInt16>();
+    auto obj = std::make_shared<GR2Int16>();
     obj->typeNode = node;
     obj->parent = parent;
     obj->name = resolve<char*>(node->name);
@@ -417,7 +417,7 @@ GR2Object::Ptr GR2Reader::makeInt32(const GR2TypeNode* node, const GR2Object::Pt
     ATLASSERT(isValid(node));
     ATLASSERT(node->type == TYPE_INT32);
 
-    auto obj = std::make_shared<GRInt32>();
+    auto obj = std::make_shared<GR2Int32>();
     obj->typeNode = node;
     obj->parent = parent;
     obj->name = resolve<char*>(node->name);
@@ -446,7 +446,7 @@ GR2Object::Ptr GR2Reader::makeUInt8(const GR2TypeNode* node, const GR2Object::Pt
     ATLASSERT(isValid(node));
     ATLASSERT(node->type == TYPE_UINT8 || node->type == TYPE_NORMAL_UINT8);
 
-    auto obj = std::make_shared<GRUInt8>();
+    auto obj = std::make_shared<GR2UInt8>();
     obj->typeNode = node;
     obj->parent = parent;
     obj->name = resolve<char*>(node->name);
@@ -474,7 +474,7 @@ GR2Object::Ptr GR2Reader::makeUInt32(const GR2TypeNode* node, const GR2Object::P
 {
     ATLASSERT(isValid(node));
     ATLASSERT(node->type == TYPE_UINT32);
-    auto obj = std::make_shared<GRUInt32>();
+    auto obj = std::make_shared<GR2UInt32>();
     obj->typeNode = node;
     obj->parent = parent;
     obj->name = resolve<char*>(node->name);
@@ -502,7 +502,7 @@ GR2Object::Ptr GR2Reader::makeFloat(const GR2TypeNode* node, const GR2Object::Pt
     ATLASSERT(isValid(node));
     ATLASSERT(node->type == TYPE_REAL32);
 
-    auto obj = std::make_shared<GRFloat>();
+    auto obj = std::make_shared<GR2Float>();
     obj->typeNode = node;
     obj->parent = parent;
     obj->name = resolve<char*>(node->name);

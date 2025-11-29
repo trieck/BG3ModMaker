@@ -186,37 +186,37 @@ struct GR2String : GR2Object
     std::string value;
 };
 
-struct GRInt16 : GR2Object
+struct GR2Int16 : GR2Object
 {
     std::vector<int16_t> values;
 };
 
-struct GRUInt16 : GR2Object
+struct GR2UInt16 : GR2Object
 {
     std::vector<uint16_t> values;
 };
 
-struct GRInt32 : GR2Object
+struct GR2Int32 : GR2Object
 {
     std::vector<int32_t> values;
 };
 
-struct GRUInt32 : GR2Object
+struct GR2UInt32 : GR2Object
 {
     std::vector<uint32_t> values;
 };
 
-struct GRFloat : GR2Object
+struct GR2Float : GR2Object
 {
     std::vector<float> values;
 };
 
-struct GRUInt8 : GR2Object
+struct GR2UInt8 : GR2Object
 {
     std::vector<uint8_t> values;
 };
 
-struct GRTransform : GR2Object
+struct GR2Transform : GR2Object
 {
     GR2TransformData transform{};
 };

@@ -1,8 +1,10 @@
 #include "stdafx.h"
+#include "GR2ModelBuilder.h"
 #include "GR2Reader.h"
 #include "Timer.h"
 
 #include <DirectXPackedVector.h>
+
 using namespace DirectX::PackedVector;
 
 static std::string typeToString(GR2NodeType type)
@@ -111,7 +113,7 @@ static void printTransform(const GR2ObjectInfo& info)
         return;
     }
 
-    auto transformObj = std::static_pointer_cast<GRTransform>(obj);
+    auto transformObj = std::static_pointer_cast<GR2Transform>(obj);
     const auto& tr = transformObj->transform;
 
     std::cout << '\n';
@@ -146,23 +148,23 @@ static void printValue(const GR2ObjectInfo& info)
     }
     case TYPE_UINT8:
     case TYPE_NORMAL_UINT8: {
-        auto uint8Obj = std::static_pointer_cast<GRUInt8>(obj);
+        auto uint8Obj = std::static_pointer_cast<GR2UInt8>(obj);
         printNumber(uint8Obj->values);
         break;
     }
     case TYPE_INT16:
     case TYPE_BINORMAL_INT16: {
-        auto intObj = std::static_pointer_cast<GRInt16>(obj);
+        auto intObj = std::static_pointer_cast<GR2Int16>(obj);
         printNumber(intObj->values);
         break;
     }
     case TYPE_INT32: {
-        auto intObj = std::static_pointer_cast<GRInt32>(obj);
+        auto intObj = std::static_pointer_cast<GR2Int32>(obj);
         printNumber(intObj->values);
         break;
     }
     case TYPE_REAL16: {
-        auto real16Obj = std::static_pointer_cast<GRUInt16>(obj);
+        auto real16Obj = std::static_pointer_cast<GR2UInt16>(obj);
         std::vector<float> floatValues(real16Obj->values.size());
         for (auto i = 0u; i < real16Obj->values.size(); ++i) {
             floatValues[i] = XMConvertHalfToFloat(real16Obj->values[i]);
@@ -172,7 +174,7 @@ static void printValue(const GR2ObjectInfo& info)
         break;
     }
     case TYPE_REAL32: {
-        auto floatObj = std::static_pointer_cast<GRFloat>(obj);
+        auto floatObj = std::static_pointer_cast<GR2Float>(obj);
         printNumber(floatObj->values);
         break;
     }
@@ -222,7 +224,10 @@ int main(int argc, char* argv[])
     try {
         Timer timer;
         GR2Reader reader;
-        reader.load(argv[1], printObject);
+        reader.load(argv[1]);
+
+        GR2ModelBuilder builder;
+        auto model = builder.build(reader);
 
         std::cout << "   Reading took: " << timer.str() << std::endl;
     } catch (const std::exception& e) {
