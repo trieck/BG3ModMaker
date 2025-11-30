@@ -9,8 +9,12 @@ using Microsoft::WRL::ComPtr;
 static constexpr auto* VERTEX_SHADER = R"(
 // Constant buffer with model transform
 cbuffer ModelConstants : register(b0) {
-    float3 modelCenter;
-    float modelScale;
+    float centerX;         // Offset 0
+    float centerY;         // Offset 4
+    float centerZ;         // Offset 8
+    float scale;           // Offset 12
+    float aspectRatio;     // Offset 16
+    float padding[3];      // Offset 20, 24, 28
 };
 
 struct VS_INPUT {
@@ -31,14 +35,15 @@ struct VS_OUTPUT {
 VS_OUTPUT main(VS_INPUT input) {
     VS_OUTPUT output;
 
-    // Use precomputed center and scale from constant buffer
     float3 pos = input.position;
-    pos -= modelCenter;        // Center at origin
-    pos *= modelScale;         // Scale to fit viewport
+    pos.x -= centerX;
+    pos.y -= centerY;
+    //pos.z -= centerZ;
+    pos *= scale;
 
-    output.position = float4(pos.x, pos.y, -pos.z, 1.0);
+    output.position = float4(pos.x / aspectRatio, pos.y, -pos.z, 1.0);
     output.color = input.color;
-    
+
     return output;
 }
 )";
@@ -51,8 +56,7 @@ struct PS_INPUT {
 };
 
 float4 main(PS_INPUT input) : SV_Target {
-    // Return white for now (ignore vertex color)
-    return float4(1.0f, 1.0f, 1.0f, 1.0f);
+    return input.color;
 }
 )";
 
@@ -75,8 +79,10 @@ BOOL D3DModel::Create(Direct3D& d3d, const GR2Model& model)
     m_constants.centerY = model.bounds.center.y;
     m_constants.centerZ = model.bounds.center.z;
 
-    // Calculate scale to fit in viewp  (normalize to radius 2.0)
-    m_constants.scale = model.bounds.radius > 0.0f ? (2.0f / model.bounds.radius) : 1.0f;
+    // Calculate scale to fit in viewp  (normalize to radius 1.0)
+    m_constants.scale = model.bounds.radius > 0.0f ? (1.0f / model.bounds.radius) : 1.0f;
+
+    m_constants.aspectRatio = 1.0f; // Will be set during rendering
 
     if (!CreateShaders(device)) {
         ATLTRACE("D3DModel::Create: Failed to create shaders.\n");
@@ -111,6 +117,17 @@ void D3DModel::Render(Direct3D& d3d)
     if (!context) {
         ATLTRACE("D3DModel::Render: Invalid D3D context.\n");
         return;
+    }
+
+    D3D11_VIEWPORT viewport;
+    UINT numViewports = 1;
+    context->RSGetViewports(&numViewports, &viewport);
+
+    auto aspectRatio = viewport.Height <= 0.0f ? 1.0f : (viewport.Width / viewport.Height);
+
+    if (abs(m_constants.aspectRatio - aspectRatio) > 0.001f) {
+        m_constants.aspectRatio = aspectRatio;
+        context->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &m_constants, 0, 0);
     }
 
     // Bind constant buffer

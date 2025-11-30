@@ -32,9 +32,14 @@ private:
 
     struct ModelConstants
     {
-        float centerX{}, centerY{}, centerZ{};
+        float centerX{};
+        float centerY{};
+        float centerZ{};
         float scale{};
+        float aspectRatio{};
+        float padding[3];
     };
+
 
     ModelConstants m_constants{};
     std::vector<MeshBuffers> m_meshes;
