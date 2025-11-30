@@ -96,7 +96,7 @@ BOOL GR2FileView::IsText() const
 
 BOOL GR2FileView::LoadBuffer(const CString& path, const ByteBuffer& buffer)
 {
-    return TRUE;
+    return FALSE;
 }
 
 BOOL GR2FileView::LoadFile(const CString& path)
@@ -104,10 +104,15 @@ BOOL GR2FileView::LoadFile(const CString& path)
     GR2ModelBuilder builder;
 
     auto utf8Path = StringHelper::toUTF8(path);
-    auto grannyModel = builder.build(utf8Path);
 
-    if (!m_model.Create(m_direct3D, grannyModel)) {
-        ATLTRACE(L"Failed to create D3DModel from GR2 file: %s\n", path.GetString());
+    try {
+        auto grannyModel = builder.build(utf8Path);
+        if (!m_model.Create(m_direct3D, grannyModel)) {
+            ATLTRACE(L"Failed to create D3DModel from GR2 file: %s\n", path.GetString());
+            return FALSE;
+        }
+    } catch (const std::exception& ex) {
+        ATLTRACE(L"Failed to load GR2 file: %s. Error: %S\n", path.GetString(), ex.what());
         return FALSE;
     }
 
