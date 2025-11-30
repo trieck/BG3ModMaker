@@ -40,6 +40,42 @@ const std::vector<GR2Object::Ptr>& GR2Reader::rootObjects() const
     return m_rootObjects;
 }
 
+bool GR2Reader::isGR2(FileStream& stream)
+{
+    const auto offset = stream.tell();
+    stream.seek(0, SeekMode::Begin);
+
+    GR2Header header{};
+    stream.read(reinterpret_cast<char*>(&header), sizeof(GR2Header));
+    stream.seek(static_cast<int64_t>(offset), SeekMode::Begin);
+
+    try {
+        readFlags(header);
+    } catch (const Exception&) {
+        return false;
+    }
+
+    return true;
+}
+
+bool GR2Reader::isGR2(const ByteBuffer& contents)
+{
+    if (contents.second < sizeof(GR2Header)) {
+        return false;
+    }
+
+    GR2Header header{};
+    memcpy(&header, contents.first.get(), sizeof(GR2Header));
+
+    try {
+        readFlags(header);
+    } catch (const Exception&) {
+        return false;
+    }
+
+    return true;
+}
+
 GR2Object::Ptr GR2Reader::build(const GR2TypeNode* node, const GR2Object::Ptr& parent, uint32_t level,
                                 const GR2Callback& callback)
 {
@@ -552,15 +588,15 @@ bool GR2Reader::isExtra16() const
     return m_flags & FLAG_EXTRA_16;
 }
 
-void GR2Reader::readHeader()
+uint8_t GR2Reader::readFlags(const GR2Header& header)
 {
-    memcpy(&m_header, m_data.first.get(), sizeof(GR2Header));
+    uint8_t flags{};
 
     bool found = false;
     for (const auto& magicInfo : MAGIC) {
-        if (std::equal(std::begin(magicInfo.magic), std::end(magicInfo.magic), std::begin(m_header.magic))) {
+        if (std::equal(std::begin(magicInfo.magic), std::end(magicInfo.magic), std::begin(header.magic))) {
             // Valid magic found
-            m_flags = magicInfo.flags;
+            flags = magicInfo.flags;
             found = true;
             break;
         }
@@ -570,13 +606,21 @@ void GR2Reader::readHeader()
         throw Exception("Invalid GR2 file magic.");
     }
 
-    if (m_flags & FLAG_BIG_ENDIAN) {
+    if (flags & FLAG_BIG_ENDIAN) {
         throw Exception("Big-endian GR2 files are not supported.");
     }
 
-    if (m_header.format != 0) {
+    if (header.format != 0) {
         throw Exception("Unsupported GR2 file format version.");
     }
+
+    return flags;
+}
+
+void GR2Reader::readHeader()
+{
+    memcpy(&m_header, m_data.first.get(), sizeof(GR2Header));
+    m_flags = readFlags(m_header);
 }
 
 void GR2Reader::readFileInfo()

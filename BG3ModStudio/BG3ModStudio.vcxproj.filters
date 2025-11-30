@@ -188,6 +188,12 @@
     <ClInclude Include="DatabaseDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GR2FileView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D3DModel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BG3ModStudio.cpp">
@@ -329,6 +335,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DatabaseDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GR2FileView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D3DModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

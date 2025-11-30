@@ -1,6 +1,13 @@
 #include "pch.h"
 #include "GR2ModelBuilder.h"
 
+GR2Model GR2ModelBuilder::build(const char* filename, const GR2Callback& callback)
+{
+    GR2Reader reader;
+    reader.load(filename, callback);
+    return build(reader);
+}
+
 GR2Model GR2ModelBuilder::build(const GR2Reader& reader)
 {
     GR2Model model;
@@ -23,6 +30,47 @@ GR2Model GR2ModelBuilder::build(const GR2Reader& reader)
         }
 
         model.meshes.emplace_back(extractMesh(child));
+    }
+
+    // Calculate overall model bounds
+    if (!model.meshes.empty()) {
+        bool firstBounds = true;
+
+        for (const auto& mesh : model.meshes) {
+            if (mesh.vertices.empty()) {
+                continue;
+            }
+
+            if (firstBounds) {
+                model.bounds.min = mesh.bounds.min;
+                model.bounds.max = mesh.bounds.max;
+                firstBounds = false;
+            } else {
+                model.bounds.min.x = std::min(model.bounds.min.x, mesh.bounds.min.x);
+                model.bounds.min.y = std::min(model.bounds.min.y, mesh.bounds.min.y);
+                model.bounds.min.z = std::min(model.bounds.min.z, mesh.bounds.min.z);
+
+                model.bounds.max.x = std::max(model.bounds.max.x, mesh.bounds.max.x);
+                model.bounds.max.y = std::max(model.bounds.max.y, mesh.bounds.max.y);
+                model.bounds.max.z = std::max(model.bounds.max.z, mesh.bounds.max.z);
+            }
+        }
+
+        // Calculate overall center
+        model.bounds.center.x = (model.bounds.min.x + model.bounds.max.x) * 0.5f;
+        model.bounds.center.y = (model.bounds.min.y + model.bounds.max.y) * 0.5f;
+        model.bounds.center.z = (model.bounds.min.z + model.bounds.max.z) * 0.5f;
+
+        // Calculate overall radius
+        auto dx = model.bounds.max.x - model.bounds.min.x;
+        auto dy = model.bounds.max.y - model.bounds.min.y;
+        auto dz = model.bounds.max.z - model.bounds.min.z;
+        model.bounds.radius = std::sqrt(dx * dx + dy * dy + dz * dz) * 0.5f;
+    } else {
+        model.bounds.min = GR2Vector3{.x = 0.0f, .y = 0.0f, .z = 0.0f};
+        model.bounds.max = GR2Vector3{.x = 0.0f, .y = 0.0f, .z = 0.0f};
+        model.bounds.center = GR2Vector3{.x = 0.0f, .y = 0.0f, .z = 0.0f};
+        model.bounds.radius = 0.0f;
     }
 
     return model;
@@ -76,16 +124,16 @@ uint32_t GR2ModelBuilder::findStride(const GR2Object::Ptr& obj)
     return stride;
 }
 
-std::vector<Vertex> GR2ModelBuilder::extractVertices(const GR2Object::Ptr& obj)
+std::vector<GR2Vertex> GR2ModelBuilder::extractVertices(const GR2Object::Ptr& obj)
 {
-    std::vector<Vertex> vertices;
+    std::vector<GR2Vertex> vertices;
 
     auto stride = findStride(obj);
 
     const auto vertexCount = obj->children.size() / stride;
 
     for (auto i = 0u; i < vertexCount; ++i) {
-        Vertex v{};
+        GR2Vertex v{};
         for (auto j = 0u; j < stride; ++j) {
             const auto& attr = obj->children[i * stride + j];
             if (attr->name == "Position") {
@@ -182,9 +230,9 @@ std::vector<uint32_t> GR2ModelBuilder::extractIndices(const GR2Object::Ptr& obj)
     return indices;
 }
 
-Mesh GR2ModelBuilder::extractMesh(const GR2Object::Ptr& meshObj)
+GR2Mesh GR2ModelBuilder::extractMesh(const GR2Object::Ptr& meshObj)
 {
-    Mesh mesh;
+    GR2Mesh mesh;
 
     auto vertexDataRef = findFirstChild(meshObj, "PrimaryVertexData");
     if (!vertexDataRef) {
@@ -204,6 +252,39 @@ Mesh GR2ModelBuilder::extractMesh(const GR2Object::Ptr& meshObj)
     }
 
     mesh.indices = extractIndices(topObj);
+
+    // Calculate bounding box
+    if (!mesh.vertices.empty()) {
+        mesh.bounds.min = mesh.vertices[0].position;
+        mesh.bounds.max = mesh.vertices[0].position;
+
+        for (const auto& vertex : mesh.vertices) {
+            mesh.bounds.min.x = std::min(mesh.bounds.min.x, vertex.position.x);
+            mesh.bounds.min.y = std::min(mesh.bounds.min.y, vertex.position.y);
+            mesh.bounds.min.z = std::min(mesh.bounds.min.z, vertex.position.z);
+
+            mesh.bounds.max.x = std::max(mesh.bounds.max.x, vertex.position.x);
+            mesh.bounds.max.y = std::max(mesh.bounds.max.y, vertex.position.y);
+            mesh.bounds.max.z = std::max(mesh.bounds.max.z, vertex.position.z);
+        }
+
+        // Calculate center
+        mesh.bounds.center.x = (mesh.bounds.min.x + mesh.bounds.max.x) * 0.5f;
+        mesh.bounds.center.y = (mesh.bounds.min.y + mesh.bounds.max.y) * 0.5f;
+        mesh.bounds.center.z = (mesh.bounds.min.z + mesh.bounds.max.z) * 0.5f;
+
+        // Calculate radius (diagonal length / 2)
+        auto dx = mesh.bounds.max.x - mesh.bounds.min.x;
+        auto dy = mesh.bounds.max.y - mesh.bounds.min.y;
+        auto dz = mesh.bounds.max.z - mesh.bounds.min.z;
+        mesh.bounds.radius = std::sqrt(dx * dx + dy * dy + dz * dz) * 0.5f;
+    } else {
+        // Empty mesh - set default bounds
+        mesh.bounds.min = GR2Vector3{.x = 0.0f, .y = 0.0f, .z = 0.0f};
+        mesh.bounds.max = GR2Vector3{.x = 0.0f, .y = 0.0f, .z = 0.0f};
+        mesh.bounds.center = GR2Vector3{.x = 0.0f, .y = 0.0f, .z = 0.0f};
+        mesh.bounds.radius = 0.0f;
+    }
 
     return mesh;
 }

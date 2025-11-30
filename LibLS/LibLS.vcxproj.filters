@@ -200,9 +200,6 @@
     <ClCompile Include="GR2Stream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GR2Model.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GR2ModelBuilder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

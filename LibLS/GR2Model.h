@@ -1,71 +1,81 @@
 #pragma once
 
-struct Vector2
+struct GR2Vector2
 {
-    float x;
-    float y;
+    float x{0};
+    float y{0};
 };
 
-struct Vector3
+struct GR2Vector3
 {
-    float x;
-    float y;
-    float z;
+    float x{0};
+    float y{0};
+    float z{0};
 };
 
-struct Vector4
+struct GR2Vector4
 {
-    float x;
-    float y;
-    float z;
-    float w;
+    float x{0};
+    float y{0};
+    float z{0};
+    float w{0};
 };
 
-struct U8Vector4
+struct GR2U8Vector4
 {
-    uint8_t x;
-    uint8_t y;
-    uint8_t z;
-    uint8_t w;
+    uint8_t x{0};
+    uint8_t y{0};
+    uint8_t z{0};
+    uint8_t w{0};
 };
 
-struct U16Vector2
+struct GR2U16Vector2
 {
-    uint16_t x;
-    uint16_t y;
+    uint16_t x{0};
+    uint16_t y{0};
 };
 
-struct U16Vector4
+struct GR2U16Vector4
 {
-    uint16_t x;
-    uint16_t y;
-    uint16_t z;
-    uint16_t w;
+    uint16_t x{0};
+    uint16_t y{0};
+    uint16_t z{0};
+    uint16_t w{0};
 };
 
-struct Matrix4x4
+struct GR2Matrix4x4
 {
-    float m[4][4];
+    float m[4][4]{};
 };
 
-struct Vertex
+struct GR2Vertex
 {
-    Vector3 position;
-    U8Vector4 boneWeights;
-    U8Vector4 boneIndices;
-    U16Vector4 QTangent;
-    U8Vector4 diffuseColor0;
-    U16Vector2 texCoord0;
-    U16Vector2 texCoord1;
+    GR2Vector3 position{};
+    GR2U8Vector4 boneWeights{};
+    GR2U8Vector4 boneIndices{};
+    GR2U16Vector4 QTangent{};
+    GR2U8Vector4 diffuseColor0{};
+    GR2U16Vector2 texCoord0{};
+    GR2U16Vector2 texCoord1{};
 };
 
-struct Mesh
+struct GR2Bounds
 {
-    std::vector<Vertex> vertices;
+    GR2Vector3 min{};
+    GR2Vector3 max{};
+    GR2Vector3 center{};
+    float radius{0};
+};
+
+struct GR2Mesh
+{
+    std::vector<GR2Vertex> vertices;
     std::vector<uint32_t> indices;
+    GR2Bounds bounds{};
 };
 
 struct GR2Model
 {
-    std::vector<Mesh> meshes;
+    std::vector<GR2Mesh> meshes;
+    GR2Bounds bounds{};
 };

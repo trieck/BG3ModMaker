@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "GR2ModelBuilder.h"
-#include "GR2Reader.h"
 #include "Timer.h"
 
 #include <DirectXPackedVector.h>
@@ -223,11 +222,8 @@ int main(int argc, char* argv[])
 
     try {
         Timer timer;
-        GR2Reader reader;
-        reader.load(argv[1]);
-
         GR2ModelBuilder builder;
-        auto model = builder.build(reader);
+        auto model = builder.build(argv[1]);
 
         std::cout << "   Reading took: " << timer.str() << std::endl;
     } catch (const std::exception& e) {

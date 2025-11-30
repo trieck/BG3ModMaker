@@ -17,7 +17,7 @@ LRESULT ImageView::OnCreate(LPCREATESTRUCT pcs)
     return lRet;
 }
 
-LRESULT ImageView::OnPaint(CPaintDC /*dc*/)
+LRESULT ImageView::OnPaint(const CPaintDC& /*dc*/)
 {
     if (!m_pRenderTarget) {
         return 0;
@@ -423,7 +423,7 @@ ImageView::operator HWND() const
 
 BOOL ImageView::Destroy()
 {
-    if (m_hWnd == nullptr) {
+    if (!IsWindow()) {
         return FALSE;
     }
 

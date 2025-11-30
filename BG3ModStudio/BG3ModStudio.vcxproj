@@ -91,7 +91,7 @@
       <AdditionalLibraryDirectories>$(VcpkgManifestRoot)\vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\lib;$(SolutionDir)$(IntDir);$(ProjectDir)TabView\$(ProcessorArchitecture)\$(Configuration)</AdditionalLibraryDirectories>
       <AdditionalManifestDependencies>
       </AdditionalManifestDependencies>
-      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);lz4.lib;Ws2_32.lib;Rpcrt4.lib;d2d1.lib;dwrite.lib;Secur32.lib;LibLS.lib;TabViewLib.lib;Utility.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);lz4.lib;Ws2_32.lib;Rpcrt4.lib;d2d1.lib;dwrite.lib;Secur32.lib;LibLS.lib;TabViewLib.lib;Utility.lib;d3d11.lib;dxgi.lib;d3dcompiler.lib</AdditionalDependencies>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)\include</AdditionalIncludeDirectories>
@@ -119,7 +119,7 @@
       <AdditionalLibraryDirectories>$(VcpkgManifestRoot)\vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\lib;$(SolutionDir)$(IntDir);$(ProjectDir)TabView\$(ProcessorArchitecture)\$(Configuration)</AdditionalLibraryDirectories>
       <AdditionalManifestDependencies>
       </AdditionalManifestDependencies>
-      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);lz4.lib;Ws2_32.lib;Rpcrt4.lib;d2d1.lib;dwrite.lib;Secur32.lib;LibLS.lib;TabViewLib.lib;Utility.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);lz4.lib;Ws2_32.lib;Rpcrt4.lib;d2d1.lib;dwrite.lib;Secur32.lib;LibLS.lib;TabViewLib.lib;Utility.lib;d3d11.lib;dxgi.lib;d3dcompiler.lib</AdditionalDependencies>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)\include</AdditionalIncludeDirectories>
@@ -140,7 +140,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);lz4.lib;Ws2_32.lib;Rpcrt4.lib;d2d1.lib;dwrite.lib;Secur32.lib;LibLS.lib;TabViewLib.lib;Utility.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);lz4.lib;Ws2_32.lib;Rpcrt4.lib;d2d1.lib;dwrite.lib;Secur32.lib;LibLS.lib;TabViewLib.lib;Utility.lib;d3d11.lib;dxgi.lib;d3dcompiler.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(VcpkgManifestRoot)\vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\lib;$(SolutionDir)$(IntDir);$(ProjectDir)TabView\$(ProcessorArchitecture)\$(Configuration)</AdditionalLibraryDirectories>
       <AdditionalManifestDependencies>
       </AdditionalManifestDependencies>
@@ -168,7 +168,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);lz4.lib;Ws2_32.lib;Rpcrt4.lib;d2d1.lib;dwrite.lib;Secur32.lib;LibLS.lib;TabViewLib.lib;Utility.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);lz4.lib;Ws2_32.lib;Rpcrt4.lib;d2d1.lib;dwrite.lib;Secur32.lib;LibLS.lib;TabViewLib.lib;Utility.lib;d3d11.lib;dxgi.lib;d3dcompiler.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(VcpkgManifestRoot)\vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\lib;$(SolutionDir)$(IntDir);$(ProjectDir)TabView\$(ProcessorArchitecture)\$(Configuration)</AdditionalLibraryDirectories>
       <AdditionalManifestDependencies>
       </AdditionalManifestDependencies>
@@ -183,6 +183,7 @@
     <ClInclude Include="BG3ModStudio.h" />
     <ClInclude Include="BinaryFileView.h" />
     <ClInclude Include="COMError.h" />
+    <ClInclude Include="D3DModel.h" />
     <ClInclude Include="DatabaseDlg.h" />
     <ClInclude Include="DocStyler.h" />
     <ClInclude Include="FileOperation.h" />
@@ -190,6 +191,7 @@
     <ClInclude Include="FindReplaceDlg.h" />
     <ClInclude Include="FormatToken.h" />
     <ClInclude Include="GameObjectDlg.h" />
+    <ClInclude Include="GR2FileView.h" />
     <ClInclude Include="IconDlg.h" />
     <ClInclude Include="IconExplorerDlg.h" />
     <ClInclude Include="ImageView.h" />
@@ -243,12 +245,14 @@
     <ClCompile Include="BG3ModStudio.cpp" />
     <ClCompile Include="BinaryFileView.cpp" />
     <ClCompile Include="COMError.cpp" />
+    <ClCompile Include="D3DModel.cpp" />
     <ClCompile Include="DatabaseDlg.cpp" />
     <ClCompile Include="DocStyler.cpp" />
     <ClCompile Include="FileOperation.cpp" />
     <ClCompile Include="FileViewContainer.cpp" />
     <ClCompile Include="FindReplaceDlg.cpp" />
     <ClCompile Include="GameObjectDlg.cpp" />
+    <ClCompile Include="GR2FileView.cpp" />
     <ClCompile Include="IconDlg.cpp" />
     <ClCompile Include="IconExplorerDlg.cpp" />
     <ClCompile Include="ImageView.cpp" />

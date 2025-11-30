@@ -1,5 +1,6 @@
 #pragma once
 
+#include "FileStream.h"
 #include "GR2Stream.h"
 
 enum GR2MagicFlags : uint8_t
@@ -246,6 +247,8 @@ public:
     void build(const GR2Callback& callback = {});
 
     const std::vector<GR2Object::Ptr>& rootObjects() const;
+    static bool isGR2(FileStream& stream);
+    static bool isGR2(const ByteBuffer& contents);
 
 private:
     bool is64Bit() const;
@@ -272,16 +275,16 @@ private:
     GR2Object::Ptr makeUInt32(const GR2TypeNode* node, const GR2Object::Ptr& parent);
     GR2Object::Ptr makeUInt8(const GR2TypeNode* node, const GR2Object::Ptr& parent);
     GR2Object::Ptr makeVarReference(const GR2TypeNode* node, const GR2Object::Ptr& parent);
+    static uint8_t readFlags(const GR2Header& header);
     void addFixup(uint32_t srcSection, GR2FixUp& fixup);
+    void buildFields(const GR2TypeNode* fields, const GR2Object::Ptr& parent, uint32_t level,
+                     const GR2Callback& callback = {});
+    bool isArrayType(const GR2TypeNode& node) const;
+    GR2RefStream getStream(const GR2Object::Ptr& parent);
+    void makeRootStream();
     void readFileInfo();
     void readHeader();
     void readSections();
-    void buildFields(const GR2TypeNode* fields, const GR2Object::Ptr& parent, uint32_t level,
-                     const GR2Callback& callback = {});
-    void makeRootStream();
-    GR2RefStream getStream(const GR2Object::Ptr& parent);
-
-    bool isArrayType(const GR2TypeNode& node) const;
 
     template <TPtr T>
     T get(const GR2Reference& ref);

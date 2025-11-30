@@ -14,7 +14,7 @@ public:
     ImageView();
     ~ImageView() override = default;
 
-    BEGIN_MSG_MAP(IconView)
+    BEGIN_MSG_MAP(ImageView)
         MSG_WM_CREATE(OnCreate)
         MSG_WM_PAINT2(OnPaint)
         MSG_WM_SIZE(OnSize)
@@ -26,7 +26,7 @@ public:
     DECLARE_WND_SUPERCLASS(L"ImageView", nullptr)
 
     LRESULT OnCreate(LPCREATESTRUCT pcs);
-    LRESULT OnPaint(CPaintDC dc);
+    LRESULT OnPaint(const CPaintDC& dc);
     void OnSize(UINT nType, CSize size);
 
     LRESULT OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);

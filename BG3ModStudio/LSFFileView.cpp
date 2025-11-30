@@ -4,7 +4,6 @@
 #include "IconDlg.h"
 #include "LSFFileView.h"
 #include "LSFReader.h"
-#include "resources/resource.h"
 #include "StringHelper.h"
 #include "Util.h"
 #include "ValueViewDlg.h"

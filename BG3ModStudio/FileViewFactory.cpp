@@ -3,6 +3,8 @@
 #include "Exception.h"
 #include "FileStream.h"
 #include "FileViewFactory.h"
+#include "GR2FileView.h"
+#include "GR2Reader.h"
 #include "ImageView.h"
 #include "LocaFileView.h"
 #include "LSFFileView.h"
@@ -23,21 +25,12 @@ BOOL IsBinaryFile(const ByteBuffer& contents)
     return FALSE;
 }
 
-BOOL IsBinaryFile(const CString& path)
+BOOL IsBinaryFile(FileStream& stream)
 {
-    CStringA strPath(path);
-
-    FileStream file;
-    try {
-        file.open(strPath, "rb");
-    } catch (const Exception& e) {
-        ATLTRACE("Failed to open file: %s\n", e.what());
-        return FALSE;
-    }
+    stream.seek(0, SeekMode::Begin);
 
     char buffer[1024];
-    auto read = file.read(buffer, sizeof(buffer));
-
+    auto read = stream.read(buffer, sizeof(buffer));
 
     for (auto i = 0u; i < read; ++i) {
         if (buffer[i] == 0) {
@@ -57,20 +50,12 @@ BOOL IsLocaFile(const ByteBuffer& contents)
     return (memcmp(contents.first.get(), "LOCA", 4) == 0);
 }
 
-BOOL IsLocaFile(const CString& path)
+BOOL IsLocaFile(FileStream& stream)
 {
-    CStringA strPath(path);
-
-    FileStream file;
-    try {
-        file.open(strPath, "rb");
-    } catch (const Exception& e) {
-        ATLTRACE("Failed to open file: %s\n", e.what());
-        return FALSE;
-    }
+    stream.seek(0, SeekMode::Begin);
 
     char header[4];
-    auto read = file.read(header, sizeof(header));
+    auto read = stream.read(header, sizeof(header));
     if (read < sizeof(header)) {
         return FALSE;
     }
@@ -87,25 +72,29 @@ BOOL IsLSFFile(const ByteBuffer& contents)
     return (memcmp(contents.first.get(), "LSOF", 4) == 0);
 }
 
-BOOL IsLSFFile(const CString& path)
+BOOL IsLSFFile(FileStream& stream)
 {
-    CStringA strPath(path);
-
-    FileStream file;
-    try {
-        file.open(strPath, "rb");
-    } catch (const Exception& e) {
-        ATLTRACE("Failed to open file: %s\n", e.what());
-        return FALSE;
-    }
+    stream.seek(0, SeekMode::Begin);
 
     char header[4];
-    auto read = file.read(header, sizeof(header));
+    auto read = stream.read(header, sizeof(header));
     if (read < sizeof(header)) {
         return FALSE;
     }
 
     return (memcmp(header, "LSOF", 4) == 0);
+}
+
+BOOL IsGR2File(FileStream& stream)
+{
+    stream.seek(0, SeekMode::Begin);
+
+    return GR2Reader::isGR2(stream);
+}
+
+BOOL IsGR2File(const ByteBuffer& contents)
+{
+    return GR2Reader::isGR2(contents);
 }
 } // anonymous namespace
 
@@ -114,15 +103,25 @@ IFileView::Ptr FileViewFactory::CreateFileView(const CString& path, HWND parent,
 {
     IFileView::Ptr fileView;
 
-    CString extension = ATLPath::FindExtension(path);
+    CStringA strPath(path);
+    FileStream stream;
+
+    try {
+        stream.open(strPath, "rb");
+    } catch (const Exception& e) {
+        ATLTRACE("Failed to open file: %s\n", e.what());
+        return nullptr;
+    }
 
     if (ImageView::IsRenderable(path)) {
         fileView = std::make_shared<ImageView>();
-    } else if (IsLocaFile(path)) {
+    } else if (IsLocaFile(stream)) {
         fileView = std::make_shared<LocaFileView>();
-    } else if (IsLSFFile(path)) {
+    } else if (IsLSFFile(stream)) {
         fileView = std::make_shared<LSFFileView>();
-    } else if (IsBinaryFile(path)) {
+    } else if (IsGR2File(stream)) {
+        fileView = std::make_shared<GR2FileView>();
+    } else if (IsBinaryFile(stream)) {
         fileView = std::make_shared<BinaryFileView>();
     } else {
         auto textView = std::make_shared<TextFileView>();
@@ -179,6 +178,8 @@ IFileView::Ptr FileViewFactory::CreateFileView(const CString& path, const ByteBu
         fileView = std::make_shared<LocaFileView>();
     } else if (IsLSFFile(contents)) {
         fileView = std::make_shared<LSFFileView>();
+    } else if (IsGR2File(contents)) {
+        fileView = std::make_shared<GR2FileView>();
     } else if (IsBinaryFile(contents)) {
         fileView = std::make_shared<BinaryFileView>();
     } else {
