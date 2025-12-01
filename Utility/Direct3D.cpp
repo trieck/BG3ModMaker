@@ -78,9 +78,6 @@ HRESULT Direct3D::Initialize(HWND hWnd)
         return hr;
     }
 
-    // Set render target
-    m_d3dContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), nullptr);
-
     // Setup viewport
     D3D11_VIEWPORT vp;
     vp.Width = static_cast<float>(width);
@@ -91,11 +88,64 @@ HRESULT Direct3D::Initialize(HWND hWnd)
     vp.TopLeftY = 0;
     m_d3dContext->RSSetViewports(1, &vp);
 
+    // Create depth stencil buffer
+    D3D11_TEXTURE2D_DESC depthDesc{};
+    depthDesc.Width = width;
+    depthDesc.Height = height;
+    depthDesc.MipLevels = 1;
+    depthDesc.ArraySize = 1;
+    depthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT; // 24-bit depth, 8-bit stencil
+    depthDesc.SampleDesc.Count = 1;
+    depthDesc.SampleDesc.Quality = 0;
+    depthDesc.Usage = D3D11_USAGE_DEFAULT;
+    depthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+    depthDesc.CPUAccessFlags = 0;
+    depthDesc.MiscFlags = 0;
+
+    hr = m_d3dDevice->CreateTexture2D(&depthDesc, nullptr, &m_depthStencilBuffer);
+    if (FAILED(hr)) {
+        ATLTRACE(L"Failed to create depth stencil buffer: 0x%08X\n", hr);
+        return hr;
+    }
+
+    // Create depth stencil view
+    D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
+    dsvDesc.Format = depthDesc.Format;
+    dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+    dsvDesc.Texture2D.MipSlice = 0;
+
+    hr = m_d3dDevice->CreateDepthStencilView(m_depthStencilBuffer.Get(), &dsvDesc, &m_depthStencilView);
+    if (FAILED(hr)) {
+        ATLTRACE(L"Failed to create depth stencil view: 0x%08X\n", hr);
+        return hr;
+    }
+
+    // Set render target
+    m_d3dContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
+
+    // Create depth stencil state (enable depth testing)
+    D3D11_DEPTH_STENCIL_DESC dsDesc{};
+    dsDesc.DepthEnable = TRUE;
+    dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+    dsDesc.DepthFunc = D3D11_COMPARISON_LESS; // Pass if closer to camera
+    dsDesc.StencilEnable = FALSE;
+
+    hr = m_d3dDevice->CreateDepthStencilState(&dsDesc, &m_depthStencilState);
+    if (FAILED(hr)) {
+        ATLTRACE(L"Failed to create depth stencil state: 0x%08X\n", hr);
+        return hr;
+    }
+
+    // Bind depth stencil state
+    m_d3dContext->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
+
     return S_OK;
 }
 
 void Direct3D::Release()
 {
+    m_depthStencilBuffer.Reset();
+    m_depthStencilState.Reset();
     m_depthStencilView.Reset();
     m_renderTargetView.Reset();
     m_swapChain.Reset();
@@ -112,6 +162,7 @@ HRESULT Direct3D::Resize(UINT width, UINT height)
     // Release old views
     m_renderTargetView.Reset();
     m_depthStencilView.Reset();
+    m_depthStencilBuffer.Reset();
 
     // Resize buffers
     auto hr = m_swapChain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0);
@@ -131,8 +182,34 @@ HRESULT Direct3D::Resize(UINT width, UINT height)
         return hr;
     }
 
+    D3D11_TEXTURE2D_DESC depthDesc{};
+    depthDesc.Width = width;
+    depthDesc.Height = height;
+    depthDesc.MipLevels = 1;
+    depthDesc.ArraySize = 1;
+    depthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    depthDesc.SampleDesc.Count = 1;
+    depthDesc.SampleDesc.Quality = 0;
+    depthDesc.Usage = D3D11_USAGE_DEFAULT;
+    depthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+
+    hr = m_d3dDevice->CreateTexture2D(&depthDesc, nullptr, &m_depthStencilBuffer);
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
+    dsvDesc.Format = depthDesc.Format;
+    dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+    dsvDesc.Texture2D.MipSlice = 0;
+
+    hr = m_d3dDevice->CreateDepthStencilView(m_depthStencilBuffer.Get(), &dsvDesc, &m_depthStencilView);
+    if (FAILED(hr)) {
+        return hr;
+    }
+
     // Set render target
-    m_d3dContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), nullptr);
+    m_d3dContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
 
     // Update viewport
     D3D11_VIEWPORT vp;
@@ -172,8 +249,8 @@ void Direct3D::BeginRender()
     }
 
     // Rebind render target view (gets unbound after Present with flip model)
-    ID3D11RenderTargetView* rtv = m_renderTargetView.Get();
-    m_d3dContext->OMSetRenderTargets(1, &rtv, nullptr);
+    auto* rtv = m_renderTargetView.Get();
+    m_d3dContext->OMSetRenderTargets(1, &rtv, m_depthStencilView.Get());
 }
 
 HRESULT Direct3D::Present()

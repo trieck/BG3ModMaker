@@ -29,5 +29,7 @@ private:
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_d3dContext;
     Microsoft::WRL::ComPtr<IDXGISwapChain> m_swapChain;
     Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_renderTargetView;
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> m_depthStencilBuffer;
     Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_depthStencilView;
+    Microsoft::WRL::ComPtr<ID3D11DepthStencilState> m_depthStencilState;
 };

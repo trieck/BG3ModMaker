@@ -82,31 +82,46 @@ float3 rotateX(float3 v, float angle) {
 VS_OUTPUT main(VS_INPUT input) {
     VS_OUTPUT output;
 
+    // Center the model at origin
     float3 pos = input.position;
     pos.x -= centerX;
     pos.y -= centerY;
-    // Don't adjust Z by centerZ to keep depth correct
+    
+    // Scale to fit viewport
     pos *= scale;
-
+    
     // Apply camera rotation
-    pos = rotateY(pos, yaw);      // Rotate around Y axis (left/right)
-    pos = rotateX(pos, pitch);    // Rotate around X axis (up/down)
-
-    // Apply zoom (simple scaling)
+    pos = rotateY(pos, yaw);
+    pos = rotateX(pos, pitch);
+    
+    // Apply zoom
     pos *= zoom;
 
-    // Apply panning (translate in X and Y)
+    // Apply pan offset (in screen space)
     pos.x += panX;
     pos.y += panY;
 
-    output.position = float4(pos.x / aspectRatio, pos.y, -pos.z, 1.0);
+    // Project to screen space with proper depth
+    // Map Z to [0, 1] range for depth testing
+    float zNear = -10.0;  // Near plane
+    float zFar = 10.0;    // Far plane
+    float z = (pos.z - zNear) / (zFar - zNear);  // Normalize Z to [0, 1]
+    
+    output.position = float4(
+        pos.x / aspectRatio,  // X with aspect correction
+        pos.y,                 // Y
+        z,                     // Z in [0, 1] range for depth testing
+        1.0                    // W
+    );
+    
+    // Rotate normal for lighting
     float3 normal = DecodeNormal(input.qtangent);
     normal = rotateY(normal, yaw);
     normal = rotateX(normal, pitch);
     output.normal = normal;
-
+    
     output.color = input.color;
-
+    
     return output;
 }
 )";
