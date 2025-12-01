@@ -82,7 +82,7 @@ HRESULT Direct3D::Initialize(HWND hWnd)
     m_d3dContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), nullptr);
 
     // Setup viewport
-    D3D11_VIEWPORT vp{};
+    D3D11_VIEWPORT vp;
     vp.Width = static_cast<float>(width);
     vp.Height = static_cast<float>(height);
     vp.MinDepth = 0.0f;
@@ -163,6 +163,17 @@ void Direct3D::Clear(const float clearColor[4])
             0
         );
     }
+}
+
+void Direct3D::BeginRender()
+{
+    if (!m_d3dContext || !m_renderTargetView) {
+        return;
+    }
+
+    // Rebind render target view (gets unbound after Present with flip model)
+    ID3D11RenderTargetView* rtv = m_renderTargetView.Get();
+    m_d3dContext->OMSetRenderTargets(1, &rtv, nullptr);
 }
 
 HRESULT Direct3D::Present()

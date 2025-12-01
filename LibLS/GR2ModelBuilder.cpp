@@ -190,14 +190,6 @@ std::vector<GR2Vertex> GR2ModelBuilder::extractVertices(const GR2Object::Ptr& ob
             }
         }
 
-        if (i < 3) {
-            ATLTRACE("Vertex[%zu] color: R=%d G=%d B=%d A=%d (%.3f, %.3f, %.3f, %.3f normalized)\n",
-                i,
-                v.diffuseColor0.x, v.diffuseColor0.y, v.diffuseColor0.z, v.diffuseColor0.w,
-                v.diffuseColor0.x / 255.0f, v.diffuseColor0.y / 255.0f,
-                v.diffuseColor0.z / 255.0f, v.diffuseColor0.w / 255.0f);
-        }
-
         vertices.emplace_back(v);
     }
 

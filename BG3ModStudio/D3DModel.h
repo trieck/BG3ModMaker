@@ -16,6 +16,12 @@ public:
     BOOL IsValid() const;
     void Release();
     void Render(Direct3D& d3d);
+    void SetRotation(float yaw, float pitch);
+    void SetZoom(float zoom);
+    void SetPan(float panX, float panY);
+
+    float GetScreenWidth() const;
+    float GetScreenHeight() const;
 
 private:
     BOOL CreateBuffers(ID3D11Device* device, const GR2Model& model);
@@ -32,14 +38,18 @@ private:
 
     struct ModelConstants
     {
-        float centerX{};
-        float centerY{};
-        float centerZ{};
-        float scale{};
-        float aspectRatio{};
-        float padding[3];
+        float centerX{0.0f};
+        float centerY{0.0f};
+        float centerZ{0.0f};
+        float scale{0.0f};
+        float aspectRatio{0.0f};
+        float zoom{1.0f};
+        float yaw{0.0f};
+        float pitch{0.0f};
+        float panX{0.0f};
+        float panY{0.0f};
+        float padding[2];
     };
-
 
     ModelConstants m_constants{};
     std::vector<MeshBuffers> m_meshes;
@@ -47,4 +57,7 @@ private:
     Microsoft::WRL::ComPtr<ID3D11VertexShader> m_vertexShader;
     Microsoft::WRL::ComPtr<ID3D11PixelShader> m_pixelShader;
     Microsoft::WRL::ComPtr<ID3D11Buffer> m_constantBuffer;
+
+    float m_modelScreenWidth{0.0f};
+    float m_modelScreenHeight{0.0f};
 };

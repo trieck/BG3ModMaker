@@ -1,5 +1,4 @@
 #pragma once
-#pragma once
 
 #include "D3DModel.h"
 #include "Direct3D.h"
@@ -18,7 +17,14 @@ public:
         MSG_WM_CREATE(OnCreate)
         MSG_WM_PAINT2(OnPaint)
         MSG_WM_SIZE(OnSize)
+        MSG_WM_TIMER(OnTimer)
+        MSG_WM_DESTROY(OnDestroy)
+        MSG_WM_HSCROLL(OnHScroll)
+        MSG_WM_VSCROLL(OnVScroll)
         MSG_WM_MOUSEWHEEL(OnMouseWheel)
+        MSG_WM_LBUTTONDOWN(OnLButtonDown)
+        MSG_WM_LBUTTONUP(OnLButtonUp)
+        MSG_WM_MOUSEMOVE(OnMouseMove)
     END_MSG_MAP()
 
     DECLARE_WND_SUPERCLASS(L"GR2FileView", nullptr)
@@ -27,7 +33,14 @@ public:
     LRESULT OnEraseBkgnd(const CDCHandle& dc);
     LRESULT OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
     LRESULT OnPaint(const CPaintDC& dc);
+    void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar pScrollBar);
+    void OnLButtonDown(UINT nFlags, CPoint point);
+    void OnLButtonUp(UINT nFlags, CPoint point);
+    void OnMouseMove(UINT nFlags, CPoint point);
     void OnSize(UINT nType, CSize size);
+    void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar pScrollBar);
+    void OnTimer(UINT_PTR nIDEvent);
+    void OnDestroy();
 
     // IFileView
     BOOL Create(HWND parent, _U_RECT rect = nullptr, DWORD dwStyle = 0, DWORD dwStyleEx = 0) override;
@@ -45,7 +58,24 @@ public:
     VOID SetPath(const CString& path) override;
 
 private:
+    void UpdateScrollBars();
+    void UpdateModelPan();
+
+    static constexpr UINT_PTR RENDER_TIMER_ID = 1;
+    static constexpr UINT RENDER_TIMER_MS = 16; // ~60 FPS
+
     Direct3D m_direct3D;
     CString m_path;
     D3DModel m_model;
+
+    bool m_isDragging{false};
+    CPoint m_lastMousePos;
+    CPoint m_ScrollPos;
+    float m_cameraPitch{0.0f};
+    float m_cameraYaw{0.0f};
+    float m_zoom = 1.0f;
+    int m_nXPageSize = 0;
+    int m_nYPageSize = 0;
+    LONG m_nDocHeight = 0;
+    LONG m_nDocWidth = 0;
 };

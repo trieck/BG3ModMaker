@@ -10,10 +10,12 @@ public:
     ~Direct3D();
 
     HRESULT Initialize(HWND hWnd);
+
     void Release();
 
     HRESULT Resize(UINT width, UINT height);
     void Clear(const float clearColor[4]);
+    void BeginRender();
     HRESULT Present();
 
     ID3D11Device* Device() const;

@@ -9,12 +9,17 @@ using Microsoft::WRL::ComPtr;
 static constexpr auto* VERTEX_SHADER = R"(
 // Constant buffer with model transform
 cbuffer ModelConstants : register(b0) {
-    float centerX;         // Offset 0
-    float centerY;         // Offset 4
-    float centerZ;         // Offset 8
-    float scale;           // Offset 12
-    float aspectRatio;     // Offset 16
-    float padding[3];      // Offset 20, 24, 28
+    float centerX;
+    float centerY;
+    float centerZ;
+    float scale;
+    float aspectRatio;
+    float zoom;
+    float yaw;
+    float pitch;
+    float panX;
+    float panY;
+    float padding[2];
 };
 
 struct VS_INPUT {
@@ -29,8 +34,50 @@ struct VS_INPUT {
 
 struct VS_OUTPUT {
     float4 position : SV_POSITION;
+    float3 normal : NORMAL;
     float4 color : COLOR;
 };
+
+// Decode normal from QTangent (quaternion-based tangent space)
+float3 DecodeNormal(float4 qtangent) {
+    // QTangent stores a quaternion that encodes the tangent space
+    // We extract the normal (Z-axis of tangent space)
+    
+    float x = qtangent.x;
+    float y = qtangent.y;
+    float z = qtangent.z;
+    float w = qtangent.w;
+    
+    // Quaternion to normal conversion
+    // This extracts the Z-axis (normal) from the tangent space quaternion
+    float3 normal;
+    normal.x = 2.0 * (x * z + w * y);
+    normal.y = 2.0 * (y * z - w * x);
+    normal.z = 1.0 - 2.0 * (x * x + y * y);
+    
+    return normalize(normal);
+}
+
+// Rotation matrices
+float3 rotateY(float3 v, float angle) {
+    float c = cos(angle);
+    float s = sin(angle);
+    return float3(
+        v.x * c + v.z * s,
+        v.y,
+        -v.x * s + v.z * c
+    );
+}
+
+float3 rotateX(float3 v, float angle) {
+    float c = cos(angle);
+    float s = sin(angle);
+    return float3(
+        v.x,
+        v.y * c - v.z * s,
+        v.y * s + v.z * c
+    );
+}
 
 VS_OUTPUT main(VS_INPUT input) {
     VS_OUTPUT output;
@@ -38,10 +85,26 @@ VS_OUTPUT main(VS_INPUT input) {
     float3 pos = input.position;
     pos.x -= centerX;
     pos.y -= centerY;
-    //pos.z -= centerZ;
+    // Don't adjust Z by centerZ to keep depth correct
     pos *= scale;
 
+    // Apply camera rotation
+    pos = rotateY(pos, yaw);      // Rotate around Y axis (left/right)
+    pos = rotateX(pos, pitch);    // Rotate around X axis (up/down)
+
+    // Apply zoom (simple scaling)
+    pos *= zoom;
+
+    // Apply panning (translate in X and Y)
+    pos.x += panX;
+    pos.y += panY;
+
     output.position = float4(pos.x / aspectRatio, pos.y, -pos.z, 1.0);
+    float3 normal = DecodeNormal(input.qtangent);
+    normal = rotateY(normal, yaw);
+    normal = rotateX(normal, pitch);
+    output.normal = normal;
+
     output.color = input.color;
 
     return output;
@@ -52,11 +115,31 @@ VS_OUTPUT main(VS_INPUT input) {
 static constexpr auto* PIXEL_SHADER = R"(
 struct PS_INPUT {
     float4 position : SV_POSITION;
+    float3 normal : NORMAL;
     float4 color : COLOR;
 };
 
 float4 main(PS_INPUT input) : SV_Target {
-    return input.color;
+    // Normalize the interpolated normal
+    float3 normal = normalize(input.normal);
+
+    // Define a light direction (coming from upper-right-front)
+    float3 lightDir = normalize(float3(0.5, 0.7, -0.5));
+
+    // Calculate diffuse lighting (N dot L)
+    float diffuse = max(dot(normal, lightDir), 0.0);
+
+    // Add ambient light (so it's not completely black)
+    float ambient = 0.4;
+    float lighting = ambient + diffuse * 0.8;
+
+    // Use vertex color RED channel as ambient occlusion
+    float ao = input.color.r;
+
+    // Combine lighting with ambient occlusion
+    float finalColor = lighting * ao;
+
+    return float4(finalColor, finalColor, finalColor, 1.0);
 }
 )";
 
@@ -79,10 +162,19 @@ BOOL D3DModel::Create(Direct3D& d3d, const GR2Model& model)
     m_constants.centerY = model.bounds.center.y;
     m_constants.centerZ = model.bounds.center.z;
 
-    // Calculate scale to fit in viewp  (normalize to radius 1.0)
+    // Calculate scale to fit in viewport  (normalize to radius 1.0)
     m_constants.scale = model.bounds.radius > 0.0f ? (1.0f / model.bounds.radius) : 1.0f;
 
     m_constants.aspectRatio = 1.0f; // Will be set during rendering
+    m_constants.zoom = 1.0f;
+    m_constants.yaw = 0.0f;
+    m_constants.pitch = 0.0f;
+
+    auto worldWidth = (model.bounds.max.x - model.bounds.min.x) * m_constants.scale;
+    auto worldHeight = (model.bounds.max.y - model.bounds.min.y) * m_constants.scale;
+
+    m_modelScreenWidth = worldWidth;
+    m_modelScreenHeight = worldHeight;
 
     if (!CreateShaders(device)) {
         ATLTRACE("D3DModel::Create: Failed to create shaders.\n");
@@ -119,6 +211,8 @@ void D3DModel::Render(Direct3D& d3d)
         return;
     }
 
+    d3d.BeginRender();
+
     D3D11_VIEWPORT viewport;
     UINT numViewports = 1;
     context->RSGetViewports(&numViewports, &viewport);
@@ -127,8 +221,9 @@ void D3DModel::Render(Direct3D& d3d)
 
     if (abs(m_constants.aspectRatio - aspectRatio) > 0.001f) {
         m_constants.aspectRatio = aspectRatio;
-        context->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &m_constants, 0, 0);
     }
+
+    context->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &m_constants, 0, 0);
 
     // Bind constant buffer
     context->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
@@ -151,6 +246,33 @@ void D3DModel::Render(Direct3D& d3d)
         context->IASetIndexBuffer(mesh.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
         context->DrawIndexed(mesh.indexCount, 0, 0);
     }
+}
+
+void D3DModel::SetRotation(float yaw, float pitch)
+{
+    m_constants.yaw = yaw;
+    m_constants.pitch = pitch;
+}
+
+void D3DModel::SetZoom(float zoom)
+{
+    m_constants.zoom = zoom;
+}
+
+void D3DModel::SetPan(float panX, float panY)
+{
+    m_constants.panX = panX;
+    m_constants.panY = panY;
+}
+
+float D3DModel::GetScreenWidth() const
+{
+    return m_modelScreenWidth * m_constants.zoom;
+}
+
+float D3DModel::GetScreenHeight() const
+{
+    return m_modelScreenHeight * m_constants.zoom;
 }
 
 void D3DModel::Release()
