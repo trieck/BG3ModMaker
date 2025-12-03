@@ -107,10 +107,12 @@ GR2Object::Ptr GR2ModelBuilder::findFirstChild(const GR2Object::Ptr& obj, const 
         if (child->name == name) {
             return child;
         }
+    }
 
-        auto o = findFirstChild(child, name);
-        if (o != nullptr) {
-            return o;
+    for (const auto& child : obj->children) {
+        auto grandChild = findFirstChild(child, name);
+        if (grandChild != nullptr) {
+            return grandChild;
         }
     }
 
