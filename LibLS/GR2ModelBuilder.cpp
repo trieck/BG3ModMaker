@@ -8,6 +8,13 @@ GR2Model GR2ModelBuilder::build(const char* filename, const GR2Callback& callbac
     return build(reader);
 }
 
+GR2Model GR2ModelBuilder::build(const ByteBuffer& buffer, const GR2Callback& callback)
+{
+    GR2Reader reader;
+    reader.load(buffer, callback);
+    return build(reader);
+}
+
 GR2Model GR2ModelBuilder::build(const GR2Reader& reader)
 {
     GR2Model model;

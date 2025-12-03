@@ -105,7 +105,6 @@ LRESULT GR2FileView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 
         UpdateScrollBars();
         UpdateModelPan();
-
     } else {
         auto code = zDelta < 0 ? SB_LINEDOWN : SB_LINEUP;
 
@@ -292,9 +291,26 @@ BOOL GR2FileView::IsText() const
     return FALSE;
 }
 
-BOOL GR2FileView::LoadBuffer(const CString& path, const ByteBuffer& buffer)
+BOOL GR2FileView::LoadBuffer(const CString& /*path*/, const ByteBuffer& buffer)
 {
-    return FALSE;
+    GR2ModelBuilder builder;
+
+    try {
+        auto grannyModel = builder.build(buffer);
+        if (!m_model.Create(m_direct3D, grannyModel)) {
+            ATLTRACE(L"Failed to create D3DModel\n");
+            return FALSE;
+        }
+    } catch (const std::exception& ex) {
+        ATLTRACE(L"Failed to load GR2 from buffer. Error: %S\n", ex.what());
+        return FALSE;
+    }
+
+    m_ScrollPos = {0, 0};
+
+    UpdateScrollBars();
+
+    return TRUE;
 }
 
 BOOL GR2FileView::LoadFile(const CString& path)

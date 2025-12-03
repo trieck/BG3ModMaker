@@ -10,6 +10,7 @@ public:
     ~GR2ModelBuilder() = default;
 
     GR2Model build(const char* filename, const GR2Callback& callback = {});
+    GR2Model build(const ByteBuffer& buffer, const GR2Callback& callback = {});
     GR2Model build(const GR2Reader& reader);
 private:
     GR2Object::Ptr findFirst(const std::vector<GR2Object::Ptr>& objs, const std::string& name);

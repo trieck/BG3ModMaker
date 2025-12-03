@@ -204,7 +204,9 @@ public:
     ~GR2Reader() = default;
 
     void load(const char* filename, const GR2Callback& callback = {});
+    void load(const ByteBuffer& buffer, const GR2Callback& callback = {});
     void read(const char* filename);
+    void read(const ByteBuffer& buffer);
     void build(const GR2Callback& callback = {});
 
     const std::vector<GR2Object::Ptr>& rootObjects() const;

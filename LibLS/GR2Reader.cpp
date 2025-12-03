@@ -84,11 +84,28 @@ void GR2Reader::load(const char* filename, const GR2Callback& callback)
     build(callback);
 }
 
+void GR2Reader::load(const ByteBuffer& buffer, const GR2Callback& callback)
+{
+    read(buffer);
+    build(callback);
+}
+
 void GR2Reader::read(const char* filename)
 {
     FileStream stream;
     stream.open(filename, "rb");
     m_data = stream.read();
+
+    readHeader();
+    readSections();
+    makeRootStream();
+}
+
+void GR2Reader::read(const ByteBuffer& buffer)
+{
+    m_data.first = std::make_unique<uint8_t[]>(buffer.second);
+    memcpy(m_data.first.get(), buffer.first.get(), buffer.second);
+    m_data.second = buffer.second;
 
     readHeader();
     readSections();
