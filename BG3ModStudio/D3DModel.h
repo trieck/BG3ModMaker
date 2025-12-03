@@ -28,6 +28,7 @@ private:
     BOOL CreateConstantBuffer(ID3D11Device* device);
     BOOL CreateInputLayout(ID3D11Device* device, const void* vsBytecode, size_t vsBytecodeSize);
     BOOL CreateShaders(ID3D11Device* device);
+    BOOL CreateRasterizerState(ID3D11Device* device);
 
     struct MeshBuffers
     {
@@ -57,7 +58,8 @@ private:
     Microsoft::WRL::ComPtr<ID3D11VertexShader> m_vertexShader;
     Microsoft::WRL::ComPtr<ID3D11PixelShader> m_pixelShader;
     Microsoft::WRL::ComPtr<ID3D11Buffer> m_constantBuffer;
-
+    Microsoft::WRL::ComPtr<ID3D11RasterizerState> m_rasterizerState;
+    
     float m_modelScreenWidth{0.0f};
     float m_modelScreenHeight{0.0f};
 };

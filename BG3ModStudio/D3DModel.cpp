@@ -119,7 +119,6 @@ VS_OUTPUT main(VS_INPUT input) {
     normal = rotateY(normal, yaw);
     normal = rotateX(normal, pitch);
     output.normal = normal;
-    
     output.color = input.color;
     
     return output;
@@ -135,26 +134,33 @@ struct PS_INPUT {
 };
 
 float4 main(PS_INPUT input) : SV_Target {
-    // Normalize the interpolated normal
     float3 normal = normalize(input.normal);
-
-    // Define a light direction (coming from upper-right-front)
-    float3 lightDir = normalize(float3(0.5, 0.7, -0.5));
-
-    // Calculate diffuse lighting (N dot L)
-    float diffuse = max(dot(normal, lightDir), 0.0);
-
-    // Add ambient light (so it's not completely black)
-    float ambient = 0.4;
-    float lighting = ambient + diffuse * 0.8;
-
-    // Use vertex color RED channel as ambient occlusion
-    float ao = input.color.r;
-
-    // Combine lighting with ambient occlusion
-    float finalColor = lighting * ao;
-
-    return float4(finalColor, finalColor, finalColor, 1.0);
+    
+    // Key light (main, warm)
+    float3 keyDir = normalize(float3(0.5, 0.7, -0.5));
+    float3 keyColor = float3(1.0, 0.98, 0.95);
+    float keyIntensity = max(dot(normal, keyDir), 0.0);
+    
+    // Fill light (softer, cooler, from opposite side)
+    float3 fillDir = normalize(float3(-0.4, 0.3, 0.5));
+    float3 fillColor = float3(0.6, 0.65, 0.8);
+    float fillIntensity = max(dot(normal, fillDir), 0.0);
+    
+    // Rim light (edge highlight)
+    float3 viewDir = float3(0, 0, -1);
+    float rim = 1.0 - max(dot(normal, viewDir), 0.0);
+    rim = pow(rim, 4.0) * 0.3;
+    
+    // Ambient
+    float3 ambient = float3(0.35, 0.35, 0.4);
+    
+    // Combine
+    float3 color = ambient + 
+                   keyColor * keyIntensity * 0.7 + 
+                   fillColor * fillIntensity * 0.3 +
+                   float3(rim, rim, rim);
+    
+    return float4(color, 1.0);
 }
 )";
 
@@ -206,6 +212,11 @@ BOOL D3DModel::Create(Direct3D& d3d, const GR2Model& model)
         return FALSE;
     }
 
+    if (!CreateRasterizerState(device)) {
+        ATLTRACE("D3DModel::Create: Failed to create rasterizer state.\n");
+        return FALSE;
+    }
+
     return !m_meshes.empty();
 }
 
@@ -249,6 +260,9 @@ void D3DModel::Render(Direct3D& d3d)
 
     // Set input layout
     context->IASetInputLayout(m_inputLayout.Get());
+
+    // Set rasterizer state
+    context->RSSetState(m_rasterizerState.Get());
 
     // Set primitive topology
     context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -297,6 +311,7 @@ void D3DModel::Release()
     m_vertexShader.Reset();
     m_pixelShader.Reset();
     m_constantBuffer.Reset();
+    m_rasterizerState.Reset();
 }
 
 BOOL D3DModel::CreateBuffers(ID3D11Device* device, const GR2Model& model)
@@ -421,6 +436,25 @@ BOOL D3DModel::CreateShaders(ID3D11Device* device)
     );
 
     return SUCCEEDED(hr);
+}
+
+BOOL D3DModel::CreateRasterizerState(ID3D11Device* device)
+{
+    D3D11_RASTERIZER_DESC rastDesc{};
+    rastDesc.FillMode = D3D11_FILL_SOLID;
+    rastDesc.CullMode = D3D11_CULL_BACK;
+    rastDesc.FrontCounterClockwise = TRUE;
+    rastDesc.DepthClipEnable = TRUE;
+    rastDesc.MultisampleEnable = FALSE;
+    rastDesc.AntialiasedLineEnable = FALSE;
+
+    auto hr = device->CreateRasterizerState(&rastDesc, &m_rasterizerState);
+    if (FAILED(hr)) {
+        ATLTRACE("D3DModel::CreateRasterizerState: Failed. HRESULT=0x%08X\n", hr);
+        return FALSE;
+    }
+
+    return TRUE;
 }
 
 BOOL D3DModel::CreateInputLayout(ID3D11Device* device, const void* vsBytecode, size_t vsBytecodeSize)

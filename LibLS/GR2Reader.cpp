@@ -3,6 +3,81 @@
 #include "FileStream.h"
 #include "GR2Reader.h"
 
+namespace { // anonymous
+
+// Magic value used for version 7 little-endian 32-bit Granny files
+constexpr uint8_t LittleEndian32Magic[] = {
+    0x29, 0xDE, 0x6C, 0xC0, 0xBA, 0xA4, 0x53, 0x2B,
+    0x25, 0xF5, 0xB7, 0xA5, 0xF6, 0x66, 0xE2, 0xEE
+};
+
+// Magic value used for version 7 little-endian 32-bit Granny files
+constexpr uint8_t LittleEndian32Magic2[] = {
+    0x29, 0x75, 0x31, 0x82, 0xBA, 0x02, 0x11, 0x77,
+    0x25, 0x3A, 0x60, 0x2F, 0xF6, 0x6A, 0x8C, 0x2E
+};
+
+// Magic value used for version 6 little-endian 32-bit Granny files
+constexpr uint8_t LittleEndian32MagicV6[] = {
+    0xB8, 0x67, 0xB0, 0xCA, 0xF8, 0x6D, 0xB1, 0x0F,
+    0x84, 0x72, 0x8C, 0x7E, 0x5E, 0x19, 0x00, 0x1E
+};
+
+// Magic value used for version 7 big-endian 32-bit Granny files
+constexpr uint8_t BigEndian32Magic[] = {
+    0x0E, 0x11, 0x95, 0xB5, 0x6A, 0xA5, 0xB5, 0x4B,
+    0xEB, 0x28, 0x28, 0x50, 0x25, 0x78, 0xB3, 0x04
+};
+
+// Magic value used for version 7 big-endian 32-bit Granny files
+constexpr uint8_t BigEndian32Magic2[] = {
+    0x0E, 0x74, 0xA2, 0x0A, 0x6A, 0xEB, 0xEB, 0x64,
+    0xEB, 0x4E, 0x1E, 0xAB, 0x25, 0x91, 0xDB, 0x8F
+};
+
+// Magic value used for version 7 little-endian 64-bit Granny files
+constexpr uint8_t LittleEndian64Magic[] = {
+    0xE5, 0x9B, 0x49, 0x5E, 0x6F, 0x63, 0x1F, 0x14,
+    0x1E, 0x13, 0xEB, 0xA9, 0x90, 0xBE, 0xED, 0xC4
+};
+
+// Magic value used for version 7 little-endian 64-bit Granny files
+constexpr uint8_t LittleEndian64Magic2[] = {
+    0xE5, 0x2F, 0x4A, 0xE1, 0x6F, 0xC2, 0x8A, 0xEE,
+    0x1E, 0xD2, 0xB4, 0x4C, 0x90, 0xD7, 0x55, 0xAF
+};
+
+// Magic value used for version 7 big-endian 64-bit Granny files
+constexpr uint8_t BigEndian64Magic[] = {
+    0x31, 0x95, 0xD4, 0xE3, 0x20, 0xDC, 0x4F, 0x62,
+    0xCC, 0x36, 0xD0, 0x3A, 0xB1, 0x82, 0xFF, 0x89
+};
+
+// Magic value used for version 7 big-endian 64-bit Granny files
+constexpr uint8_t BigEndian64Magic2[] = {
+    0x31, 0xC2, 0x4E, 0x7C, 0x20, 0x40, 0xA3, 0x25,
+    0xCC, 0xE1, 0xC2, 0x7A, 0xB1, 0x32, 0x49, 0xF3
+};
+
+struct MagicFormat
+{
+    GR2FileFormat format;
+    const uint8_t* magic;
+};
+
+const MagicFormat MagicFormats[] = {
+    {.format = LITTLE_ENDIAN_32, .magic = LittleEndian32Magic},
+    {.format = LITTLE_ENDIAN_32, .magic = LittleEndian32Magic2},
+    {.format = LITTLE_ENDIAN_32, .magic = LittleEndian32MagicV6},
+    {.format = BIG_ENDIAN_32, .magic = BigEndian32Magic},
+    {.format = BIG_ENDIAN_32, .magic = BigEndian32Magic2},
+    {.format = LITTLE_ENDIAN_64, .magic = LittleEndian64Magic},
+    {.format = LITTLE_ENDIAN_64, .magic = LittleEndian64Magic2},
+    {.format = BIG_ENDIAN_64, .magic = BigEndian64Magic},
+    {.format = BIG_ENDIAN_64, .magic = BigEndian64Magic2},
+};
+} // anonymous namespace
+
 void GR2Reader::load(const char* filename, const GR2Callback& callback)
 {
     read(filename);
@@ -16,7 +91,6 @@ void GR2Reader::read(const char* filename)
     m_data = stream.read();
 
     readHeader();
-    readFileInfo();
     readSections();
     makeRootStream();
 }
@@ -28,7 +102,7 @@ bool GR2Reader::isValid(const GR2TypeNode* node) const
 
 void GR2Reader::build(const GR2Callback& callback)
 {
-    auto* node = get<GR2TypeNode*>(m_fileInfo.type);
+    auto* node = get<GR2TypeNode*>(m_header.type);
     while (isValid(node)) {
         build(node, nullptr, 0, callback);
         node++;
@@ -50,7 +124,7 @@ bool GR2Reader::isGR2(FileStream& stream)
     stream.seek(static_cast<int64_t>(offset), SeekMode::Begin);
 
     try {
-        readFlags(header);
+        readFormat(header);
     } catch (const Exception&) {
         return false;
     }
@@ -68,7 +142,7 @@ bool GR2Reader::isGR2(const ByteBuffer& contents)
     memcpy(&header, contents.first.get(), sizeof(GR2Header));
 
     try {
-        readFlags(header);
+        readFormat(header);
     } catch (const Exception&) {
         return false;
     }
@@ -108,7 +182,7 @@ void GR2Reader::buildFields(const GR2TypeNode* fields, const GR2Object::Ptr& par
 
 void GR2Reader::makeRootStream()
 {
-    const auto& root = m_fileInfo.root;
+    const auto& root = m_header.root;
     auto* base = m_data.first.get() + m_sectionHeaders[root.section].dataOffset + root.offset;
 
     m_rootStream = GR2Stream(base);
@@ -580,88 +654,139 @@ GR2Object::Ptr GR2Reader::makeInline(const GR2TypeNode* node, const GR2Object::P
 
 bool GR2Reader::is64Bit() const
 {
-    return m_flags & FLAG_64_BIT;
+    return m_format == LITTLE_ENDIAN_64 || m_format == BIG_ENDIAN_64;
 }
 
-bool GR2Reader::isExtra16() const
+GR2FileFormat GR2Reader::readFormat(const GR2Header& header)
 {
-    return m_flags & FLAG_EXTRA_16;
-}
+    GR2FileFormat format{UNKNOWN_FORMAT};
 
-uint8_t GR2Reader::readFlags(const GR2Header& header)
-{
-    uint8_t flags{};
-
-    bool found = false;
-    for (const auto& magicInfo : MAGIC) {
-        if (std::equal(std::begin(magicInfo.magic), std::end(magicInfo.magic), std::begin(header.magic))) {
-            // Valid magic found
-            flags = magicInfo.flags;
-            found = true;
+    for (const auto& fmt : MagicFormats) {
+        if (memcmp(header.signature, fmt.magic, sizeof(header.signature)) == 0) {
+            format = fmt.format;
             break;
         }
     }
 
-    if (!found) {
-        throw Exception("Invalid GR2 file magic.");
+    if (format == UNKNOWN_FORMAT) {
+        throw Exception("Invalid GR2 file: unrecognized magic signature.");
     }
 
-    if (flags & FLAG_BIG_ENDIAN) {
+    if (format == BIG_ENDIAN_32 || format == BIG_ENDIAN_64) {
         throw Exception("Big-endian GR2 files are not supported.");
     }
 
-    if (header.format != 0) {
-        throw Exception("Unsupported GR2 file format version.");
-    }
-
-    return flags;
+    return format;
 }
 
 void GR2Reader::readHeader()
 {
     memcpy(&m_header, m_data.first.get(), sizeof(GR2Header));
-    m_flags = readFlags(m_header);
-}
-
-void GR2Reader::readFileInfo()
-{
-    auto* pdata = m_data.first.get() + sizeof(GR2Header);
-    memcpy(&m_fileInfo, pdata, sizeof(GR2FileInfo));
-
-    if (m_fileInfo.format != 6 && m_fileInfo.format != 7) {
-        throw Exception("Unsupported GR2 file format.");
-    }
-
-    if (m_fileInfo.fileInfoSize != sizeof(GR2FileInfo)) {
-        throw Exception("GR2 file info size does not match expected size.");
-    }
+    m_format = readFormat(m_header);
 }
 
 void GR2Reader::readSections()
 {
-    m_sectionHeaders = std::vector<GR2SectionHeader>(m_fileInfo.sectionCount);
+    m_sectionHeaders = std::vector<GR2SectionHeader>(m_header.numSections);
 
-    auto* pdata = m_data.first.get() + sizeof(GR2Header) + sizeof(GR2FileInfo);
+    auto* pbase = m_data.first.get();
+    auto* pdata = pbase + sizeof(GR2Header);
 
-    // read all section headers
+    auto totalDataSize = 0u;
     for (auto& section : m_sectionHeaders) {
         memcpy(&section, pdata, sizeof(GR2SectionHeader));
-
-        if (section.compressType != COMPRESSION_NONE) {
-            throw Exception("Compressed GR2 sections are not supported.");
-        }
+        totalDataSize += section.decompressedLen;
         pdata += sizeof(GR2SectionHeader);
     }
 
-    // TODO: marshalling 
+    Stream stream;
+    stream.write(reinterpret_cast<const char*>(&m_header), sizeof(GR2Header));
+    stream.write(reinterpret_cast<const char*>(m_sectionHeaders.data()),
+                 m_sectionHeaders.size() * sizeof(GR2SectionHeader));
+
+    // read all sections
+    uint32_t outputOffset = static_cast<uint32_t>(sizeof(GR2Header) + m_sectionHeaders.size() * sizeof(
+        GR2SectionHeader));
+
+    for (auto& section : m_sectionHeaders) {
+        if (section.decompressedLen == 0) {
+            continue;
+        }
+
+        auto inputOffset = section.dataOffset;
+        section.dataOffset = outputOffset;
+
+        if (section.compressType != COMPRESSION_NONE) {
+            auto* compressedBuffer = pbase + inputOffset;
+            auto compressedLen = section.compressedLen;
+            auto decompressedBuffer = std::make_unique<uint8_t[]>(section.decompressedLen);
+            auto decompressedLen = section.decompressedLen;
+
+            auto result = m_decompressor.Decompress(section.compressType,
+                                                    compressedLen,
+                                                    compressedBuffer,
+                                                    decompressedBuffer.get(),
+                                                    section.oodleStop0, section.oodleStop1,
+                                                    decompressedLen);
+
+            if (!result) {
+                throw Exception("Failed to decompress GR2 section.");
+            }
+
+            stream.write(decompressedBuffer.get(), section.decompressedLen);
+
+            if (section.fixupSize > 0) {
+                auto* fixupData = pbase + section.fixupOffset;
+                auto compressedFixupSize = *reinterpret_cast<uint32_t*>(fixupData);
+
+                auto* compressedFixupBuffer = fixupData + sizeof(uint32_t);
+
+                auto decompressedFixupSize = static_cast<uint32_t>(section.fixupSize * sizeof(GR2FixUp));
+                auto decompressedFixupBuffer = std::make_unique<uint8_t[]>(decompressedFixupSize);
+                result = m_decompressor.Decompress(section.compressType,
+                                                   compressedFixupSize,
+                                                   compressedFixupBuffer,
+                                                   decompressedFixupBuffer.get(),
+                                                   section.oodleStop0, section.oodleStop1,
+                                                   decompressedFixupSize);
+                if (!result) {
+                    throw Exception("Failed to decompress GR2 fixup section.");
+                }
+
+                section.fixupOffset = outputOffset + section.decompressedLen;
+                stream.write(decompressedFixupBuffer.get(), decompressedFixupSize);
+                outputOffset += decompressedFixupSize;
+            }
+        } else {
+            // uncompressed, copy data as-is
+            auto* src = pbase + inputOffset;
+            stream.write(src, section.decompressedLen);
+            if (section.fixupSize > 0) {
+                auto* fixupData = pbase + section.fixupOffset;
+                section.fixupOffset = outputOffset + section.decompressedLen;
+                auto fixupLen = static_cast<uint32_t>(section.fixupSize * sizeof(GR2FixUp));
+                stream.write(fixupData, fixupLen);
+                outputOffset += fixupLen;
+            }
+        }
+        outputOffset += section.decompressedLen;
+    }
+
+    // synchronize the stream data with the updated section headers
+    stream.seek(sizeof(GR2Header), SeekMode::Begin);
+    stream.write(reinterpret_cast<const char*>(m_sectionHeaders.data()),
+                 m_sectionHeaders.size() * sizeof(GR2SectionHeader));
+
+    m_data = stream.detach();
+    pbase = m_data.first.get();
+
+    // TODO: marshalling
 
     // make fixup table and apply fixups
-    pdata = m_data.first.get();
-
     for (auto i = 0u; i < m_sectionHeaders.size(); ++i) {
         const auto& section = m_sectionHeaders[i];
         for (auto j = 0u; j < section.fixupSize; ++j) {
-            auto* fixup = reinterpret_cast<GR2FixUp*>(pdata + section.fixupOffset + j * sizeof(GR2FixUp));
+            auto* fixup = reinterpret_cast<GR2FixUp*>(pbase + section.fixupOffset + j * sizeof(GR2FixUp));
             addFixup(i, *fixup);
         }
     }

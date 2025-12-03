@@ -1,52 +1,16 @@
 #pragma once
 
 #include "FileStream.h"
+#include "GR2Decompressor.h"
 #include "GR2Stream.h"
 
-enum GR2MagicFlags : uint8_t
+enum GR2FileFormat : uint8_t
 {
-    FLAG_NONE = 0,
-    FLAG_BIG_ENDIAN = 1 << 0,
-    FLAG_64_BIT = 1 << 1,
-    FLAG_EXTRA_16 = 1 << 2,
-};
-
-struct GR2MagicInfo
-{
-    uint8_t flags;
-    uint32_t magic[4];
-};
-
-static constexpr GR2MagicInfo MAGIC[] = {
-    /* Little Endian 32-bit File Format 6 */
-    {
-        .flags = FLAG_NONE,
-        .magic = {3400558520, 263286264, 2123133572, 503322974}
-    },
-    /* Big Endian 32-bit File Format 6 */
-    {
-        .flags = FLAG_BIG_ENDIAN,
-        .magic = {3093803210, 4167938319, 2222099582, 1578696734}
-    },
-    /* Little Endian 32-bit File Format 7 (Granny 2.9) */
-    {
-        .flags = FLAG_EXTRA_16,
-        .magic = {3228360233, 726901946, 2780296485, 4007814902},
-    },
-    /* Little Endian 64-bit File Format 7 (Granny 2.9) */
-    {
-        .flags = FLAG_EXTRA_16 | FLAG_64_BIT,
-        .magic = {1581882341, 337601391, 2850755358, 3303915152},
-    }
-};
-
-enum GR2CompressionType : uint32_t
-{
-    COMPRESSION_NONE = 0, /* No compression */
-    COMPRESSION_OODLE0,
-    COMPRESSION_OODLE1,
-    COMPRESSION_BITKNIT1,
-    COMPRESSION_BITKNIT2
+    UNKNOWN_FORMAT = 0x00,
+    LITTLE_ENDIAN_32 = 0x01,
+    BIG_ENDIAN_32 = 0x02,
+    LITTLE_ENDIAN_64 = 0x03,
+    BIG_ENDIAN_64 = 0x04,
 };
 
 enum GR2NodeType : uint32_t
@@ -79,31 +43,28 @@ enum GR2NodeType : uint32_t
 
 #pragma pack(push, 1)
 
-struct GR2Header
-{
-    uint32_t magic[4];
-    uint32_t size; // size of the file including sectors
-    uint32_t format; // format of the file
-    uint8_t extra[8]; // extra data
-};
-
 struct GR2Reference
 {
     uint32_t section; // section number
     uint32_t offset; // offset within section
 };
 
-struct GR2FileInfo
+struct GR2Header
 {
-    int32_t format; // format of the file
-    uint32_t totalSize; // total size of the file
-    uint32_t crc32; // CRC32 checksum
-    uint32_t fileInfoSize; // size of the file info
-    uint32_t sectionCount; // number of section
-    GR2Reference type; // reference where the type node is located
-    GR2Reference root; // reference where the root node is located
-    uint32_t tag; // version of the type node
-    uint8_t extra[32]; // extra data
+    uint8_t signature[16]; // file signature
+    uint32_t headerSize; // size of the header
+    uint32_t headerFormat; // header format version
+    uint32_t reserved1; // reserved
+    uint32_t reserved2; // reserved
+    uint32_t version; // file version
+    uint32_t fileSize; // total file size
+    uint32_t crc; // CRC checksum
+    uint32_t sectionOffset; // offset to the section headers
+    uint32_t numSections; // number of sections
+    GR2Reference type; // reference to the type node
+    GR2Reference root; // reference to the root node
+    uint32_t tag; // file format version tag
+    uint32_t extra[8]; // extra data
 };
 
 struct GR2SectionHeader
@@ -252,7 +213,6 @@ public:
 
 private:
     bool is64Bit() const;
-    bool isExtra16() const;
     bool isValid(const GR2TypeNode* node) const;
     GR2Object::Ptr build(const GR2TypeNode* node, const GR2Object::Ptr& parent, uint32_t level,
                          const GR2Callback& callback = {});
@@ -275,14 +235,13 @@ private:
     GR2Object::Ptr makeUInt32(const GR2TypeNode* node, const GR2Object::Ptr& parent);
     GR2Object::Ptr makeUInt8(const GR2TypeNode* node, const GR2Object::Ptr& parent);
     GR2Object::Ptr makeVarReference(const GR2TypeNode* node, const GR2Object::Ptr& parent);
-    static uint8_t readFlags(const GR2Header& header);
+    static GR2FileFormat readFormat(const GR2Header& header);
     void addFixup(uint32_t srcSection, GR2FixUp& fixup);
     void buildFields(const GR2TypeNode* fields, const GR2Object::Ptr& parent, uint32_t level,
                      const GR2Callback& callback = {});
     bool isArrayType(const GR2TypeNode& node) const;
     GR2RefStream getStream(const GR2Object::Ptr& parent);
     void makeRootStream();
-    void readFileInfo();
     void readHeader();
     void readSections();
 
@@ -306,13 +265,13 @@ private:
                                          uint32_t level, const GR2Callback& callback);
 
     ByteBuffer m_data;
-    GR2FileInfo m_fileInfo{};
+    GR2Decompressor m_decompressor;
+    GR2FileFormat m_format{UNKNOWN_FORMAT};
     GR2Header m_header{};
+    GR2Stream m_rootStream;
     std::vector<GR2Object::Ptr> m_rootObjects;
     std::vector<GR2SectionHeader> m_sectionHeaders;
     std::vector<void*> m_fixups;
-    GR2Stream m_rootStream;
-    uint8_t m_flags{0};
 };
 
 template <TPtr T>

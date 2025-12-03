@@ -11,3 +11,4 @@ x64
 /install/*.pdf
 ribbon.rc2
 *.zip
+/*.dll

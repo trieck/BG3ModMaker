@@ -27,7 +27,7 @@ HRESULT Direct3D::Initialize(HWND hWnd)
     height = std::max<LONG>(height, 8);
 
     DXGI_SWAP_CHAIN_DESC sd{};
-    sd.BufferCount = 2;
+    sd.BufferCount = 1;
     sd.BufferDesc.Width = width;
     sd.BufferDesc.Height = height;
     sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -35,10 +35,10 @@ HRESULT Direct3D::Initialize(HWND hWnd)
     sd.BufferDesc.RefreshRate.Denominator = 1;
     sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
     sd.OutputWindow = hWnd;
-    sd.SampleDesc.Count = 1;
+    sd.SampleDesc.Count = 4;
     sd.SampleDesc.Quality = 0;
     sd.Windowed = TRUE;
-    sd.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+    sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
     sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
     D3D_FEATURE_LEVEL featureLevels[] = {
@@ -95,7 +95,7 @@ HRESULT Direct3D::Initialize(HWND hWnd)
     depthDesc.MipLevels = 1;
     depthDesc.ArraySize = 1;
     depthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT; // 24-bit depth, 8-bit stencil
-    depthDesc.SampleDesc.Count = 1;
+    depthDesc.SampleDesc.Count = 4;
     depthDesc.SampleDesc.Quality = 0;
     depthDesc.Usage = D3D11_USAGE_DEFAULT;
     depthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
@@ -111,8 +111,7 @@ HRESULT Direct3D::Initialize(HWND hWnd)
     // Create depth stencil view
     D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
     dsvDesc.Format = depthDesc.Format;
-    dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-    dsvDesc.Texture2D.MipSlice = 0;
+    dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
 
     hr = m_d3dDevice->CreateDepthStencilView(m_depthStencilBuffer.Get(), &dsvDesc, &m_depthStencilView);
     if (FAILED(hr)) {
@@ -188,7 +187,7 @@ HRESULT Direct3D::Resize(UINT width, UINT height)
     depthDesc.MipLevels = 1;
     depthDesc.ArraySize = 1;
     depthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-    depthDesc.SampleDesc.Count = 1;
+    depthDesc.SampleDesc.Count = 4;
     depthDesc.SampleDesc.Quality = 0;
     depthDesc.Usage = D3D11_USAGE_DEFAULT;
     depthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
@@ -200,8 +199,7 @@ HRESULT Direct3D::Resize(UINT width, UINT height)
 
     D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
     dsvDesc.Format = depthDesc.Format;
-    dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-    dsvDesc.Texture2D.MipSlice = 0;
+    dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
 
     hr = m_d3dDevice->CreateDepthStencilView(m_depthStencilBuffer.Get(), &dsvDesc, &m_depthStencilView);
     if (FAILED(hr)) {

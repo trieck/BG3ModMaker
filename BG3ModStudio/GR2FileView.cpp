@@ -88,8 +88,6 @@ void GR2FileView::OnSize(UINT nType, CSize size)
     if (size.cx > 0 && size.cy > 0) {
         (void)m_direct3D.Resize(size.cx, size.cy);
     }
-
-    Invalidate();
 }
 
 LRESULT GR2FileView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
@@ -106,6 +104,8 @@ LRESULT GR2FileView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
         m_model.SetZoom(m_zoom);
 
         UpdateScrollBars();
+        UpdateModelPan();
+
     } else {
         auto code = zDelta < 0 ? SB_LINEDOWN : SB_LINEUP;
 
@@ -380,17 +380,17 @@ void GR2FileView::UpdateModelPan()
 
     // Convert scroll position to normalized pan offset
     // Scroll position is in pixels, need to convert to [-1, 1] space
-    float panX = 0.0f;
-    float panY = 0.0f;
+    auto panX = 0.0f;
+    auto panY = 0.0f;
 
     if (m_nDocWidth > m_nXPageSize) {
         // Map scroll position to pan range
-        float scrollRatio = static_cast<float>(m_ScrollPos.x) / (m_nDocWidth - m_nXPageSize);
+        auto scrollRatio = static_cast<float>(m_ScrollPos.x) / static_cast<float>(m_nDocWidth - m_nXPageSize);
         panX = -scrollRatio * 2.0f; // -2 to +2 range in normalized space
     }
 
     if (m_nDocHeight > m_nYPageSize) {
-        float scrollRatio = static_cast<float>(m_ScrollPos.y) / (m_nDocHeight - m_nYPageSize);
+        auto scrollRatio = static_cast<float>(m_ScrollPos.y) / static_cast<float>(m_nDocHeight - m_nYPageSize);
         panY = scrollRatio * 2.0f;
     }
 
