@@ -9,11 +9,15 @@
 
 static constexpr auto COLUMN_PADDING = 12;
 
+namespace { // anonymous namespace
+
 struct NodeData
 {
     CString uuid;
     nlohmann::json data;
 };
+} // anonymous namespace
+
 
 BOOL GameObjectDlg::OnIdle()
 {
@@ -285,6 +289,8 @@ void GameObjectDlg::PopulateTypes()
         auto wideType = StringHelper::fromUTF8(type.c_str());
         InsertNode(TVI_ROOT, wideType, reinterpret_cast<LPARAM>(new NodeData()));
     }
+
+    m_tree.SortChildren(TVI_ROOT);
 }
 
 void GameObjectDlg::AutoAdjustAttributes()
@@ -414,6 +420,8 @@ void GameObjectDlg::ExpandNode(const CTreeItem& node)
             InsertNode(node.m_hTreeItem, wideName, reinterpret_cast<LPARAM>(pNodeData));
         }
     }
+
+    m_tree.SortChildren(node.m_hTreeItem);
 }
 
 HTREEITEM GameObjectDlg::InsertNode(HTREEITEM hParent, const CString& key, LPARAM lparam)

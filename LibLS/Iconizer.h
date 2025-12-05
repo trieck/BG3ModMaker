@@ -35,11 +35,7 @@ public:
 private:
     DirectX::ScratchImage loadIconTexture(const std::string& path);
     void iconizeLSXFile(const PackagedFileInfo& file);
-    void iconizeLSFFile(const PackagedFileInfo& file);
-
-    void iconizeRegion(const std::string& fileName, const Region::Ptr& region);
-    void iconizeNodes(const std::string& filename, const std::vector<LSNode::Ptr>& nodes);
-    void iconizeNode(const std::string& filename, const LSNode::Ptr& node);
+    void iconizeDDSFile(const PackagedFileInfo& file);
 
     PAKReader m_reader, m_iconReader;
     IFileProgressListener* m_listener = nullptr;

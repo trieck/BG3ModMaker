@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "Exception.h"
 #include "Iconizer.h"
-#include "StringHelper.h"
 #include "XmlWrapper.h"
 #include "LSFReader.h"
 
@@ -10,10 +9,11 @@
 
 namespace fs = std::filesystem;
 
-static constexpr auto COMMIT_SIZE = 1000;
+namespace { // anonymous
+constexpr auto COMMIT_SIZE = 1000;
 
-static DirectX::ScratchImage cropIcon(const DirectX::Image* atlas, uint32_t left, uint32_t top, uint32_t width,
-                                      uint32_t height)
+DirectX::ScratchImage cropIcon(const DirectX::Image* atlas, uint32_t left, uint32_t top, uint32_t width,
+                               uint32_t height)
 {
     DirectX::ScratchImage cropped;
     auto hr = cropped.Initialize2D(atlas->format, width, height, 1, 1);
@@ -32,6 +32,7 @@ static DirectX::ScratchImage cropIcon(const DirectX::Image* atlas, uint32_t left
 
     return cropped;
 }
+} // namespace anonymous
 
 Iconizer::Iconizer()
 {
@@ -113,16 +114,21 @@ void Iconizer::iconize(const char* pakFile, const char* dbName, bool overwrite)
             break;
         }
 
-        if (file.name.ends_with("lsx") || file.name.ends_with("lsf")) {
+        auto path = fs::path(file.name);
+
+        auto extension = path.extension().string();
+        std::ranges::transform(extension, extension.begin(), tolower);
+
+        if (extension == ".lsx" || extension == ".dds") {
             if (m_listener) {
                 m_listener->onFile(i, file.name);
             }
         }
 
-        if (file.name.ends_with("lsx")) {
+        if (extension == ".lsx") {
             iconizeLSXFile(file);
-        } else if (file.name.ends_with("lsf")) {
-            iconizeLSFFile(file);
+        } else if (extension == ".dds" && path.string().find("GUI/Assets/Portraits") != std::string::npos) {
+            iconizeDDSFile(file);
         }
 
         ++i;
@@ -145,8 +151,7 @@ void Iconizer::iconize(const char* pakFile, const char* dbName, bool overwrite)
     if (m_listener) {
         if (m_listener->isCancelled()) {
             m_listener->onCancel();
-        }
-        else {
+        } else {
             m_listener->onFinished(i);
         }
     }
@@ -371,48 +376,31 @@ void Iconizer::iconizeLSXFile(const PackagedFileInfo& file)
     }
 }
 
-void Iconizer::iconizeLSFFile(const PackagedFileInfo& file)
+void Iconizer::iconizeDDSFile(const PackagedFileInfo& file)
 {
+    fs::path p(file.name);
+
+    std::string filename = p.filename().string();
+    if (filename.empty()) {
+        return; // invalid filename
+    }
+
+    auto dot = filename.find_last_of('.');
+    if (dot != std::string::npos) {
+        filename = filename.substr(0, dot);
+    }
+
+    if (filename.empty()) {
+        return;
+    }
+
     auto buffer = m_reader.readFile(file.name);
 
-    LSFReader reader;
-    auto resource = reader.read(buffer);
+    rocksdb::Slice key(filename);
+    rocksdb::Slice value(reinterpret_cast<const char*>(buffer.first.get()), buffer.second);
 
-    auto regions = resource->regions;
-    for (const auto& [regionName, region] : regions) {
-        if (regionName == "TextureAtlasInfo") {
-            std::cout << "Found a TextureAtlasInfo region in " << file.name << std::endl;
-        }
-    }
-
-    // for (const auto& val : resource->regions | std::views::values) {
-    //     iconizeRegion(file.name, val);
-    // }
-}
-
-void Iconizer::iconizeRegion(const std::string& fileName, const Region::Ptr& region)
-{
-    for (const auto& val : region->children | std::views::values) {
-        iconizeNodes(fileName, val);
-    }
-}
-
-void Iconizer::iconizeNodes(const std::string& filename, const std::vector<LSNode::Ptr>& nodes)
-{
-    for (const auto& node : nodes) {
-        iconizeNode(filename, node);
-    }
-}
-
-void Iconizer::iconizeNode(const std::string& filename, const LSNode::Ptr& node)
-{
-    for (const auto& [key, val] : node->attributes) {
-        std::cout << key << " = " << val.str() << std::endl;
-    }
-
-    for (const auto& val : node->children | std::views::values) {
-        for (const auto& childNode : val) {
-            iconizeNode(filename, childNode);
-        }
+    auto s = m_batch.Put(key, value);
+    if (!s.ok()) {
+        throw Exception(std::format("Failed to write to RocksDB database: {}", s.ToString()));
     }
 }
