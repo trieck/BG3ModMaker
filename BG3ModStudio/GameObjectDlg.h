@@ -15,18 +15,19 @@ public:
     enum { IDD = IDD_GAMEOBJECT };
 
     BEGIN_MSG_MAP(GameObjectDlg)
-        MSG_WM_INITDIALOG(OnInitDialog)
-        MSG_WM_CLOSE(OnClose)
-        MSG_WM_DESTROY(OnDestroy)
-        MSG_WM_SIZE(OnSize)
-        COMMAND_ID_HANDLER3(IDCANCEL, OnClose)
-        COMMAND_ID_HANDLER3(IDC_B_SEARCH, OnSearch)
         COMMAND_HANDLER3(IDC_E_QUERY, EN_CHANGE, OnQueryChange)
-        NOTIFY_HANDLER(ID_ATTRIBUTE_LIST, NM_DBLCLK, OnDoubleClick)
-        NOTIFY_CODE_HANDLER_EX(TVN_DELETEITEM, OnDelete)
-        NOTIFY_CODE_HANDLER_EX(TVN_SELCHANGED, OnTVSelChanged)
-        NOTIFY_CODE_HANDLER_EX(TVN_ITEMEXPANDING, OnItemExpanding)
+        COMMAND_ID_HANDLER3(IDC_B_SEARCH, OnSearch)
+        COMMAND_ID_HANDLER3(IDCANCEL, OnClose)
+        MSG_WM_CLOSE(OnClose)
         MSG_WM_CONTEXTMENU(OnContextMenu)
+        MSG_WM_DESTROY(OnDestroy)
+        MSG_WM_INITDIALOG(OnInitDialog)
+        MSG_WM_MOUSEWHEEL(OnMouseWheel)
+        MSG_WM_SIZE(OnSize)
+        NOTIFY_CODE_HANDLER_EX(TVN_DELETEITEM, OnDelete)
+        NOTIFY_CODE_HANDLER_EX(TVN_ITEMEXPANDING, OnItemExpanding)
+        NOTIFY_CODE_HANDLER_EX(TVN_SELCHANGED, OnTVSelChanged)
+        NOTIFY_HANDLER(ID_ATTRIBUTE_LIST, NM_DBLCLK, OnDoubleClick)
         CHAIN_MSG_MAP(CDialogResize)
     END_MSG_MAP()
 
@@ -49,6 +50,7 @@ private:
     LRESULT OnDelete(LPNMHDR pnmh);
     LRESULT OnDoubleClick(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
     LRESULT OnItemExpanding(LPNMHDR pnmh);
+    LRESULT OnMouseWheel(UINT nFlags, short zDelta, const CPoint& /*pt*/);
     LRESULT OnTVSelChanged(LPNMHDR pnmh);
     void AutoAdjustAttributes();
     void DeleteAll();
@@ -68,17 +70,18 @@ private:
     void ViewValue();
 
     Cataloger m_cataloger;
-    CFont m_font;
+    CFont m_treeFont, m_attributeFont;
     CImageList m_imageList;
     CListViewCtrl m_attributes;
     CSplitterWindow m_splitter;
     CString m_dbPath, m_indexPath;
     CTreeViewCtrlEx m_tree;
 
-    int m_marginLeft = 0;
-    int m_marginTop = 0;
-    int m_marginRight = 0;
-    int m_marginBottom = 0;
-    int m_nPage = 0;
     bool m_deleting = false;
+    int m_fontSize = 8;
+    int m_marginBottom = 0;
+    int m_marginLeft = 0;
+    int m_marginRight = 0;
+    int m_marginTop = 0;
+    int m_nPage = 0;
 };

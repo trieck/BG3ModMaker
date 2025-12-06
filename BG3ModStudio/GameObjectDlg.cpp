@@ -50,6 +50,14 @@ BOOL GameObjectDlg::OnInitDialog(HWND, LPARAM)
 
     wndFrame.DestroyWindow(); // Needed only for margin calculation
 
+    LOGFONT lf{};
+    lf.lfHeight = -MulDiv(m_fontSize, GetDeviceCaps(GetDC(), LOGPIXELSY), 72);
+    _tcscpy_s(lf.lfFaceName, _T("Tahoma"));
+    lf.lfWeight = FW_NORMAL;
+
+    m_treeFont.CreateFontIndirect(&lf);
+    m_attributeFont.CreateFontIndirect(&lf);
+
     m_splitter.Create(m_hWnd, rcFrame, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
     ATLASSERT(m_splitter.IsWindow());
 
@@ -59,8 +67,7 @@ BOOL GameObjectDlg::OnInitDialog(HWND, LPARAM)
         return -1;
     }
 
-    m_font = AtlCreateControlFont();
-    m_tree.SetFont(m_font);
+    m_tree.SetFont(m_treeFont);
 
     static constexpr auto icons = {
         IDI_GAME_OBJECT
@@ -83,7 +90,7 @@ BOOL GameObjectDlg::OnInitDialog(HWND, LPARAM)
     m_attributes.Create(m_splitter, rcDefault, nullptr,
                         WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
                         LVS_REPORT | LVS_SINGLESEL, WS_EX_CLIENTEDGE, ID_ATTRIBUTE_LIST);
-
+    m_attributes.SetFont(m_treeFont);
     m_attributes.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
     m_attributes.InsertColumn(0, _T("Name"), LVCFMT_LEFT, 100);
@@ -95,11 +102,8 @@ BOOL GameObjectDlg::OnInitDialog(HWND, LPARAM)
     m_splitter.SetSplitterPosPct(50);
 
     Populate();
-
     UIAddChildWindowContainer(m_hWnd);
-
     DlgResize_Init();
-
     CenterWindow(GetParent());
 
     auto* pLoop = _Module.GetMessageLoop();
@@ -113,6 +117,32 @@ BOOL GameObjectDlg::OnInitDialog(HWND, LPARAM)
     }
 
     return TRUE; // Let the system set the focus
+}
+
+LRESULT GameObjectDlg::OnMouseWheel(UINT nFlags, short zDelta, const CPoint&)
+{
+    if ((GetKeyState(VK_CONTROL) & 0x8000) == 0) {
+        return 1;
+    }
+
+    if (zDelta > 0 && m_fontSize < 48) {
+        m_fontSize++;
+    } else if (zDelta < 0 && m_fontSize > 6) {
+        m_fontSize--;
+    }
+
+    LOGFONT lf = {};
+    lf.lfHeight = -MulDiv(m_fontSize, GetDeviceCaps(GetDC(), LOGPIXELSY), 72);
+    _tcscpy_s(lf.lfFaceName, _T("Tahoma"));
+    lf.lfWeight = FW_NORMAL;
+
+    m_attributeFont.DeleteObject();
+    m_attributeFont.CreateFontIndirect(&lf);
+    m_attributes.SetFont(m_attributeFont);
+    AutoAdjustAttributes();
+    m_attributes.Invalidate();
+
+    return 1;
 }
 
 LRESULT GameObjectDlg::OnDoubleClick(int idCtrl, LPNMHDR pnmh, BOOL& bHandled)
