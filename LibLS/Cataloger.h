@@ -10,26 +10,26 @@
 #include <nlohmann/json.hpp>
 #include <rocksdb/db.h>
 
-
 class Cataloger
 {
 public:
     Cataloger();
     virtual ~Cataloger();
 
-    bool isOpen() const;
-    nlohmann::json get(const std::string& key);
-    PageableIterator::Ptr newIterator(const char* key, size_t pageSize = 25);
-    PageableIterator::Ptr newIterator(size_t pageSize = 25);
-    PrefixIterator::Ptr getChildren(const char* parent) const;
-    PrefixIterator::Ptr getRoots() const;
-    PrefixIterator::Ptr getRoots(const char* type) const;
-    PrefixIterator::Ptr getTypes() const;
-    void catalog(const char* pakFile, const char* dbName, bool overwrite = false);
-    void close();
-    void open(const char* dbName);
-    void openReadOnly(const char* dbName);
     void setProgressListener(IFileProgressListener* listener);
+    void openReadOnly(const char* dbName);
+    void open(const char* dbName);
+    void close();
+    void catalog(const char* pakFile, const char* dbName, bool overwrite = false);
+    std::string getParent(const char* uuid) const;
+    PrefixIterator::Ptr getTypes() const;
+    PrefixIterator::Ptr getRoots(const char* type) const;
+    PrefixIterator::Ptr getRoots() const;
+    PrefixIterator::Ptr getChildren(const char* parent) const;
+    PageableIterator::Ptr newIterator(size_t pageSize = 25);
+    PageableIterator::Ptr newIterator(const char* key, size_t pageSize = 25);
+    nlohmann::json get(const std::string& key);
+    bool isOpen() const;
 
 private:
     void catalogLSXFile(const PackagedFileInfo& file);

@@ -20,6 +20,8 @@ public:
         MSG_WM_DESTROY(OnDestroy)
         MSG_WM_SIZE(OnSize)
         COMMAND_ID_HANDLER3(IDCANCEL, OnClose)
+        COMMAND_ID_HANDLER3(IDC_B_SEARCH, OnSearch)
+        COMMAND_HANDLER3(IDC_E_QUERY, EN_CHANGE, OnQueryChange)
         NOTIFY_HANDLER(ID_ATTRIBUTE_LIST, NM_DBLCLK, OnDoubleClick)
         NOTIFY_CODE_HANDLER_EX(TVN_DELETEITEM, OnDelete)
         NOTIFY_CODE_HANDLER_EX(TVN_SELCHANGED, OnTVSelChanged)
@@ -39,20 +41,30 @@ public:
 private:
     BOOL OnInitDialog(HWND /* hWnd */, LPARAM /*lParam*/);
     CString GetAttribute(const nlohmann::json& obj, const CString& key);
+    HTREEITEM GetChild(HTREEITEM hParent, const CString& uuid);
+    HTREEITEM GetTypeRoot(const CString& type);
+    HTREEITEM InsertHierarchy(HTREEITEM hRoot, const CString& uuid);
     HTREEITEM InsertNode(HTREEITEM hParent, const CString& key, LPARAM lparam = 0);
+    HTREEITEM InsertUUID(HTREEITEM hParent, const CString& uuid);
     LRESULT OnDelete(LPNMHDR pnmh);
     LRESULT OnDoubleClick(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
     LRESULT OnItemExpanding(LPNMHDR pnmh);
     LRESULT OnTVSelChanged(LPNMHDR pnmh);
     void AutoAdjustAttributes();
+    void DeleteAll();
     void ExpandNode(const CTreeItem& node);
     void OnClose();
     void OnContextAttributes(const CPoint& point);
     void OnContextMenu(const CWindow& wnd, const CPoint& point);
     void OnDestroy();
+    void OnQueryChange();
+    void OnSearch();
     void OnSize(UINT /*uMsg*/, const CSize& size);
     void Populate();
+    void PopulateDoc(const std::pair<const std::string, nlohmann::json>& doc);
+    void PopulateDocs(const std::unordered_map<std::string, nlohmann::json>& docs);
     void PopulateTypes();
+    void PopulateUUIDs(const std::unordered_set<std::string>& uuids);
     void ViewValue();
 
     Cataloger m_cataloger;
@@ -60,7 +72,7 @@ private:
     CImageList m_imageList;
     CListViewCtrl m_attributes;
     CSplitterWindow m_splitter;
-    CString m_dbPath;
+    CString m_dbPath, m_indexPath;
     CTreeViewCtrlEx m_tree;
 
     int m_marginLeft = 0;
@@ -68,4 +80,5 @@ private:
     int m_marginRight = 0;
     int m_marginBottom = 0;
     int m_nPage = 0;
+    bool m_deleting = false;
 };

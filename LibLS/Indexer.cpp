@@ -238,7 +238,9 @@ void Indexer::indexLSXFile(const PackagedFileInfo& file)
 
         json doc;
         doc["source_file"] = file.name;
-        doc["type"] = node.attribute("id").value();
+
+        std::string docType = node.attribute("id").value();
+        doc["type"] = docType;
 
         if (node.attributes().empty()) {
             continue;
@@ -278,6 +280,9 @@ void Indexer::indexLSXFile(const PackagedFileInfo& file)
         m_termgen.set_document(xdoc);
         m_termgen.index_text(termsToString(terms));
         xdoc.set_data(doc.dump(-1, ' ', false, nlohmann::json::error_handler_t::replace));
+        if (!docType.empty()) {
+            xdoc.add_boolean_term("TYPE:" + docType);
+        }
         m_db->add_document(xdoc);
     }
 }
@@ -289,6 +294,8 @@ void Indexer::indexNode(const std::string& filename, const LSNode::Ptr& node)
     json doc;
     doc["source_file"] = filename;
     doc["type"] = node->name;
+
+    std::string docType = node->name;
 
     json attributes = json::array();
     for (const auto& [key, val] : node->attributes) {
@@ -317,6 +324,11 @@ void Indexer::indexNode(const std::string& filename, const LSNode::Ptr& node)
     m_termgen.set_document(xdoc);
     m_termgen.index_text(termsToString(terms));
     xdoc.set_data(doc.dump(-1, ' ', false, nlohmann::json::error_handler_t::replace));
+
+    if (!docType.empty()) {
+        xdoc.add_boolean_term("TYPE:" + docType);
+    }
+
     m_db->add_document(xdoc);
 
     for (const auto& val : node->children | std::views::values) {
@@ -376,6 +388,7 @@ void Indexer::indexTXTFile(const PackagedFileInfo& file)
             m_termgen.set_document(xdoc);
             m_termgen.index_text(termsToString(terms));
             xdoc.set_data(doc.dump(-1, ' ', false, nlohmann::json::error_handler_t::replace));
+            xdoc.add_boolean_term("TYPE:Stats");
             m_db->add_document(xdoc);
         }
 

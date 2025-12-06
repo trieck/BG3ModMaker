@@ -167,16 +167,14 @@ bool ObjectManager::insert(const char* key, const nlohmann::json& doc)
 
 std::string ObjectManager::getParent(const std::string& child) const
 {
+    std::string parent;
+
     if (m_db == nullptr || child.empty()) {
-        return "";
+        return parent;
     }
 
-    std::string parent;
     rocksdb::ReadOptions readOpts{};
-    auto st = m_db->Get(readOpts, m_cfHierarchy.get(), "parent:" + child, &parent);
-    if (!st.ok()) {
-        return "";
-    }
+    m_db->Get(readOpts, m_cfHierarchy.get(), "parent:" + child, &parent);
 
     return parent;
 }

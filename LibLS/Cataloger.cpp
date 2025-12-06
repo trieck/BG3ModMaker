@@ -100,6 +100,11 @@ void Cataloger::catalog(const char* pakFile, const char* dbName, bool overwrite)
     }
 }
 
+std::string Cataloger::getParent(const char* uuid) const
+{
+    return m_objectManager.getParent(uuid);
+}
+
 nlohmann::json Cataloger::get(const std::string& key)
 {
     return m_objectManager.get(key);

@@ -9,4 +9,5 @@ public:
     ~Searcher() = default;
 
     static Xapian::MSet search(const char* dbName, const char* query, uint32_t offset, uint32_t pageSize);
+    static Xapian::MSet search(const char* dbName, const Xapian::Query& query, uint32_t offset, uint32_t pageSize);
 };

@@ -2,14 +2,15 @@
 #include "Exception.h"
 #include "GameObjectDlg.h"
 #include "IconDlg.h"
+#include "Searcher.h"
 #include "Settings.h"
 #include "StringHelper.h"
 #include "Util.h"
 #include "ValueViewDlg.h"
 
-static constexpr auto COLUMN_PADDING = 12;
-
 namespace { // anonymous namespace
+
+constexpr auto COLUMN_PADDING = 12;
 
 struct NodeData
 {
@@ -30,6 +31,7 @@ BOOL GameObjectDlg::OnInitDialog(HWND, LPARAM)
 {
     Settings settings;
     m_dbPath = settings.GetString("Settings", "GameObjectPath");
+    m_indexPath = settings.GetString(_T("Settings"), _T("IndexPath"), _T(""));
 
     auto wndFrame = GetDlgItem(IDC_ST_GAMEOBJECT);
     ATLASSERT(wndFrame.IsWindow());
@@ -149,6 +151,10 @@ LRESULT GameObjectDlg::OnItemExpanding(LPNMHDR pnmh)
 
 LRESULT GameObjectDlg::OnTVSelChanged(LPNMHDR pnmh)
 {
+    if (m_deleting) {
+        return 0;
+    }
+
     m_attributes.DeleteAllItems();
 
     const auto item = MAKE_TREEITEM(pnmh, &m_tree);
@@ -279,8 +285,7 @@ void GameObjectDlg::OnSize(UINT, const CSize& size)
 
 void GameObjectDlg::PopulateTypes()
 {
-    m_tree.DeleteAllItems();
-    m_attributes.DeleteAllItems();
+    DeleteAll();
 
     auto it = m_cataloger.getTypes();
 
@@ -330,6 +335,14 @@ void GameObjectDlg::AutoAdjustAttributes()
     }
 
     dc.SelectFont(hOldFont);
+}
+
+void GameObjectDlg::DeleteAll()
+{
+    m_deleting = true;
+    m_tree.DeleteAllItems();
+    m_attributes.DeleteAllItems();
+    m_deleting = false;
 }
 
 void GameObjectDlg::ExpandNode(const CTreeItem& node)
@@ -469,12 +482,230 @@ void GameObjectDlg::OnDestroy()
     }
 }
 
+void GameObjectDlg::OnQueryChange()
+{
+    DeleteAll();
+
+    CString query;
+    GetDlgItemText(IDC_E_QUERY, query);
+
+    if (query.IsEmpty()) {
+        Populate();
+    }
+}
+
+HTREEITEM GameObjectDlg::GetTypeRoot(const CString& type)
+{
+    auto hRoot = m_tree.GetRootItem();
+
+    while (hRoot != nullptr) {
+        CString nodeType;
+        m_tree.GetItemText(hRoot, nodeType);
+        if (nodeType == type) {
+            return hRoot;
+        }
+        hRoot = m_tree.GetNextSiblingItem(hRoot);
+    }
+
+    return nullptr;
+}
+
+HTREEITEM GameObjectDlg::GetChild(HTREEITEM hParent, const CString& uuid)
+{
+    CTreeItem childItem = m_tree.GetChildItem(hParent);
+
+    while (!childItem.IsNull()) {
+        auto* data = reinterpret_cast<NodeData*>(childItem.GetData());
+        if (data != nullptr && data->uuid == uuid) {
+            return childItem.m_hTreeItem;
+        }
+        childItem = childItem.GetNextSibling();
+    }
+
+    return nullptr;
+}
+
+HTREEITEM GameObjectDlg::InsertUUID(HTREEITEM hParent, const CString& uuid)
+{
+    CTreeItem childItem = GetChild(hParent, uuid);
+    if (!childItem.IsNull()) {
+        return childItem.m_hTreeItem; // already exists
+    }
+
+    auto utf8Uuid = StringHelper::toUTF8(uuid);
+    auto doc = m_cataloger.get(utf8Uuid.GetString());
+
+    CString wideName(uuid);
+    auto name = GetAttribute(doc, "Name");
+    if (!name.IsEmpty()) {
+        wideName = name;
+    }
+
+    auto* pNodeData = new NodeData();
+    pNodeData->uuid = uuid;
+    pNodeData->data = std::move(doc);
+
+    auto hItem = InsertNode(hParent, wideName, reinterpret_cast<LPARAM>(pNodeData));
+
+    m_tree.SortChildren(hParent);
+
+    return hItem;
+}
+
+HTREEITEM GameObjectDlg::InsertHierarchy(HTREEITEM hRoot, const CString& uuid)
+{
+    std::string parent;
+    std::string child = StringHelper::toUTF8(uuid).GetString();
+
+    std::vector<std::string> hierarchy;
+    while (true) {
+        parent = m_cataloger.getParent(child.c_str());
+        if (parent.empty()) {
+            break;
+        }
+        hierarchy.emplace_back(parent);
+        child = parent;
+    }
+
+    auto hParent = hRoot;
+    for (auto it = hierarchy.rbegin(); it != hierarchy.rend(); ++it) {
+        hParent = InsertUUID(hParent, it->c_str());
+    }
+
+    return InsertUUID(hParent, uuid);
+}
+
+void GameObjectDlg::PopulateDoc(const std::pair<const std::string, nlohmann::json>& doc)
+{
+    auto type = GetAttribute(doc.second, "Type");
+
+    auto hRoot = GetTypeRoot(type);
+    if (hRoot == nullptr) {
+        return; // type root not found
+    }
+
+    InsertHierarchy(hRoot, doc.first.c_str());
+}
+
+void GameObjectDlg::PopulateDocs(const std::unordered_map<std::string, nlohmann::json>& docs)
+{
+    for (const auto& doc : docs) {
+        PopulateDoc(doc);
+    }
+}
+
+void GameObjectDlg::PopulateUUIDs(const std::unordered_set<std::string>& uuids)
+{
+    DeleteAll();
+
+    std::unordered_set<std::string> types;
+    std::unordered_map<std::string, nlohmann::json> docs;
+
+    for (const auto& uuid : uuids) {
+        nlohmann::json doc;
+        try {
+            doc = m_cataloger.get(uuid);
+        } catch (const Exception&) {
+            continue; // skip invalid 
+        }
+
+        auto type = GetAttribute(doc, "Type");
+        if (type.IsEmpty()) {
+            continue; // skip invalid
+        }
+
+        auto utf8Type = StringHelper::toUTF8(type).GetString();
+        types.insert(utf8Type);
+        docs.emplace(uuid, std::move(doc));
+    }
+
+    // insert root type nodes
+    for (const auto& type : types) {
+        auto wideType = StringHelper::fromUTF8(type.c_str());
+        InsertNode(TVI_ROOT, wideType, reinterpret_cast<LPARAM>(new NodeData()));
+    }
+
+    m_tree.SortChildren(TVI_ROOT);
+
+    PopulateDocs(docs);
+}
+
+void GameObjectDlg::OnSearch()
+{
+    CWaitCursor cursor;
+
+    DeleteAll();
+
+    CString query;
+    GetDlgItemText(IDC_E_QUERY, query);
+
+    query.Trim();
+    if (query.IsEmpty()) {
+        return;
+    }
+
+    auto utf8Query = StringHelper::toUTF8(query);
+    auto utf8IndexPath = StringHelper::toUTF8(m_indexPath);
+
+    Xapian::QueryParser parser;
+    auto xQuery = parser.parse_query(utf8Query.GetString());
+
+    Xapian::Query typeFilter("TYPE:GameObjects");
+    auto finalQuery = Xapian::Query(Xapian::Query::OP_FILTER, xQuery, typeFilter);
+
+    Xapian::MSet results;
+
+    try {
+        results = Searcher::search(utf8IndexPath, finalQuery, 0, 1000);
+    } catch (const Xapian::Error& e) {
+        CString errorMessage;
+        errorMessage.Format(_T("Error: %s\nContext: %s\nType: %s\nError String: %s"),
+                            StringHelper::fromUTF8(e.get_msg().c_str()).GetString(),
+                            StringHelper::fromUTF8(e.get_context().c_str()).GetString(),
+                            StringHelper::fromUTF8(e.get_type()).GetString(),
+                            StringHelper::fromUTF8(e.get_error_string()).GetString());
+        MessageBox(errorMessage, _T("Search Error"), MB_OK | MB_ICONERROR);
+        return;
+    }
+
+    if (results.empty()) {
+        return; // No results
+    }
+
+    std::unordered_set<std::string> uuids;
+
+    for (auto it = results.begin(); it != results.end(); ++it) {
+        auto doc = nlohmann::json::parse(it.get_document().get_data());
+
+        std::string uuid;
+        auto attributes = doc.value("attributes", nlohmann::json::array());
+        for (const auto& attr : attributes) {
+            auto name = attr.value("id", "");
+            auto value = attr.value("value", "");
+            if (name == "MapKey") {
+                uuid = value;
+            } else if (name == "ValueUUID") {
+                uuid = value;
+            }
+        }
+        if (uuid.empty()) {
+            continue; // No UUID found
+        }
+
+        uuids.insert(uuid);
+        if (uuids.size() >= 1000) {
+            break; // Limit to 1000 results
+        }
+    }
+
+    PopulateUUIDs(uuids);
+}
+
 void GameObjectDlg::Populate()
 {
     CWaitCursor cursor;
 
-    m_tree.DeleteAllItems();
-    m_attributes.DeleteAllItems();
+    DeleteAll();
 
     try {
         if (!m_cataloger.isOpen()) {
