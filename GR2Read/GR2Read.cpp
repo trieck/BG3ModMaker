@@ -145,6 +145,12 @@ static void printValue(const GR2ObjectInfo& info)
         std::cout << "\"" << strObj->value << "\"";
         break;
     }
+    case TYPE_INT8:
+    case TYPE_BINORMAL_INT8: {
+        auto int8Obj = std::static_pointer_cast<GR2Int8>(obj);
+        printNumber(int8Obj->values);
+        break;
+    }
     case TYPE_UINT8:
     case TYPE_NORMAL_UINT8: {
         auto uint8Obj = std::static_pointer_cast<GR2UInt8>(obj);
@@ -223,7 +229,7 @@ int main(int argc, char* argv[])
     try {
         Timer timer;
         GR2ModelBuilder builder;
-        auto model = builder.build(argv[1]);
+        auto model = builder.build(argv[1], printObject);
 
         std::cout << "   Reading took: " << timer.str() << std::endl;
     } catch (const std::exception& e) {

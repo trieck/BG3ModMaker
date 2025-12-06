@@ -232,7 +232,7 @@ GR2Object::Ptr GR2Reader::makeObject(const GR2TypeNode* node, const GR2Object::P
         obj = makeReference(node, parent);
         break;
     case TYPE_VARIANT_REFERENCE:
-        obj = makeVarReference(node, parent);
+        obj = makeVarReference(node, parent, level, callback);
         break;
     case TYPE_ARRAY_OF_REFERENCES:
         obj = makeArrayReference(node, parent, level, callback);
@@ -245,6 +245,14 @@ GR2Object::Ptr GR2Reader::makeObject(const GR2TypeNode* node, const GR2Object::P
         break;
     case TYPE_STRING:
         obj = makeString(node, parent);
+        break;
+    case TYPE_INT8:
+    case TYPE_BINORMAL_INT8:
+        obj = makeInt8(node, parent);
+        break;
+    case TYPE_UINT8:
+    case TYPE_NORMAL_UINT8:
+        obj = makeUInt8(node, parent);
         break;
     case TYPE_INT16:
     case TYPE_BINORMAL_INT16:
@@ -263,10 +271,6 @@ GR2Object::Ptr GR2Reader::makeObject(const GR2TypeNode* node, const GR2Object::P
         break;
     case TYPE_REAL32:
         obj = makeFloat(node, parent);
-        break;
-    case TYPE_UINT8:
-    case TYPE_NORMAL_UINT8:
-        obj = makeUInt8(node, parent);
         break;
     case TYPE_TRANSFORM:
         obj = makeTransform(node, parent);
@@ -442,7 +446,8 @@ GR2Object::Ptr GR2Reader::makeUInt16(const GR2TypeNode* node, const GR2Object::P
     return obj;
 }
 
-GR2Object::Ptr GR2Reader::makeVarReference(const GR2TypeNode* node, const GR2Object::Ptr& parent)
+GR2Object::Ptr GR2Reader::makeVarReference(const GR2TypeNode* node, const GR2Object::Ptr& parent, uint32_t level,
+                                           const GR2Callback& callback)
 {
     ATLASSERT(isValid(node));
     ATLASSERT(node->type == TYPE_VARIANT_REFERENCE);
@@ -458,14 +463,21 @@ GR2Object::Ptr GR2Reader::makeVarReference(const GR2TypeNode* node, const GR2Obj
     }
 
     if (is64Bit()) {
-        obj->offset = stream.read<uint64_t>();
+        obj->typePtr = stream.read<uint64_t>();
+        obj->objPtr = stream.read<uint64_t>();
     } else {
-        obj->offset = stream.read<uint32_t>();
+        obj->typePtr = stream.read<uint32_t>();
+        obj->objPtr = stream.read<uint32_t>();
     }
 
-    // FIXME: is offset a virtual pointer to the type?
+    auto* typeNode = resolve<GR2TypeNode*>(obj->typePtr);
+    obj->data = resolve<uint8_t*>(obj->objPtr);
 
-    obj->data = resolve<uint8_t*>(stream) + obj->offset;
+    if (callback) {
+        callback({.object = obj, .level = level});
+    }
+
+    buildFields(typeNode, obj, level + 1, callback);
 
     return obj;
 }
@@ -563,6 +575,35 @@ GR2Object::Ptr GR2Reader::makeInt32(const GR2TypeNode* node, const GR2Object::Pt
 
     for (auto i = 0; i < count; ++i) {
         obj->values[i] = stream.read<int32_t>();
+    }
+
+    return obj;
+}
+
+GR2Object::Ptr GR2Reader::makeInt8(const GR2TypeNode* node, const GR2Object::Ptr& parent)
+{
+    ATLASSERT(isValid(node));
+    ATLASSERT(node->type == TYPE_INT8 || node->type == TYPE_BINORMAL_INT8);
+
+    auto obj = std::make_shared<GR2Int8>();
+    obj->typeNode = node;
+    obj->parent = parent;
+    obj->name = resolve<char*>(node->name);
+
+    auto count = node->arraySize != 0 ? node->arraySize : 1;
+    if (count == 0) {
+        return obj;
+    }
+
+    auto stream = getStream(parent);
+    if (stream.isNull()) {
+        return obj;
+    }
+
+    obj->values.resize(count);
+
+    for (auto i = 0; i < count; ++i) {
+        obj->values[i] = stream.read<int8_t>();
     }
 
     return obj;

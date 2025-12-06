@@ -125,7 +125,8 @@ struct GR2Object
 
 struct GR2VarReference : GR2Object
 {
-    uint64_t offset;
+    uint64_t typePtr;
+    uint64_t objPtr;
 };
 
 struct GR2ArrayReference : GR2Object
@@ -146,6 +147,16 @@ struct GR2ReferenceVarArray : GR2Object
 struct GR2String : GR2Object
 {
     std::string value;
+};
+
+struct GR2Int8 : GR2Object
+{
+    std::vector<int8_t> values;
+};
+
+struct GR2UInt8 : GR2Object
+{
+    std::vector<uint8_t> values;
 };
 
 struct GR2Int16 : GR2Object
@@ -171,11 +182,6 @@ struct GR2UInt32 : GR2Object
 struct GR2Float : GR2Object
 {
     std::vector<float> values;
-};
-
-struct GR2UInt8 : GR2Object
-{
-    std::vector<uint8_t> values;
 };
 
 struct GR2Transform : GR2Object
@@ -222,6 +228,7 @@ private:
                                       const GR2Callback& callback = {});
     GR2Object::Ptr makeFloat(const GR2TypeNode* node, const GR2Object::Ptr& parent);
     GR2Object::Ptr makeInline(const GR2TypeNode* node, const GR2Object::Ptr& parent);
+    GR2Object::Ptr makeInt8(const GR2TypeNode* node, const GR2Object::Ptr& parent);
     GR2Object::Ptr makeInt16(const GR2TypeNode* node, const GR2Object::Ptr& parent);
     GR2Object::Ptr makeInt32(const GR2TypeNode* node, const GR2Object::Ptr& parent);
     GR2Object::Ptr makeObject(const GR2TypeNode* node, const GR2Object::Ptr& parent, uint32_t level,
@@ -236,7 +243,8 @@ private:
     GR2Object::Ptr makeUInt16(const GR2TypeNode* node, const GR2Object::Ptr& parent);
     GR2Object::Ptr makeUInt32(const GR2TypeNode* node, const GR2Object::Ptr& parent);
     GR2Object::Ptr makeUInt8(const GR2TypeNode* node, const GR2Object::Ptr& parent);
-    GR2Object::Ptr makeVarReference(const GR2TypeNode* node, const GR2Object::Ptr& parent);
+    GR2Object::Ptr makeVarReference(const GR2TypeNode* node, const GR2Object::Ptr& parent, uint32_t level,
+                                    const GR2Callback& callback = {});
     static GR2FileFormat readFormat(const GR2Header& header);
     void addFixup(uint32_t srcSection, GR2FixUp& fixup);
     void buildFields(const GR2TypeNode* fields, const GR2Object::Ptr& parent, uint32_t level,
