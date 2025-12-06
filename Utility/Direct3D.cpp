@@ -4,6 +4,7 @@
 #include <d3d11.h>
 #include <d3dcommon.h>
 #include <dxgi.h>
+#include <dxgi1_2.h>
 
 using Microsoft::WRL::ComPtr;
 
@@ -26,20 +27,7 @@ HRESULT Direct3D::Initialize(HWND hWnd)
     width = std::max<LONG>(width, 8);
     height = std::max<LONG>(height, 8);
 
-    DXGI_SWAP_CHAIN_DESC sd{};
-    sd.BufferCount = 1;
-    sd.BufferDesc.Width = width;
-    sd.BufferDesc.Height = height;
-    sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-    sd.BufferDesc.RefreshRate.Numerator = 60;
-    sd.BufferDesc.RefreshRate.Denominator = 1;
-    sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    sd.OutputWindow = hWnd;
-    sd.SampleDesc.Count = 4;
-    sd.SampleDesc.Quality = 0;
-    sd.Windowed = TRUE;
-    sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-    sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+    UINT deviceFlags = D3D11_CREATE_DEVICE_DEBUG;
 
     D3D_FEATURE_LEVEL featureLevels[] = {
         D3D_FEATURE_LEVEL_11_0,
@@ -48,20 +36,71 @@ HRESULT Direct3D::Initialize(HWND hWnd)
     };
 
     D3D_FEATURE_LEVEL featureLevel;
-    auto hr = D3D11CreateDeviceAndSwapChain(
+    auto hr = D3D11CreateDevice(
         nullptr,
         D3D_DRIVER_TYPE_HARDWARE,
         nullptr,
-        D3D11_CREATE_DEVICE_DEBUG,
+        deviceFlags,
         featureLevels,
         ARRAYSIZE(featureLevels),
         D3D11_SDK_VERSION,
-        &sd,
-        &m_swapChain,
         &m_d3dDevice,
         &featureLevel,
         &m_d3dContext
     );
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    ComPtr<IDXGIDevice> dxgiDevice;
+    hr = m_d3dDevice->QueryInterface(IID_PPV_ARGS(&dxgiDevice));
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    ComPtr<IDXGIAdapter> adapter;
+    hr = dxgiDevice->GetAdapter(&adapter);
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    ComPtr<IDXGIFactory2> factory;
+    hr = adapter->GetParent(IID_PPV_ARGS(&factory));
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    DXGI_SWAP_CHAIN_DESC1 sd{};
+    sd.Width = width;
+    sd.Height = height;
+    sd.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    sd.SampleDesc.Count = 1;
+    sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    sd.BufferCount = 2;
+    sd.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+    sd.Scaling = DXGI_SCALING_STRETCH;
+    sd.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
+
+    ComPtr<IDXGISwapChain1> swapChain1;
+
+    hr = factory->CreateSwapChainForHwnd(
+        m_d3dDevice.Get(),
+        hWnd,
+        &sd,
+        nullptr,
+        nullptr,
+        &swapChain1
+    );
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    hr = swapChain1.As(&m_swapChain);
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    hr = factory->MakeWindowAssociation(hWnd, DXGI_MWA_NO_ALT_ENTER);
     if (FAILED(hr)) {
         return hr;
     }
@@ -95,7 +134,7 @@ HRESULT Direct3D::Initialize(HWND hWnd)
     depthDesc.MipLevels = 1;
     depthDesc.ArraySize = 1;
     depthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT; // 24-bit depth, 8-bit stencil
-    depthDesc.SampleDesc.Count = 4;
+    depthDesc.SampleDesc.Count = 1;
     depthDesc.SampleDesc.Quality = 0;
     depthDesc.Usage = D3D11_USAGE_DEFAULT;
     depthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
@@ -111,7 +150,7 @@ HRESULT Direct3D::Initialize(HWND hWnd)
     // Create depth stencil view
     D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
     dsvDesc.Format = depthDesc.Format;
-    dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
+    dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 
     hr = m_d3dDevice->CreateDepthStencilView(m_depthStencilBuffer.Get(), &dsvDesc, &m_depthStencilView);
     if (FAILED(hr)) {
@@ -187,7 +226,7 @@ HRESULT Direct3D::Resize(UINT width, UINT height)
     depthDesc.MipLevels = 1;
     depthDesc.ArraySize = 1;
     depthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-    depthDesc.SampleDesc.Count = 4;
+    depthDesc.SampleDesc.Count = 1;
     depthDesc.SampleDesc.Quality = 0;
     depthDesc.Usage = D3D11_USAGE_DEFAULT;
     depthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
@@ -199,7 +238,7 @@ HRESULT Direct3D::Resize(UINT width, UINT height)
 
     D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
     dsvDesc.Format = depthDesc.Format;
-    dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
+    dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 
     hr = m_d3dDevice->CreateDepthStencilView(m_depthStencilBuffer.Get(), &dsvDesc, &m_depthStencilView);
     if (FAILED(hr)) {
