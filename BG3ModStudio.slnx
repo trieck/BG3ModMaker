@@ -6,7 +6,7 @@
   <Folder Name="/Solution Items/">
     <File Path="assets/bg3-mod-studio.png" />
     <File Path="include/Version.h" />
-    <File Path="install/BG3ModMaker.iss" />
+    <File Path="install/BG3ModStudio.iss" />
     <File Path="install/INSTALL.docx" />
     <File Path="README.md" />
     <File Path="vcpkg.json" />

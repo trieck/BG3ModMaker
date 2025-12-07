@@ -1,5 +1,5 @@
 
-#define AppName "BG3ModMaker"
+#define AppName "BG3ModStudio"
 #define AppPublisher "Thomas A. Rieck"
 #define AppExeName "BG3ModStudio.exe"
 #define ReleaseDir "..\x64\Release\"
@@ -18,7 +18,7 @@ DisableProgramGroupPage=yes
 SolidCompression=yes
 WizardStyle=modern
 OutputDir=.\
-OutputBaseFilename=BG3ModMaker_{#AppVersion}
+OutputBaseFilename={#AppName}_{#AppVersion}
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
