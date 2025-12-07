@@ -705,7 +705,7 @@ GR2Object::Ptr GR2Reader::makeInline(const GR2TypeNode* node, const GR2Object::P
     obj->name = resolve<char*>(node->name);
 
     auto stream = getStream(parent);
-    obj->data = get<uint8_t*>(stream);
+    obj->data = resolve <uint8_t*>(stream);
 
     return obj;
 }
