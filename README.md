@@ -36,5 +36,5 @@ Built with modern C++20, WTL (Windows Template Library), and DirectX, it provide
 
 1. Clone with submodules:
    ````bash
-   git clone --recurse-submodules https://github.com/trieck/BG3ModMaker.git
+   git clone --recurse-submodules https://github.com/trieck/BG3ModStudio.git
    cd BG3ModMaker
