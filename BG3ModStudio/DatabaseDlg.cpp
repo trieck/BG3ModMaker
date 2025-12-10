@@ -61,7 +61,7 @@ LRESULT DatabaseDlg::OnIsGameObject()
 
 void DatabaseDlg::OnCancelRequested()
 {
-    if (m_state == IDLE || m_state == CANCELLED) {
+    if (m_state == IDLE || m_state == FAILED || m_state == CANCELLED) {
         Destroy();
         return;
     }

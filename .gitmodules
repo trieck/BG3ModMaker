@@ -1,9 +1,9 @@
 [submodule "BG3ModStudio/TabView"]
     path = BG3ModStudio/TabView
-    url = git@github.com:trieck/TabView.git
+    url = https://github.com:trieck/TabView.git
 [submodule "BG3ModStudio/lexilla"]
     path = BG3ModStudio/lexilla
-    url = git@github.com:trieck/lexilla.git
+    url = https://github.com:trieck/lexilla.git
 [submodule "BG3ModStudio/scintilla"]
     path = BG3ModStudio/scintilla
-    url = git@github.com:trieck/scintilla.git
+    url = https://github.com:trieck/scintilla.git
