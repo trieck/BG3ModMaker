@@ -120,6 +120,9 @@
     <ClInclude Include="GR2Decompressor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Bitknit2Decompressor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -207,6 +210,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GR2Decompressor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Bitknit2Decompressor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
