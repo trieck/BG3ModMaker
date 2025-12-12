@@ -75,6 +75,11 @@ BOOL Bitknit2Decompressor::Decompress(uint32_t compressedSize, void* compressedD
     m_srcCur += 2; // advance past magic number
 
     while (m_dstCur < m_dstEnd) {
+        // Compute quantum boundary
+        auto remaining = static_cast<uint32_t>(m_dstEnd - m_dstCur);
+        auto quantumSize = std::min<uint32_t>(remaining, 65536);
+        m_dstQuantumEnd = m_dstCur + quantumSize;
+
         if (!CanRead(sizeof(uint16_t))) {
             return FALSE;
         }
@@ -192,11 +197,7 @@ uint32_t Bitknit2Decompressor::DecodeOffsetLSB(OffsetLsbModel& model, uint32_t& 
 
 BOOL Bitknit2Decompressor::CopyRawQuantum()
 {
-    // Compute quantum boundary
-    auto remaining = m_dstEnd - m_dstCur;
-    auto quantumSize = (remaining < 65536) ? remaining : 65536;
-    m_dstQuantumEnd = m_dstCur + quantumSize;
-
+    auto quantumSize = m_dstQuantumEnd - m_dstCur;
     if (!CanRead(quantumSize)) {
         return FALSE;
     }
@@ -330,8 +331,9 @@ BOOL Bitknit2Decompressor::DecodeQuantum()
             return FALSE;
         }
 
+        uint8_t* read = m_dstCur - matchDist;
         for (auto i = 0u; i < copyLength; ++i) {
-            m_dstCur[i] = m_dstCur[i - matchDist];
+            m_dstCur[i] = read[i];
         }
 
         m_dstCur += copyLength;
@@ -680,30 +682,18 @@ void Bitknit2Decompressor::InitializeLiteralModels()
         constexpr uint32_t TOTAL_RANGE = 32768;
         constexpr uint32_t NUM_SYMBOLS = 300;
         constexpr uint32_t NUM_FULL = 264; // symbols 0..263
-        constexpr uint32_t NUM_MIN = 36; // symbols 264..299
-
-        // Amount of range reserved for the "full width" portion
-        constexpr uint32_t FULL_RANGE = TOTAL_RANGE - NUM_MIN; // 32768 - 36 = 32732
-
-        // The width of one of the first 264 intervals
-        constexpr uint32_t STEP = FULL_RANGE / NUM_FULL; // integer division
 
         // CDF[0] is always zero
         model.cdf[0] = 0;
 
         // Fill CDF[1]..CDF[264]
-        // These are evenly spaced by 'step'.
-        //
-        for (auto i = 1u; i <= NUM_FULL; ++i) {
-            model.cdf[i] = static_cast<uint16_t>(STEP * i);
+        for (auto i = 1u; i < NUM_FULL; ++i) {
+            model.cdf[i] = static_cast<uint16_t>((32732u * i) / 264u);
         }
 
         // Fill CDF[265]..CDF[300]
-        // These grow by exactly 1 unit each.
-        //
-        auto base = model.cdf[NUM_FULL];
-        for (auto i = NUM_FULL + 1; i <= NUM_SYMBOLS; ++i) {
-            model.cdf[i] = static_cast<uint16_t>(base + (i - NUM_FULL));
+        for (auto i = NUM_FULL; i <= NUM_SYMBOLS; ++i) {
+            model.cdf[i] = static_cast<uint16_t>(32468u + i);
         }
 
         // At this point:
@@ -758,13 +748,12 @@ void Bitknit2Decompressor::InitializeOffsetModels()
         // size (residue >> 9), not (residue >> 6).
         constexpr uint32_t TOTAL_RANGE = 32768; // 2^15 ANS range
         constexpr uint32_t NUM_SYMBOLS = 40; // 40 offset-LSB symbols
-        constexpr uint32_t STEP = TOTAL_RANGE / NUM_SYMBOLS;
 
         model.cdf[0] = 0;
 
         // Uniform partition over full ANS range.
         for (auto i = 1u; i <= NUM_SYMBOLS; ++i) {
-            model.cdf[i] = static_cast<uint16_t>(STEP * i);
+            model.cdf[i] = static_cast<uint16_t>((TOTAL_RANGE * i) / NUM_SYMBOLS);
         }
 
         ATLASSERT(model.cdf[NUM_SYMBOLS] == TOTAL_RANGE);
