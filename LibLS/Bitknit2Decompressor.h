@@ -140,10 +140,6 @@ private:
     // End of compressed input buffer (one past last valid byte).
     uint8_t* m_srcEnd = nullptr;
 
-    // Number of high bits that belong to STATE2 when reconstructing rANS state
-    // from the quantum initialization header. Derived from I1 % 16.
-    uint32_t m_state2HighBitCount = 0;
-
     // Flag indicating whether the first literal has been emitted.
     BOOL m_emittedFirstLiteral = FALSE;
 };

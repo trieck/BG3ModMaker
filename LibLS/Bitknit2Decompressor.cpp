@@ -44,7 +44,7 @@ BOOL Bitknit2Decompressor::Decompress(uint32_t compressedSize, void* compressedD
     m_dstEnd = m_dstStart + decompressedSize;
 
     // Reset rANS states
-    m_state1 = m_state2 = m_state2HighBitCount = 0;
+    m_state1 = m_state2 = 0;
 
     // Reset LZ copy offset state
     m_lastCopyOffset = 1;
@@ -127,7 +127,7 @@ uint32_t Bitknit2Decompressor::DecodeLiteral(LiteralModel& model, uint32_t& stat
         ++sym;
     }
 
-    // Slow correction: in rare cases (usually 0 or 1 iterations),
+    // Slow correction
     // increment sym until the correct interval is found.
     while (residue >= model.cdf[sym + 1]) {
         ++sym;
@@ -319,7 +319,8 @@ BOOL Bitknit2Decompressor::DecodeQuantum()
             matchDist = m_recentOffsets[idx];
 
             // Rotate this index to the front of the permutation list
-            auto mask = ~(7u << shift);
+            auto mask = ~7u << shift;
+
             m_recentDistMask = (m_recentDistMask & mask) | ((idx + 8 * m_recentDistMask) & ~mask);
         }
 
@@ -428,9 +429,6 @@ BOOL Bitknit2Decompressor::ParseQuantumHeader()
 
     m_state1 = bits;
     m_state2 = bits2;
-
-    // Needed later when decoding long-distance offsets
-    m_state2HighBitCount = highCount;
 
     // Mark the "first literal not yet emitted" for this quantum
     m_emittedFirstLiteral = FALSE;
