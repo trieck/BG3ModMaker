@@ -41,4 +41,9 @@ Built with modern C++20, WTL (Windows Template Library), and DirectX, it provide
 
 ## License
 
-This project is licensed under the MIT License. See the LICENSE file for details.
+BG3 Mod Studio’s original source code is licensed under the MIT License.
+The distributed application includes third-party components licensed
+under the GNU GPL v2 or later, and redistribution of the combined
+application is subject to the GNU GPL v2 or later.
+
+See [THIRD_PARTY_LICENSES.md](licenses/THIRD_PARTY_LICENSES.md) for details.

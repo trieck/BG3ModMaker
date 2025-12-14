@@ -1,14 +1,6 @@
-This repository contains original source code
-© 2025 Thomas A. Rieck, licensed under the MIT License.
+MIT License
 
-The distributed BG3 Mod Studio application, when built
-and redistributed, includes third-party components
-licensed under the GNU GPL v2 or later and other
-open-source licenses. As a result, redistribution of
-the combined application is subject to the terms of
-the GNU GPL v2 or later.
-
-See licenses/THIRD_PARTY_LICENSES.md for details.
+Copyright (c) 2025 Thomas A. Rieck
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
