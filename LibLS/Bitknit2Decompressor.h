@@ -130,6 +130,9 @@ private:
     // Pointer to the current destination position in the output buffer.
     uint8_t* m_dstCur = nullptr;
 
+    // Pointer to the start of the current 64 KB quantum.
+    uint8_t* m_dstQuantumStart = nullptr;
+
     // Pointer to the end of the current 64 KB quantum.
     // Each quantum ends at the next 65536-byte boundary from m_dstStart.
     uint8_t* m_dstQuantumEnd = nullptr;

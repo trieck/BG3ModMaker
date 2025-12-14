@@ -75,10 +75,18 @@ BOOL Bitknit2Decompressor::Decompress(uint32_t compressedSize, void* compressedD
     m_srcCur += 2; // advance past magic number
 
     while (m_dstCur < m_dstEnd) {
-        // Compute quantum boundary
-        auto remaining = static_cast<uint32_t>(m_dstEnd - m_dstCur);
-        auto quantumSize = std::min<uint32_t>(remaining, 65536);
-        m_dstQuantumEnd = m_dstCur + quantumSize;
+        // Compute current logical output offset
+        auto dstOffset = m_dstCur - m_dstStart;
+
+        // Compute quantum block index
+        auto quantumIndex = dstOffset >> 16;
+
+        // Compute quantum boundaries 
+        auto quantumStartOffset = quantumIndex * 65536ull;
+        auto quantumEndOffset = std::min<uint64_t>(quantumStartOffset + 65536ull,
+                                                   decompressedSize);
+        m_dstQuantumStart = m_dstStart + quantumStartOffset;
+        m_dstQuantumEnd = m_dstStart + quantumEndOffset;
 
         if (!CanRead(sizeof(uint16_t))) {
             return FALSE;
@@ -121,13 +129,6 @@ uint32_t Bitknit2Decompressor::DecodeLiteral(LiteralModel& model, uint32_t& stat
     // Literals use a 512-entry lookup table (residue >> 6).
     auto sym = model.lookup[residue >> 6];
 
-    // Fast correction: if the residue exceeds the upper bound of this symbol,
-    // increment once. This handles the majority of overshoot cases.
-    if (residue > model.cdf[sym + 1]) {
-        ++sym;
-    }
-
-    // Slow correction
     // increment sym until the correct interval is found.
     while (residue >= model.cdf[sym + 1]) {
         ++sym;
@@ -166,12 +167,7 @@ uint32_t Bitknit2Decompressor::DecodeOffsetLSB(OffsetLsbModel& model, uint32_t& 
     // Initial guess from lookup table (block = residue >> 9)
     auto sym = static_cast<uint32_t>(model.lookup[residue >> 9]);
 
-    // One-step fast correction
-    if (residue > model.cdf[sym + 1]) {
-        ++sym;
-    }
-
-    // Full correction loop
+    // Correction loop
     while (residue >= model.cdf[sym + 1]) {
         ++sym;
     }
@@ -225,6 +221,8 @@ BOOL Bitknit2Decompressor::Renormalize()
 
         // Shift state1 and append next 16 bits.
         m_state1 = (m_state1 << 16) | Read<uint16_t>(m_srcCur);
+
+        ATLASSERT(m_state1 >= 0x10000);
     }
 
     // Swap the two interleaved rANS states.
@@ -346,6 +344,11 @@ BOOL Bitknit2Decompressor::DecodeQuantum()
         return FALSE;
     }
 
+    // Check that we did not underfill the quantum
+    if (m_dstCur < m_dstQuantumEnd) {
+        return FALSE;
+    }
+
     return TRUE;
 }
 
@@ -430,9 +433,6 @@ BOOL Bitknit2Decompressor::ParseQuantumHeader()
     m_state1 = bits;
     m_state2 = bits2;
 
-    // Mark the "first literal not yet emitted" for this quantum
-    m_emittedFirstLiteral = FALSE;
-
     return TRUE;
 }
 
@@ -444,12 +444,7 @@ uint32_t Bitknit2Decompressor::DecodeOffsetBitLength(OffsetBitLengthModel& model
     // Initial fast guess (shift = 9 -> 64 blocks)
     auto sym = static_cast<uint32_t>(model.lookup[residue >> 9]);
 
-    // One-step correction
-    if (residue > model.cdf[sym + 1]) {
-        ++sym;
-    }
-
-    // Full correction loop (rarely more than 1 iteration)
+    // Correction loop
     while (residue >= model.cdf[sym + 1]) {
         ++sym;
     }
@@ -684,12 +679,12 @@ void Bitknit2Decompressor::InitializeLiteralModels()
         // CDF[0] is always zero
         model.cdf[0] = 0;
 
-        // Fill CDF[1]..CDF[264]
+        // Fill CDF[1]..CDF[263]
         for (auto i = 1u; i < NUM_FULL; ++i) {
             model.cdf[i] = static_cast<uint16_t>((32732u * i) / 264u);
         }
 
-        // Fill CDF[265]..CDF[300]
+        // Fill CDF[264]..CDF[300]
         for (auto i = NUM_FULL; i <= NUM_SYMBOLS; ++i) {
             model.cdf[i] = static_cast<uint16_t>(32468u + i);
         }
