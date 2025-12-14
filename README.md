@@ -27,7 +27,7 @@ Built with modern C++20, WTL (Windows Template Library), and DirectX, it provide
 ## 🛠️ Building from Source
 
 ### Requirements
-- **Visual Studio 2022** with C++20 support
+- **Visual Studio 2022-2026** with C++20 support
 - **Windows 10 SDK** (10.0.19041.0 or later)
 - **vcpkg** for dependency management
 - **Git** with submodule support
@@ -38,3 +38,7 @@ Built with modern C++20, WTL (Windows Template Library), and DirectX, it provide
    ````bash
    git clone --recurse-submodules https://github.com/trieck/BG3ModStudio.git
    cd BG3ModStudio
+
+## License
+
+This project is licensed under the MIT License. See the LICENSE file for details.

@@ -8,6 +8,7 @@
     <File Path="include/Version.h" />
     <File Path="install/BG3ModStudio.iss" />
     <File Path="install/INSTALL.docx" />
+    <File Path="LICENSE" />
     <File Path="README.md" />
     <File Path="vcpkg.json" />
   </Folder>
