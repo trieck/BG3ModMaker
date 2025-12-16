@@ -72,6 +72,7 @@
 #define ID_TOOL_DB                      166
 #define IDI_GAME_OBJECT                 167
 #define IDR_PAK_CONTEXT                 168
+#define IDR_LICENSE                     169
 #define IDC_PROGRESS_INDEX              1000
 #define IDC_PAKFILE                     1001
 #define IDC_INDEX_FILE                  1002
@@ -140,6 +141,9 @@
 #define IDC_RADIO_ICON                  1077
 #define IDC_B_DBPATH                    1078
 #define IDC_DB_STATUS                   1079
+#define IDC_LICENSE                     1080
+#define IDC_B_LICENSE                   1080
+#define IDC_LICENSE_TEXT                1081
 #define ATL_IDC_TAB_CONTROL             0x3020
 #define ID_APPLY_NOW                    0x3021
 #define ID_WIZBACK                      0x3023
@@ -274,9 +278,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        169
+#define _APS_NEXT_RESOURCE_VALUE        170
 #define _APS_NEXT_COMMAND_VALUE         40037
-#define _APS_NEXT_CONTROL_VALUE         1080
+#define _APS_NEXT_CONTROL_VALUE         1082
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -370,18 +370,20 @@ BEGIN
     LTEXT           "",IDC_ST_PAKEXPLORER,7,7,495,241,0,WS_EX_STATICEDGE
 END
 
-IDD_ABOUT DIALOGEX 0, 0, 240, 130
+IDD_ABOUT DIALOGEX 0, 0, 241, 329
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About BG3 Mod Studio"
 FONT 8, "Tahoma", 0, 0, 0x1
 BEGIN
-    ICON            "",IDC_APPICON,10,10,21,20
-    LTEXT           "BG3 Mod Studio",IDC_APPNAME,50,10,150,12,SS_NOPREFIX
-    LTEXT           "",IDC_VERSION,50,20,150,10,SS_NOPREFIX
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,8,34,224,1
-    LTEXT           "© 2025 Rieck Enterprises",IDC_COPYRIGHT,10,42,220,10
-    LTEXT           "This product is protected by copyright law and international treaties.",IDC_NOTICE,10,70,220,20,SS_NOPREFIX
-    DEFPUSHBUTTON   "OK",IDOK,182,106,50,14
+    ICON            "",IDC_APPICON,10,10,20,20
+    LTEXT           "BG3 Mod Studio",IDC_APPNAME,41,14,80,12,SS_NOPREFIX | SS_CENTERIMAGE
+    LTEXT           "",IDC_VERSION,122,16,54,10,SS_NOPREFIX
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,8,34,225,1
+    LTEXT           "© 2025 Thomas A. Rieck",IDC_COPYRIGHT,10,42,220,10
+    LTEXT           "This software includes components licensed under\nthe GNU GPL v2 or later.\nSource code is available upon request.",IDC_NOTICE,10,65,220,38
+    DEFPUSHBUTTON   "OK",IDOK,183,106,50,14
+    PUSHBUTTON      "License >>",IDC_B_LICENSE,12,106,64,14
+    LTEXT           "",IDC_LICENSE_TEXT,8,135,225,188
 END
 
 IDD_NEW_PROJECT DIALOGEX 0, 0, 317, 193
@@ -585,9 +587,9 @@ BEGIN
     IDD_ABOUT, DIALOG
     BEGIN
         LEFTMARGIN, 8
-        RIGHTMARGIN, 232
+        RIGHTMARGIN, 233
         TOPMARGIN, 10
-        BOTTOMMARGIN, 95
+        BOTTOMMARGIN, 323
     END
 
     IDD_NEW_PROJECT, DIALOG
@@ -775,6 +777,8 @@ IDR_LOCA_TEMPLATE       RCDATA                  "loca.xml"
 IDR_ROOT_TEMPLATES_TEMPLATE RCDATA                  "root-template.xml"
 
 IDR_TREASURE_TEMPLATE   RCDATA                  "treasure-template.txt"
+
+IDR_LICENSE             RCDATA                  "../LICENSE"
 
 
 /////////////////////////////////////////////////////////////////////////////

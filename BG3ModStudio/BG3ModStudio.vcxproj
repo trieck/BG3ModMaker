@@ -228,6 +228,7 @@
     <ClInclude Include="IconExplorerDlg.h" />
     <ClInclude Include="ImageView.h" />
     <ClInclude Include="IndexDlg.h" />
+    <ClInclude Include="LicenseView.h" />
     <ClInclude Include="LocaFileView.h" />
     <ClInclude Include="LSFFileView.h" />
     <ClInclude Include="ModelessDialog.h" />
@@ -289,6 +290,7 @@
     <ClCompile Include="IconExplorerDlg.cpp" />
     <ClCompile Include="ImageView.cpp" />
     <ClCompile Include="IndexDlg.cpp" />
+    <ClCompile Include="LicenseView.cpp" />
     <ClCompile Include="LocaFileView.cpp" />
     <ClCompile Include="LSFFileView.cpp" />
     <ClCompile Include="FileDialogEx.cpp" />
@@ -407,6 +409,10 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="resources\treasure-template.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="LICENSE" />
+    <None Include="resources\Version.rc2" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

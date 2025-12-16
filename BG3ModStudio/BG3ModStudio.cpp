@@ -94,3 +94,8 @@ ID2D1Factory* BG3ModStudio::GetD2DFactory() const
 {
     return m_direct2D.GetD2DFactory();
 }
+
+IDWriteFactory* BG3ModStudio::GetDWriteFactory() const
+{
+    return m_direct2D.GetDWriteFactory();
+}

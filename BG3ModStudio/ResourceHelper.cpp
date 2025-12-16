@@ -1,9 +1,8 @@
 #include "stdafx.h"
 #include "ResourceHelper.h"
-
 #include "StringHelper.h"
 
-CStringA ResourceHelper::LoadTemplate(UINT nResourceID)
+CStringA ResourceHelper::LoadString(UINT nResourceID)
 {
     auto hRes = FindResource(nullptr, MAKEINTRESOURCE(nResourceID), RT_RCDATA);
     if (!hRes) {
@@ -20,7 +19,7 @@ CStringA ResourceHelper::LoadTemplate(UINT nResourceID)
 
 CStringA ResourceHelper::ExpandTemplate(UINT nResourceID, const ResourceMap& map)
 {
-    auto templateStr = LoadTemplate(nResourceID);
+    auto templateStr = LoadString(nResourceID);
     if (templateStr.IsEmpty()) {
         return "";
     }

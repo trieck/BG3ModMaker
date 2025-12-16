@@ -16,6 +16,7 @@ public:
     static int Run(HINSTANCE hInstance, LPWSTR lpCmdLine, int nShowCmd);
 
     ID2D1Factory* GetD2DFactory() const;
+    IDWriteFactory* GetDWriteFactory() const;
 
 private:
     COMInitializer m_coInit;

@@ -77,7 +77,7 @@ BOOL NewProjectBuildPage::CreateFileEx(const CString& path)
         return FALSE;
     }
 
-    auto hFile = CreateFile(path,GENERIC_WRITE, 0, nullptr,
+    auto hFile = CreateFile(path, GENERIC_WRITE, 0, nullptr,
                             CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
 
     if (hFile == INVALID_HANDLE_VALUE) {

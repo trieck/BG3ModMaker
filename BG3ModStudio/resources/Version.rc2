@@ -21,7 +21,7 @@ VS_VERSION_INFO VERSIONINFO
                 VALUE "FileVersion", APP_VERSION_STR
                 VALUE "InternalName", "BG3ModStudio.exe"
                 VALUE "OriginalFilename", "BG3ModStudio.exe"
-                VALUE "ProductName", "BG3 Mod Maker"
+                VALUE "ProductName", "BG3 Mod Studio"
                 VALUE "ProductVersion", APP_VERSION_STR
             END
         END

@@ -9,7 +9,9 @@
     <File Path="install/BG3ModStudio.iss" />
     <File Path="install/INSTALL.docx" />
     <File Path="LICENSE" />
+    <File Path="NOTICE" />
     <File Path="README.md" />
+    <File Path="THIRD_PARTY_LICENSES.md" />
     <File Path="vcpkg.json" />
   </Folder>
   <Project Path="BG3MMTests/BG3MMTests.vcxproj" />

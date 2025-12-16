@@ -38,6 +38,8 @@ Source: "{#ReleaseDir}zlib1.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#ReleaseDir}zstd.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\..\redist\vc_redist.x64.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall
 Source: "INSTALL.pdf"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\licenses\*.*"; DestDir: "{app}\licences"; Flags: ignoreversion recursesubdirs
 
 [Icons]
 Name: "{autoprograms}\{#AppName}"; Filename: "{app}\{#AppExeName}"

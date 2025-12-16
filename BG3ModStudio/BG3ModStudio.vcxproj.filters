@@ -194,6 +194,9 @@
     <ClInclude Include="D3DModel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LicenseView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BG3ModStudio.cpp">
@@ -343,6 +346,9 @@
     <ClCompile Include="D3DModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LicenseView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="ribbon.xml">
@@ -476,5 +482,11 @@
     <Text Include="resources\treasure-template.txt">
       <Filter>Resources</Filter>
     </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="resources\Version.rc2">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="LICENSE" />
   </ItemGroup>
 </Project>

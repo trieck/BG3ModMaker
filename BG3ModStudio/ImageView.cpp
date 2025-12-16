@@ -12,7 +12,11 @@ LRESULT ImageView::OnCreate(LPCREATESTRUCT pcs)
 {
     auto lRet = DefWindowProc();
 
-    (void)CreateDevResources();
+    auto hr = CreateDevResources();
+    if (FAILED(hr)) {
+        ATLTRACE("Failed to create Direct2D resources: 0x%08X\n", hr);
+        return -1;
+    }
 
     return lRet;
 }
