@@ -193,6 +193,7 @@
     <ClInclude Include="Node.h" />
     <ClInclude Include="NodeAttribute.h" />
     <ClInclude Include="ObjectManager.h" />
+    <ClInclude Include="OsiReader.h" />
     <ClInclude Include="Package.h" />
     <ClInclude Include="PageableIterator.h" />
     <ClInclude Include="PAKReader.h" />
@@ -202,6 +203,7 @@
     <ClInclude Include="Resource.h" />
     <ClInclude Include="ResourceUtils.h" />
     <ClInclude Include="Searcher.h" />
+    <ClInclude Include="Story.h" />
     <ClInclude Include="XmlWrapper.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ZLibCompressor.h" />
@@ -231,6 +233,7 @@
     <ClCompile Include="Node.cpp" />
     <ClCompile Include="NodeAttribute.cpp" />
     <ClCompile Include="ObjectManager.cpp" />
+    <ClCompile Include="OsiReader.cpp" />
     <ClCompile Include="Package.cpp" />
     <ClCompile Include="PageableIterator.cpp" />
     <ClCompile Include="PAKReader.cpp">
@@ -244,6 +247,7 @@
     <ClCompile Include="Resource.cpp" />
     <ClCompile Include="ResourceUtils.cpp" />
     <ClCompile Include="Searcher.cpp" />
+    <ClCompile Include="Story.cpp" />
     <ClCompile Include="XmlWrapper.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>

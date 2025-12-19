@@ -349,13 +349,13 @@ void LSFFileView::Populate()
         tvis.itemex.cChildren = region.second->childCount() > 0 ? 1 : 0;
         tvis.itemex.pszText = const_cast<LPTSTR>(wideName.GetString());
         tvis.itemex.lParam = std::bit_cast<LPARAM>(new NodeItemData{.type = NIT_REGION, .pdata = region.second.get()});
-        auto hItem = m_tree.InsertItem(&tvis);
-        m_tree.Expand(hItem, TVE_EXPAND);
+        m_tree.InsertItem(&tvis);
     }
 }
 
 void LSFFileView::Expand(const CTreeItem& item)
 {
+    CWaitCursor cursor;
     auto child = item.GetChild();
 
     if (m_tree.GetItemState(child, TVIS_EXPANDED)) {

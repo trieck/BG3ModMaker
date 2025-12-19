@@ -25,8 +25,6 @@ public:
 
     Package& package();
     void close();
-    void openStreams(uint32_t numParts);
-
     const std::string& filename() const;
 
 private:

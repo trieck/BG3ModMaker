@@ -15,7 +15,7 @@ Exception::Exception(DWORD errCode): m_errorCode(errCode)
     }
 }
 
-Exception::Exception(const std::string& message) : m_errorCode(ERROR_SUCCESS)
+Exception::Exception(const std::string& message)
 {
     m_message = message;
 }

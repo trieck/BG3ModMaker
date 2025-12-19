@@ -87,11 +87,9 @@ bool readHeader(PAKReader& pakReader, int64_t offset)
     package.seek(offset, SeekMode::Begin);
 
     // Read the header
-    THeader header = package.read<THeader>();
+    auto header = package.read<THeader>();
 
     package.m_header = header.commonHeader();
-
-    pakReader.openStreams(header.numParts);
 
     if (header.version > 10) {
         package.m_header.dataOffset = static_cast<uint32_t>(offset) + sizeof(THeader);
@@ -169,11 +167,6 @@ bool PAKReader::explode(const char* path)
     return true;
 }
 
-void PAKReader::openStreams(uint32_t numParts)
-{
-    // TODO: implement
-}
-
 const std::string& PAKReader::filename() const
 {
     return m_package.m_filename;
@@ -249,7 +242,7 @@ bool PAKReader::extractFile(const PackagedFileInfo& file, const char* path)
     return true;
 }
 
-inline bool Package::load(const char* filename)
+bool Package::load(const char* filename)
 {
     reset();
 

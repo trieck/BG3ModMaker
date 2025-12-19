@@ -24,6 +24,9 @@ public:
     virtual size_t size() const = 0;
 
     template <typename T>
+    T peek() requires (StreamReadable<T>);
+
+    template <typename T>
     T read() requires (StreamReadable<T>);
 
     template <typename T>
@@ -35,6 +38,16 @@ public:
     template <typename T>
     size_t write(const T* data, size_t count) requires (StreamWritable<T>);
 };
+
+template <typename T>
+T StreamBase::peek() requires (StreamReadable<T>)
+{
+    T value;
+    auto currentPos = tell();
+    read(reinterpret_cast<char*>(&value), sizeof(T));
+    seek(static_cast<int64_t>(currentPos), SeekMode::Begin);
+    return value;
+}
 
 template <typename T>
 T StreamBase::read() requires (StreamReadable<T>)

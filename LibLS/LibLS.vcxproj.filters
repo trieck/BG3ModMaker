@@ -123,6 +123,12 @@
     <ClInclude Include="Bitknit2Decompressor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="OsiReader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Story.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -213,6 +219,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Bitknit2Decompressor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OsiReader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Story.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

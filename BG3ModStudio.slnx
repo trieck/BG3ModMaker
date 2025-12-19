@@ -21,5 +21,6 @@
   <Project Path="BG3ModStudio/TabView/TabViewLib/TabViewLib.vcxproj" Id="bfd0fb0e-6477-4bb4-91b3-c372d43ac8c8" />
   <Project Path="GR2Read/GR2Read.vcxproj" Id="500a60a9-761f-415f-855c-87c3d07f508f" />
   <Project Path="LibLS/LibLS.vcxproj" Id="af1b8ff5-237d-4829-ae3d-528e05a309dc" />
+  <Project Path="OsiRead/OsiRead.vcxproj" Id="61b9c04c-29b3-4461-9afd-dc13bf8de722" />
   <Project Path="Utility/Utility.vcxproj" Id="85ecd5e2-d1ac-4ffb-ae62-aa629f6f7109" />
 </Solution>
