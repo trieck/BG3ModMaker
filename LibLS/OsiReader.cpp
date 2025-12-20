@@ -15,6 +15,26 @@ bool OsiReader::shortTypeIds() const
     return m_shortTypeIds;
 }
 
+bool OsiReader::getEnum(uint16_t type, OsiEnum& osi_enum)
+{
+    auto it = m_story.enums.find(static_cast<uint16_t>(type));
+    if (it != m_story.enums.end()) {
+        osi_enum = it->second;
+        return true;
+    }
+    return false;
+}
+
+bool OsiReader::isAlias(uint32_t type) const
+{
+    return m_story.isAlias(type);
+}
+
+OsiValueType OsiReader::resolveAlias(OsiValueType type)
+{
+    return m_story.resolveAlias(type);
+}
+
 OsiReader::OsiReader(OsiReader&& rhs) noexcept
 {
     *this = std::move(rhs);
@@ -107,16 +127,6 @@ size_t OsiReader::size() const
     return m_file.size();
 }
 
-OsiDivObject OsiReader::readDivObject()
-{
-    OsiDivObject obj{};
-    obj.name = readString();
-    obj.type = m_file.read<uint8_t>();
-    m_file.read(obj.keys, 4);
-
-    return obj;
-}
-
 void OsiReader::readTypes()
 {
     auto count = m_file.read<uint32_t>();
@@ -126,8 +136,9 @@ void OsiReader::readTypes()
 
     // Read types
     for (auto i = 0u; i < count; ++i) {
-        auto type = readType();
-        m_story.types[type.index] = type;
+        OsiType type{};
+        type.read(*this);
+        m_story.types[type.index] = std::move(type);
     }
 
     if (m_story.version() < OsiVersion::TYPE_ALIASES) {
@@ -164,20 +175,18 @@ void OsiReader::readStringTable()
 
 void OsiReader::makeBuiltins()
 {
-    m_story.types[0] = OsirisType{.name = "UNKNOWN", .index = 0, .builtIn = true, .alias = 0};
-    m_story.types[1] = OsirisType{.name = "INTEGER", .index = 1, .builtIn = true, .alias = 0};
-
+    m_story.types[0] = makeBuiltin("UNKNOWN", 0);
+    m_story.types[1] = makeBuiltin("INTEGER", 1);
     if (m_story.version() >= OsiVersion::ENHANCED_TYPES) {
-        m_story.types[2] = OsirisType{.name = "INT64", .index = 2, .builtIn = true, .alias = 0};
-        m_story.types[3] = OsirisType{.name = "REAL", .index = 3, .builtIn = true, .alias = 0};
-        m_story.types[4] = OsirisType{.name = "STRING", .index = 4, .builtIn = true, .alias = 0};
-
+        m_story.types[2] = makeBuiltin("INT64", 2);
+        m_story.types[3] = makeBuiltin("REAL", 3);
+        m_story.types[4] = makeBuiltin("STRING", 4);
         if (!m_story.types.contains(5)) {
-            m_story.types[5] = OsirisType{.name = "GUIDSTRING", .index = 5, .builtIn = true, .alias = 0};
+            m_story.types[5] = makeBuiltin("GUIDSTRING", 5);
         }
     } else {
-        m_story.types[2] = OsirisType{.name = "FLOAT", .index = 2, .builtIn = true, .alias = 0};
-        m_story.types[3] = OsirisType{.name = "STRING", .index = 3, .builtIn = true, .alias = 0};
+        m_story.types[2] = makeBuiltin("FLOAT", 2);
+        m_story.types[3] = makeBuiltin("STRING", 3);
     }
 
     // TODO: populate custom type ids for versions without type aliases
@@ -193,64 +202,10 @@ void OsiReader::readEnums()
 
     auto count = m_file.read<uint32_t>();
     for (auto i = 0u; i < count; ++i) {
-        auto e = readEnum();
-        m_story.enums[e.type] = e;
+        OsiEnum e{};
+        e.read(*this);
+        m_story.enums[e.type] = std::move(e);
     }
-}
-
-OsiEnum OsiReader::readEnum()
-{
-    OsiEnum e{};
-
-    e.type = m_file.read<uint16_t>();
-
-    auto elements = m_file.read<uint32_t>();
-    for (auto i = 0u; i < elements; ++i) {
-        auto name = readString();
-        auto value = m_file.read<uint64_t>();
-        e.elements[name] = value;
-    }
-
-    return e;
-}
-
-OsiFunction OsiReader::readFunction()
-{
-    OsiFunction func{};
-    func.line = m_file.read<uint32_t>();
-    func.conditionRef = m_file.read<uint32_t>();
-    func.actionRef = m_file.read<uint32_t>();
-    func.nodeRef = m_file.read<uint32_t>();
-    func.type = static_cast<OsiFunctionType>(m_file.read<uint8_t>());
-
-    m_file.read(func.meta, 4);
-
-    func.name = readFunctionSig();
-
-    return func;
-}
-
-OsiFunctionSig OsiReader::readFunctionSig()
-{
-    OsiFunctionSig sig{};
-    sig.name = readString();
-
-    auto outParamBytes = m_file.read<uint32_t>();
-    sig.outParamMask.resize(outParamBytes);
-    m_file.read(sig.outParamMask.data(), outParamBytes);
-
-    auto count = m_file.read<uint8_t>();
-    sig.parameter.types.reserve(count);
-
-    for (auto i = 0u; i < count; ++i) {
-        if (m_shortTypeIds) {
-            sig.parameter.types.emplace_back(m_file.read<uint16_t>());
-        } else {
-            sig.parameter.types.emplace_back(m_file.read<uint32_t>());
-        }
-    }
-
-    return sig;
 }
 
 void OsiReader::readDivObjects()
@@ -261,7 +216,9 @@ void OsiReader::readDivObjects()
     m_story.divObjects.reserve(count);
 
     for (auto i = 0u; i < count; ++i) {
-        m_story.divObjects.emplace_back(readDivObject());
+        OsiDivObject object{};
+        object.read(*this);
+        m_story.divObjects.emplace_back(std::move(object));
     }
 }
 
@@ -273,7 +230,9 @@ void OsiReader::readFunctions()
     m_story.functions.reserve(count);
 
     for (auto i = 0u; i < count; ++i) {
-        m_story.functions.emplace_back(readFunction());
+        OsiFunction func{};
+        func.read(*this);
+        m_story.functions.emplace_back(std::move(func));
     }
 }
 
@@ -311,6 +270,18 @@ OsiNode::Ptr OsiReader::readNode()
     case NT_DIV_QUERY:
         node = std::make_unique<OsiDivQueryNode>();
         break;
+    case NT_NAND:
+        node = std::make_unique<OsiNandNode>();
+        break;
+    case NT_USER_QUERY:
+        node = std::make_unique<OsiUserQueryNode>();
+        break;
+    case NT_REL_OP:
+        node = std::make_unique<OsiRelOpNode>();
+        break;
+    case NT_INTERNAL_QUERY:
+        node = std::make_unique<OsiInternalQueryNode>();
+        break;
     default:
         throw Exception("Unsupported node type {}.", static_cast<int>(type));
     }
@@ -320,18 +291,13 @@ OsiNode::Ptr OsiReader::readNode()
     return node;
 }
 
-OsirisType OsiReader::readType()
+OsiType OsiReader::makeBuiltin(const std::string& name, uint8_t index) const
 {
-    OsirisType type{};
-    type.name = readString();
-    type.index = m_file.read<uint8_t>();
-
-    if (m_story.version() >= OsiVersion::TYPE_ALIASES) {
-        type.alias = m_file.read<uint8_t>();
-    } else {
-        type.alias = 0; // TODO:
-    }
-
+    OsiType type{};
+    type.name = name;
+    type.index = index;
+    type.builtIn = true;
+    type.alias = 0;
     return type;
 }
 

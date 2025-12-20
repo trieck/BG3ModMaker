@@ -10,16 +10,19 @@ public:
 
     OsiReader();
     ~OsiReader() override;
-    bool shortTypeIds() const;
-
+    
     OsiReader(OsiReader&&) noexcept;
     OsiReader& operator=(OsiReader&&) noexcept;
     OsiReader(const OsiReader&) = delete;
     OsiReader& operator=(const OsiReader&) = delete;
 
+    bool getEnum(uint16_t type, OsiEnum& osi_enum);
+    bool isAlias(uint32_t type) const;
     bool readFile(const char* filename);
-    std::string readString();
+    bool shortTypeIds() const;
+    OsiValueType resolveAlias(OsiValueType type);
     OsiVersion version() const;
+    std::string readString();
 
     // StreamBase
     size_t read(char* buf, size_t size) override;
@@ -29,20 +32,14 @@ public:
     size_t size() const override;
 
 private:
-    OsiDivObject readDivObject();
-    OsiEnum readEnum();
-    OsiFunction readFunction();
-    OsiFunctionSig readFunctionSig();
-
-    OsirisType readType();
+    OsiNode::Ptr readNode();
+    OsiType makeBuiltin(const std::string& name, uint8_t index) const;
     std::vector<std::string> readStrings();
     void makeBuiltins();
-
     void readDivObjects();
     void readEnums();
     void readFunctions();
     void readNodes();
-    OsiNode::Ptr readNode();
     void readStringTable();
     void readTypes();
 

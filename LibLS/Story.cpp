@@ -36,6 +36,87 @@ OsiVersion Story::version() const
         static_cast<uint16_t>(header.minorVersion));
 }
 
+bool Story::isAlias(uint32_t type) const
+{
+    return typeAliases.contains(static_cast<uint8_t>(type));
+}
+
+OsiValueType Story::resolveAlias(OsiValueType type) const
+{
+    auto it = typeAliases.find(static_cast<uint8_t>(type));
+    if (it != typeAliases.end()) {
+        return static_cast<OsiValueType>(it->second);
+    }
+
+    return type;
+}
+
+void OsiType::read(OsiReader& reader)
+{
+    name = reader.readString();
+    index = reader.read<uint8_t>();
+
+    if (reader.version() >= OsiVersion::TYPE_ALIASES) {
+        alias = reader.read<uint8_t>();
+    } else {
+        alias = 0; // TODO:
+    }
+}
+
+void OsiEnum::read(OsiReader& reader)
+{
+    type = reader.read<uint16_t>();
+    auto count = reader.read<uint32_t>();
+
+    for (auto i = 0u; i < count; ++i) {
+        auto name = reader.readString();
+        auto value = reader.read<uint64_t>();
+        elements[name] = value;
+    }
+}
+
+void OsiDivObject::read(OsiReader& reader)
+{
+    name = reader.readString();
+    type = reader.read<uint8_t>();
+    reader.read(keys, std::size(keys));
+}
+
+void OsiFunctionSig::read(OsiReader& reader)
+{
+    name = reader.readString();
+    std::cout << "Reading function signature: " << name << "\n";
+
+    auto outParamBytes = reader.read<uint32_t>();
+    outParamMask.resize(outParamBytes);
+
+    reader.read(outParamMask.data(), outParamBytes);
+
+    auto paramCount = reader.read<uint8_t>();
+    parameter.types.resize(paramCount);
+
+    for (auto i = 0u; i < paramCount; ++i) {
+        if (reader.shortTypeIds()) {
+            parameter.types[i] = reader.read<uint16_t>();
+        } else {
+            parameter.types[i] = reader.read<uint32_t>();
+        }
+    }
+}
+
+void OsiFunction::read(OsiReader& reader)
+{
+    line = reader.read<uint32_t>();
+    conditionRef = reader.read<uint32_t>();
+    actionRef = reader.read<uint32_t>();
+    nodeRef = reader.read<uint32_t>();
+    type = static_cast<OsiFunctionType>(reader.read<uint8_t>());
+
+    reader.read(meta, std::size(meta));
+
+    name.read(reader);
+}
+
 void OsiNode::read(OsiReader& reader)
 {
     type = static_cast<OsiNodeType>(reader.read<uint8_t>());
@@ -109,9 +190,8 @@ void OsiValue::read(OsiReader& reader)
         }
     }
 
-    // TODO: LOTS more TODO HERE
     auto unknown = reader.read<uint8_t>(); // possible isRef?
-    if (unknown == 1) {
+    if (unknown == '1') {
         if (reader.shortTypeIds()) {
             type = static_cast<OsiValueType>(reader.read<uint16_t>());
         } else {
@@ -124,20 +204,47 @@ void OsiValue::read(OsiReader& reader)
         } else {
             type = static_cast<OsiValueType>(reader.read<uint32_t>());
         }
-        
-        // TODO: resolve alias type
+
+        if (type >= OVT_TOTAL_TYPES) { // alias type
+            type = reader.resolveAlias(type);
+        }
+
         switch (type) {
         case OVT_INT:
             value = reader.read<int32_t>();
             break;
-        default:
-            throw Exception("Unsupported value type {}.", static_cast<int>(type));
-        }
+        case OVT_INT64:
+            value = reader.read<int64_t>();
+            break;
+        case OVT_FLOAT:
+            value = reader.read<float>();
+            break;
 
+        case OVT_STRING:
+        case OVT_GUIDSTRING:
+        default:
+            if (reader.read<uint8_t>() > 0) {
+                value = reader.readString();
+            }
+            std::cout << "   Read string value: \"" << std::get<std::string>(value) << "\"\n";
+            break;
+        }
     } else if (unknown == 'e') {
         type = static_cast<OsiValueType>(reader.read<uint16_t>());
-        ATLASSERT(0); // TODO
+
+        OsiEnum e;
+        if (!reader.getEnum(static_cast<uint16_t>(type), e)) {
+            throw Exception("Enum label serialized for a non-enum type: {}", static_cast<int>(type));
+        }
+
+        value = reader.readString();
+        auto it = e.elements.find(std::get<std::string>(value));
+        if (it == e.elements.end()) {
+            throw Exception("Enum value \"{}\" not found in enum type {}.", std::get<std::string>(value), static_cast<int>(type));
+        }
+
     } else {
+        ATLASSERT(0);
         throw Exception("Unsupported value format {}.", static_cast<int>(unknown));
     }
 }
@@ -272,12 +379,60 @@ void OsiAndNode::read(OsiReader& reader)
     OsiJoinNode::read(reader);
 }
 
+void OsiNandNode::read(OsiReader& reader)
+{
+    OsiJoinNode::read(reader);
+}
+
 void OsiQueryNode::read(OsiReader& reader)
 {
     OsiNode::read(reader);
 }
 
 void OsiDivQueryNode::read(OsiReader& reader)
+{
+    OsiQueryNode::read(reader);
+}
+
+void OsiUserQueryNode::read(OsiReader& reader)
+{
+    OsiQueryNode::read(reader);
+}
+
+std::string relOpString(RelOpType type)
+{
+    switch (type) {
+    case ROT_LESS:
+        return "LESS";
+    case ROT_LESS_EQUAL:
+        return "LESS_EQUAL";
+    case ROT_GREATER:
+        return "GREATER";
+    case ROT_GREATER_EQUAL:
+        return "GREATER_EQUAL";
+    case ROT_EQUAL:
+        return "EQUAL";
+    case ROT_NOT_EQUAL:
+        return "NOT_EQUAL";
+    }
+
+    return "UNKNOWN";
+}
+
+void OsiRelOpNode::read(OsiReader& reader)
+{
+    OsiRelNode::read(reader);
+
+    leftValueIndex = reader.read<int8_t>();
+    rightValueIndex = reader.read<int8_t>();
+
+    leftValue.read(reader);
+    rightValue.read(reader);
+
+    relOp = static_cast<RelOpType>(reader.read<int32_t>());
+}
+
+void OsiInternalQueryNode::read(OsiReader& reader)
 {
     OsiQueryNode::read(reader);
 }

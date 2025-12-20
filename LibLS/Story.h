@@ -31,25 +31,40 @@ enum class OsiVersion : uint16_t
     LAST_SUPPORTED = PATCH8_HOTFIX_2
 };
 
-struct OsirisType
+struct OsiReadable
+{
+    OsiReadable() = default;
+    OsiReadable(const OsiReadable& rhs) = default;
+    virtual ~OsiReadable() = default;
+
+    virtual void read(OsiReader& reader) = 0;
+};
+
+struct OsiType : OsiReadable
 {
     std::string name;
     uint8_t index;
     bool builtIn = false;
     uint8_t alias;
+
+    void read(OsiReader& reader) override;
 };
 
-struct OsiEnum
+struct OsiEnum : OsiReadable
 {
     uint16_t type;
     std::unordered_map<std::string, uint64_t> elements;
+
+    void read(OsiReader& reader) override;
 };
 
-struct OsiDivObject
+struct OsiDivObject : OsiReadable
 {
     std::string name;
     uint8_t type;
     uint32_t keys[4];
+
+    void read(OsiReader& reader) override;
 };
 
 enum OsiFunctionType : uint8_t
@@ -70,14 +85,16 @@ struct OsiParameterList
     std::vector<uint32_t> types;
 };
 
-struct OsiFunctionSig
+struct OsiFunctionSig : OsiReadable
 {
     std::string name;
     std::vector<uint8_t> outParamMask;
     OsiParameterList parameter;
+
+    void read(OsiReader& reader) override;
 };
 
-struct OsiFunction
+struct OsiFunction : OsiReadable
 {
     uint32_t line;
     uint32_t conditionRef;
@@ -86,6 +103,8 @@ struct OsiFunction
     OsiFunctionType type;
     uint32_t meta[4];
     OsiFunctionSig name;
+
+    void read(OsiReader& reader) override;
 };
 
 enum OsiNodeType : uint8_t
@@ -95,21 +114,12 @@ enum OsiNodeType : uint8_t
     NT_PROC = 2,
     NT_DIV_QUERY = 3,
     NT_AND = 4,
-    NT_NOT_AND = 5,
+    NT_NAND = 5,
     NT_REL_OP = 6,
     NT_RULE = 7,
     NT_INTERNAL_QUERY = 8,
     NT_USER_QUERY = 9,
     NT_TOTAL_TYPES = 10,
-};
-
-struct OsiReadable
-{
-    OsiReadable() = default;
-    OsiReadable(const OsiReadable& rhs) = default;
-    virtual ~OsiReadable() = default;
-
-    virtual void read(OsiReader& reader) = 0;
 };
 
 struct OsiNode : OsiReadable
@@ -210,6 +220,7 @@ enum OsiValueType : uint32_t
     OVT_FLOAT = 3,
     OVT_STRING = 4,
     OVT_GUIDSTRING = 5,
+    OVT_TOTAL_TYPES = 6,
 };
 
 enum OsiValueFlags : uint8_t
@@ -366,6 +377,16 @@ struct OsiAndNode : OsiJoinNode
     }
 };
 
+struct OsiNandNode : OsiJoinNode
+{
+    void read(OsiReader& reader) override;
+
+    std::string typeName() const override
+    {
+        return "Nand";
+    }
+};
+
 struct OsiQueryNode : OsiNode
 {
     void read(OsiReader& reader) override;
@@ -382,7 +403,55 @@ struct OsiDivQueryNode : OsiQueryNode
 
     std::string typeName() const override
     {
-        return "DivQuery";
+        return "Div Query";
+    }
+};
+
+struct OsiUserQueryNode : OsiQueryNode
+{
+    void read(OsiReader& reader) override;
+
+    std::string typeName() const override
+    {
+        return "User Query";
+    }
+};
+
+struct OsiInternalQueryNode : OsiQueryNode
+{
+    void read(OsiReader& reader) override;
+
+    std::string typeName() const override
+    {
+        return "Internal Query";
+    }
+};
+
+enum RelOpType : uint32_t
+{
+    ROT_LESS = 0,
+    ROT_LESS_EQUAL = 1,
+    ROT_GREATER = 2,
+    ROT_GREATER_EQUAL = 3,
+    ROT_EQUAL = 4,
+    ROT_NOT_EQUAL = 5
+};
+
+std::string relOpString(RelOpType type);
+
+struct OsiRelOpNode : OsiRelNode
+{
+    int8_t leftValueIndex;
+    int8_t rightValueIndex;
+    OsiValue leftValue;
+    OsiValue rightValue;
+    RelOpType relOp;
+
+    void read(OsiReader& reader) override;
+
+    std::string typeName() const override
+    {
+        return "RelOp";
     }
 };
 
@@ -396,9 +465,11 @@ struct Story
     Story& operator=(const Story&) = delete;
 
     OsiVersion version() const;
+    bool isAlias(uint32_t type) const;
+    OsiValueType resolveAlias(OsiValueType type) const;
 
     SaveFileHeader header{};
-    std::unordered_map<uint8_t, OsirisType> types;
+    std::unordered_map<uint8_t, OsiType> types;
     std::unordered_map<uint8_t, uint8_t> typeAliases; // index -> resolved alias
     std::unordered_map<uint16_t, OsiEnum> enums;
     std::unordered_map<uint32_t, OsiNode::Ptr> nodes;
