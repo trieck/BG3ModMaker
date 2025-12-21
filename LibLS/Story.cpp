@@ -81,6 +81,20 @@ void OsiDivObject::read(OsiReader& reader)
     reader.read(keys, std::size(keys));
 }
 
+void OsiParameterList::read(OsiReader& reader)
+{
+    auto paramCount = reader.read<uint8_t>();
+    types.resize(paramCount);
+
+    for (auto i = 0u; i < paramCount; ++i) {
+        if (reader.shortTypeIds()) {
+            types[i] = reader.read<uint16_t>();
+        } else {
+            types[i] = reader.read<uint32_t>();
+        }
+    }
+}
+
 void OsiFunctionSig::read(OsiReader& reader)
 {
     name = reader.readString();
@@ -90,16 +104,7 @@ void OsiFunctionSig::read(OsiReader& reader)
 
     reader.read(outParamMask.data(), outParamBytes);
 
-    auto paramCount = reader.read<uint8_t>();
-    parameter.types.resize(paramCount);
-
-    for (auto i = 0u; i < paramCount; ++i) {
-        if (reader.shortTypeIds()) {
-            parameter.types[i] = reader.read<uint16_t>();
-        } else {
-            parameter.types[i] = reader.read<uint32_t>();
-        }
-    }
+    parameters.read(reader);
 }
 
 void OsiFunction::read(OsiReader& reader)
@@ -461,4 +466,93 @@ void OsiAdapter::read(OsiReader& reader)
 
     logicalIndices.clear();
     logicalIndices.reserve(count);
+
+    for (auto i = 0u; i < count; ++i) {
+        logicalIndices.emplace_back(reader.read<int8_t>());
+    }
+
+    localToPhysicalMap.clear();
+
+    count = reader.read<uint8_t>();
+    for (auto i = 0u; i < count; ++i) {
+        auto key = reader.read<int8_t>();
+        auto value = reader.read<int8_t>();
+        localToPhysicalMap[key] = value;
+    }
+}
+
+void OsiFact::read(OsiReader& reader)
+{
+    auto count = reader.read<uint8_t>();
+
+    columns.resize(count);
+    for (auto i = 0u; i < count; ++i) {
+        columns[i].read(reader);
+    }
+}
+
+void OsiDatabase::read(OsiReader& reader)
+{
+    index = reader.read<uint32_t>();
+    parameters.read(reader);
+
+    auto count = reader.read<uint32_t>();
+
+    facts.clear();
+    facts.reserve(count);
+
+    for (auto i = 0u; i < count; ++i) {
+        OsiFact fact{};
+        fact.read(reader);
+        facts.emplace_back(std::move(fact));
+    }
+}
+
+void OsiGoal::read(OsiReader& reader)
+{
+    index = reader.read<uint32_t>();
+    name = reader.readString();
+    subGoalCombination = reader.read<int8_t>();
+
+    auto count = reader.read<uint32_t>();
+    parentGoals.clear();
+    parentGoals.reserve(count);
+
+    for (auto i = 0u; i < count; ++i) {
+        parentGoals.emplace_back(reader.read<uint32_t>());
+    }
+
+    count = reader.read<uint32_t>();
+    subGoals.clear();
+    subGoals.reserve(count);
+
+    for (auto i = 0u; i < count; ++i) {
+        subGoals.emplace_back(reader.read<uint32_t>());
+    }
+
+    flags = reader.read<int8_t>();
+
+    initCalls.clear();
+    exitCalls.clear();
+
+    if (reader.version() < OsiVersion::ADD_INIT_EXIT_CALLS) {
+        return;
+    }
+
+    auto initCount = reader.read<uint32_t>();
+
+    initCalls.reserve(initCount);
+    for (auto i = 0u; i < initCount; ++i) {
+        OsiCall call{};
+        call.read(reader);
+        initCalls.emplace_back(std::move(call));
+    }
+    auto exitCount = reader.read<uint32_t>();
+
+    exitCalls.reserve(exitCount);
+    for (auto i = 0u; i < exitCount; ++i) {
+        OsiCall call{};
+        call.read(reader);
+        exitCalls.emplace_back(std::move(call));
+    }
 }

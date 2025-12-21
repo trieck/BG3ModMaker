@@ -99,6 +99,9 @@ bool OsiReader::readFile(const char* filename)
     readFunctions();
     readNodes();
     readAdapters();
+    readDatabases();
+    readGoals();
+    readGlobalActions();
 
     return true;
 }
@@ -204,6 +207,18 @@ void OsiReader::readAdapters()
     }
 }
 
+void OsiReader::readDatabases()
+{
+    m_story.databases.clear();
+
+    auto count = m_file.read<uint32_t>();
+    for (auto i = 0u; i < count; ++i) {
+        OsiDatabase db{};
+        db.read(*this);
+        m_story.databases[db.index] = std::move(db);
+    }
+}
+
 void OsiReader::readEnums()
 {
     m_story.enums.clear();
@@ -245,6 +260,32 @@ void OsiReader::readFunctions()
         OsiFunction func{};
         func.read(*this);
         m_story.functions.emplace_back(std::move(func));
+    }
+}
+
+void OsiReader::readGlobalActions()
+{
+    m_story.globalActions.clear();
+
+    auto count = m_file.read<uint32_t>();
+    m_story.globalActions.reserve(count);
+
+    for (auto i = 0u; i < count; ++i) {
+        OsiCall action{};
+        action.read(*this);
+        m_story.globalActions.emplace_back(std::move(action));
+    }
+}
+
+void OsiReader::readGoals()
+{
+    m_story.goals.clear();
+    auto count = m_file.read<uint32_t>();
+
+    for (auto i = 0u; i < count; ++i) {
+        OsiGoal goal{};
+        goal.read(*this);
+        m_story.goals[goal.index] = std::move(goal);
     }
 }
 

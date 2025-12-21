@@ -80,16 +80,18 @@ enum OsiFunctionType : uint8_t
     FT_USER_QUERY = 8,
 };
 
-struct OsiParameterList
+struct OsiParameterList : OsiReadable
 {
     std::vector<uint32_t> types;
+
+    void read(OsiReader& reader) override;
 };
 
 struct OsiFunctionSig : OsiReadable
 {
     std::string name;
     std::vector<uint8_t> outParamMask;
-    OsiParameterList parameter;
+    OsiParameterList parameters;
 
     void read(OsiReader& reader) override;
 };
@@ -468,6 +470,37 @@ struct OsiAdapter : OsiReadable
     uint32_t index;
     Tuple constants;
     std::vector<int8_t> logicalIndices;
+    std::unordered_map<int8_t, int8_t> localToPhysicalMap;
+
+    void read(OsiReader& reader) override;
+};
+
+struct OsiFact : OsiReadable
+{
+    std::vector<OsiValue> columns;
+
+    void read(OsiReader& reader) override;
+};
+
+struct OsiDatabase : OsiReadable
+{
+    uint32_t index;
+    OsiParameterList parameters;
+    std::vector<OsiFact> facts;
+
+    void read(OsiReader& reader) override;
+};
+
+struct OsiGoal : OsiReadable
+{
+    uint32_t index;
+    std::string name;
+    int8_t subGoalCombination;
+    std::vector<uint32_t> parentGoals;
+    std::vector<uint32_t> subGoals;
+    int8_t flags; // 0x02 = Child goal
+    std::vector<OsiCall> initCalls;
+    std::vector<OsiCall> exitCalls;
 
     void read(OsiReader& reader) override;
 };
@@ -486,12 +519,16 @@ struct Story
     OsiValueType resolveAlias(OsiValueType type) const;
 
     SaveFileHeader header{};
+    std::unordered_map<uint16_t, OsiEnum> enums;
+    std::unordered_map<uint32_t, OsiAdapter> adapters;
+    std::unordered_map<uint32_t, OsiDatabase> databases;
+    std::unordered_map<uint32_t, OsiGoal> goals;
+    std::unordered_map<uint32_t, OsiNode::Ptr> nodes;
     std::unordered_map<uint8_t, OsiType> types;
     std::unordered_map<uint8_t, uint8_t> typeAliases;
-    std::unordered_map<uint16_t, OsiEnum> enums;
-    std::unordered_map<uint32_t, OsiNode::Ptr> nodes;
-    std::unordered_map<uint32_t, OsiAdapter> adapters;
+
     std::vector<OsiDivObject> divObjects;
     std::vector<OsiFunction> functions;
     std::vector<std::string> stringTable;
+    std::vector<OsiCall> globalActions;
 };

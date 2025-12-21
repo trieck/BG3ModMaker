@@ -37,9 +37,12 @@ private:
     std::vector<std::string> readStrings();
     void makeBuiltins();
     void readAdapters();
+    void readDatabases();
     void readDivObjects();
     void readEnums();
     void readFunctions();
+    void readGlobalActions();
+    void readGoals();
     void readNodes();
     void readStringTable();
     void readTypes();
