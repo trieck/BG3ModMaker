@@ -316,7 +316,7 @@ bool FileStream::readBlock()
     }
 
     if (read == 0) {
-        return FALSE; // EOF
+        return true; // EOF
     }
 
     m_pbuf = m_buf.get();

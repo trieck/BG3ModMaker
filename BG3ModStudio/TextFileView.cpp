@@ -69,39 +69,39 @@ BOOL TextFileView::LoadFile(const CString& path)
 
     try {
         file.open(strPath, "rb");
-    } catch (const Exception& e) {
-        ATLTRACE("Failed to open file: %s\n", e.what());
-        return FALSE;
-    }
 
-    char buf[BUFFER_SIZE];
-    auto read = file.read(buf, sizeof(buf));
+        char buf[BUFFER_SIZE];
+        auto read = file.read(buf, sizeof(buf));
 
-    LPSTR pb = buf;
-    if (SkipBOM(pb, read)) {
-        read -= 3;
-        m_encoding = UTF8BOM;
-    } else {
-        m_encoding = UTF8; // nothing else supported for now
-    }
-
-    Write(pb, read);
-
-    for (;;) {
-        read = file.read(buf, sizeof(buf));
-        if (read == 0) {
-            break;
+        LPSTR pb = buf;
+        if (SkipBOM(pb, read)) {
+            read -= 3;
+            m_encoding = UTF8BOM;
+        } else {
+            m_encoding = UTF8; // nothing else supported for now
         }
 
-        Write(buf, read);
+        Write(pb, read);
+
+        for (;;) {
+            read = file.read(buf, sizeof(buf));
+            if (read == 0) {
+                break;
+            }
+
+            Write(buf, read);
+        }
+
+        m_styler = DocStylerRegistry::GetStyler(path);
+        m_styler->Apply(m_edit);
+
+        Flush();
+
+        m_edit.SetReadOnly(m_bReadOnly);
+    } catch (const Exception& e) {
+        ATLTRACE("Failed to read file: %s\n", e.what());
+        return FALSE;
     }
-
-    m_styler = DocStylerRegistry::GetStyler(path);
-    m_styler->Apply(m_edit);
-
-    Flush();
-
-    m_edit.SetReadOnly(m_bReadOnly);
 
     return TRUE;
 }
