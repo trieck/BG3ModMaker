@@ -30,11 +30,25 @@ public:
 
     ByteBuffer read();
     Stream read(size_t bytes);
-    void write(const void* data, size_t size) const;
-    void write(StreamBase& stream) const;
+    void write(StreamBase& stream);
 
     bool isOpen() const;
+    bool flush();
 
 private:
-    HANDLE m_file;
+    bool readBlock();
+    bool writeBlock();
+    uint64_t logicalPos() const;
+    void alloc();
+    
+    HANDLE m_file; // file handle
+    std::unique_ptr<uint8_t[]> m_buf; // internal buffer for read/write operations
+    uint8_t* m_pbuf; // buffer pointer
+    uint32_t m_nRemaining; // number of bytes remaining in buffer
+    uint64_t m_fileBase; // current file position where buffer starts
+    DWORD m_blockSize; // block size for buffered I/O
+    uint64_t m_fileSize; // cached file size
+    DWORD m_access; // file access mode
+    DWORD m_shareMode; // file share mode
+    DWORD m_creation; // file creation disposition
 };

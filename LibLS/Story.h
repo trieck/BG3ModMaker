@@ -455,6 +455,23 @@ struct OsiRelOpNode : OsiRelNode
     }
 };
 
+struct Tuple : OsiReadable
+{
+    std::vector<OsiValue> physical;
+    std::unordered_map<int32_t, OsiValue> logical;
+
+    void read(OsiReader& reader) override;
+};
+
+struct OsiAdapter : OsiReadable
+{
+    uint32_t index;
+    Tuple constants;
+    std::vector<int8_t> logicalIndices;
+
+    void read(OsiReader& reader) override;
+};
+
 struct Story
 {
     Story();
@@ -470,9 +487,10 @@ struct Story
 
     SaveFileHeader header{};
     std::unordered_map<uint8_t, OsiType> types;
-    std::unordered_map<uint8_t, uint8_t> typeAliases; // index -> resolved alias
+    std::unordered_map<uint8_t, uint8_t> typeAliases;
     std::unordered_map<uint16_t, OsiEnum> enums;
     std::unordered_map<uint32_t, OsiNode::Ptr> nodes;
+    std::unordered_map<uint32_t, OsiAdapter> adapters;
     std::vector<OsiDivObject> divObjects;
     std::vector<OsiFunction> functions;
     std::vector<std::string> stringTable;

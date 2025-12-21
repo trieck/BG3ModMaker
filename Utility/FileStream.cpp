@@ -1,9 +1,14 @@
 #include "pch.h"
-#include "FileStream.h"
 #include "Exception.h"
+#include "FileStream.h"
 
-FileStream::FileStream() : m_file(INVALID_HANDLE_VALUE)
+FileStream::FileStream() :
+    m_file(INVALID_HANDLE_VALUE),
+    m_pbuf(nullptr), m_nRemaining(0),
+    m_fileBase(0), m_blockSize(0),
+    m_access(0), m_shareMode(0), m_creation(0)
 {
+    alloc();
 }
 
 FileStream::~FileStream()
@@ -13,15 +18,32 @@ FileStream::~FileStream()
 
 FileStream::FileStream(FileStream&& rhs) noexcept
 {
-    m_file = rhs.m_file;
-    rhs.m_file = INVALID_HANDLE_VALUE;
+    *this = std::move(rhs);
 }
 
 FileStream& FileStream::operator=(FileStream&& rhs) noexcept
 {
     if (this != &rhs) {
+        close();
         m_file = rhs.m_file;
+        m_buf = std::move(rhs.m_buf);
+        m_pbuf = rhs.m_pbuf;
+        m_nRemaining = rhs.m_nRemaining;
+        m_fileBase = rhs.m_fileBase;
+        m_blockSize = rhs.m_blockSize;
+        m_fileSize = rhs.m_fileSize;
+        m_access = rhs.m_access;
+        m_shareMode = rhs.m_shareMode;
+        m_creation = rhs.m_creation;
         rhs.m_file = INVALID_HANDLE_VALUE;
+        rhs.m_pbuf = nullptr;
+        rhs.m_nRemaining = 0;
+        rhs.m_fileBase = 0;
+        rhs.m_blockSize = 0;
+        rhs.m_fileSize = 0;
+        rhs.m_access = 0;
+        rhs.m_shareMode = 0;
+        rhs.m_creation = 0;
     }
 
     return *this;
@@ -31,58 +53,58 @@ void FileStream::open(const char* path, const char* mode)
 {
     close();
 
-    DWORD access;
-    DWORD creation;
-
     if (strcmp(mode, "rb") == 0) {
-        access = GENERIC_READ;
-        creation = OPEN_EXISTING;
+        m_access = GENERIC_READ;
+        m_creation = OPEN_EXISTING;
     } else if (strcmp(mode, "wb") == 0) {
-        access = GENERIC_WRITE;
-        creation = CREATE_ALWAYS;
+        m_access = GENERIC_WRITE;
+        m_creation = CREATE_ALWAYS;
     } else if (strcmp(mode, "ab") == 0) {
-        access = GENERIC_WRITE;
-        creation = OPEN_ALWAYS;
-        seek(0, SeekMode::End);
+        m_access = GENERIC_WRITE;
+        m_creation = OPEN_ALWAYS;
     } else {
         throw Exception("Invalid mode specified for file stream.");
     }
 
-    auto shareMode = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
+    m_shareMode = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
 
-    m_file = CreateFileA(path, access, shareMode, nullptr, creation, FILE_ATTRIBUTE_NORMAL, nullptr);
+    m_file = CreateFileA(path, m_access, m_shareMode, nullptr, m_creation, FILE_ATTRIBUTE_NORMAL, nullptr);
     if (m_file == INVALID_HANDLE_VALUE) {
         throw Exception(GetLastError());
+    }
+
+    LARGE_INTEGER size;
+    if (!GetFileSizeEx(m_file, &size)) {
+        throw Exception(GetLastError());
+    }
+
+    m_fileSize = size.QuadPart;
+
+    if (strcmp(mode, "ab") == 0) {
+        seek(0, SeekMode::End);
     }
 }
 
 void FileStream::close()
 {
     if (m_file != INVALID_HANDLE_VALUE) {
+        flush();
         FlushFileBuffers(m_file);
         CloseHandle(m_file);
         m_file = INVALID_HANDLE_VALUE;
     }
+
+    // Reset logical state
+    m_fileBase = 0;
+    m_nRemaining = 0;
+    m_pbuf = m_buf.get();
+    m_fileSize = 0;
+    m_access = 0;
+    m_shareMode = 0;
+    m_creation = 0;
 }
 
-void FileStream::write(const void* data, size_t size) const
-{
-    const auto* buffer = static_cast<const char*>(data);
-
-    while (size > 0) {
-        auto chunk = size > MAXDWORD ? MAXDWORD : static_cast<DWORD>(size);
-
-        DWORD written = 0;
-        if (!WriteFile(m_file, buffer, chunk, &written, nullptr) || written == 0) {
-            throw Exception(GetLastError());
-        }
-
-        buffer += written;
-        size -= written;
-    }
-}
-
-void FileStream::write(StreamBase& stream) const
+void FileStream::write(StreamBase& stream)
 {
     static constexpr auto BUFFER_SIZE = 4096u;
 
@@ -106,14 +128,20 @@ void FileStream::write(StreamBase& stream) const
 
 size_t FileStream::read(char* buf, size_t size)
 {
-    size_t totalRead = 0;
+    if (!(m_access & GENERIC_READ)) {
+        throw Exception("Stream not opened for reading.");
+    }
 
+    size_t totalRead = 0;
     while (size > 0) {
         auto chunk = static_cast<DWORD>(std::min<size_t>(size, MAXDWORD));
-        DWORD read = 0;
-        if (!ReadFile(m_file, buf, chunk, &read, nullptr)) {
-            throw Exception(GetLastError());
+        if (m_nRemaining == 0) { // buffer empty
+            if (!readBlock()) {
+                throw Exception("Failed to read from file.");
+            }
         }
+        auto read = std::min<DWORD>(chunk, m_nRemaining);
+        memcpy(buf, m_pbuf, read);
 
         if (read == 0) {
             return totalRead; // EOF
@@ -121,6 +149,8 @@ size_t FileStream::read(char* buf, size_t size)
 
         buf += read;
         size -= read;
+        m_pbuf += read;
+        m_nRemaining -= read;
         totalRead += read;
     }
 
@@ -129,17 +159,36 @@ size_t FileStream::read(char* buf, size_t size)
 
 size_t FileStream::write(const char* buf, size_t size)
 {
+    if (!(m_access & GENERIC_WRITE)) {
+        throw Exception("Stream not opened for writing.");
+    }
+
     size_t totalWritten = 0;
 
     while (size > 0) {
-        auto chunk = static_cast<DWORD>(std::min<size_t>(size, MAXDWORD));
-        DWORD written = 0;
-        if (!WriteFile(m_file, buf, chunk, &written, nullptr)) {
-            throw Exception(GetLastError());
+        // Space left in buffer
+        size_t space = m_blockSize - m_nRemaining;
+
+        // If buffer full, flush it
+        if (space == 0) {
+            if (!writeBlock()) {
+                throw Exception("Failed to flush write buffer.");
+            }
+            space = m_blockSize;
         }
-        buf += written;
-        size -= written;
-        totalWritten += written;
+
+        // Copy as much as fits
+        size_t toCopy = std::min(size, space);
+        memcpy(m_pbuf, buf, toCopy);
+
+        // Advance buffer state
+        m_pbuf += toCopy;
+        m_nRemaining += static_cast<uint32_t>(toCopy);
+
+        // Advance input
+        buf += toCopy;
+        size -= toCopy;
+        totalWritten += toCopy;
     }
 
     return totalWritten;
@@ -147,33 +196,67 @@ size_t FileStream::write(const char* buf, size_t size)
 
 void FileStream::seek(int64_t offset, SeekMode mode)
 {
-    LARGE_INTEGER li;
+    auto curOffset = m_pbuf - m_buf.get();
+    auto curPos = m_fileBase + curOffset;
+    auto bufEnd = m_fileBase + curOffset + m_nRemaining;
+
+    // Try to optimize seek within buffer
+
+    if (mode == SeekMode::Begin &&
+        std::cmp_greater_equal(offset, m_fileBase) &&
+        std::cmp_less(offset, bufEnd)) {
+        auto bufOffset = offset - m_fileBase;
+        m_pbuf = m_buf.get() + bufOffset;
+        m_nRemaining = static_cast<uint32_t>(bufEnd - offset);
+        return;
+    }
+
+    auto target = curPos + offset;
+    if (mode == SeekMode::Current &&
+        std::cmp_greater_equal(target, m_fileBase) &&
+        std::cmp_less(target, bufEnd)) {
+        auto bufOffset = target - m_fileBase;
+        m_pbuf = m_buf.get() + bufOffset;
+        m_nRemaining = static_cast<uint32_t>(bufEnd - target);
+        return;
+    }
+
+    target = size() + offset;
+    if (mode == SeekMode::End &&
+        std::cmp_greater_equal(target, m_fileBase) &&
+        std::cmp_less(target, bufEnd)) {
+        auto bufOffset = target - m_fileBase;
+        m_pbuf = m_buf.get() + bufOffset;
+        m_nRemaining = static_cast<uint32_t>(bufEnd - target);
+        return;
+    }
+
+    flush();
+
+    LARGE_INTEGER li{}, pos{};
     li.QuadPart = offset;
 
-    auto result = SetFilePointerEx(m_file, li, nullptr, static_cast<DWORD>(mode));
+    // Perform actual seek
+    auto result = SetFilePointerEx(m_file, li, &pos, static_cast<DWORD>(mode));
     if (!result) {
         throw Exception(GetLastError());
     }
+
+    // Invalidate buffer
+    m_nRemaining = 0;
+    m_fileBase = pos.QuadPart;
+    m_pbuf = m_buf.get();
 }
 
 size_t FileStream::tell() const
 {
-    LARGE_INTEGER pos = {};
-    if (!SetFilePointerEx(m_file, {}, &pos, FILE_CURRENT)) {
-        throw Exception(GetLastError());
-    }
-
-    return static_cast<size_t>(pos.QuadPart);
+    auto offset = m_pbuf - m_buf.get();
+    return m_fileBase + offset;
 }
 
 size_t FileStream::size() const
 {
-    LARGE_INTEGER size;
-    if (!GetFileSizeEx(m_file, &size)) {
-        throw Exception(GetLastError());
-    }
-
-    return static_cast<size_t>(size.QuadPart);
+    return m_fileSize;
 }
 
 ByteBuffer FileStream::read()
@@ -181,6 +264,7 @@ ByteBuffer FileStream::read()
     auto sz = size();
     auto buf = std::make_unique<uint8_t[]>(sz);
 
+    seek(0, SeekMode::Begin);
     read(buf.get(), sz);
 
     ByteBuffer buffer{std::move(buf), sz};
@@ -200,4 +284,91 @@ Stream FileStream::read(size_t bytes)
 bool FileStream::isOpen() const
 {
     return m_file != INVALID_HANDLE_VALUE;
+}
+
+bool FileStream::flush()
+{
+    if (!(m_access & GENERIC_WRITE)) {
+        return true;
+    }
+
+    if (m_nRemaining == 0) {
+        return true;
+    }
+
+    if (!writeBlock()) {
+        return false;
+    }
+
+    return true;
+}
+
+bool FileStream::readBlock()
+{
+    LARGE_INTEGER pos{};
+    if (!SetFilePointerEx(m_file, {}, &pos, FILE_CURRENT)) {
+        throw Exception(GetLastError());
+    }
+
+    ULONG read;
+    if (!ReadFile(m_file, m_buf.get(), m_blockSize, &read, nullptr)) {
+        return FALSE;
+    }
+
+    if (read == 0) {
+        return FALSE; // EOF
+    }
+
+    m_pbuf = m_buf.get();
+    m_nRemaining = read;
+    m_fileBase = pos.QuadPart;
+
+    return TRUE;
+}
+
+bool FileStream::writeBlock()
+{
+    size_t totalWritten = 0;
+
+    while (totalWritten < m_nRemaining) {
+        DWORD written = 0;
+        if (!WriteFile(
+            m_file,
+            m_buf.get() + totalWritten,
+            static_cast<DWORD>(m_nRemaining - totalWritten),
+            &written,
+            nullptr)) {
+            return false;
+        }
+
+        totalWritten += written;
+    }
+
+    m_fileBase += totalWritten;
+    m_fileSize = std::max(m_fileSize, m_fileBase);
+
+    m_nRemaining = 0;
+    m_pbuf = m_buf.get();
+
+    return true;
+}
+
+void FileStream::alloc()
+{
+    DWORD sectorSize;
+    if (!GetDiskFreeSpace(nullptr, nullptr, &sectorSize, nullptr, nullptr)) {
+        throw Exception(GetLastError());
+    }
+
+    m_blockSize = sectorSize * 128; // is this a good block size?
+    m_buf = std::make_unique<uint8_t[]>(m_blockSize);
+    m_pbuf = m_buf.get();
+    memset(m_pbuf, 0, m_blockSize);
+    m_nRemaining = 0;
+}
+
+uint64_t FileStream::logicalPos() const
+{
+    auto offset = m_pbuf - m_buf.get();
+    return m_fileBase + offset;
 }

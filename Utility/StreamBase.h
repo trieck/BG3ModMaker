@@ -43,9 +43,8 @@ template <typename T>
 T StreamBase::peek() requires (StreamReadable<T>)
 {
     T value;
-    auto currentPos = tell();
     read(reinterpret_cast<char*>(&value), sizeof(T));
-    seek(static_cast<int64_t>(currentPos), SeekMode::Begin);
+    seek(-static_cast<int64_t>(sizeof(T)), SeekMode::Current);
     return value;
 }
 

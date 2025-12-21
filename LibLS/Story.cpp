@@ -1,8 +1,7 @@
 #include "pch.h"
+#include "Exception.h"
 #include "OsiReader.h"
 #include "Story.h"
-
-#include "Exception.h"
 
 Story::Story()
 {
@@ -85,7 +84,6 @@ void OsiDivObject::read(OsiReader& reader)
 void OsiFunctionSig::read(OsiReader& reader)
 {
     name = reader.readString();
-    std::cout << "Reading function signature: " << name << "\n";
 
     auto outParamBytes = reader.read<uint32_t>();
     outParamMask.resize(outParamBytes);
@@ -124,10 +122,7 @@ void OsiNode::read(OsiReader& reader)
     dbRef = reader.read<uint32_t>();
     name = reader.readString();
     if (!name.empty()) {
-        std::cout << "Reading node (" << typeName() << "): " << name << "\n";
         numParams = reader.read<uint8_t>();
-    } else {
-        std::cout << "Reading node (" << typeName() << ")\n";
     }
 }
 
@@ -226,7 +221,6 @@ void OsiValue::read(OsiReader& reader)
             if (reader.read<uint8_t>() > 0) {
                 value = reader.readString();
             }
-            std::cout << "   Read string value: \"" << std::get<std::string>(value) << "\"\n";
             break;
         }
     } else if (unknown == 'e') {
@@ -240,9 +234,9 @@ void OsiValue::read(OsiReader& reader)
         value = reader.readString();
         auto it = e.elements.find(std::get<std::string>(value));
         if (it == e.elements.end()) {
-            throw Exception("Enum value \"{}\" not found in enum type {}.", std::get<std::string>(value), static_cast<int>(type));
+            throw Exception("Enum value \"{}\" not found in enum type {}.", std::get<std::string>(value),
+                            static_cast<int>(type));
         }
-
     } else {
         ATLASSERT(0);
         throw Exception("Unsupported value format {}.", static_cast<int>(unknown));
@@ -275,8 +269,6 @@ void OsiCall::read(OsiReader& reader)
 {
     name = reader.readString();
     if (!name.empty()) {
-        std::cout << "   Reading call: " << name << "\n";
-
         auto hasParams = reader.read<uint8_t>();
         if (hasParams) {
             auto paramCount = reader.read<uint8_t>();
@@ -435,4 +427,38 @@ void OsiRelOpNode::read(OsiReader& reader)
 void OsiInternalQueryNode::read(OsiReader& reader)
 {
     OsiQueryNode::read(reader);
+}
+
+void Tuple::read(OsiReader& reader)
+{
+    physical.clear();
+    logical.clear();
+
+    auto count = reader.read<uint8_t>();
+    physical.reserve(count);
+
+    for (auto i = 0u; i < count; ++i) {
+        OsiValue val{};
+        int8_t index;
+        if (reader.version() >= OsiVersion::VALUE_FLAGS) {
+            val.read(reader);
+            index = val.index;
+        } else {
+            index = reader.read<int8_t>();
+            val.read(reader);
+        }
+        physical.emplace_back(val);
+        logical[index] = val;
+    }
+}
+
+void OsiAdapter::read(OsiReader& reader)
+{
+    index = reader.read<uint32_t>();
+    constants.read(reader);
+
+    auto count = reader.read<uint8_t>();
+
+    logicalIndices.clear();
+    logicalIndices.reserve(count);
 }

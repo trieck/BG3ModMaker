@@ -36,6 +36,7 @@ private:
     OsiType makeBuiltin(const std::string& name, uint8_t index) const;
     std::vector<std::string> readStrings();
     void makeBuiltins();
+    void readAdapters();
     void readDivObjects();
     void readEnums();
     void readFunctions();

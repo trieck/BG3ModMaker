@@ -98,6 +98,7 @@ bool OsiReader::readFile(const char* filename)
     readDivObjects();
     readFunctions();
     readNodes();
+    readAdapters();
 
     return true;
 }
@@ -190,6 +191,17 @@ void OsiReader::makeBuiltins()
     }
 
     // TODO: populate custom type ids for versions without type aliases
+}
+
+void OsiReader::readAdapters()
+{
+    m_story.adapters.clear();
+    auto count = m_file.read<uint32_t>();
+    for (auto i = 0u; i < count; ++i) {
+        OsiAdapter adapter{};
+        adapter.read(*this);
+        m_story.adapters[adapter.index] = std::move(adapter);
+    }
 }
 
 void OsiReader::readEnums()
