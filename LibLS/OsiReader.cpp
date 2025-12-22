@@ -15,13 +15,14 @@ bool OsiReader::shortTypeIds() const
     return m_shortTypeIds;
 }
 
-bool OsiReader::getEnum(uint16_t type, OsiEnum& osi_enum)
+bool OsiReader::getEnum(uint16_t type, OsiEnum& osiEnum)
 {
     auto it = m_story.enums.find(static_cast<uint16_t>(type));
     if (it != m_story.enums.end()) {
-        osi_enum = it->second;
+        osiEnum = it->second;
         return true;
     }
+
     return false;
 }
 
@@ -30,7 +31,7 @@ bool OsiReader::isAlias(uint32_t type) const
     return m_story.isAlias(type);
 }
 
-OsiValueType OsiReader::resolveAlias(OsiValueType type)
+OsiValueType OsiReader::resolveAlias(OsiValueType type) const
 {
     return m_story.resolveAlias(type);
 }
@@ -102,6 +103,7 @@ bool OsiReader::readFile(const char* filename)
     readDatabases();
     readGoals();
     readGlobalActions();
+    resolve();
 
     return true;
 }
@@ -167,6 +169,13 @@ void OsiReader::readTypes()
     }
 }
 
+void OsiReader::resolve()
+{
+    for (auto& node : m_story.nodes) {
+        node->resolve(m_story);
+    }
+}
+
 void OsiReader::readStringTable()
 {
     m_story.stringTable.clear();
@@ -199,7 +208,10 @@ void OsiReader::makeBuiltins()
 void OsiReader::readAdapters()
 {
     m_story.adapters.clear();
+
     auto count = m_file.read<uint32_t>();
+
+    m_story.adapters.resize(count);
     for (auto i = 0u; i < count; ++i) {
         OsiAdapter adapter{};
         adapter.read(*this);
@@ -212,6 +224,8 @@ void OsiReader::readDatabases()
     m_story.databases.clear();
 
     auto count = m_file.read<uint32_t>();
+
+    m_story.databases.resize(count);
     for (auto i = 0u; i < count; ++i) {
         OsiDatabase db{};
         db.read(*this);
@@ -282,6 +296,7 @@ void OsiReader::readGoals()
     m_story.goals.clear();
     auto count = m_file.read<uint32_t>();
 
+    m_story.goals.resize(count);
     for (auto i = 0u; i < count; ++i) {
         OsiGoal goal{};
         goal.read(*this);
@@ -294,7 +309,7 @@ void OsiReader::readNodes()
     m_story.nodes.clear();
 
     auto count = m_file.read<uint32_t>();
-    m_story.nodes.reserve(count);
+    m_story.nodes.resize(count);
 
     for (auto i = 0u; i < count; ++i) {
         auto node = readNode();
@@ -367,6 +382,11 @@ std::string OsiReader::readString()
     }
 
     return s;
+}
+
+const OsiStory& OsiReader::story() const
+{
+    return m_story;
 }
 
 OsiVersion OsiReader::version() const

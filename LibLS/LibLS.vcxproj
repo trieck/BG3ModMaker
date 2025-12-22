@@ -194,6 +194,7 @@
     <ClInclude Include="NodeAttribute.h" />
     <ClInclude Include="ObjectManager.h" />
     <ClInclude Include="OsiReader.h" />
+    <ClInclude Include="OsiTable.h" />
     <ClInclude Include="Package.h" />
     <ClInclude Include="PageableIterator.h" />
     <ClInclude Include="PAKReader.h" />
@@ -203,7 +204,7 @@
     <ClInclude Include="Resource.h" />
     <ClInclude Include="ResourceUtils.h" />
     <ClInclude Include="Searcher.h" />
-    <ClInclude Include="Story.h" />
+    <ClInclude Include="OsiStory.h" />
     <ClInclude Include="XmlWrapper.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ZLibCompressor.h" />
@@ -247,7 +248,7 @@
     <ClCompile Include="Resource.cpp" />
     <ClCompile Include="ResourceUtils.cpp" />
     <ClCompile Include="Searcher.cpp" />
-    <ClCompile Include="Story.cpp" />
+    <ClCompile Include="OsiStory.cpp" />
     <ClCompile Include="XmlWrapper.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>

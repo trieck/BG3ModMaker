@@ -1,18 +1,18 @@
 #include "pch.h"
 #include "Exception.h"
 #include "OsiReader.h"
-#include "Story.h"
+#include "OsiStory.h"
 
-Story::Story()
+OsiStory::OsiStory()
 {
 }
 
-Story::Story(Story&& rhs) noexcept
+OsiStory::OsiStory(OsiStory&& rhs) noexcept
 {
     *this = std::move(rhs);
 }
 
-Story& Story::operator=(Story&& rhs) noexcept
+OsiStory& OsiStory::operator=(OsiStory&& rhs) noexcept
 {
     if (this != &rhs) {
         header = std::move(rhs.header);
@@ -28,19 +28,19 @@ Story& Story::operator=(Story&& rhs) noexcept
     return *this;
 }
 
-OsiVersion Story::version() const
+OsiVersion OsiStory::version() const
 {
     return static_cast<OsiVersion>(
         (static_cast<uint16_t>(header.majorVersion) << 8) |
         static_cast<uint16_t>(header.minorVersion));
 }
 
-bool Story::isAlias(uint32_t type) const
+bool OsiStory::isAlias(uint32_t type) const
 {
     return typeAliases.contains(static_cast<uint8_t>(type));
 }
 
-OsiValueType Story::resolveAlias(OsiValueType type) const
+OsiValueType OsiStory::resolveAlias(OsiValueType type) const
 {
     auto it = typeAliases.find(static_cast<uint8_t>(type));
     if (it != typeAliases.end()) {
@@ -48,6 +48,44 @@ OsiValueType Story::resolveAlias(OsiValueType type) const
     }
 
     return type;
+}
+
+std::string OsiStory::typeName(uint32_t typeId) const
+{
+    auto it = types.find(static_cast<uint8_t>(typeId));
+    if (it != types.end()) {
+        return it->second.name;
+    }
+
+    return std::format("Type{}", typeId);
+}
+
+std::string OsiStory::nodeTypeName(OsiNodeType type) const
+{
+    switch (type) {
+    case NT_UNDEFINED:
+        return "Undefined";
+    case NT_DATABASE:
+        return "Database";
+    case NT_PROC:
+        return "Proc";
+    case NT_DIV_QUERY:
+        return "Div Query";
+    case NT_AND:
+        return "And";
+    case NT_NAND:
+        return "Nand";
+    case NT_REL_OP:
+        return "Rel Op";
+    case NT_RULE:
+        return "Rule";
+    case NT_INTERNAL_QUERY:
+        return "Internal Query";
+    case NT_USER_QUERY:
+        return "User Query";
+    default:
+        return std::format("NodeType{}", static_cast<uint32_t>(type));
+    }
 }
 
 void OsiType::read(OsiReader& reader)
@@ -95,6 +133,18 @@ void OsiParameterList::read(OsiReader& reader)
     }
 }
 
+bool OsiFunctionSig::isOutParam(uint32_t index) const
+{
+    auto byteIndex = index >> 3;
+    auto bitIndex = index & 7;
+
+    if (byteIndex >= outParamMask.size()) {
+        return false;
+    }
+
+    return (outParamMask[byteIndex] & (0x80 >> bitIndex)) != 0;
+}
+
 void OsiFunctionSig::read(OsiReader& reader)
 {
     name = reader.readString();
@@ -131,6 +181,19 @@ void OsiNode::read(OsiReader& reader)
     }
 }
 
+void OsiNode::resolve(OsiStory& story)
+{
+    if (dbRef != INVALID_REF) {
+        auto& node = story.databases[dbRef];
+
+        if (node.ownerNode != 0) {
+            throw Exception("Database {} is already owned by node {}.", dbRef, node.ownerNode);
+        }
+
+        node.ownerNode = index;
+    }
+}
+
 void OsiNodeEntry::read(OsiReader& reader)
 {
     nodeRef = reader.read<uint32_t>();
@@ -154,6 +217,24 @@ void OsiDataNode::read(OsiReader& reader)
     }
 }
 
+void OsiDataNode::resolve(OsiStory& story)
+{
+    OsiNode::resolve(story);
+
+    for (auto& entry : refBy) {
+        if (entry.nodeRef == INVALID_REF) {
+            continue;
+        }
+
+        auto& node = story.nodes[entry.nodeRef];
+
+        if (entry.goalRef != INVALID_REF && node->type == NT_RULE) {
+            auto* ruleNode = static_cast<OsiRuleNode*>(node.get());
+            ruleNode->derivedGoalRef = entry.goalRef;
+        }
+    }
+}
+
 void OsiDBNode::read(OsiReader& reader)
 {
     OsiDataNode::read(reader);
@@ -170,6 +251,19 @@ void OsiTreeNode::read(OsiReader& reader)
     nextNode.read(reader);
 }
 
+void OsiTreeNode::resolve(OsiStory& story)
+{
+    OsiNode::resolve(story);
+
+    if (nextNode.nodeRef != INVALID_REF) {
+        auto& node = story.nodes[nextNode.nodeRef];
+        if (node->type == NT_RULE) {
+            auto* ruleNode = static_cast<OsiRuleNode*>(node.get());
+            ruleNode->derivedGoalRef = nextNode.goalRef;
+        }
+    }
+}
+
 void OsiRelNode::read(OsiReader& reader)
 {
     OsiTreeNode::read(reader);
@@ -178,6 +272,19 @@ void OsiRelNode::read(OsiReader& reader)
     relDbNodeRef = reader.read<uint32_t>();
     relJoin.read(reader);
     relDBIndirect = reader.read<uint8_t>();
+}
+
+void OsiRelNode::resolve(OsiStory& story)
+{
+    OsiTreeNode::resolve(story);
+
+    if (adapterRef != INVALID_REF) {
+        auto& adapter = story.adapters[adapterRef];
+        if (adapter.ownerNode != INVALID_REF) {
+            throw Exception("Adapter {} is already owned by node {}.", adapterRef, adapter.ownerNode);
+        }
+        adapter.ownerNode = index;
+    }
 }
 
 void OsiValue::read(OsiReader& reader)
@@ -205,11 +312,12 @@ void OsiValue::read(OsiReader& reader)
             type = static_cast<OsiValueType>(reader.read<uint32_t>());
         }
 
+        auto resolvedType(type);
         if (type >= OVT_TOTAL_TYPES) { // alias type
-            type = reader.resolveAlias(type);
+            resolvedType = reader.resolveAlias(type);
         }
 
-        switch (type) {
+        switch (resolvedType) {
         case OVT_INT:
             value = reader.read<int32_t>();
             break;
@@ -243,7 +351,6 @@ void OsiValue::read(OsiReader& reader)
                             static_cast<int>(type));
         }
     } else {
-        ATLASSERT(0);
         throw Exception("Unsupported value format {}.", static_cast<int>(unknown));
     }
 }
@@ -266,7 +373,7 @@ void OsiVariable::read(OsiReader& reader)
     if (reader.version() < OsiVersion::VALUE_FLAGS) {
         index = reader.read<int8_t>();
         reader.read<uint8_t>(); // unused
-        adapted = reader.read<uint8_t>() != 0;
+        setIsAdapted(reader.read<uint8_t>() != 0);
     }
 }
 
@@ -337,7 +444,7 @@ void OsiRuleNode::read(OsiReader& reader)
 
         OsiVariable var{};
         var.read(reader);
-        if (var.adapted) {
+        if (var.isAdapted()) {
             var.variableName = std::format("_Var{}", variables.size() + 1);
         }
 
@@ -351,6 +458,39 @@ void OsiRuleNode::read(OsiReader& reader)
     } else {
         isQuery = false;
     }
+}
+
+void OsiRuleNode::resolve(OsiStory& story)
+{
+    OsiRelNode::resolve(story);
+
+    // Remove the __DEF__ postfix that is added to the end of Query nodes
+    if (isQuery) {
+        auto* ruleRoot = getRoot(story);
+        if (ruleRoot->name.size() > 7 &&
+            ruleRoot->name.compare(ruleRoot->name.size() - 7, 7, "__DEF__") == 0) {
+            ruleRoot->name.resize(ruleRoot->name.size() - 7);
+        }
+    }
+}
+
+OsiNode* OsiRuleNode::getRoot(OsiStory& story)
+{
+    OsiNode* parent = this;
+
+    for (;;) {
+        if (isRelNode(*parent)) {
+            auto* relNode = static_cast<OsiRelNode*>(parent);
+            parent = story.nodes[relNode->parentRef].get();
+        } else if (isJoinNode(*parent)) {
+            auto* joinNode = static_cast<OsiJoinNode*>(parent);
+            parent = story.nodes[joinNode->leftParentRef].get();
+        } else {
+            break;
+        }
+    }
+
+    return parent;
 }
 
 void OsiJoinNode::read(OsiReader& reader)
@@ -369,6 +509,27 @@ void OsiJoinNode::read(OsiReader& reader)
     rightDBNodeRef = reader.read<uint32_t>();
     rightDBJoin.read(reader);
     rightDBIndirect = reader.read<uint8_t>();
+}
+
+void OsiJoinNode::resolve(OsiStory& story)
+{
+    OsiTreeNode::resolve(story);
+
+    if (leftAdapterRef != INVALID_REF) {
+        auto& adapter = story.adapters[leftAdapterRef];
+        if (adapter.ownerNode != INVALID_REF) {
+            throw Exception("Adapter {} is already owned by node {}.", leftAdapterRef, adapter.ownerNode);
+        }
+        adapter.ownerNode = index;
+    }
+
+    if (rightAdapterRef != INVALID_REF) {
+        auto& adapter = story.adapters[rightAdapterRef];
+        if (adapter.ownerNode != INVALID_REF) {
+            throw Exception("Adapter {} is already owned by node {}.", rightAdapterRef, adapter.ownerNode);
+        }
+        adapter.ownerNode = index;
+    }
 }
 
 void OsiAndNode::read(OsiReader& reader)
@@ -414,6 +575,16 @@ std::string relOpString(RelOpType type)
     }
 
     return "UNKNOWN";
+}
+
+bool isJoinNode(const OsiNode& node) noexcept
+{
+    return node.type == NT_AND || node.type == NT_NAND;
+}
+
+bool isRelNode(const OsiNode& node) noexcept
+{
+    return node.type == NT_REL_OP || node.type == NT_RULE;
 }
 
 void OsiRelOpNode::read(OsiReader& reader)
@@ -471,13 +642,13 @@ void OsiAdapter::read(OsiReader& reader)
         logicalIndices.emplace_back(reader.read<int8_t>());
     }
 
-    localToPhysicalMap.clear();
+    logicalToPhysicalMap.clear();
 
     count = reader.read<uint8_t>();
     for (auto i = 0u; i < count; ++i) {
         auto key = reader.read<int8_t>();
         auto value = reader.read<int8_t>();
-        localToPhysicalMap[key] = value;
+        logicalToPhysicalMap[key] = value;
     }
 }
 

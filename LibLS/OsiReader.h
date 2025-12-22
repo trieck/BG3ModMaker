@@ -1,6 +1,6 @@
 #pragma once
 #include "FileStream.h"
-#include "Story.h"
+#include "OsiStory.h"
 
 class OsiReader : public StreamBase
 {
@@ -16,14 +16,15 @@ public:
     OsiReader(const OsiReader&) = delete;
     OsiReader& operator=(const OsiReader&) = delete;
 
-    bool getEnum(uint16_t type, OsiEnum& osi_enum);
+    bool getEnum(uint16_t type, OsiEnum& osiEnum);
     bool isAlias(uint32_t type) const;
     bool readFile(const char* filename);
     bool shortTypeIds() const;
-    OsiValueType resolveAlias(OsiValueType type);
+    const OsiStory& story() const;
+    OsiValueType resolveAlias(OsiValueType type) const;
     OsiVersion version() const;
     std::string readString();
-
+    
     // StreamBase
     size_t read(char* buf, size_t size) override;
     size_t write(const char* buf, size_t size) override;
@@ -46,9 +47,10 @@ private:
     void readNodes();
     void readStringTable();
     void readTypes();
+    void resolve();
 
     FileStream m_file{};
-    Story m_story;
+    OsiStory m_story;
     uint8_t m_scramble = 0x00;
     bool m_shortTypeIds = false;
 };

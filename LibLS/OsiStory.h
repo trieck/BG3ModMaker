@@ -1,5 +1,7 @@
 #pragma once
 
+#include "OsiTable.h"
+
 class OsiReader;
 
 struct SaveFileHeader
@@ -36,8 +38,18 @@ struct OsiReadable
     OsiReadable() = default;
     OsiReadable(const OsiReadable& rhs) = default;
     virtual ~OsiReadable() = default;
+    OsiReadable& operator=(const OsiReadable&) = default;
 
     virtual void read(OsiReader& reader) = 0;
+};
+
+struct OsiStory;
+
+struct OsiResolvable
+{
+    virtual ~OsiResolvable() = default;
+
+    virtual void resolve(OsiStory& story) = 0;
 };
 
 struct OsiType : OsiReadable
@@ -93,15 +105,18 @@ struct OsiFunctionSig : OsiReadable
     std::vector<uint8_t> outParamMask;
     OsiParameterList parameters;
 
+    bool isOutParam(uint32_t index) const;
     void read(OsiReader& reader) override;
 };
+
+static constexpr uint32_t INVALID_REF = 0;
 
 struct OsiFunction : OsiReadable
 {
     uint32_t line;
-    uint32_t conditionRef;
-    uint32_t actionRef;
-    uint32_t nodeRef; // FIXME: NodeReference<Node>
+    uint32_t conditionRef = INVALID_REF;
+    uint32_t actionRef = INVALID_REF;
+    uint32_t nodeRef = INVALID_REF;
     OsiFunctionType type;
     uint32_t meta[4];
     OsiFunctionSig name;
@@ -124,17 +139,19 @@ enum OsiNodeType : uint8_t
     NT_TOTAL_TYPES = 10,
 };
 
-struct OsiNode : OsiReadable
+struct OsiNode : OsiReadable, OsiResolvable
 {
     OsiNodeType type;
     uint32_t index;
-    uint32_t dbRef;
+    uint32_t dbRef = INVALID_REF;
     std::string name;
     uint8_t numParams;
 
     using Ptr = std::unique_ptr<OsiNode>;
 
     void read(OsiReader& reader) override;
+    void resolve(OsiStory& story) override;
+
     virtual std::string typeName() const = 0;
 };
 
@@ -147,9 +164,9 @@ enum OsiEntryPoint : uint32_t
 
 struct OsiNodeEntry : OsiReadable
 {
-    uint32_t nodeRef;
+    uint32_t nodeRef = INVALID_REF;
     OsiEntryPoint entryPoint;
-    uint32_t goalRef;
+    uint32_t goalRef = INVALID_REF;
 
     void read(OsiReader& reader) override;
 };
@@ -159,6 +176,7 @@ struct OsiDataNode : OsiNode
     std::vector<OsiNodeEntry> refBy;
 
     void read(OsiReader& reader) override;
+    void resolve(OsiStory& story) override;
 
     std::string typeName() const override
     {
@@ -191,6 +209,7 @@ struct OsiTreeNode : OsiNode
     OsiNodeEntry nextNode;
 
     void read(OsiReader& reader) override;
+    void resolve(OsiStory& story) override;
 
     std::string typeName() const override
     {
@@ -200,13 +219,14 @@ struct OsiTreeNode : OsiNode
 
 struct OsiRelNode : OsiTreeNode
 {
-    uint32_t parentRef;
-    uint32_t adapterRef;
-    uint32_t relDbNodeRef;
+    uint32_t parentRef = INVALID_REF;
+    uint32_t adapterRef = INVALID_REF;
+    uint32_t relDbNodeRef = INVALID_REF;
     OsiNodeEntry relJoin;
-    uint8_t relDBIndirect;
+    uint8_t relDBIndirect = 0;
 
     void read(OsiReader& reader) override;
+    void resolve(OsiStory& story) override;
 
     std::string typeName() const override
     {
@@ -250,7 +270,6 @@ struct OsiValue : OsiReadable
     Value value;
     uint8_t flags;
     int8_t index;
-    bool adapted = false;
 
     bool isValid() const
     {
@@ -299,9 +318,27 @@ struct OsiValue : OsiReadable
         return (flags & OVF_UNUSED) != 0;
     }
 
+    void setIsUnused(bool isUnused)
+    {
+        if (isUnused) {
+            flags = static_cast<OsiValueFlags>(flags | OVF_UNUSED);
+        } else {
+            flags = static_cast<OsiValueFlags>(flags & ~OVF_UNUSED);
+        }
+    }
+
     bool isAdapted() const
     {
         return (flags & OVF_ADAPTED) != 0;
+    }
+
+    void setIsAdapted(bool isAdapted)
+    {
+        if (isAdapted) {
+            flags = static_cast<OsiValueFlags>(flags | OVF_ADAPTED);
+        } else {
+            flags = static_cast<OsiValueFlags>(flags & ~OVF_ADAPTED);
+        }
     }
 
     void read(OsiReader& reader) override;
@@ -337,10 +374,13 @@ struct OsiRuleNode : OsiRelNode
     std::vector<OsiCall> calls;
     std::vector<OsiVariable> variables;
     uint32_t line;
-    uint32_t derivedGoalRef;
+    uint32_t derivedGoalRef = INVALID_REF;
     bool isQuery = false;
 
     void read(OsiReader& reader) override;
+    void resolve(OsiStory& story) override;
+
+    OsiNode* getRoot(OsiStory& story);
 
     std::string typeName() const override
     {
@@ -350,18 +390,19 @@ struct OsiRuleNode : OsiRelNode
 
 struct OsiJoinNode : OsiTreeNode
 {
-    uint32_t leftParentRef;
-    uint32_t rightParentRef;
-    uint32_t leftAdapterRef;
-    uint32_t rightAdapterRef;
-    uint32_t leftDBNodeRef;
-    uint8_t leftDBIndirect;
+    uint32_t leftParentRef = INVALID_REF;
+    uint32_t rightParentRef = INVALID_REF;
+    uint32_t leftAdapterRef = INVALID_REF;
+    uint32_t rightAdapterRef = INVALID_REF;
+    uint32_t leftDBNodeRef = INVALID_REF;
+    uint8_t leftDBIndirect = 0;
     OsiNodeEntry leftDBJoin;
-    uint32_t rightDBNodeRef;
-    uint8_t rightDBIndirect;
+    uint32_t rightDBNodeRef = INVALID_REF;
+    uint8_t rightDBIndirect = 0;
     OsiNodeEntry rightDBJoin;
 
     void read(OsiReader& reader) override;
+    void resolve(OsiStory& story) override;
 
     std::string typeName() const override
     {
@@ -440,11 +481,13 @@ enum RelOpType : uint32_t
 };
 
 std::string relOpString(RelOpType type);
+bool isJoinNode(const OsiNode& node) noexcept;
+bool isRelNode(const OsiNode& node) noexcept;
 
 struct OsiRelOpNode : OsiRelNode
 {
-    int8_t leftValueIndex;
-    int8_t rightValueIndex;
+    int8_t leftValueIndex = 0;
+    int8_t rightValueIndex = 0;
     OsiValue leftValue;
     OsiValue rightValue;
     RelOpType relOp;
@@ -470,7 +513,8 @@ struct OsiAdapter : OsiReadable
     uint32_t index;
     Tuple constants;
     std::vector<int8_t> logicalIndices;
-    std::unordered_map<int8_t, int8_t> localToPhysicalMap;
+    std::unordered_map<int8_t, int8_t> logicalToPhysicalMap;
+    uint32_t ownerNode = INVALID_REF;
 
     void read(OsiReader& reader) override;
 };
@@ -487,6 +531,7 @@ struct OsiDatabase : OsiReadable
     uint32_t index;
     OsiParameterList parameters;
     std::vector<OsiFact> facts;
+    uint32_t ownerNode = INVALID_REF;
 
     void read(OsiReader& reader) override;
 };
@@ -505,27 +550,30 @@ struct OsiGoal : OsiReadable
     void read(OsiReader& reader) override;
 };
 
-struct Story
+struct OsiStory
 {
-    Story();
-    ~Story() = default;
-    Story(Story&&) noexcept;
-    Story& operator=(Story&&) noexcept;
-    Story(const Story&) = delete;
-    Story& operator=(const Story&) = delete;
+    OsiStory();
+    ~OsiStory() = default;
+    OsiStory(OsiStory&&) noexcept;
+    OsiStory& operator=(OsiStory&&) noexcept;
+    OsiStory(const OsiStory&) = delete;
+    OsiStory& operator=(const OsiStory&) = delete;
 
     OsiVersion version() const;
     bool isAlias(uint32_t type) const;
     OsiValueType resolveAlias(OsiValueType type) const;
+    std::string typeName(uint32_t typeId) const;
+    std::string nodeTypeName(OsiNodeType type) const;
 
     SaveFileHeader header{};
-    std::unordered_map<uint16_t, OsiEnum> enums;
-    std::unordered_map<uint32_t, OsiAdapter> adapters;
-    std::unordered_map<uint32_t, OsiDatabase> databases;
-    std::unordered_map<uint32_t, OsiGoal> goals;
-    std::unordered_map<uint32_t, OsiNode::Ptr> nodes;
     std::unordered_map<uint8_t, OsiType> types;
     std::unordered_map<uint8_t, uint8_t> typeAliases;
+    std::unordered_map<uint16_t, OsiEnum> enums;
+
+    OsiTable<OsiNode::Ptr> nodes;
+    OsiTable<OsiAdapter> adapters;
+    OsiTable<OsiDatabase> databases;
+    OsiTable<OsiGoal> goals;
 
     std::vector<OsiDivObject> divObjects;
     std::vector<OsiFunction> functions;
