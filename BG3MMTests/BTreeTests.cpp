@@ -73,4 +73,30 @@ public:
         it = tree.find("six");
         Assert::AreEqual(std::string("seis"), it.value());
     }
+
+    TEST_METHOD(Iterate)
+    {
+        BTree<std::string, std::string> tree(3);
+        tree.insert("one", "uno");
+        tree.insert("two", "dos");
+        tree.insert("three", "tres");
+        tree.insert("four", "cuatro");
+        tree.insert("five", "cinco");
+        tree.insert("six", "seis");
+        tree.insert("seven", "siete");
+        tree.insert("eight", "ocho");
+        tree.insert("nine", "nueve");
+        tree.insert("ten", "diez");
+
+        std::optional<std::string> prev;
+
+        for (auto it = tree.begin(); it != tree.end(); ++it) {
+            auto m = std::format("{} => {}\n", it.key(), it.value());
+            Logger::WriteMessage(m.c_str());
+            if (prev) {
+                Assert::IsTrue(*prev < it.key());
+            }
+            prev = it.key();
+        }
+    }
 };

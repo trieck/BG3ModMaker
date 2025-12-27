@@ -29,11 +29,7 @@ struct BTreeNode
 template <BTreeKey K, BTreeValue V>
 struct BTreePage
 {
-    enum PageType
-    {
-        Internal,
-        Leaf
-    };
+    enum PageType { Internal, Leaf };
 
     using Ptr = std::unique_ptr<BTreePage>;
 
@@ -42,6 +38,8 @@ struct BTreePage
 
     PageType type = Leaf;
     std::vector<BTreeNode<K, V>> nodes;
+
+    BTreePage* nextLeaf = nullptr;
 };
 
 template <BTreeKey K, BTreeValue V>
@@ -55,31 +53,12 @@ public:
     {
     public:
         iterator() = default;
-
-        iterator(BTreePage<K, V>* p, size_t i)
-            : page(p), index(i)
-        {
-        }
-
-        const K& key() const
-        {
-            return page->nodes[index].key;
-        }
-
-        V& value() const
-        {
-            return page->nodes[index].value;
-        }
-
-        bool operator==(const iterator& other) const
-        {
-            return page == other.page && index == other.index;
-        }
-
-        bool operator!=(const iterator& other) const
-        {
-            return !(*this == other);
-        }
+        iterator(BTreePage<K, V>* p, size_t i);
+        const K& key() const;
+        const V& value() const;
+        bool operator==(const iterator& other) const;
+        bool operator!=(const iterator& other) const;
+        iterator& operator++();
 
     private:
         BTreePage<K, V>* page = nullptr;
@@ -127,6 +106,57 @@ BTree<K, V>::BTree(uint32_t maxKeys) : m_maxKeys(maxKeys)
 template <BTreeKey K, BTreeValue V>
 BTree<K, V>::~BTree()
 {
+}
+
+template <BTreeKey K, BTreeValue V>
+BTree<K, V>::iterator::iterator(BTreePage<K, V>* p, size_t i)
+    : page(p), index(i)
+{
+}
+
+template <BTreeKey K, BTreeValue V>
+const K& BTree<K, V>::iterator::key() const
+{
+    return page->nodes[index].key;
+}
+
+template <BTreeKey K, BTreeValue V>
+const V& BTree<K, V>::iterator::value() const
+{
+    return page->nodes[index].value;
+}
+
+template <BTreeKey K, BTreeValue V>
+bool BTree<K, V>::iterator::operator==(const iterator& other) const
+{
+    return page == other.page && index == other.index;
+}
+
+template <BTreeKey K, BTreeValue V>
+bool BTree<K, V>::iterator::operator!=(const iterator& other) const
+{
+    return !(*this == other);
+}
+
+template <BTreeKey K, BTreeValue V>
+BTree<K, V>::iterator& BTree<K, V>::iterator::operator++()
+{
+    if (!page) {
+        return *this;
+    }
+
+    if (++index < page->nodes.size()) {
+        return *this;
+    }
+
+    page = page->nextLeaf;
+    index = 0;
+
+    if (!page) {
+        *this = iterator{};
+    }
+
+    return *this;
 }
 
 template <BTreeKey K, BTreeValue V>
@@ -189,7 +219,8 @@ BTree<K, V>::iterator BTree<K, V>::begin() const
 }
 
 template <BTreeKey K, BTreeValue V>
-BTree<K, V>::Page::Ptr BTree<K, V>::insertR(PPage page, const K& key, const V& value)
+BTree<K, V>::Page::Ptr BTree<K, V>::insertR(PPage page, const K& key,
+                                            const V& value)
 {
     uint32_t j = 0;
     Node t{.key = key};
@@ -216,6 +247,9 @@ BTree<K, V>::Page::Ptr BTree<K, V>::insertR(PPage page, const K& key, const V& v
                 }
 
                 t.next = std::move(u);
+
+                // internal node keys must equal the minimum key of their subtree
+                t.key = t.next->nodes[0].key;
                 break;
             }
         }
@@ -269,12 +303,15 @@ BTree<K, V>::Page::Ptr BTree<K, V>::split(PPage page)
     newPage->type = page->type;
     auto midPoint = page->nodes.size() / 2;
 
-    newPage->nodes.assign(
-        std::make_move_iterator(page->nodes.begin() + midPoint),
-        std::make_move_iterator(page->nodes.end())
-    );
+    newPage->nodes.assign(std::make_move_iterator(page->nodes.begin() + midPoint),
+                          std::make_move_iterator(page->nodes.end()));
 
     page->nodes.erase(page->nodes.begin() + midPoint, page->nodes.end());
+
+    if (page->isLeaf()) {
+        newPage->nextLeaf = page->nextLeaf;
+        page->nextLeaf = newPage.get();
+    }
 
     return newPage;
 }
