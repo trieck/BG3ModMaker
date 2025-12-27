@@ -63,17 +63,16 @@ LRESULT LSFFileView::OnCreate(LPCREATESTRUCT pcs)
         IDI_NODE
     };
 
-    CImageList m_ImageList;
-    m_ImageList = ImageList_Create(16, 16, ILC_MASK | ILC_COLOR32, static_cast<uint32_t>(icons.size()), 0);
-    ATLASSERT(m_ImageList);
+    m_imageList = ImageList_Create(16, 16, ILC_MASK | ILC_COLOR32, static_cast<uint32_t>(icons.size()), 0);
+    ATLASSERT(m_imageList);
 
     for (auto icon : icons) {
         auto hIcon = LoadIcon(_Module.GetResourceInstance(), MAKEINTRESOURCE(icon));
         ATLASSERT(hIcon);
-        m_ImageList.AddIcon(hIcon);
+        m_imageList.AddIcon(hIcon);
     }
 
-    m_tree.SetImageList(m_ImageList, TVSIL_NORMAL);
+    m_tree.SetImageList(m_imageList, TVSIL_NORMAL);
 
     return 0;
 }

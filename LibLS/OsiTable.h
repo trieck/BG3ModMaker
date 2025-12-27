@@ -57,7 +57,7 @@ public:
     T& operator[](Index idx)
     {
         if (idx == NO_INDEX) {
-            throw std::out_of_range("OsiTable: index 0 (NO_REF) is invalid");
+            throw std::out_of_range("OsiTable: index 0 (NO_INDEX) is invalid");
         }
 
         if (idx >= m_items.size()) {
@@ -70,7 +70,7 @@ public:
     const T& operator[](Index idx) const
     {
         if (idx == NO_INDEX) {
-            throw std::out_of_range("OsiTable: index 0 (NO_REF) is invalid");
+            throw std::out_of_range("OsiTable: index 0 (NO_INDEX) is invalid");
         }
 
         if (idx >= m_items.size()) {

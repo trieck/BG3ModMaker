@@ -179,6 +179,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BTreeTests.cpp" />
     <ClCompile Include="FibTreeTests.cpp" />
     <ClCompile Include="FileStreamTests.cpp" />
     <ClCompile Include="LocaTests.cpp" />

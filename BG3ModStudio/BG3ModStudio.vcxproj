@@ -222,7 +222,10 @@
     <ClInclude Include="FileViewContainer.h" />
     <ClInclude Include="FindReplaceDlg.h" />
     <ClInclude Include="FormatToken.h" />
+    <ClInclude Include="FormView.h" />
+    <ClInclude Include="FormViewContainer.h" />
     <ClInclude Include="GameObjectDlg.h" />
+    <ClInclude Include="GoalFormView.h" />
     <ClInclude Include="GR2FileView.h" />
     <ClInclude Include="IconDlg.h" />
     <ClInclude Include="IconExplorerDlg.h" />
@@ -237,6 +240,9 @@
     <ClInclude Include="NewProjectSheet.h" />
     <ClInclude Include="NewProjectWelcomePage.h" />
     <ClInclude Include="NewProjectWizard.h" />
+    <ClInclude Include="OsiData.h" />
+    <ClInclude Include="OsiFileView.h" />
+    <ClInclude Include="OsiViewFactory.h" />
     <ClInclude Include="PakExplorerDlg.h" />
     <ClInclude Include="PAKIgnore.h" />
     <ClInclude Include="PAKWizard.h" />
@@ -284,7 +290,9 @@
     <ClCompile Include="FileOperation.cpp" />
     <ClCompile Include="FileViewContainer.cpp" />
     <ClCompile Include="FindReplaceDlg.cpp" />
+    <ClCompile Include="FormViewContainer.cpp" />
     <ClCompile Include="GameObjectDlg.cpp" />
+    <ClCompile Include="GoalFormView.cpp" />
     <ClCompile Include="GR2FileView.cpp" />
     <ClCompile Include="IconDlg.cpp" />
     <ClCompile Include="IconExplorerDlg.cpp" />
@@ -303,6 +311,8 @@
     <ClCompile Include="NewProjectSheet.cpp" />
     <ClCompile Include="NewProjectWelcomePage.cpp" />
     <ClCompile Include="NewProjectWizard.cpp" />
+    <ClCompile Include="OsiFileView.cpp" />
+    <ClCompile Include="OsiViewFactory.cpp" />
     <ClCompile Include="PakExplorerDlg.cpp" />
     <ClCompile Include="PAKIgnore.cpp" />
     <ClCompile Include="PAKWizard.cpp" />
@@ -351,8 +361,10 @@
     <Image Include="resources\app.ico" />
     <Image Include="resources\bg3.bmp" />
     <Image Include="resources\bom.ico" />
+    <Image Include="resources\call.ico" />
     <Image Include="resources\catalog.bmp" />
     <Image Include="resources\close.bmp" />
+    <Image Include="resources\database.ico" />
     <Image Include="resources\game-object.ico" />
     <Image Include="resources\db.bmp" />
     <Image Include="resources\exit.bmp" />
@@ -363,6 +375,7 @@
     <Image Include="resources\game-object.bmp" />
     <Image Include="resources\gear.bmp" />
     <Image Include="resources\globe.bmp" />
+    <Image Include="resources\goal.ico" />
     <Image Include="resources\icon-explorer.bmp" />
     <Image Include="resources\index.bmp" />
     <Image Include="resources\lsf.bmp" />
@@ -374,6 +387,9 @@
     <Image Include="resources\pak-explorer.bmp" />
     <Image Include="resources\pak-large.bmp" />
     <Image Include="resources\pak.bmp" />
+    <Image Include="resources\param.ico" />
+    <Image Include="resources\proc.ico" />
+    <Image Include="resources\query.ico" />
     <Image Include="resources\region.ico" />
     <Image Include="resources\resource.ico" />
     <Image Include="resources\save.bmp" />

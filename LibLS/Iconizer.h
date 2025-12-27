@@ -31,6 +31,7 @@ public:
     void setProgressListener(IFileProgressListener* listener);
 
     DirectX::ScratchImage getIcon(const std::string& key);
+    bool hasIcon(const std::string& key) const;
 
 private:
     DirectX::ScratchImage loadIconTexture(const std::string& path);

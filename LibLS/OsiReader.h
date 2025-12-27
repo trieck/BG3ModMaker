@@ -16,6 +16,8 @@ public:
     OsiReader(const OsiReader&) = delete;
     OsiReader& operator=(const OsiReader&) = delete;
 
+    static bool isOsiFile(StreamBase& stream);
+
     bool getEnum(uint16_t type, OsiEnum& osiEnum);
     bool isAlias(uint32_t type) const;
     bool readFile(const char* filename);
@@ -24,7 +26,8 @@ public:
     OsiValueType resolveAlias(OsiValueType type) const;
     OsiVersion version() const;
     std::string readString();
-    
+    OsiStory takeStory() &&;
+
     // StreamBase
     size_t read(char* buf, size_t size) override;
     size_t write(const char* buf, size_t size) override;

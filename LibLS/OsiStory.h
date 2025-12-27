@@ -550,6 +550,39 @@ struct OsiGoal : OsiReadable
     void read(OsiReader& reader) override;
 };
 
+struct CaseInsensitiveHash
+{
+    size_t operator()(std::string_view s) const noexcept
+    {
+        size_t h = 0;
+
+        for (char c : s) {
+            h = h * 131 + std::tolower(c);
+        }
+
+        return h;
+    }
+};
+
+struct CaseInsensitiveEq
+{
+    bool operator()(std::string_view a, std::string_view b) const noexcept
+    {
+        if (a.size() != b.size()) {
+            return false;
+        }
+
+        for (size_t i = 0; i < a.size(); ++i) {
+            if (std::tolower(a[i]) !=
+                std::tolower(b[i])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+};
+
 struct OsiStory
 {
     OsiStory();
@@ -562,6 +595,7 @@ struct OsiStory
     OsiVersion version() const;
     bool isAlias(uint32_t type) const;
     OsiValueType resolveAlias(OsiValueType type) const;
+    std::string typeName(OsiValueType typeId) const;
     std::string typeName(uint32_t typeId) const;
     std::string nodeTypeName(OsiNodeType type) const;
 
@@ -569,14 +603,17 @@ struct OsiStory
     std::unordered_map<uint8_t, OsiType> types;
     std::unordered_map<uint8_t, uint8_t> typeAliases;
     std::unordered_map<uint16_t, OsiEnum> enums;
+    std::unordered_map<std::string, OsiFunction*,
+                       CaseInsensitiveHash,
+                       CaseInsensitiveEq> functionNames;
 
-    OsiTable<OsiNode::Ptr> nodes;
     OsiTable<OsiAdapter> adapters;
     OsiTable<OsiDatabase> databases;
     OsiTable<OsiGoal> goals;
+    OsiTable<OsiNode::Ptr> nodes;
 
+    std::vector<OsiCall> globalActions;
     std::vector<OsiDivObject> divObjects;
     std::vector<OsiFunction> functions;
     std::vector<std::string> stringTable;
-    std::vector<OsiCall> globalActions;
 };

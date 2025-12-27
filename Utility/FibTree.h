@@ -79,7 +79,7 @@ class FibTree
 {
 public:
     using NodeType = FibNode<K, V>;
-    using PNode = typename NodeType::Ptr;
+    using PNode = NodeType::Ptr;
 
     FibTree();
     virtual ~FibTree();
@@ -252,8 +252,7 @@ bool FibTree<K, V>::exists(const K& key) const
 template <FibKey K, FibValue V>
 void FibTree<K, V>::traverse(std::function<void(const K& key, const V& value)> callback) const
 {
-    std::function<void(PNode)> inOrder = [&](PNode node)
-    {
+    std::function<void(PNode)> inOrder = [&](PNode node) {
         if (node == nullptr) {
             return;
         }
@@ -272,7 +271,7 @@ bool FibTree<K, V>::isEmpty() const
 }
 
 template <FibKey K, FibValue V>
-typename FibTree<K, V>::PNode FibTree<K, V>::root() const
+FibTree<K, V>::PNode FibTree<K, V>::root() const
 {
     return m_root;
 }
@@ -352,7 +351,7 @@ void FibTree<K, V>::rebalance(PNode node)
 }
 
 template <FibKey K, FibValue V>
-typename FibTree<K, V>::PNode FibTree<K, V>::minValueNode(PNode node)
+FibTree<K, V>::PNode FibTree<K, V>::minValueNode(PNode node)
 {
     auto current = node;
     while (current->left != nullptr) {

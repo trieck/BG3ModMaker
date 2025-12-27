@@ -15,6 +15,16 @@ bool OsiReader::shortTypeIds() const
     return m_shortTypeIds;
 }
 
+bool OsiReader::isOsiFile(StreamBase& stream)
+{
+    stream.seek(0, SeekMode::Begin);
+
+    uint8_t sig[17]{};
+    stream.read(sig, 17);
+
+    return std::memcmp(sig, "\0Osiris save file", 17) == 0;
+}
+
 bool OsiReader::getEnum(uint16_t type, OsiEnum& osiEnum)
 {
     auto it = m_story.enums.find(static_cast<uint16_t>(type));
@@ -266,6 +276,7 @@ void OsiReader::readDivObjects()
 void OsiReader::readFunctions()
 {
     m_story.functions.clear();
+    m_story.functionNames.clear();
 
     auto count = m_file.read<uint32_t>();
     m_story.functions.reserve(count);
@@ -273,7 +284,8 @@ void OsiReader::readFunctions()
     for (auto i = 0u; i < count; ++i) {
         OsiFunction func{};
         func.read(*this);
-        m_story.functions.emplace_back(std::move(func));
+        auto& f = m_story.functions.emplace_back(std::move(func));
+        m_story.functionNames[f.name.name] = &f;
     }
 }
 
@@ -382,6 +394,11 @@ std::string OsiReader::readString()
     }
 
     return s;
+}
+
+OsiStory OsiReader::takeStory() &&
+{
+    return std::move(m_story);
 }
 
 const OsiStory& OsiReader::story() const

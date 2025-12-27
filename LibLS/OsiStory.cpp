@@ -15,14 +15,19 @@ OsiStory::OsiStory(OsiStory&& rhs) noexcept
 OsiStory& OsiStory::operator=(OsiStory&& rhs) noexcept
 {
     if (this != &rhs) {
-        header = std::move(rhs.header);
-        types = std::move(rhs.types);
-        typeAliases = std::move(rhs.typeAliases);
-        stringTable = std::move(rhs.stringTable);
-        enums = std::move(rhs.enums);
+        adapters = std::move(rhs.adapters);
+        databases = std::move(rhs.databases);
         divObjects = std::move(rhs.divObjects);
+        enums = std::move(rhs.enums);
+        functionNames = std::move(rhs.functionNames);
         functions = std::move(rhs.functions);
+        globalActions = std::move(rhs.globalActions);
+        goals = std::move(rhs.goals);
+        header = std::move(rhs.header);
         nodes = std::move(rhs.nodes);
+        stringTable = std::move(rhs.stringTable);
+        typeAliases = std::move(rhs.typeAliases);
+        types = std::move(rhs.types);
     }
 
     return *this;
@@ -50,14 +55,21 @@ OsiValueType OsiStory::resolveAlias(OsiValueType type) const
     return type;
 }
 
-std::string OsiStory::typeName(uint32_t typeId) const
+std::string OsiStory::typeName(OsiValueType typeId) const
 {
-    auto it = types.find(static_cast<uint8_t>(typeId));
+    auto typeId8 = static_cast<uint8_t>(resolveAlias(typeId));
+
+    auto it = types.find(typeId8);
     if (it != types.end()) {
         return it->second.name;
     }
 
-    return std::format("Type{}", typeId);
+    return std::format("Type{}", typeId8);
+}
+
+std::string OsiStory::typeName(uint32_t typeId) const
+{
+    return typeName(static_cast<OsiValueType>(typeId));
 }
 
 std::string OsiStory::nodeTypeName(OsiNodeType type) const
@@ -318,6 +330,8 @@ void OsiValue::read(OsiReader& reader)
         }
 
         switch (resolvedType) {
+        case OVT_NONE:
+            break;
         case OVT_INT:
             value = reader.read<int32_t>();
             break;

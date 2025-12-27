@@ -8,6 +8,8 @@
 #include "ImageView.h"
 #include "LocaFileView.h"
 #include "LSFFileView.h"
+#include "OsiFileView.h"
+#include "OsiReader.h"
 #include "TextFileView.h"
 
 namespace { // anonymous namespace
@@ -96,6 +98,13 @@ BOOL IsGR2File(const ByteBuffer& contents)
 {
     return GR2Reader::isGR2(contents);
 }
+
+BOOL IsOsiFile(FileStream& stream)
+{
+    stream.seek(0, SeekMode::Begin);
+
+    return OsiReader::isOsiFile(stream);
+}
 } // anonymous namespace
 
 IFileView::Ptr FileViewFactory::CreateFileView(const CString& path, HWND parent, _U_RECT rect, DWORD dwStyle,
@@ -121,6 +130,8 @@ IFileView::Ptr FileViewFactory::CreateFileView(const CString& path, HWND parent,
         fileView = std::make_shared<LSFFileView>();
     } else if (IsGR2File(stream)) {
         fileView = std::make_shared<GR2FileView>();
+    } else if (IsOsiFile(stream)) {
+        fileView = std::make_shared<OsiFileView>();
     } else if (IsBinaryFile(stream)) {
         fileView = std::make_shared<BinaryFileView>();
     } else {

@@ -140,9 +140,20 @@ bool GR2Reader::isGR2(FileStream& stream)
     stream.read(reinterpret_cast<char*>(&header), sizeof(GR2Header));
     stream.seek(static_cast<int64_t>(offset), SeekMode::Begin);
 
-    try {
-        readFormat(header);
-    } catch (const Exception&) {
+    GR2FileFormat format{UNKNOWN_FORMAT};
+
+    for (const auto& fmt : MagicFormats) {
+        if (memcmp(header.signature, fmt.magic, sizeof(header.signature)) == 0) {
+            format = fmt.format;
+            break;
+        }
+    }
+
+    if (format == UNKNOWN_FORMAT) {
+        return false;
+    }
+
+    if (format == BIG_ENDIAN_32 || format == BIG_ENDIAN_64) {
         return false;
     }
 
@@ -158,9 +169,20 @@ bool GR2Reader::isGR2(const ByteBuffer& contents)
     GR2Header header{};
     memcpy(&header, contents.first.get(), sizeof(GR2Header));
 
-    try {
-        readFormat(header);
-    } catch (const Exception&) {
+    GR2FileFormat format{ UNKNOWN_FORMAT };
+
+    for (const auto& fmt : MagicFormats) {
+        if (memcmp(header.signature, fmt.magic, sizeof(header.signature)) == 0) {
+            format = fmt.format;
+            break;
+        }
+    }
+
+    if (format == UNKNOWN_FORMAT) {
+        return false;
+    }
+
+    if (format == BIG_ENDIAN_32 || format == BIG_ENDIAN_64) {
         return false;
     }
 
@@ -705,7 +727,7 @@ GR2Object::Ptr GR2Reader::makeInline(const GR2TypeNode* node, const GR2Object::P
     obj->name = resolve<char*>(node->name);
 
     auto stream = getStream(parent);
-    obj->data = resolve <uint8_t*>(stream);
+    obj->data = resolve<uint8_t*>(stream);
 
     return obj;
 }

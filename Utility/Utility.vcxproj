@@ -146,6 +146,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="BTree.h" />
     <ClInclude Include="CoInit.h" />
     <ClInclude Include="CoMemory.h" />
     <ClInclude Include="CRC32.h" />

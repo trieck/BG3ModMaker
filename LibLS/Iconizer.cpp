@@ -214,6 +214,18 @@ DirectX::ScratchImage Iconizer::getIcon(const std::string& key)
     return image;
 }
 
+bool Iconizer::hasIcon(const std::string& key) const
+{
+    if (!isOpen()) {
+        throw Exception("Database is not open");
+    }
+
+    std::string value;
+    auto status = m_db->Get(rocksdb::ReadOptions(), key, &value);
+
+    return status.ok();
+}
+
 DirectX::ScratchImage Iconizer::loadIconTexture(const std::string& path)
 {
     for (const auto& file : m_iconReader.files()) {

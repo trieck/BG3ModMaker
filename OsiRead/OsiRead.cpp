@@ -2,178 +2,250 @@
 #include "OsiReader.h"
 #include "Timer.h"
 
-void printTypes(const OsiStory& story)
+std::unordered_set<const OsiNode*> visitedNodes;
+
+void printNode(const OsiStory& story, const OsiNode& node, uint32_t level);
+void printCall(const OsiStory& story, const OsiCall& call, uint32_t level);
+
+void indent(uint32_t level)
 {
-    std::cout << "Types:\n\n";
-
-    std::vector<uint8_t> indices;
-    indices.reserve(story.types.size());
-
-    for (const auto& index : story.types | std::views::keys) {
-        indices.emplace_back(index);
-    }
-
-    std::ranges::sort(indices);
-
-    for (auto index : indices) {
-        const auto& type = story.types.at(index);
-
-        std::cout << "Type " << static_cast<int>(index) << ": " << type.name;
-
-        if (story.isAlias(index)) {
-            auto aliasIndex = story.typeAliases.at(index);
-            std::cout << " (alias of Type " << static_cast<int>(aliasIndex)
-                << ": " << story.types.at(aliasIndex).name << ")";
-        }
-        std::cout << "\n";
-    }
-
-    std::cout << "\n";
-}
-
-void printEnums(const OsiStory& story)
-{
-    std::cout << "\nEnums:\n\n";
-
-    // Collect and sort enum type IDs
-    std::vector<uint16_t> enumTypeIds;
-    enumTypeIds.reserve(story.enums.size());
-
-    for (const auto& typeId : story.enums | std::views::keys) {
-        enumTypeIds.emplace_back(typeId);
-    }
-
-    std::ranges::sort(enumTypeIds);
-
-    for (auto typeId : enumTypeIds) {
-        const auto& osiEnum = story.enums.at(typeId);
-
-        // Resolve enum name from type table
-        std::string enumName = "<unknown>";
-        auto it = story.types.find(static_cast<uint8_t>(typeId));
-        if (it != story.types.end()) {
-            enumName = it->second.name;
-        }
-
-        std::cout << "Enum " << enumName
-            << " (Type " << static_cast<int>(typeId) << "):\n";
-
-        // Collect and sort enum elements by numeric value
-        std::vector<std::pair<std::string, uint64_t>> elements;
-        elements.reserve(osiEnum.elements.size());
-
-        for (const auto& [name, value] : osiEnum.elements) {
-            elements.emplace_back(name, value);
-        }
-
-        std::ranges::sort(elements,
-                          [](const auto& a, const auto& b) {
-                              return a.second < b.second;
-                          });
-
-        for (const auto& [name, value] : elements) {
-            std::cout << "  " << name << " = " << value << "\n";
-        }
-
-        std::cout << "\n";
+    for (uint32_t i = 0; i < level; ++i) {
+        std::cout << "  ";
     }
 }
 
-void printFunctions(const OsiStory& story)
+void printParams(const OsiStory& story, const OsiCall& call)
 {
-    std::cout << "\nFunctions:\n\n";
-
-    for (const auto& func : story.functions) {
-        const auto& sig = func.name;
-        std::cout << sig.name << "(";
-        for (auto i = 0u; i < sig.parameters.types.size(); ++i) {
-            if (i > 0) {
-                std::cout << ", ";
-            }
-            if (sig.isOutParam(i)) {
-                std::cout << "out ";
-            }
-            auto typeId = sig.parameters.types[i];
-            std::cout << story.typeName(typeId);
+    bool first = true;
+    for (const auto& param : call.parameters) {
+        if (!first) {
+            std::cout << ", ";
         }
-        std::cout << ")\n";
-    }
-}
-
-void printRule(const OsiStory& story, const OsiRuleNode* rule)
-{
-    std::cout << "  Line: " << rule->line << "\n";
-    std::cout << "  Is Query: " << (rule->isQuery ? "Yes" : "No") << "\n";
-    std::cout << "  Variables:\n";
-    for (const auto& var : rule->variables) {
-        std::cout << "    " << var.variableName
-            << " : " << story.typeName(var.type)
-            << "\n";
-    }
-    std::cout << "  Calls:\n";
-    for (const auto& call : rule->calls) {
-        std::cout << "    " << (call.negate ? "NOT " : "") << call.name << "(";
-        for (auto i = 0u; i < call.parameters.size(); ++i) {
-            if (i > 0) {
-                std::cout << ", ";
-            }
-            const auto& param = call.parameters[i];
-            auto typeName = story.typeName(param->type);
-            std::cout << typeName << " ";
-
-            if (param->isValid()) {
-                switch (param->value.index()) {
-                case 0: // int32_t
-                    std::cout << std::get<int32_t>(param->value);
-                    break;
-                case 1: // int64_t
-                    std::cout << std::get<int64_t>(param->value);
-                    break;
-                case 2: // float
-                    std::cout << std::get<float>(param->value);
-                    break;
-                case 3: // string
-                    std::cout << "\"" << std::get<std::string>(param->value) << "\"";
-                    break;
-                default:
-                    std::cout << "<unknown>";
-                    break;
-                }
+        first = false;
+        const auto& value = param->value;
+        std::visit([&]<typename T0>(const T0& arg) {
+            using T = std::decay_t<T0>;
+            if constexpr (std::is_same_v<T, int32_t>) {
+                std::cout << arg;
+            } else if constexpr (std::is_same_v<T, int64_t>) {
+                std::cout << arg;
+            } else if constexpr (std::is_same_v<T, float>) {
+                std::cout << arg;
+            } else if constexpr (std::is_same_v<T, std::string>) {
+                std::cout << "\"" << arg << "\"";
             } else {
-                std::cout << "<invalid>";
+                std::cout << "<unknown>";
             }
-        }
-        std::cout << ")\n";
+        }, value);
     }
 }
 
-void printNodes(const OsiStory& story)
+void printDatabase(const OsiStory& story, const OsiDBNode& dbNode, uint32_t level)
 {
-    std::cout << "\nNodes:\n\n";
+    indent(level);
+    std::cout << "[" << story.nodeTypeName(dbNode.type) << "] " << dbNode.name << "\n";
 
-    for (const auto& node : story.nodes) {
-        auto nodeId = node->index;
+    const auto& db = story.databases[dbNode.dbRef];
 
-        std::cout
-            << "Node " << nodeId
-            << " Type=" << story.nodeTypeName(node->type);
-        if (!node->name.empty()) {
-            std::cout << " Name=\"" << node->name << "\"";
+    indent(level + 1);
+    std::cout << "Parameters: (";
+    bool first = true;
+    for (const auto& typeId : db.parameters.types) {
+        if (!first) {
+            std::cout << ", ";
         }
-        std::cout << "\n";
-        if (node->type == NT_RULE) {
-            auto rule = dynamic_cast<OsiRuleNode*>(node.get());
-            printRule(story, rule);
+        first = false;
+        std::cout << story.typeName(typeId);
+    }
+    std::cout << ")\n";
+}
+
+void printProc(const OsiStory& story, const OsiProcNode& proc, uint32_t level)
+{
+    indent(level);
+    std::cout << "[" << story.nodeTypeName(proc.type) << "] " << proc.name << "\n";
+
+    indent(level + 1);
+    std::cout << "RefBy:\n";
+    for (const auto& entry : proc.refBy) {
+        const auto& node = story.nodes[entry.nodeRef];
+        printNode(story, *node, level + 2);
+    }
+}
+
+void printRule(const OsiStory& story, const OsiRuleNode& rule, uint32_t level)
+{
+    indent(level);
+
+    std::cout << "Calls:\n";
+    for (const auto& call : rule.calls) {
+        printCall(story, call, level + 1);
+    }
+
+    indent(level);
+    std::cout << "Variables:\n";
+    for (const auto& var : rule.variables) {
+        indent(level + 1);
+        std::cout << var.variableName << "\n";
+    }
+}
+
+void printAdapter(const OsiAdapter& adapter, uint32_t level)
+{
+    indent(level);
+
+    std::cout << "Adapter[" << adapter.index << "]: Constants: (";
+    bool first = true;
+    for (const auto& constValue : adapter.constants.physical) {
+        if (!first) {
+            std::cout << ", ";
+        }
+        first = false;
+        std::visit([&]<typename T0>(const T0& arg) {
+            using T = std::decay_t<T0>;
+            if constexpr (std::is_same_v<T, int32_t>) {
+                std::cout << arg;
+            } else if constexpr (std::is_same_v<T, int64_t>) {
+                std::cout << arg;
+            } else if constexpr (std::is_same_v<T, float>) {
+                std::cout << arg;
+            } else if constexpr (std::is_same_v<T, std::string>) {
+                std::cout << "\"" << arg << "\"";
+            } else {
+                std::cout << "<unknown>";
+            }
+        }, constValue.value);
+    }
+    std::cout << ")\n";
+}
+
+void printJoin(const OsiStory& story, const OsiJoinNode& joinNode, uint32_t level)
+{
+    indent(level);
+    std::cout << "[" << story.nodeTypeName(joinNode.type) << "] " << joinNode.name << "\n";
+
+    if (joinNode.leftParentRef != INVALID_REF) {
+        const auto& leftParent = story.nodes[joinNode.leftParentRef];
+        indent(level + 1);
+        std::cout << "Left Parent:\n";
+        printNode(story, *leftParent, level + 2);
+    }
+    if (joinNode.rightParentRef != INVALID_REF) {
+        indent(level + 1);
+        std::cout << "Right Parent:\n";
+        const auto& rightParent = story.nodes[joinNode.rightParentRef];
+        printNode(story, *rightParent, level + 2);
+    }
+    if (joinNode.leftAdapterRef != INVALID_REF) {
+        const auto& leftAdapter = story.adapters[joinNode.leftAdapterRef];
+        printAdapter(leftAdapter, level + 1);
+    }
+    if (joinNode.rightAdapterRef != INVALID_REF) {
+        const auto& rightAdapter = story.adapters[joinNode.leftAdapterRef];
+        printAdapter(rightAdapter, level + 1);
+    }
+    if (joinNode.leftDBNodeRef != INVALID_REF) {
+        indent(level + 1);
+        std::cout << "Left DB Node:\n";
+        const auto& leftDBNode = story.nodes[joinNode.leftDBNodeRef];
+        printNode(story, *leftDBNode, level + 2);
+    }
+    if (joinNode.rightDBNodeRef != INVALID_REF) {
+        indent(level + 1);
+        std::cout << "Right DB Node:\n";
+        const auto& rightDBNode = story.nodes[joinNode.rightDBNodeRef];
+        printNode(story, *rightDBNode, level + 2);
+    }
+}
+
+void printNode(const OsiStory& story, const OsiNode& node, uint32_t level)
+{
+    if (visitedNodes.contains(&node)) {
+        indent(level);
+        std::cout << "[" << story.nodeTypeName(node.type) << "] " << node.name << "(0x" << std::hex << &node << ")" << std::dec << std::endl;
+        return;
+    }
+
+    visitedNodes.insert(&node);
+
+    switch (node.type) {
+    case NT_DATABASE: {
+        const auto& dbNode = static_cast<const OsiDBNode&>(node);
+        printDatabase(story, dbNode, level);
+    }
+    break;
+    case NT_PROC: {
+        const auto& procNode = static_cast<const OsiProcNode&>(node);
+        printProc(story, procNode, level);
+    }
+    break;
+    case NT_RULE: {
+        const auto& ruleNode = static_cast<const OsiRuleNode&>(node);
+        printRule(story, ruleNode, level);
+    }
+    break;
+    case NT_AND:
+    case NT_NAND: {
+        const auto& joinNode = static_cast<const OsiJoinNode&>(node);
+        printJoin(story, joinNode, level);
+    }
+    break;
+    default:
+        indent(level);
+        std::cout << "[" << story.nodeTypeName(node.type) << "] " << node.name << "\n";
+    }
+}
+
+void printCall(const OsiStory& story, const OsiCall& call, uint32_t level)
+{
+    indent(level);
+
+    std::cout << call.name << "(";
+    printParams(story, call);
+    std::cout << ")" << std::endl;
+
+    auto it = story.functionNames.find(call.name);
+    if (it == story.functionNames.end()) {
+        indent(level);
+        std::cout << "<function not found>" << std::endl;
+        return;
+    }
+
+    const auto& func = it->second;
+    auto nodeRef = func->nodeRef;
+    if (nodeRef == INVALID_REF) {
+        nodeRef = func->actionRef;
+        indent(level);
+        if (nodeRef != INVALID_REF) {
+            std::cout << "<action node>" << std::endl;
+        } else {
+            std::cout << "<no node>" << std::endl;
+        }
+    }
+    if (nodeRef == INVALID_REF) {
+        return;
+    }
+
+    const auto& node = story.nodes[nodeRef];
+
+    printNode(story, *node, level + 1);
+}
+
+void printGoals(const OsiStory& story, uint32_t level)
+{
+    for (const auto& goal : story.goals) {
+        std::cout << "Goal[" << goal.index << "]: " << goal.name << "\n";
+        indent(level + 1);
+        std::cout << "Init Calls:\n";
+        for (const auto& call : goal.initCalls) {
+            printCall(story, call, level + 2);
         }
     }
 }
 
 void printStory(const OsiStory& story)
 {
-    printTypes(story);
-    printEnums(story);
-    printFunctions(story);
-    printNodes(story);
+    printGoals(story, 0);
 }
 
 int main(int argc, char* argv[])

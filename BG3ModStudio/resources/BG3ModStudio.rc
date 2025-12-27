@@ -70,6 +70,18 @@ IDI_NODE                ICON                    "node.ico"
 
 IDI_GAME_OBJECT         ICON                    "game-object.ico"
 
+IDI_GOAL                ICON                    "goal.ico"
+
+IDI_CALL                ICON                    "call.ico"
+
+IDI_DATABASE            ICON                    "database.ico"
+
+IDI_PROC                ICON                    "proc.ico"
+
+IDI_QUERY               ICON                    "query.ico"
+
+IDI_PARAM               ICON                    "param.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -480,6 +492,18 @@ BEGIN
     LTEXT           "",IDC_ST_GAMEOBJECT,7,44,577,283,0,WS_EX_STATICEDGE
 END
 
+IDD_GOALVIEW DIALOGEX 0, 0, 423, 334
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x0
+BEGIN
+    LTEXT           "Init Calls:",IDC_STATIC,7,11,68,15,SS_CENTERIMAGE
+    CONTROL         "",IDC_INIT_CALLS,"SysTreeView32",WS_BORDER | WS_HSCROLL | WS_TABSTOP,7,28,213,139
+    LTEXT           "Exit Calls:",IDC_STATIC,7,171,68,15,SS_CENTERIMAGE
+    CONTROL         "",IDC_EXIT_CALLS,"SysTreeView32",WS_BORDER | WS_HSCROLL | WS_TABSTOP,7,187,213,139
+    LTEXT           "Signature (full call):",IDC_STATIC,231,11,84,19,SS_CENTERIMAGE
+    EDITTEXT        IDC_E_SIGNATURE,231,28,185,299,ES_MULTILINE | ES_READONLY | ES_WANTRETURN | NOT WS_BORDER,WS_EX_STATICEDGE
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -655,6 +679,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 327
     END
+
+    IDD_GOALVIEW, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 416
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 327
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -760,6 +792,11 @@ BEGIN
 END
 
 IDD_GAMEOBJECT AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_GOALVIEW AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

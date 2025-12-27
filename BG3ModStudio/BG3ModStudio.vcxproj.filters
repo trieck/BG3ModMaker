@@ -197,6 +197,24 @@
     <ClInclude Include="LicenseView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="OsiFileView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OsiViewFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FormView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GoalFormView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FormViewContainer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OsiData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BG3ModStudio.cpp">
@@ -349,6 +367,18 @@
     <ClCompile Include="LicenseView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="OsiFileView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OsiViewFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GoalFormView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FormViewContainer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="ribbon.xml">
@@ -461,6 +491,16 @@
     <Image Include="resources\game-object.ico">
       <Filter>Resources</Filter>
     </Image>
+    <Image Include="resources\goal.ico">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="resources\call.ico">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="resources\database.ico" />
+    <Image Include="resources\proc.ico" />
+    <Image Include="resources\query.ico" />
+    <Image Include="resources\param.ico" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\BG3ModStudio.rc">

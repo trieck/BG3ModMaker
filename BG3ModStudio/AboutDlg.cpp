@@ -61,6 +61,8 @@ LRESULT AboutDlg::OnInitDialog(HWND, LPARAM)
     m_cyExpanded = rcWindow.bottom - rcWindow.top;
     m_cyCollapsed = rcLicense.top + cyNonClient - kCollapsedBottomPaddingPx;
 
+    CenterWindow(GetParent());
+
     // Create the license view
     m_view.Create(
         wndLicense,
@@ -84,8 +86,6 @@ LRESULT AboutDlg::OnInitDialog(HWND, LPARAM)
         m_cyCollapsed,
         SWP_NOMOVE | SWP_NOZORDER
     );
-
-    CenterWindow(GetParent());
 
     return TRUE; // Let the system set the focus
 }

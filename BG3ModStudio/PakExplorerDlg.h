@@ -33,7 +33,6 @@ public:
         MSG_WM_CONTEXTMENU(OnContextMenu)
         MSG_WM_DESTROY(OnDestroy)
         MSG_WM_INITDIALOG(OnInitDialog)
-        MSG_WM_INITDIALOG(OnInitDialog)
         MSG_WM_SIZE(OnSize)
         NOTIFY_CODE_HANDLER_EX(TVN_DELETEITEM, OnDelete)
         NOTIFY_CODE_HANDLER_EX(TVN_ITEMEXPANDING, OnItemExpanding)
