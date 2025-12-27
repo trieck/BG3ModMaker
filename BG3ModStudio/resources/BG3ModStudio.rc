@@ -82,6 +82,8 @@ IDI_QUERY               ICON                    "query.ico"
 
 IDI_PARAM               ICON                    "param.ico"
 
+IDI_FOLDER_SMALL        ICON                    "folder-small.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

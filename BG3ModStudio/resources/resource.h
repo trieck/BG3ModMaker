@@ -80,6 +80,8 @@
 #define IDI_PROC                        174
 #define IDI_QUERY                       175
 #define IDI_PARAM                       177
+#define IDI_ICON1                       178
+#define IDI_FOLDER_SMALL                178
 #define IDC_PROGRESS_INDEX              1000
 #define IDC_PAKFILE                     1001
 #define IDC_INDEX_FILE                  1002
@@ -288,7 +290,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        178
+#define _APS_NEXT_RESOURCE_VALUE        179
 #define _APS_NEXT_COMMAND_VALUE         40037
 #define _APS_NEXT_CONTROL_VALUE         1086
 #define _APS_NEXT_SYMED_VALUE           101

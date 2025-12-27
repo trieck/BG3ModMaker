@@ -45,7 +45,8 @@ LRESULT OsiFileView::OnCreate(LPCREATESTRUCT pcs)
     static constexpr auto icons = {
         IDI_GOAL,
         IDI_DATABASE,
-        IDI_QUERY
+        IDI_QUERY,
+        IDI_FOLDER_SMALL
     };
 
     m_imageList = ImageList_Create(16, 16, ILC_MASK | ILC_COLOR32, static_cast<uint32_t>(icons.size()), 0);
@@ -282,9 +283,9 @@ void OsiFileView::ExpandFunction(const CTreeItem& item, const SBNode* pFunc)
     tvis.hInsertAfter = TVI_LAST;
     tvis.itemex.mask = TVIF_CHILDREN | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_EXPANDEDIMAGE | TVIF_TEXT |
         TVIF_PARAM;
-    tvis.itemex.iImage = 1;
-    tvis.itemex.iSelectedImage = 1;
-    tvis.itemex.iExpandedImage = 1;
+    tvis.itemex.iImage = 3;
+    tvis.itemex.iSelectedImage = 3;
+    tvis.itemex.iExpandedImage = 3;
 
     if (pFunc == nullptr) {
         m_funcTree.clear();
@@ -306,11 +307,10 @@ void OsiFileView::ExpandFunction(const CTreeItem& item, const SBNode* pFunc)
     } else {
         for (const auto& node : pFunc->next->nodes) {
             if (!node.next) {
-                tvis.itemex.iImage = 2;
-                tvis.itemex.iSelectedImage = 2;
-                tvis.itemex.iExpandedImage = 2;
+                tvis.itemex.iImage = 1;
+                tvis.itemex.iSelectedImage = 1;
+                tvis.itemex.iExpandedImage = 1;
             }
-
             tvis.itemex.cChildren = node.next ? 1 : 0;
             auto label = MakeNodeLabel(node);
             tvis.itemex.pszText = const_cast<LPWSTR>(label.GetString());
@@ -341,7 +341,6 @@ void OsiFileView::ExpandGoal(const CTreeItem& item, const OsiGoal* pGoal)
             tvis.itemex.lParam = std::bit_cast<LPARAM>(new OsiTreeNodeData{
                 .viewType = OVT_GOAL, .pdata = &goal
             });
-
             m_tree.InsertItem(&tvis);
         }
     } else {
