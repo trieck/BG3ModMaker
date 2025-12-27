@@ -10,6 +10,7 @@
 #include <iostream>
 #include <memory>
 #include <numbers>
+#include <random>
 #include <ranges>
 #include <span>
 #include <sstream>

@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "UtilityBase.h"
 #include "BTree.h"
-
 #include <CppUnitTest.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -98,5 +97,41 @@ public:
             }
             prev = it.key();
         }
+    }
+
+    static CString MakeUUID()
+    {
+        GUID uuid;
+        if (FAILED(CoCreateGuid(&uuid))) {
+            return "";
+        }
+
+        wchar_t buffer[40]{};
+        StringFromGUID2(uuid, buffer, _countof(buffer));
+
+        return buffer;
+    }
+
+    TEST_METHOD(LargeInsertion)
+    {
+        BTree<CString, CString> tree(7);
+
+        constexpr auto maxKeys = 1000;
+        for (auto i = 0; i < maxKeys; ++i) {
+            auto key = MakeUUID();
+            auto value = MakeUUID();
+            tree.insert(key, value);
+        }
+
+        auto count = 0;
+        std::optional<CString> prev;
+        for (auto it = tree.begin(); it != tree.end(); ++it) {
+            if (prev) {
+                Assert::IsTrue(*prev < it.key());
+            }
+            prev = it.key();
+            ++count;
+        }
+        Assert::AreEqual(maxKeys, count);
     }
 };
