@@ -497,10 +497,6 @@
     <Image Include="resources\call.ico">
       <Filter>Resources</Filter>
     </Image>
-    <Image Include="resources\database.ico" />
-    <Image Include="resources\proc.ico" />
-    <Image Include="resources\query.ico" />
-    <Image Include="resources\param.ico" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\BG3ModStudio.rc">
@@ -527,6 +523,5 @@
     <None Include="resources\Version.rc2">
       <Filter>Resources</Filter>
     </None>
-    <None Include="LICENSE" />
   </ItemGroup>
 </Project>

@@ -65,18 +65,20 @@ public:
         size_t index = 0;
     };
 
-    void insert(const K& key, const V& value);
-    iterator find(const K& key) const;
-    iterator begin() const;
-    iterator end() const;
-
-private:
     using Page = BTreePage<K, V>;
     using PPage = Page*;
 
     using Node = BTreeNode<K, V>;
     using PNode = Node*;
 
+    iterator begin() const;
+    iterator end() const;
+    iterator find(const K& key) const;
+    PPage root() const;
+    void clear();
+    void insert(const K& key, const V& value);
+
+private:
     Page::Ptr insertR(PPage page, const K& key, const V& value);
     iterator findR(PPage page, const K& key) const;
     Page::Ptr split(PPage page);
@@ -201,9 +203,21 @@ BTree<K, V>::iterator BTree<K, V>::end() const
 }
 
 template <BTreeKey K, BTreeValue V>
+void BTree<K, V>::clear()
+{
+    m_pRoot = std::make_unique<Page>();
+}
+
+template <BTreeKey K, BTreeValue V>
 BTree<K, V>::iterator BTree<K, V>::find(const K& key) const
 {
     return findR(m_pRoot.get(), key);
+}
+
+template <BTreeKey K, BTreeValue V>
+BTree<K, V>::PPage BTree<K, V>::root() const
+{
+    return m_pRoot.get();
 }
 
 template <BTreeKey K, BTreeValue V>

@@ -11,4 +11,5 @@ typedef struct OsiData
 enum OsiViewType
 {
     OVT_GOAL = 0,
+    OVT_FUNCTION = 1,
 };

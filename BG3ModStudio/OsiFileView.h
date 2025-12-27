@@ -1,5 +1,6 @@
 #pragma once
 
+#include "BTree.h"
 #include "FormViewContainer.h"
 #include "IFileView.h"
 #include "OsiStory.h"
@@ -38,6 +39,10 @@ public:
     operator HWND() const override;
 
 private:
+    using SBTree = BTree<std::string, int>;
+    using SBPage = SBTree::Page;
+    using SBNode = SBTree::Node;
+
     LRESULT OnCreate(LPCREATESTRUCT pcs);
     void OnSize(UINT nType, CSize size);
     LRESULT OnItemExpanding(LPNMHDR pnmh);
@@ -46,9 +51,16 @@ private:
     void OnContextMenu(const CWindow& wnd, const CPoint& point);
 
     void Populate();
+    void PopulateFunctions();
     void PopulateGoals();
     void Expand(const CTreeItem& item);
+    void ExpandFunction(const CTreeItem& item, const SBNode* pFunc);
     void ExpandGoal(const CTreeItem& item, const OsiGoal* pGoal);
+
+    CString FindMinKey(const SBPage* pPage);
+    CString FindMaxKey(const SBPage* pPage);
+    CString MakeNodeLabel(const SBNode& node);
+    size_t CountLeafItems(const SBPage* page);
 
     OsiStory m_story;
     CSplitterWindow m_splitter;
@@ -58,4 +70,7 @@ private:
     CImageList m_imageList;
     CString m_path;
     OsiViewFactory m_viewFactory;
+    BTree<std::string, int> m_funcTree;
+
+    static constexpr auto kMaxKeys = 32;
 };
