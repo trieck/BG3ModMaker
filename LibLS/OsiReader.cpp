@@ -25,6 +25,15 @@ bool OsiReader::isOsiFile(StreamBase& stream)
     return std::memcmp(sig, "\0Osiris save file", 17) == 0;
 }
 
+bool OsiReader::isOsiFile(const ByteBuffer& contents)
+{
+    if (contents.second < 17) {
+        return false;
+    }
+
+    return std::memcmp(contents.first.get(), "\0Osiris save file", 17) == 0;
+}
+
 bool OsiReader::getEnum(uint16_t type, OsiEnum& osiEnum)
 {
     auto it = m_story.enums.find(static_cast<uint16_t>(type));
@@ -54,98 +63,53 @@ OsiReader::OsiReader(OsiReader&& rhs) noexcept
 OsiReader& OsiReader::operator=(OsiReader&& rhs) noexcept
 {
     if (this != &rhs) {
-        m_file = std::move(rhs.m_file);
+        m_stream = std::move(rhs.m_stream);
         m_story = std::move(rhs.m_story);
     }
 
     return *this;
 }
 
-bool OsiReader::readFile(const char* filename)
+void OsiReader::read(StreamBase& stream)
 {
-    m_file.open(filename, "rb");
-    m_file.read<uint8_t>(); // unused byte
+    m_stream = Stream::makeStream(stream);
+    read();
+}
 
-    m_scramble = 0x00;
-    m_story.header.version = readString();
-    m_story.header.majorVersion = m_file.read<uint8_t>();
-    m_story.header.minorVersion = m_file.read<uint8_t>();
-    m_story.header.bigEndian = m_file.read<uint8_t>() != 0;
-    m_file.read<uint8_t>(); // unused byte
-
-    auto version = m_story.version();
-    if (version > OsiVersion::LAST_SUPPORTED) {
-        throw std::runtime_error("Unsupported Osi version");
-    }
-
-    if (version >= OsiVersion::ADD_VERSION_STRING) {
-        m_story.header.versionString = m_file.read(0x80).str(); // version string buffer
-    } else {
-        m_story.header.versionString.clear();
-    }
-
-    if (version >= OsiVersion::ADD_DEBUG_FLAGS) {
-        m_story.header.debugFlags = m_file.read<uint32_t>();
-    } else {
-        m_story.header.debugFlags = 0;
-    }
-
-    if (version < OsiVersion::REMOVE_EXTERNAL_STRING_TABLE) {
-        m_shortTypeIds = false;
-    } else if (version >= OsiVersion::ENUMS) {
-        m_shortTypeIds = true;
-    }
-
-    if (version >= OsiVersion::SCRAMBLED) {
-        m_scramble = 0xAD;
-    } else {
-        m_scramble = 0x00;
-    }
-
-    readTypes();
-    readStringTable();
-    makeBuiltins();
-    readEnums();
-    readDivObjects();
-    readFunctions();
-    readNodes();
-    readAdapters();
-    readDatabases();
-    readGoals();
-    readGlobalActions();
-    resolve();
-
-    return true;
+void OsiReader::read(const ByteBuffer& buffer)
+{
+    m_stream = Stream::makeStream(buffer);
+    read();
 }
 
 size_t OsiReader::read(char* buf, size_t size)
 {
-    return m_file.read(buf, size);
+    return m_stream.read(buf, size);
 }
 
 size_t OsiReader::write(const char* buf, size_t size)
 {
-    return m_file.write(buf, size);
+    return m_stream.write(buf, size);
 }
 
 void OsiReader::seek(int64_t offset, SeekMode mode)
 {
-    m_file.seek(offset, mode);
+    m_stream.seek(offset, mode);
 }
 
 size_t OsiReader::tell() const
 {
-    return m_file.tell();
+    return m_stream.tell();
 }
 
 size_t OsiReader::size() const
 {
-    return m_file.size();
+    return m_stream.size();
 }
 
 void OsiReader::readTypes()
 {
-    auto count = m_file.read<uint32_t>();
+    auto count = m_stream.read<uint32_t>();
 
     m_story.types.clear();
     m_story.typeAliases.clear();
@@ -215,11 +179,64 @@ void OsiReader::makeBuiltins()
     // TODO: populate custom type ids for versions without type aliases
 }
 
+void OsiReader::read()
+{
+    m_stream.read<uint8_t>(); // unused byte
+    m_scramble = 0x00;
+    m_story.header.version = readString();
+    m_story.header.majorVersion = m_stream.read<uint8_t>();
+    m_story.header.minorVersion = m_stream.read<uint8_t>();
+    m_story.header.bigEndian = m_stream.read<uint8_t>() != 0;
+    m_stream.read<uint8_t>(); // unused byte
+
+    auto version = m_story.version();
+    if (version > OsiVersion::LAST_SUPPORTED) {
+        throw Exception("Unsupported Osi version");
+    }
+
+    if (version >= OsiVersion::ADD_VERSION_STRING) {
+        m_story.header.versionString = m_stream.read(0x80).str(); // version string buffer
+    } else {
+        m_story.header.versionString.clear();
+    }
+
+    if (version >= OsiVersion::ADD_DEBUG_FLAGS) {
+        m_story.header.debugFlags = m_stream.read<uint32_t>();
+    } else {
+        m_story.header.debugFlags = 0;
+    }
+
+    if (version < OsiVersion::REMOVE_EXTERNAL_STRING_TABLE) {
+        m_shortTypeIds = false;
+    } else if (version >= OsiVersion::ENUMS) {
+        m_shortTypeIds = true;
+    }
+
+    if (version >= OsiVersion::SCRAMBLED) {
+        m_scramble = 0xAD;
+    } else {
+        m_scramble = 0x00;
+    }
+
+    readTypes();
+    readStringTable();
+    makeBuiltins();
+    readEnums();
+    readDivObjects();
+    readFunctions();
+    readNodes();
+    readAdapters();
+    readDatabases();
+    readGoals();
+    readGlobalActions();
+    resolve();
+}
+
 void OsiReader::readAdapters()
 {
     m_story.adapters.clear();
 
-    auto count = m_file.read<uint32_t>();
+    auto count = m_stream.read<uint32_t>();
 
     m_story.adapters.resize(count);
     for (auto i = 0u; i < count; ++i) {
@@ -233,7 +250,7 @@ void OsiReader::readDatabases()
 {
     m_story.databases.clear();
 
-    auto count = m_file.read<uint32_t>();
+    auto count = m_stream.read<uint32_t>();
 
     m_story.databases.resize(count);
     for (auto i = 0u; i < count; ++i) {
@@ -251,7 +268,7 @@ void OsiReader::readEnums()
         return;
     }
 
-    auto count = m_file.read<uint32_t>();
+    auto count = m_stream.read<uint32_t>();
     for (auto i = 0u; i < count; ++i) {
         OsiEnum e{};
         e.read(*this);
@@ -263,7 +280,7 @@ void OsiReader::readDivObjects()
 {
     m_story.divObjects.clear();
 
-    auto count = m_file.read<uint32_t>();
+    auto count = m_stream.read<uint32_t>();
     m_story.divObjects.reserve(count);
 
     for (auto i = 0u; i < count; ++i) {
@@ -278,7 +295,7 @@ void OsiReader::readFunctions()
     m_story.functions.clear();
     m_story.functionNames.clear();
 
-    auto count = m_file.read<uint32_t>();
+    auto count = m_stream.read<uint32_t>();
     m_story.functions.reserve(count);
 
     for (auto i = 0u; i < count; ++i) {
@@ -293,7 +310,7 @@ void OsiReader::readGlobalActions()
 {
     m_story.globalActions.clear();
 
-    auto count = m_file.read<uint32_t>();
+    auto count = m_stream.read<uint32_t>();
     m_story.globalActions.reserve(count);
 
     for (auto i = 0u; i < count; ++i) {
@@ -306,7 +323,7 @@ void OsiReader::readGlobalActions()
 void OsiReader::readGoals()
 {
     m_story.goals.clear();
-    auto count = m_file.read<uint32_t>();
+    auto count = m_stream.read<uint32_t>();
 
     m_story.goals.resize(count);
     for (auto i = 0u; i < count; ++i) {
@@ -320,7 +337,7 @@ void OsiReader::readNodes()
 {
     m_story.nodes.clear();
 
-    auto count = m_file.read<uint32_t>();
+    auto count = m_stream.read<uint32_t>();
     m_story.nodes.resize(count);
 
     for (auto i = 0u; i < count; ++i) {
@@ -333,7 +350,7 @@ OsiNode::Ptr OsiReader::readNode()
 {
     OsiNode::Ptr node;
 
-    auto type = static_cast<OsiNodeType>(m_file.peek<uint8_t>());
+    auto type = static_cast<OsiNodeType>(m_stream.peek<uint8_t>());
     switch (type) {
     case NT_DATABASE:
         node = std::make_unique<OsiDBNode>();
@@ -386,7 +403,7 @@ std::string OsiReader::readString()
     std::string s;
 
     while (true) {
-        auto c = m_file.read<uint8_t>() ^ m_scramble;
+        auto c = m_stream.read<uint8_t>() ^ m_scramble;
         if (c == '\0') {
             break;
         }
@@ -413,7 +430,7 @@ OsiVersion OsiReader::version() const
 
 std::vector<std::string> OsiReader::readStrings()
 {
-    auto count = m_file.read<uint32_t>();
+    auto count = m_stream.read<uint32_t>();
 
     std::vector<std::string> strings;
     strings.reserve(count);

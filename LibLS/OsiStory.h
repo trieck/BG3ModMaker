@@ -121,6 +121,7 @@ struct OsiFunction : OsiReadable
     uint32_t meta[4];
     OsiFunctionSig name;
 
+    std::string functionType() const;
     void read(OsiReader& reader) override;
 };
 

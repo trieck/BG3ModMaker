@@ -10,7 +10,7 @@ class GoalFormView : public DialogFormImpl<GoalFormView>,
 public:
     using Base = DialogFormImpl;
 
-    enum { IDD = IDD_GOALVIEW };
+    enum { IDD = IDD_GOAL_VIEW };
 
     BEGIN_MSG_MAP(GoalFormView)
         MSG_WM_SIZE(OnSize)

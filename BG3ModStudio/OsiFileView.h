@@ -50,17 +50,19 @@ private:
     LRESULT OnSelChanged(LPNMHDR pnmh);
     void OnContextMenu(const CWindow& wnd, const CPoint& point);
 
-    void Populate();
-    void PopulateFunctions();
-    void PopulateGoals();
+    CString FindMaxKey(const SBPage* pPage);
+    CString FindMinKey(const SBPage* pPage);
+    CString MakeNodeLabel(const SBNode& node);
+    OsiFunction* FindFunction(void* data);
+    size_t CountLeafItems(const SBPage* page);
     void Expand(const CTreeItem& item);
     void ExpandFunction(const CTreeItem& item, const SBNode* pFunc);
     void ExpandGoal(const CTreeItem& item, const OsiGoal* pGoal);
-
-    CString FindMinKey(const SBPage* pPage);
-    CString FindMaxKey(const SBPage* pPage);
-    CString MakeNodeLabel(const SBNode& node);
-    size_t CountLeafItems(const SBPage* page);
+    void ExpandType(const CTreeItem& item);
+    void Populate();
+    void PopulateFunctions();
+    void PopulateGoals();
+    void PopulateTypes();
 
     OsiStory m_story;
     CSplitterWindow m_splitter;

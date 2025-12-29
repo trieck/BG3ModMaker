@@ -5,7 +5,7 @@
 #define ID_SEPARATOR                    0
 #define ID_DEFAULT_PANE                 0
 #define IDR_MAINFRAME                   101
-#define IDD_GOALVIEW                    101
+#define IDD_TYPE_VIEW                   101
 #define IDI_FOLDER                      102
 #define IDI_FILE                        103
 #define ID_TOOL_PACKAGE                 104
@@ -80,8 +80,11 @@
 #define IDI_PROC                        174
 #define IDI_QUERY                       175
 #define IDI_PARAM                       177
-#define IDI_ICON1                       178
 #define IDI_FOLDER_SMALL                178
+#define IDD_GOAL_VIEW                   179
+#define IDD_FUNCTION_VIEW               180
+#define IDI_FUNCTION                    181
+#define IDI_TYPES                       182
 #define IDC_PROGRESS_INDEX              1000
 #define IDC_PAKFILE                     1001
 #define IDC_INDEX_FILE                  1002
@@ -156,6 +159,9 @@
 #define IDC_LICENSE_TEXT                1081
 #define IDC_INIT_CALLS                  1084
 #define IDC_EXIT_CALLS                  1085
+#define IDC_FUNCTION_TYPE               1086
+#define IDC_TYPE                        1087
+#define IDC_ALIAS                       1088
 #define ATL_IDC_TAB_CONTROL             0x3020
 #define ID_APPLY_NOW                    0x3021
 #define ID_WIZBACK                      0x3023
@@ -290,9 +296,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        179
+#define _APS_NEXT_RESOURCE_VALUE        183
 #define _APS_NEXT_COMMAND_VALUE         40037
-#define _APS_NEXT_CONTROL_VALUE         1086
+#define _APS_NEXT_CONTROL_VALUE         1088
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

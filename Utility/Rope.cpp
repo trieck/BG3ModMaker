@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "Exception.h"
 #include "MD5.h"
 #include "Rope.h"
 
@@ -356,7 +357,7 @@ void Rope::exportDOT(const std::string& filename, const PNode& node) const
 {
     std::ofstream ofs(filename);
     if (!ofs.is_open()) {
-        throw std::runtime_error("Failed to open file for writing: " + filename);
+        throw Exception("Failed to open file for writing: " + filename);
     }
 
     ofs << "digraph Rope {\n";

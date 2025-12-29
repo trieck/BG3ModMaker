@@ -224,6 +224,7 @@
     <ClInclude Include="FormatToken.h" />
     <ClInclude Include="FormView.h" />
     <ClInclude Include="FormViewContainer.h" />
+    <ClInclude Include="FunctionFormView.h" />
     <ClInclude Include="GameObjectDlg.h" />
     <ClInclude Include="GoalFormView.h" />
     <ClInclude Include="GR2FileView.h" />
@@ -272,6 +273,7 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TextFileView.h" />
     <ClInclude Include="TextTokenizer.h" />
+    <ClInclude Include="TypeFormView.h" />
     <ClInclude Include="UTF8Stream.h" />
     <ClInclude Include="Util.h" />
     <ClInclude Include="UUIDDlg.h" />
@@ -291,6 +293,7 @@
     <ClCompile Include="FileViewContainer.cpp" />
     <ClCompile Include="FindReplaceDlg.cpp" />
     <ClCompile Include="FormViewContainer.cpp" />
+    <ClCompile Include="FunctionFormView.cpp" />
     <ClCompile Include="GameObjectDlg.cpp" />
     <ClCompile Include="GoalFormView.cpp" />
     <ClCompile Include="GR2FileView.cpp" />
@@ -322,6 +325,7 @@
     <ClCompile Include="PAKWizWelcomePage.cpp" />
     <ClCompile Include="PIDL.cpp" />
     <ClCompile Include="ResourceHelper.cpp" />
+    <ClCompile Include="TypeFormView.cpp" />
     <ClCompile Include="ValueViewDlg.cpp" />
     <ClCompile Include="Win32ErrorMessage.cpp" />
     <ClCompile Include="SearchDlg.cpp" />
@@ -357,7 +361,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="folder-small.ico" />
     <Image Include="resources\about.bmp" />
     <Image Include="resources\app.ico" />
     <Image Include="resources\bg3.bmp" />
@@ -367,6 +370,7 @@
     <Image Include="resources\close.bmp" />
     <Image Include="resources\database.ico" />
     <Image Include="resources\folder-small.ico" />
+    <Image Include="resources\function.ico" />
     <Image Include="resources\game-object.ico" />
     <Image Include="resources\db.bmp" />
     <Image Include="resources\exit.bmp" />
@@ -398,6 +402,7 @@
     <Image Include="resources\saveall.bmp" />
     <Image Include="resources\search.bmp" />
     <Image Include="resources\setup.bmp" />
+    <Image Include="resources\types.ico" />
     <Image Include="resources\uuid.bmp" />
     <Image Include="resources\wizard.bmp" />
   </ItemGroup>

@@ -21,8 +21,8 @@ struct BTreePage;
 template <BTreeKey K, BTreeValue V>
 struct BTreeNode
 {
-    K key;
-    V value;
+    K key{};
+    V value{};
     std::unique_ptr<BTreePage<K, V>> next;
 };
 

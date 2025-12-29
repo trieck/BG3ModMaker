@@ -24,7 +24,7 @@ Stream LZ4FrameCompressor::decompress(const uint8_t* data, size_t size, size_t d
     LZ4F_freeDecompressionContext(dctx);
 
     if (LZ4F_isError(result)) {
-        throw std::runtime_error(std::format("Failed to decompress data: {}", LZ4F_getErrorName(result)));
+        throw Exception(std::format("Failed to decompress data: {}", LZ4F_getErrorName(result)));
     }
 
     return Stream::makeStream(reinterpret_cast<const char*>(output.get()), decompressedSize);

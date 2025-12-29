@@ -2,6 +2,7 @@
 #include "GoalFormView.h"
 #include "OsiData.h"
 #include "StringHelper.h"
+#include "Util.h"
 
 HWND GoalFormView::Create(HWND hWndParent, LPARAM dwInitParam)
 {
@@ -15,7 +16,8 @@ HWND GoalFormView::Create(HWND hWndParent, LPARAM dwInitParam)
     m_pStory = pData->pStory;
     ATLASSERT(m_pStory != nullptr);
 
-    m_pGoal = static_cast<OsiGoal*>(const_cast<void*>(pData->pdata));
+    m_pGoal = static_cast<const OsiGoal*>(pData->pdata);
+    ATLASSERT(m_pGoal != nullptr);
 
     m_initCalls = GetDlgItem(IDC_INIT_CALLS);
     ATLASSERT(m_initCalls.IsWindow());
@@ -26,12 +28,7 @@ HWND GoalFormView::Create(HWND hWndParent, LPARAM dwInitParam)
     m_signature = GetDlgItem(IDC_E_SIGNATURE);
     ATLASSERT(m_signature.IsWindow());
 
-    if (!m_font.CreatePointFont(110, L"Cascadia Mono") &&
-        !m_font.CreatePointFont(110, L"Consolas") &&
-        !m_font.CreatePointFont(110, L"Courier New")) {
-        ATLTRACE("Failed to create a font. Using system default.\n");
-        m_font.Attach(static_cast<HFONT>(GetStockObject(SYSTEM_FIXED_FONT)));
-    }
+    m_font.Attach(Util::CreateFixedWidthFont(110));
     m_signature.SetFont(m_font);
 
     static constexpr auto icons = {
@@ -122,7 +119,12 @@ CString GoalFormView::ParameterString(const OsiCall& call, uint32_t index, const
         const auto& sig = func->name;
         if (index < sig.parameters.types.size()) {
             auto type = sig.parameters.types[index];
-            paramType = StringHelper::fromUTF8(m_pStory->typeName(type).c_str());
+
+            CString outParam;
+            if (sig.isOutParam(index)) {
+                outParam.Format(L"out ");
+            }
+            paramType = outParam + StringHelper::fromUTF8(m_pStory->typeName(type).c_str());
         }
     }
 

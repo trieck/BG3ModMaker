@@ -4,6 +4,7 @@
 #include "Exception.h"
 #include "FileStream.h"
 #include "TextFileView.h"
+#include "Util.h"
 
 namespace { // anonymous
 
@@ -49,12 +50,7 @@ LRESULT BinaryFileView::OnCreate(LPCREATESTRUCT pcs)
 {
     auto lRet = DefWindowProc();
 
-    if (!m_font.CreatePointFont(120, L"Cascadia Mono") &&
-        !m_font.CreatePointFont(120, L"Consolas") &&
-        !m_font.CreatePointFont(120, L"Courier New")) {
-        ATLTRACE("Failed to create a font. Using system default.\n");
-        m_font.Attach(static_cast<HFONT>(GetStockObject(SYSTEM_FIXED_FONT)));
-    }
+    m_font.Attach(Util::CreateFixedWidthFont(120));
 
     if (!m_bkgndBrush.CreateSolidBrush(RGB(255, 255, 255))) {
         ATLTRACE("Failed to create brush.\n");

@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "Exception.h"
 #include "XmlWrapper.h"
 
 XmlWrapper::XmlWrapper()
@@ -66,6 +67,6 @@ void XmlWrapper::load(const ByteBuffer& buffer)
     // Parse the XML document
     pugi::xml_parse_result result = m_doc.load_string(xml.c_str());
     if (!result) {
-        throw std::runtime_error("Failed to parse XML document.");
+        throw Exception("Failed to parse XML document.");
     }
 }

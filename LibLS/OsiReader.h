@@ -17,16 +17,18 @@ public:
     OsiReader& operator=(const OsiReader&) = delete;
 
     static bool isOsiFile(StreamBase& stream);
+    static bool isOsiFile(const ByteBuffer& contents);
 
     bool getEnum(uint16_t type, OsiEnum& osiEnum);
     bool isAlias(uint32_t type) const;
-    bool readFile(const char* filename);
     bool shortTypeIds() const;
     const OsiStory& story() const;
+    OsiStory takeStory() &&;
     OsiValueType resolveAlias(OsiValueType type) const;
     OsiVersion version() const;
     std::string readString();
-    OsiStory takeStory() &&;
+    void read(const ByteBuffer& buffer);
+    void read(StreamBase& stream);
 
     // StreamBase
     size_t read(char* buf, size_t size) override;
@@ -40,6 +42,7 @@ private:
     OsiType makeBuiltin(const std::string& name, uint8_t index) const;
     std::vector<std::string> readStrings();
     void makeBuiltins();
+    void read();
     void readAdapters();
     void readDatabases();
     void readDivObjects();
@@ -52,7 +55,7 @@ private:
     void readTypes();
     void resolve();
 
-    FileStream m_file{};
+    Stream m_stream{};
     OsiStory m_story;
     uint8_t m_scramble = 0x00;
     bool m_shortTypeIds = false;

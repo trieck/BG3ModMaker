@@ -215,6 +215,12 @@
     <ClInclude Include="OsiData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FunctionFormView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TypeFormView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BG3ModStudio.cpp">
@@ -379,6 +385,12 @@
     <ClCompile Include="FormViewContainer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FunctionFormView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TypeFormView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="ribbon.xml">
@@ -500,7 +512,12 @@
     <Image Include="resources\folder-small.ico">
       <Filter>Resources</Filter>
     </Image>
-    <Image Include="folder-small.ico" />
+    <Image Include="resources\function.ico">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="resources\types.ico">
+      <Filter>Resources</Filter>
+    </Image>
     <Image Include="resources\database.ico" />
     <Image Include="resources\proc.ico" />
     <Image Include="resources\query.ico" />

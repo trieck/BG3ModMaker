@@ -44,9 +44,10 @@ LRESULT OsiFileView::OnCreate(LPCREATESTRUCT pcs)
 
     static constexpr auto icons = {
         IDI_GOAL,
-        IDI_DATABASE,
+        IDI_FUNCTION,
         IDI_QUERY,
-        IDI_FOLDER_SMALL
+        IDI_FOLDER_SMALL,
+        IDI_TYPES
     };
 
     m_imageList = ImageList_Create(16, 16, ILC_MASK | ILC_COLOR32, static_cast<uint32_t>(icons.size()), 0);
@@ -103,16 +104,51 @@ LRESULT OsiFileView::OnSelChanged(LPNMHDR pnmh)
     auto* data = reinterpret_cast<LPOSITREENODEDATA>(item.GetData());
     if (data == nullptr || data->pdata == nullptr) {
         m_formView.DestroyView();
-    } else {
-        OsiData osiData{.pStory = &m_story, .pdata = data->pdata};
-        m_formView.LoadView(data->viewType, &osiData);
+        return 0;
     }
+
+    auto* pData = data->pdata;
+    if (data->viewType == OVT_FUNCTION) {
+        pData = FindFunction(data);
+    }
+
+    if (pData == nullptr) {
+        m_formView.DestroyView();
+        return 0;
+    }
+
+    OsiData osiData{.pStory = &m_story, .pdata = pData};
+    m_formView.LoadView(data->viewType, &osiData);
 
     return 0;
 }
 
 void OsiFileView::OnContextMenu(const CWindow& wnd, const CPoint& point)
 {
+}
+
+OsiFunction* OsiFileView::FindFunction(void* data)
+{
+    auto* pNodeData = static_cast<LPOSITREENODEDATA>(data);
+    if (pNodeData == nullptr) {
+        return nullptr;
+    }
+
+    auto* pNode = static_cast<const SBNode*>(pNodeData->pdata);
+    if (pNode == nullptr) {
+        return nullptr;
+    }
+
+    if (pNode->next != nullptr) { // not a leaf node
+        return nullptr;
+    }
+
+    auto it = m_story.functionNames.find(pNode->key);
+    if (it == m_story.functionNames.end()) {
+        return nullptr;
+    }
+
+    return it->second;
 }
 
 BOOL OsiFileView::Create(HWND parent, _U_RECT rect, DWORD dwStyle, DWORD dwStyleEx)
@@ -132,8 +168,11 @@ BOOL OsiFileView::LoadFile(const CString& path)
     auto utf8Path = StringHelper::toUTF8(path);
 
     try {
+        FileStream stream;
+        stream.open(utf8Path, "rb");
+
         OsiReader reader;
-        reader.readFile(utf8Path);
+        reader.read(stream);
         m_story = std::move(reader).takeStory();
     } catch (const Exception& e) {
         ATLTRACE("Failed to load Osi file: %s\n", e.what());
@@ -147,7 +186,18 @@ BOOL OsiFileView::LoadFile(const CString& path)
 
 BOOL OsiFileView::LoadBuffer(const CString& path, const ByteBuffer& buffer)
 {
-    return FALSE;
+    try {
+        OsiReader reader;
+        reader.read(buffer);
+        m_story = std::move(reader).takeStory();
+    } catch (const Exception& e) {
+        ATLTRACE("Failed to load Osi buffer: %s\n", e.what());
+        return FALSE;
+    }
+
+    Populate();
+
+    return TRUE;
 }
 
 BOOL OsiFileView::SaveFile()
@@ -203,8 +253,9 @@ OsiFileView::operator HWND() const
 void OsiFileView::Populate()
 {
     m_tree.DeleteAllItems();
-    PopulateGoals();
     PopulateFunctions();
+    PopulateGoals();
+    PopulateTypes();
 }
 
 void OsiFileView::PopulateFunctions()
@@ -242,6 +293,23 @@ void OsiFileView::PopulateGoals()
     m_tree.InsertItem(&tvis);
 }
 
+void OsiFileView::PopulateTypes()
+{
+    TV_INSERTSTRUCT tvis{};
+    tvis.hParent = TVI_ROOT;
+    tvis.hInsertAfter = TVI_LAST;
+    tvis.itemex.mask = TVIF_CHILDREN | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_EXPANDEDIMAGE | TVIF_TEXT |
+        TVIF_PARAM;
+
+    tvis.itemex.cChildren = m_story.types.empty() ? 0 : 1;
+    tvis.itemex.pszText = const_cast<LPWSTR>(L"Types");
+    tvis.itemex.lParam = std::bit_cast<LPARAM>(new OsiTreeNodeData{.viewType = OVT_TYPE, .pdata = nullptr});
+    tvis.itemex.iImage = 4;
+    tvis.itemex.iSelectedImage = 4;
+    tvis.itemex.iExpandedImage = 4;
+    m_tree.InsertItem(&tvis);
+}
+
 void OsiFileView::Expand(const CTreeItem& item)
 {
     CWaitCursor cursor;
@@ -269,10 +337,12 @@ void OsiFileView::Expand(const CTreeItem& item)
         return;
     }
 
-    if (data->viewType == OVT_GOAL) {
-        ExpandGoal(item, static_cast<const OsiGoal*>(data->pdata));
-    } else if (data->viewType == OVT_FUNCTION) {
+    if (data->viewType == OVT_FUNCTION) {
         ExpandFunction(item, static_cast<const SBNode*>(data->pdata));
+    } else if (data->viewType == OVT_GOAL) {
+        ExpandGoal(item, static_cast<const OsiGoal*>(data->pdata));
+    } else if (data->viewType == OVT_TYPE) {
+        ExpandType(item);
     }
 }
 
@@ -356,6 +426,30 @@ void OsiFileView::ExpandGoal(const CTreeItem& item, const OsiGoal* pGoal)
             m_tree.InsertItem(&tvis);
         }
     }
+}
+
+void OsiFileView::ExpandType(const CTreeItem& item)
+{
+    TV_INSERTSTRUCT tvis{};
+    tvis.hParent = item.m_hTreeItem;
+    tvis.hInsertAfter = TVI_LAST;
+    tvis.itemex.mask = TVIF_CHILDREN | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_EXPANDEDIMAGE | TVIF_TEXT |
+        TVIF_PARAM;
+    tvis.itemex.iImage = 4;
+    tvis.itemex.iSelectedImage = 4;
+    tvis.itemex.iExpandedImage = 4;
+
+    for (const auto& type : m_story.types | std::views::values) {
+        tvis.itemex.cChildren = 0;
+        auto typeName = StringHelper::fromUTF8(type.name.c_str());
+        tvis.itemex.pszText = const_cast<LPWSTR>(typeName.GetString());
+        tvis.itemex.lParam = std::bit_cast<LPARAM>(new OsiTreeNodeData{
+            .viewType = OVT_TYPE, .pdata = &type
+        });
+        m_tree.InsertItem(&tvis);
+    }
+
+    m_tree.SortChildren(item.m_hTreeItem);
 }
 
 CString OsiFileView::FindMinKey(const SBPage* pPage)

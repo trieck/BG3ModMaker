@@ -187,3 +187,27 @@ CString Util::MakeUUID(BOOL bHandle)
 
     return s;
 }
+
+CFontHandle Util::CreateFixedWidthFont(int nPointSize)
+{
+    CFont font;
+    if (!font.CreatePointFont(nPointSize, L"Cascadia Mono") &&
+        !font.CreatePointFont(nPointSize, L"Consolas") &&
+        !font.CreatePointFont(nPointSize, L"Courier New")) {
+        ATLTRACE("Failed to create a font. Using system default.\n");
+        font.Attach(static_cast<HFONT>(GetStockObject(SYSTEM_FIXED_FONT)));
+    }
+
+    return font.Detach();
+}
+
+CFontHandle Util::CreateDialogFont(int nPointSize, BOOL bBold)
+{
+    CFont font;
+    if (!font.CreatePointFont(nPointSize, L"Tahoma", nullptr, bBold != FALSE)) {
+        ATLTRACE("Failed to create a font. Using system default.\n");
+        font.Attach(static_cast<HFONT>(GetStockObject(SYSTEM_FONT)));
+    }
+
+    return font.Detach();
+}

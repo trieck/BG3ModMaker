@@ -105,6 +105,12 @@ BOOL IsOsiFile(FileStream& stream)
 
     return OsiReader::isOsiFile(stream);
 }
+
+BOOL IsOsiFile(const ByteBuffer& contents)
+{
+    return OsiReader::isOsiFile(contents);
+}
+
 } // anonymous namespace
 
 IFileView::Ptr FileViewFactory::CreateFileView(const CString& path, HWND parent, _U_RECT rect, DWORD dwStyle,
@@ -191,6 +197,8 @@ IFileView::Ptr FileViewFactory::CreateFileView(const CString& path, const ByteBu
         fileView = std::make_shared<LSFFileView>();
     } else if (IsGR2File(contents)) {
         fileView = std::make_shared<GR2FileView>();
+    } else if (IsOsiFile(contents)) {
+        fileView = std::make_shared<OsiFileView>();
     } else if (IsBinaryFile(contents)) {
         fileView = std::make_shared<BinaryFileView>();
     } else {

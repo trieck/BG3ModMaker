@@ -104,11 +104,10 @@ void OsiType::read(OsiReader& reader)
 {
     name = reader.readString();
     index = reader.read<uint8_t>();
+    alias = 0;
 
     if (reader.version() >= OsiVersion::TYPE_ALIASES) {
         alias = reader.read<uint8_t>();
-    } else {
-        alias = 0; // TODO:
     }
 }
 
@@ -167,6 +166,32 @@ void OsiFunctionSig::read(OsiReader& reader)
     reader.read(outParamMask.data(), outParamBytes);
 
     parameters.read(reader);
+}
+
+std::string OsiFunction::functionType() const
+{
+    switch (type) {
+    case FT_UNDEFINED:
+        return "Undefined";
+    case FT_EVENT:
+        return "Event";
+    case FT_QUERY:
+        return "Query";
+    case FT_CALL:
+        return "Call";
+    case FT_DATABASE:
+        return "Database";
+    case FT_PROC:
+        return "Proc";
+    case FT_SYS_QUERY:
+        return "System Query";
+    case FT_SYS_CALL:
+        return "System Call";
+    case FT_USER_QUERY:
+        return "User Query";
+    default:
+        return std::format("FunctionType{}", static_cast<uint32_t>(type));
+    }
 }
 
 void OsiFunction::read(OsiReader& reader)
