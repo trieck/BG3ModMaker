@@ -110,7 +110,6 @@ CString GoalFormView::CallString(const OsiCall& call)
 
 CString GoalFormView::ParameterString(const OsiCall& call, uint32_t index, const OsiTypedValue::Ptr& param)
 {
-    CString paramValue(L"<unknown>");
     CString paramType(L"<unknown>");
 
     auto it = m_pStory->functionNames.find(call.name);
@@ -128,19 +127,10 @@ CString GoalFormView::ParameterString(const OsiCall& call, uint32_t index, const
         }
     }
 
-    const auto& value = param->value;
-    std::visit([&]<typename T0>(const T0& arg) {
-        using T = std::decay_t<T0>;
-        if constexpr (std::is_same_v<T, int32_t>) {
-            paramValue.Format(L"%d", arg);
-        } else if constexpr (std::is_same_v<T, int64_t>) {
-            paramValue.Format(L"%lld", static_cast<long long>(arg));
-        } else if constexpr (std::is_same_v<T, float>) {
-            paramValue.Format(L"%g", arg);
-        } else if constexpr (std::is_same_v<T, std::string>) {
-            paramValue = L"\"" + StringHelper::fromUTF8(arg.c_str()) + L"\"";
-        }
-    }, value);
+    auto paramValue = StringHelper::fromUTF8(param->toString().c_str());
+    if (std::holds_alternative<std::string>(param->value)) {
+        paramValue = L"\"" + paramValue + L"\"";
+    }
 
     CString result;
     result.Format(L"%s %s", paramType.GetString(), paramValue.GetString());

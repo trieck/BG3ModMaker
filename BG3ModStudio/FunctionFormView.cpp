@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "FunctionFormView.h"
+#include "OsiData.h"
 #include "StringHelper.h"
 #include "Util.h"
 

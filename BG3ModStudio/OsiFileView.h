@@ -39,7 +39,7 @@ public:
     operator HWND() const override;
 
 private:
-    using SBTree = BTree<std::string, int>;
+    using SBTree = BTree<std::string, LPCVOID>;
     using SBPage = SBTree::Page;
     using SBNode = SBTree::Node;
 
@@ -50,16 +50,19 @@ private:
     LRESULT OnSelChanged(LPNMHDR pnmh);
     void OnContextMenu(const CWindow& wnd, const CPoint& point);
 
-    CString FindMaxKey(const SBPage* pPage);
-    CString FindMinKey(const SBPage* pPage);
-    CString MakeNodeLabel(const SBNode& node);
-    OsiFunction* FindFunction(void* data);
-    size_t CountLeafItems(const SBPage* page);
+    CString FindMaxKey(const SBPage* pPage) const;
+    CString FindMinKey(const SBPage* pPage) const;
+    CString MakeNodeLabel(const SBNode& node) const;
+    const OsiDatabase* FindDatabase(void* data) const;
+    const OsiFunction* FindFunction(void* data) const;
+    size_t CountLeafItems(const SBPage* page) const;
     void Expand(const CTreeItem& item);
+    void ExpandDatabase(const CTreeItem& item, const SBNode* pDatabase);
     void ExpandFunction(const CTreeItem& item, const SBNode* pFunc);
     void ExpandGoal(const CTreeItem& item, const OsiGoal* pGoal);
     void ExpandType(const CTreeItem& item);
     void Populate();
+    void PopulateDatabases();
     void PopulateFunctions();
     void PopulateGoals();
     void PopulateTypes();
@@ -72,7 +75,8 @@ private:
     CImageList m_imageList;
     CString m_path;
     OsiViewFactory m_viewFactory;
-    BTree<std::string, int> m_funcTree;
+    SBTree m_funcTree;
+    SBTree m_dbTree;
 
-    static constexpr auto kMaxKeys = 32;
+    static constexpr auto kMaxNodes = 64;
 };

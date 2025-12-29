@@ -76,12 +76,6 @@ IDI_CALL                ICON                    "call.ico"
 
 IDI_DATABASE            ICON                    "database.ico"
 
-IDI_PROC                ICON                    "proc.ico"
-
-IDI_QUERY               ICON                    "query.ico"
-
-IDI_PARAM               ICON                    "param.ico"
-
 IDI_FOLDER_SMALL        ICON                    "folder-small.ico"
 
 IDI_FUNCTION            ICON                    "function.ico"
@@ -530,6 +524,14 @@ BEGIN
     LTEXT           "",IDC_ALIAS,56,39,182,12,SS_CENTERIMAGE
 END
 
+IDD_DB_VIEW DIALOGEX 0, 0, 343, 182
+STYLE DS_SETFONT | WS_CHILD
+FONT 8, "Tahoma", 400, 0, 0x0
+BEGIN
+    CONTROL         "",IDC_LST_DATABASE,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,27,329,87
+    LTEXT           "Schema:",IDC_STATIC,7,15,53,8
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -729,6 +731,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 78
     END
+
+    IDD_DB_VIEW, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 336
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 175
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -849,6 +859,11 @@ BEGIN
 END
 
 IDD_TYPE_VIEW AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DB_VIEW AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

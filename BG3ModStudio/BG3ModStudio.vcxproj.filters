@@ -221,6 +221,9 @@
     <ClInclude Include="TypeFormView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DatabaseFormView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BG3ModStudio.cpp">
@@ -391,6 +394,9 @@
     <ClCompile Include="TypeFormView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DatabaseFormView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="ribbon.xml">
@@ -519,9 +525,6 @@
       <Filter>Resources</Filter>
     </Image>
     <Image Include="resources\database.ico" />
-    <Image Include="resources\proc.ico" />
-    <Image Include="resources\query.ico" />
-    <Image Include="resources\param.ico" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\BG3ModStudio.rc">

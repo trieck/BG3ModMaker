@@ -57,7 +57,7 @@ OsiValueType OsiStory::resolveAlias(OsiValueType type) const
 
 std::string OsiStory::typeName(OsiValueType typeId) const
 {
-    auto typeId8 = static_cast<uint8_t>(resolveAlias(typeId));
+    auto typeId8 = static_cast<uint8_t>(typeId);
 
     auto it = types.find(typeId8);
     if (it != types.end()) {
@@ -322,6 +322,24 @@ void OsiRelNode::resolve(OsiStory& story)
         }
         adapter.ownerNode = index;
     }
+}
+
+std::string OsiValue::toString() const
+{
+    if (!isValid()) {
+        return "<invalid>";
+    }
+
+    std::string strValue;
+    std::visit([&]<typename T>(const T& arg) {
+        if constexpr (std::is_arithmetic_v<T>) {
+            strValue = std::to_string(arg);
+        } else if constexpr (std::is_same_v<T, std::string>) {
+            strValue = arg;
+        }
+    }, value);
+
+    return strValue;
 }
 
 void OsiValue::read(OsiReader& reader)

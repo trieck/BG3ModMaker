@@ -272,6 +272,8 @@ struct OsiValue : OsiReadable
     uint8_t flags;
     int8_t index;
 
+    std::string toString() const;
+
     bool isValid() const
     {
         return (flags & OVF_VALID) != 0;

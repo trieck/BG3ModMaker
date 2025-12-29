@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "DatabaseFormView.h"
 #include "FunctionFormView.h"
 #include "GoalFormView.h"
 #include "OsiViewFactory.h"
@@ -9,6 +10,9 @@ IFormView::Ptr OsiViewFactory::CreateView(HWND hWndParent, OsiViewType type, LPC
     IFormView::Ptr formView;
 
     switch (type) {
+    case OVT_DATABASE:
+        formView = std::make_unique<DatabaseFormView>();
+        break;
     case OVT_FUNCTION:
         formView = std::make_unique<FunctionFormView>();
         break;

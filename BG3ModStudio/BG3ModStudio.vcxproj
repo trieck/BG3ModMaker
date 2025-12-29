@@ -217,6 +217,7 @@
     <ClInclude Include="COMError.h" />
     <ClInclude Include="D3DModel.h" />
     <ClInclude Include="DatabaseDlg.h" />
+    <ClInclude Include="DatabaseFormView.h" />
     <ClInclude Include="DocStyler.h" />
     <ClInclude Include="FileOperation.h" />
     <ClInclude Include="FileViewContainer.h" />
@@ -288,6 +289,7 @@
     <ClCompile Include="COMError.cpp" />
     <ClCompile Include="D3DModel.cpp" />
     <ClCompile Include="DatabaseDlg.cpp" />
+    <ClCompile Include="DatabaseFormView.cpp" />
     <ClCompile Include="DocStyler.cpp" />
     <ClCompile Include="FileOperation.cpp" />
     <ClCompile Include="FileViewContainer.cpp" />
@@ -393,9 +395,6 @@
     <Image Include="resources\pak-explorer.bmp" />
     <Image Include="resources\pak-large.bmp" />
     <Image Include="resources\pak.bmp" />
-    <Image Include="resources\param.ico" />
-    <Image Include="resources\proc.ico" />
-    <Image Include="resources\query.ico" />
     <Image Include="resources\region.ico" />
     <Image Include="resources\resource.ico" />
     <Image Include="resources\save.bmp" />

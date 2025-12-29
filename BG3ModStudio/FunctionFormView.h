@@ -1,7 +1,6 @@
 #pragma once
 
 #include "FormView.h"
-#include "OsiData.h"
 #include "OsiStory.h"
 #include "resources/resource.h"
 
