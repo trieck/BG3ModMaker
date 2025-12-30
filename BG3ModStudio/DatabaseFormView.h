@@ -14,7 +14,6 @@ public:
 
     BEGIN_MSG_MAP(DatabaseFormView)
         MSG_WM_SIZE(OnSize)
-        MSG_WM_TIMER(OnTimer)
         CHAIN_MSG_MAP(CDialogResize)
     END_MSG_MAP()
 
@@ -27,7 +26,6 @@ public:
 
 private:
     void OnSize(UINT /*uMsg*/, const CSize& size);
-    void OnTimer(UINT_PTR nIDEvent);
 
     void AutoAdjustColumns();
     void InsertColumns();

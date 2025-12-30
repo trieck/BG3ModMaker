@@ -47,7 +47,8 @@ LRESULT OsiFileView::OnCreate(LPCREATESTRUCT pcs)
         IDI_FUNCTION,
         IDI_FOLDER_SMALL,
         IDI_TYPES,
-        IDI_DATABASE
+        IDI_DATABASE,
+        IDI_ENUM
     };
 
     m_imageList = ImageList_Create(16, 16, ILC_MASK | ILC_COLOR32, static_cast<uint32_t>(icons.size()), 0);
@@ -279,6 +280,7 @@ void OsiFileView::Populate()
 {
     m_tree.DeleteAllItems();
     PopulateDatabases();
+    PopulateEnums();
     PopulateFunctions();
     PopulateGoals();
     PopulateTypes();
@@ -298,6 +300,24 @@ void OsiFileView::PopulateDatabases()
     tvis.itemex.iImage = 4;
     tvis.itemex.iSelectedImage = 4;
     tvis.itemex.iExpandedImage = 4;
+
+    m_tree.InsertItem(&tvis);
+}
+
+void OsiFileView::PopulateEnums()
+{
+    TV_INSERTSTRUCT tvis{};
+    tvis.hParent = TVI_ROOT;
+    tvis.hInsertAfter = TVI_LAST;
+    tvis.itemex.mask = TVIF_CHILDREN | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_EXPANDEDIMAGE | TVIF_TEXT |
+        TVIF_PARAM;
+
+    tvis.itemex.cChildren = m_story.goals.empty() ? 0 : 1;
+    tvis.itemex.pszText = const_cast<LPWSTR>(L"Enums");
+    tvis.itemex.lParam = std::bit_cast<LPARAM>(new OsiTreeNodeData{.viewType = OVT_ENUM, .pdata = nullptr});
+    tvis.itemex.iImage = 5;
+    tvis.itemex.iSelectedImage = 5;
+    tvis.itemex.iExpandedImage = 5;
 
     m_tree.InsertItem(&tvis);
 }
@@ -383,6 +403,8 @@ void OsiFileView::Expand(const CTreeItem& item)
 
     if (data->viewType == OVT_DATABASE) {
         ExpandDatabase(item, static_cast<const SBNode*>(data->pdata));
+    } else if (data->viewType == OVT_ENUM) {
+        ExpandEnum(item, static_cast<const OsiEnum*>(data->pdata));
     } else if (data->viewType == OVT_FUNCTION) {
         ExpandFunction(item, static_cast<const SBNode*>(data->pdata));
     } else if (data->viewType == OVT_GOAL) {
@@ -446,6 +468,45 @@ void OsiFileView::ExpandDatabase(const CTreeItem& item, const SBNode* pDatabase)
             m_tree.InsertItem(&tvis);
         }
     }
+}
+
+void OsiFileView::ExpandEnum(const CTreeItem& item, const OsiEnum* pEnum)
+{
+    TV_INSERTSTRUCT tvis{};
+    tvis.hParent = item.m_hTreeItem;
+    tvis.hInsertAfter = TVI_LAST;
+    tvis.itemex.mask = TVIF_CHILDREN | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_EXPANDEDIMAGE | TVIF_TEXT |
+        TVIF_PARAM;
+    tvis.itemex.iImage = 5;
+    tvis.itemex.iSelectedImage = 5;
+    tvis.itemex.iExpandedImage = 5;
+
+    if (pEnum == nullptr) {
+        for (const auto& e : m_story.enums | std::views::values) {
+            tvis.itemex.cChildren = 1;
+            auto typeName = m_story.typeName(e.type);
+            auto wTypeName = StringHelper::fromUTF8(typeName.c_str());
+            tvis.itemex.pszText = const_cast<LPWSTR>(wTypeName.GetString());
+            tvis.itemex.lParam = std::bit_cast<LPARAM>(new OsiTreeNodeData{
+                .viewType = OVT_ENUM, .pdata = &e
+            });
+            m_tree.InsertItem(&tvis);
+        }
+    } else {
+        for (const auto& entry : pEnum->elements) {
+            const auto& name = entry.first;
+            auto wName = StringHelper::fromUTF8(name.c_str());
+
+            CString label;
+            label.Format(L"%s = %llu", wName.GetString(), entry.second);
+            tvis.itemex.cChildren = 0;
+            tvis.itemex.pszText = const_cast<LPWSTR>(label.GetString());
+            tvis.itemex.lParam = 0;
+            m_tree.InsertItem(&tvis);
+        }
+    }
+
+    m_tree.SortChildren(item.m_hTreeItem);
 }
 
 void OsiFileView::ExpandFunction(const CTreeItem& item, const SBNode* pFunc)

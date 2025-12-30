@@ -524,7 +524,10 @@
     <Image Include="resources\types.ico">
       <Filter>Resources</Filter>
     </Image>
+    <Image Include="enums.ico" />
     <Image Include="resources\database.ico" />
+    <Image Include="resources\enums.ico" />
+    <Image Include="resources\enum.ico" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\BG3ModStudio.rc">

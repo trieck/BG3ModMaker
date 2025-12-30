@@ -82,6 +82,8 @@ IDI_FUNCTION            ICON                    "function.ico"
 
 IDI_TYPES               ICON                    "types.ico"
 
+IDI_ENUM                ICON                    "enum.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

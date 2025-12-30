@@ -2,12 +2,13 @@
 #include "DatabaseFormView.h"
 
 #include <format>
+#include <utility>
 
 #include "OsiData.h"
 #include "StringHelper.h"
 #include "Util.h"
 
-static constexpr UINT_PTR TIMER_ADJUST_COLUMNS = 1;
+static constexpr auto MIN_LAST_COLUMN_WIDTH = 150;
 
 HWND DatabaseFormView::Create(HWND hWndParent, LPARAM dwInitParam)
 {
@@ -43,6 +44,11 @@ HWND DatabaseFormView::Create(HWND hWndParent, LPARAM dwInitParam)
 
     DlgResize_Init();
 
+    CRect rc;
+    GetClientRect(&rc);
+
+    SetWindowPos(nullptr, 0, 0, rc.Width(), rc.Height(),SWP_NOMOVE | SWP_NOZORDER);
+
     return this->m_hWnd;
 }
 
@@ -50,15 +56,7 @@ void DatabaseFormView::OnSize(UINT, const CSize& size)
 {
     DlgResize_UpdateLayout(size.cx, size.cy);
 
-    SetTimer(TIMER_ADJUST_COLUMNS, 10);
-}
-
-void DatabaseFormView::OnTimer(UINT_PTR nIDEvent)
-{
-    if (nIDEvent == TIMER_ADJUST_COLUMNS) {
-        KillTimer(TIMER_ADJUST_COLUMNS);
-        AutoAdjustColumns();
-    }
+    AutoAdjustColumns();
 }
 
 void DatabaseFormView::InsertColumns()
@@ -67,7 +65,7 @@ void DatabaseFormView::InsertColumns()
     for (const auto& param : m_pDatabase->parameters.types) {
         auto typeName = m_pStory->typeName(param);
         auto wideType = StringHelper::fromUTF8(typeName.c_str());
-        m_view.InsertColumn(i++, wideType, LVCFMT_LEFT, 150);
+        m_view.InsertColumn(i++, wideType, LVCFMT_LEFT, MIN_LAST_COLUMN_WIDTH);
     }
 
     AutoAdjustColumns();
@@ -93,18 +91,21 @@ void DatabaseFormView::InsertFacts()
 
 void DatabaseFormView::AutoAdjustColumns()
 {
+    auto columnCount = m_view.GetHeader().GetItemCount();
+    if (columnCount == 0) {
+        return;
+    }
+
     CRect rcClient;
     m_view.GetClientRect(&rcClient);
 
+    // Calculate total width of all columns except the last
     int totalWidth = 0;
-    auto columnCount = m_view.GetHeader().GetItemCount();
-
     for (auto i = 0; i < columnCount - 1; ++i) {
         totalWidth += m_view.GetColumnWidth(i);
     }
 
-    auto remaining = rcClient.Width() - totalWidth;
-    if (remaining > 0) {
-        m_view.SetColumnWidth(columnCount - 1, remaining);
-    }
+    auto remaining = std::max(MIN_LAST_COLUMN_WIDTH, rcClient.Width() - totalWidth);
+
+    m_view.SetColumnWidth(columnCount - 1, remaining);
 }

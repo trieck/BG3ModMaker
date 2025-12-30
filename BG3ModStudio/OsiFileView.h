@@ -58,11 +58,13 @@ private:
     size_t CountLeafItems(const SBPage* page) const;
     void Expand(const CTreeItem& item);
     void ExpandDatabase(const CTreeItem& item, const SBNode* pDatabase);
+    void ExpandEnum(const CTreeItem& item, const OsiEnum* pEnum);
     void ExpandFunction(const CTreeItem& item, const SBNode* pFunc);
     void ExpandGoal(const CTreeItem& item, const OsiGoal* pGoal);
     void ExpandType(const CTreeItem& item);
     void Populate();
     void PopulateDatabases();
+    void PopulateEnums();
     void PopulateFunctions();
     void PopulateGoals();
     void PopulateTypes();
