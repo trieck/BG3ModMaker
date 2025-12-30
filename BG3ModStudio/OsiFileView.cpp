@@ -627,18 +627,6 @@ CString OsiFileView::FindMinKey(const SBPage* pPage) const
     return pPage->nodes.front().key.c_str();
 }
 
-CString OsiFileView::FindMaxKey(const SBPage* pPage) const
-{
-    while (pPage->type == SBPage::PageType::Internal) {
-        // rightmost descent
-        const auto& n = pPage->nodes.back();
-        pPage = n.next.get();
-    }
-
-    // leaf
-    return pPage->nodes.back().key.c_str();
-}
-
 CString OsiFileView::MakeNodeLabel(const SBNode& node) const
 {
     CString label;

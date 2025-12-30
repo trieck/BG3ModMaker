@@ -363,7 +363,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="enums.ico" />
     <Image Include="resources\about.bmp" />
     <Image Include="resources\app.ico" />
     <Image Include="resources\bg3.bmp" />
@@ -371,9 +370,7 @@
     <Image Include="resources\call.ico" />
     <Image Include="resources\catalog.bmp" />
     <Image Include="resources\close.bmp" />
-    <Image Include="resources\database.ico" />
     <Image Include="resources\enum.ico" />
-    <Image Include="resources\enums.ico" />
     <Image Include="resources\folder-small.ico" />
     <Image Include="resources\function.ico" />
     <Image Include="resources\game-object.ico" />
@@ -436,7 +433,6 @@
     <Text Include="resources\treasure-template.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="LICENSE" />
     <None Include="resources\Version.rc2" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -50,7 +50,6 @@ private:
     LRESULT OnSelChanged(LPNMHDR pnmh);
     void OnContextMenu(const CWindow& wnd, const CPoint& point);
 
-    CString FindMaxKey(const SBPage* pPage) const;
     CString FindMinKey(const SBPage* pPage) const;
     CString MakeNodeLabel(const SBNode& node) const;
     const OsiDatabase* FindDatabase(void* data) const;
