@@ -45,9 +45,14 @@ HWND DatabaseFormView::Create(HWND hWndParent, LPARAM dwInitParam)
     DlgResize_Init();
 
     CRect rc;
-    GetClientRect(&rc);
-
-    SetWindowPos(nullptr, 0, 0, rc.Width(), rc.Height(),SWP_NOMOVE | SWP_NOZORDER);
+    m_view.GetClientRect(&rc);
+    m_view.SetWindowPos(
+        nullptr,
+        0, 0,
+        rc.Width(),
+        rc.Height(),
+        SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED
+    );
 
     return this->m_hWnd;
 }
