@@ -144,10 +144,10 @@
 #define IDC_B_REPLACE                   1065
 #define IDC_B_REPLACE_ALL               1066
 #define IDC_B_FIND_NEXT                 1067
-#define IDC_EDIT1                       1069
 #define IDC_E_VALUE                     1069
-#define IDC_E_SIGNATURE                 1069
-#define IDC_DBPATH                      1071
+#define IDC_E_SIGNATURE                 1070
+#define IDC_DECOMPILED                  1071
+#define IDC_DBPATH                      1072
 #define IDC_PROGRESS_DB                 1073
 #define IDC_E_DBPATH                    1074
 #define IDC_RADIO_GAMEOBJECT            1076

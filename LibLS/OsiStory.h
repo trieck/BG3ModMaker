@@ -1,6 +1,7 @@
 #pragma once
 
 #include "OsiTable.h"
+#include "StreamBase.h"
 
 class OsiReader;
 
@@ -50,6 +51,18 @@ struct OsiResolvable
     virtual ~OsiResolvable() = default;
 
     virtual void resolve(OsiStory& story) = 0;
+};
+
+struct OsiTuple;
+
+struct OsiDecompileable
+{
+    OsiDecompileable() = default;
+    OsiDecompileable(const OsiDecompileable& rhs) = default;
+    virtual ~OsiDecompileable() = default;
+    OsiDecompileable& operator=(const OsiDecompileable&) = default;
+
+    virtual StreamBase& decompile(const OsiStory& story, StreamBase& stream, const OsiTuple& tuple, bool printTypes = false) const = 0;
 };
 
 struct OsiType : OsiReadable
@@ -140,7 +153,7 @@ enum OsiNodeType : uint8_t
     NT_TOTAL_TYPES = 10,
 };
 
-struct OsiNode : OsiReadable, OsiResolvable
+struct OsiNode : OsiReadable, OsiResolvable, OsiDecompileable
 {
     OsiNodeType type;
     uint32_t index;
@@ -150,10 +163,10 @@ struct OsiNode : OsiReadable, OsiResolvable
 
     using Ptr = std::unique_ptr<OsiNode>;
 
+    StreamBase& decompile(const OsiStory& story, StreamBase& stream, const OsiTuple& tuple, bool printTypes = false) const override = 0;
+    virtual std::string typeName() const = 0;
     void read(OsiReader& reader) override;
     void resolve(OsiStory& story) override;
-
-    virtual std::string typeName() const = 0;
 };
 
 enum OsiEntryPoint : uint32_t
@@ -187,6 +200,7 @@ struct OsiDataNode : OsiNode
 
 struct OsiDBNode : OsiDataNode
 {
+    StreamBase& decompile(const OsiStory& story, StreamBase& stream, const OsiTuple& tuple, bool printTypes = false) const override;
     void read(OsiReader& reader) override;
 
     std::string typeName() const override
@@ -197,6 +211,7 @@ struct OsiDBNode : OsiDataNode
 
 struct OsiProcNode : OsiDataNode
 {
+    StreamBase& decompile(const OsiStory& story, StreamBase& stream, const OsiTuple& tuple, bool printTypes = false) const override;
     void read(OsiReader& reader) override;
 
     std::string typeName() const override
@@ -259,8 +274,10 @@ enum OsiValueFlags : uint8_t
     OVF_ADAPTED = 0x80,
 };
 
-struct OsiValue : OsiReadable
+struct OsiValue : OsiReadable, OsiDecompileable
 {
+    using SPtr = std::shared_ptr<OsiValue>;
+
     OsiValueType type;
     using Value = std::variant<
         int32_t,
@@ -344,6 +361,7 @@ struct OsiValue : OsiReadable
         }
     }
 
+    StreamBase& decompile(const OsiStory& story, StreamBase& stream, const OsiTuple& tuple, bool printTypes = false) const override;
     void read(OsiReader& reader) override;
 };
 
@@ -358,10 +376,11 @@ struct OsiVariable : OsiTypedValue
 {
     std::string variableName;
 
+    StreamBase& decompile(const OsiStory& story, StreamBase& stream, const OsiTuple& tuple, bool printTypes = false) const override;
     void read(OsiReader& reader) override;
 };
 
-struct OsiCall : OsiReadable
+struct OsiCall : OsiReadable, OsiDecompileable
 {
     std::string name;
 
@@ -369,7 +388,25 @@ struct OsiCall : OsiReadable
     bool negate;
     int32_t goalIdOrDebugHook;
 
+    StreamBase& decompile(const OsiStory& story, StreamBase& stream, const OsiTuple& tuple, bool printTypes = false) const override;
     void read(OsiReader& reader) override;
+};
+
+struct OsiTuple : OsiReadable
+{
+    std::vector<OsiValue::SPtr> physical;
+    std::unordered_map<int32_t, OsiValue::SPtr> logical;
+
+    StreamBase& decompile(const OsiStory& story, StreamBase& stream, bool printTypes = false) const;
+    void read(OsiReader& reader) override;
+};
+
+enum OsiRuleType : uint8_t
+{
+    RT_UNKNOWN = 0,
+    RT_RULE,
+    RT_PROC,
+    RT_QUERY
 };
 
 struct OsiRuleNode : OsiRelNode
@@ -380,10 +417,13 @@ struct OsiRuleNode : OsiRelNode
     uint32_t derivedGoalRef = INVALID_REF;
     bool isQuery = false;
 
+    const OsiNode* getRoot(const OsiStory& story) const;
+    OsiNode* getRoot(const OsiStory& story);
+    OsiRuleType ruleType(const OsiStory& story) const;
+    OsiTuple makeInitialTuple() const;
+    StreamBase& decompile(const OsiStory& story, StreamBase& stream, const OsiTuple& tuple, bool printTypes = false) const override;
     void read(OsiReader& reader) override;
     void resolve(OsiStory& story) override;
-
-    OsiNode* getRoot(OsiStory& story);
 
     std::string typeName() const override
     {
@@ -415,6 +455,7 @@ struct OsiJoinNode : OsiTreeNode
 
 struct OsiAndNode : OsiJoinNode
 {
+    StreamBase& decompile(const OsiStory& story, StreamBase& stream, const OsiTuple& tuple, bool printTypes = false) const override;
     void read(OsiReader& reader) override;
 
     std::string typeName() const override
@@ -425,16 +466,18 @@ struct OsiAndNode : OsiJoinNode
 
 struct OsiNandNode : OsiJoinNode
 {
+    StreamBase& decompile(const OsiStory& story, StreamBase& stream, const OsiTuple& tuple, bool printTypes = false) const override;
     void read(OsiReader& reader) override;
 
     std::string typeName() const override
     {
-        return "Nand";
+        return "Not And";
     }
 };
 
 struct OsiQueryNode : OsiNode
 {
+    StreamBase& decompile(const OsiStory& story, StreamBase& stream, const OsiTuple& tuple, bool printTypes = false) const override;
     void read(OsiReader& reader) override;
 
     std::string typeName() const override
@@ -495,6 +538,7 @@ struct OsiRelOpNode : OsiRelNode
     OsiValue rightValue;
     RelOpType relOp;
 
+    StreamBase& decompile(const OsiStory& story, StreamBase& stream, const OsiTuple& tuple, bool printTypes = false) const override;
     void read(OsiReader& reader) override;
 
     std::string typeName() const override
@@ -503,22 +547,15 @@ struct OsiRelOpNode : OsiRelNode
     }
 };
 
-struct Tuple : OsiReadable
-{
-    std::vector<OsiValue> physical;
-    std::unordered_map<int32_t, OsiValue> logical;
-
-    void read(OsiReader& reader) override;
-};
-
 struct OsiAdapter : OsiReadable
 {
     uint32_t index;
-    Tuple constants;
+    OsiTuple constants;
     std::vector<int8_t> logicalIndices;
     std::unordered_map<int8_t, int8_t> logicalToPhysicalMap;
     uint32_t ownerNode = INVALID_REF;
 
+    OsiTuple adapt(const OsiTuple& columns) const;
     void read(OsiReader& reader) override;
 };
 
@@ -549,6 +586,8 @@ struct OsiGoal : OsiReadable
     int8_t flags; // 0x02 = Child goal
     std::vector<OsiCall> initCalls;
     std::vector<OsiCall> exitCalls;
+
+    StreamBase& decompile(const OsiStory& story, StreamBase& stream) const;
 
     void read(OsiReader& reader) override;
 };
@@ -595,12 +634,13 @@ struct OsiStory
     OsiStory(const OsiStory&) = delete;
     OsiStory& operator=(const OsiStory&) = delete;
 
-    OsiVersion version() const;
     bool isAlias(uint32_t type) const;
     OsiValueType resolveAlias(OsiValueType type) const;
+    OsiVersion version() const;
+    std::string nodeTypeName(OsiNodeType type) const;
     std::string typeName(OsiValueType typeId) const;
     std::string typeName(uint32_t typeId) const;
-    std::string nodeTypeName(OsiNodeType type) const;
+    StreamBase& decompile(const OsiGoal& goal, StreamBase& stream);
 
     SaveFileHeader header{};
     std::unordered_map<uint8_t, OsiType> types;
@@ -608,7 +648,7 @@ struct OsiStory
     std::unordered_map<uint16_t, OsiEnum> enums;
     std::unordered_map<std::string, OsiFunction*,
                        CaseInsensitiveHash,
-                       CaseInsensitiveEq> functionNames;
+                       CaseInsensitiveEq> functionSigs;
 
     OsiTable<OsiAdapter> adapters;
     OsiTable<OsiDatabase> databases;

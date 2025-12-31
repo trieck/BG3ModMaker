@@ -19,7 +19,7 @@ OsiStory& OsiStory::operator=(OsiStory&& rhs) noexcept
         databases = std::move(rhs.databases);
         divObjects = std::move(rhs.divObjects);
         enums = std::move(rhs.enums);
-        functionNames = std::move(rhs.functionNames);
+        functionSigs = std::move(rhs.functionSigs);
         functions = std::move(rhs.functions);
         globalActions = std::move(rhs.globalActions);
         goals = std::move(rhs.goals);
@@ -70,6 +70,11 @@ std::string OsiStory::typeName(OsiValueType typeId) const
 std::string OsiStory::typeName(uint32_t typeId) const
 {
     return typeName(static_cast<OsiValueType>(typeId));
+}
+
+StreamBase& OsiStory::decompile(const OsiGoal& goal, StreamBase& stream)
+{
+    return goal.decompile(*this, stream);
 }
 
 std::string OsiStory::nodeTypeName(OsiNodeType type) const
@@ -277,6 +282,26 @@ void OsiDBNode::read(OsiReader& reader)
     OsiDataNode::read(reader);
 }
 
+StreamBase& OsiDBNode::decompile(const OsiStory& story, StreamBase& stream, const OsiTuple& tuple,
+                                 bool printTypes) const
+{
+    stream.write(std::format("{}(", name));
+    tuple.decompile(story, stream, printTypes);
+    stream.write(")\n");
+
+    return stream;
+}
+
+StreamBase& OsiProcNode::decompile(const OsiStory& story, StreamBase& stream, const OsiTuple& tuple,
+                                   bool printTypes) const
+{
+    stream.write(std::format("{}(", name));
+    tuple.decompile(story, stream, true);
+    stream.write(")\n");
+
+    return stream;
+}
+
 void OsiProcNode::read(OsiReader& reader)
 {
     OsiDataNode::read(reader);
@@ -340,6 +365,32 @@ std::string OsiValue::toString() const
     }, value);
 
     return strValue;
+}
+
+StreamBase& OsiValue::decompile(const OsiStory& story, StreamBase& stream, const OsiTuple& tuple, bool printTypes) const
+{
+    auto resolvedType = story.resolveAlias(type);
+    switch (resolvedType) {
+    case OVT_INT:
+        stream.writeText(std::get<int32_t>(value));
+        break;
+    case OVT_INT64:
+        stream.writeText(std::get<int64_t>(value));
+        break;
+    case OVT_FLOAT:
+        stream.writeText(std::get<float>(value));
+        break;
+    case OVT_STRING:
+        stream.write(std::format("\"{}\"", std::get<std::string>(value)));
+        break;
+    case OVT_GUIDSTRING:
+        stream.write(std::get<std::string>(value));
+        break;
+    default:
+        throw Exception("Decompilation of value type {} not implemented.", static_cast<int>(resolvedType));
+    }
+
+    return stream;
 }
 
 void OsiValue::read(OsiReader& reader)
@@ -423,6 +474,31 @@ void OsiTypedValue::read(OsiReader& reader)
     }
 }
 
+StreamBase& OsiVariable::decompile(const OsiStory& story, StreamBase& stream, const OsiTuple& tuple,
+                                   bool printTypes) const
+{
+    if (isUnused()) {
+        if (printTypes && type != OVT_NONE) {
+            stream.write(std::format("({})", story.typeName(type)));
+        }
+        stream.write("_");
+    } else if (isAdapted()) {
+        if (!variableName.empty()) {
+            if (printTypes && type != OVT_NONE) {
+                stream.write(std::format("({})", story.typeName(type)));
+            }
+            stream.write(variableName);
+        } else {
+            const auto& var = tuple.logical.at(index);
+            var->decompile(story, stream, {});
+        }
+    } else {
+        OsiValue::decompile(story, stream, tuple);
+    }
+
+    return stream;
+}
+
 void OsiVariable::read(OsiReader& reader)
 {
     OsiTypedValue::read(reader);
@@ -432,6 +508,30 @@ void OsiVariable::read(OsiReader& reader)
         reader.read<uint8_t>(); // unused
         setIsAdapted(reader.read<uint8_t>() != 0);
     }
+}
+
+StreamBase& OsiCall::decompile(const OsiStory& story, StreamBase& stream, const OsiTuple& tuple, bool printTypes) const
+{
+    if (name.empty()) {
+        return stream;
+    }
+
+    if (negate) {
+        stream.write("NOT ");
+    }
+
+    stream.write(std::format("{}(", name));
+
+    for (auto i = 0u; i < parameters.size(); ++i) {
+        if (i > 0) {
+            stream.write(", ");
+        }
+        parameters[i]->decompile(story, stream, tuple, printTypes);
+    }
+
+    stream.write(")");
+
+    return stream;
 }
 
 void OsiCall::read(OsiReader& reader)
@@ -468,6 +568,47 @@ void OsiCall::read(OsiReader& reader)
         negate = reader.read<uint8_t>() != 0;
     }
     goalIdOrDebugHook = reader.read<int32_t>();
+}
+
+StreamBase& OsiRuleNode::decompile(const OsiStory& story, StreamBase& stream, const OsiTuple& tuple,
+                                   bool printTypes) const
+{
+    auto type = ruleType(story);
+
+    switch (type) {
+    case RT_PROC:
+        stream.write("PROC\n");
+        break;
+    case RT_QUERY:
+        stream.write("QRY\n");
+        break;
+    case RT_RULE:
+        stream.write("IF\n");
+        break;
+    default:
+        throw Exception("Decompilation of rule node type {} not implemented.", static_cast<int>(type));
+    }
+
+    auto initialTuple = makeInitialTuple();
+    if (adapterRef != INVALID_REF) {
+        const auto& adapter = story.adapters[adapterRef];
+        initialTuple = adapter.adapt(initialTuple);
+    }
+
+    printTypes = printTypes || type == RT_PROC || type == RT_QUERY;
+
+    assert(parentRef != INVALID_REF);
+
+    const auto& parentNode = story.nodes[parentRef];
+    parentNode->decompile(story, stream, initialTuple, printTypes);
+
+    stream.write("THEN\n");
+    for (const auto& call : calls) {
+        call.decompile(story, stream, initialTuple, false);
+        stream.write(";\n");
+    }
+
+    return stream;
 }
 
 void OsiRuleNode::read(OsiReader& reader)
@@ -525,13 +666,28 @@ void OsiRuleNode::resolve(OsiStory& story)
     if (isQuery) {
         auto* ruleRoot = getRoot(story);
         if (ruleRoot->name.size() > 7 &&
-            ruleRoot->name.compare(ruleRoot->name.size() - 7, 7, "__DEF__") == 0) {
+            ruleRoot->name.ends_with("__DEF__")) {
             ruleRoot->name.resize(ruleRoot->name.size() - 7);
         }
     }
 }
 
-OsiNode* OsiRuleNode::getRoot(OsiStory& story)
+OsiTuple OsiRuleNode::makeInitialTuple() const
+{
+    OsiTuple tuple{};
+
+    for (auto i = 0u; i < variables.size(); ++i) {
+        auto var = std::make_shared<OsiVariable>(variables[i]);
+        tuple.physical.emplace_back(var);
+        std::pair p{static_cast<int32_t>(i), var };
+
+        tuple.logical.emplace(p);
+    }
+
+    return tuple;
+}
+
+OsiNode* OsiRuleNode::getRoot(const OsiStory& story)
 {
     OsiNode* parent = this;
 
@@ -548,6 +704,56 @@ OsiNode* OsiRuleNode::getRoot(OsiStory& story)
     }
 
     return parent;
+}
+
+const OsiNode* OsiRuleNode::getRoot(const OsiStory& story) const
+{
+    const OsiNode* parent = this;
+
+    for (;;) {
+        if (isRelNode(*parent)) {
+            auto* relNode = static_cast<const OsiRelNode*>(parent);
+            parent = story.nodes[relNode->parentRef].get();
+        } else if (isJoinNode(*parent)) {
+            auto* joinNode = static_cast<const OsiJoinNode*>(parent);
+            parent = story.nodes[joinNode->leftParentRef].get();
+        } else {
+            break;
+        }
+    }
+
+    return parent;
+}
+
+OsiRuleType OsiRuleNode::ruleType(const OsiStory& story) const
+{
+    const auto* pRoot = getRoot(story);
+    if (pRoot->type == NT_DATABASE) {
+        return RT_RULE;
+    }
+    if (pRoot->type == NT_PROC) {
+        auto querySig = std::format("{}__DEF__/{}", pRoot->name, pRoot->numParams);
+        auto sig = std::format("{}/{}", pRoot->name, pRoot->numParams);
+
+        if (!story.functionSigs.contains(querySig) &&
+            !story.functionSigs.contains(sig)) {
+            return RT_UNKNOWN;
+        }
+
+        const auto& func = story.functionSigs.at(sig);
+        switch (func->type) {
+        case FT_EVENT:
+            return RT_RULE;
+        case FT_PROC:
+            return RT_PROC;
+        case FT_USER_QUERY:
+            return RT_QUERY;
+        default:
+            return RT_UNKNOWN;
+        }
+    }
+
+    return RT_UNKNOWN;
 }
 
 void OsiJoinNode::read(OsiReader& reader)
@@ -589,14 +795,72 @@ void OsiJoinNode::resolve(OsiStory& story)
     }
 }
 
+StreamBase& OsiAndNode::decompile(const OsiStory& story, StreamBase& stream, const OsiTuple& tuple,
+                                  bool printTypes) const
+{
+    assert(leftAdapterRef != INVALID_REF);
+    assert(rightAdapterRef != INVALID_REF);
+    assert(leftParentRef != INVALID_REF);
+    assert(rightParentRef != INVALID_REF);
+
+    const auto& leftAdapter = story.adapters[leftAdapterRef];
+    const auto& rightAdapter = story.adapters[rightAdapterRef];
+
+    auto leftTuple = leftAdapter.adapt(tuple);
+    const auto& leftParentNode = story.nodes[leftParentRef];
+    leftParentNode->decompile(story, stream, leftTuple, printTypes);
+
+    stream.write("AND\n");
+
+    auto rightTuple = rightAdapter.adapt(tuple);
+    const auto& rightParentNode = story.nodes[rightParentRef];
+    rightParentNode->decompile(story, stream, rightTuple, false);
+
+    return stream;
+}
+
 void OsiAndNode::read(OsiReader& reader)
 {
     OsiJoinNode::read(reader);
 }
 
+StreamBase& OsiNandNode::decompile(const OsiStory& story, StreamBase& stream, const OsiTuple& tuple,
+                                   bool printTypes) const
+{
+    assert(leftAdapterRef != INVALID_REF);
+    assert(rightAdapterRef != INVALID_REF);
+    assert(leftParentRef != INVALID_REF);
+    assert(rightParentRef != INVALID_REF);
+
+    const auto& leftAdapter = story.adapters[leftAdapterRef];
+    const auto& rightAdapter = story.adapters[rightAdapterRef];
+
+    auto leftTuple = leftAdapter.adapt(tuple);
+    const auto& leftParentNode = story.nodes[leftParentRef];
+    leftParentNode->decompile(story, stream, leftTuple, printTypes);
+
+    stream.write("AND NOT\n");
+
+    auto rightTuple = rightAdapter.adapt(tuple);
+    const auto& rightParentNode = story.nodes[rightParentRef];
+    rightParentNode->decompile(story, stream, rightTuple, false);
+
+    return stream;
+}
+
 void OsiNandNode::read(OsiReader& reader)
 {
     OsiJoinNode::read(reader);
+}
+
+StreamBase& OsiQueryNode::decompile(const OsiStory& story, StreamBase& stream, const OsiTuple& tuple,
+                                    bool printTypes) const
+{
+    stream.write(std::format("{}(", name));
+    tuple.decompile(story, stream, printTypes);
+    stream.write(")\n");
+
+    return stream;
 }
 
 void OsiQueryNode::read(OsiReader& reader)
@@ -644,6 +908,58 @@ bool isRelNode(const OsiNode& node) noexcept
     return node.type == NT_REL_OP || node.type == NT_RULE;
 }
 
+StreamBase& OsiRelOpNode::decompile(const OsiStory& story, StreamBase& stream, const OsiTuple& tuple,
+                                    bool printTypes) const
+{
+    assert(adapterRef != INVALID_REF);
+    assert(parentRef != INVALID_REF);
+
+    const auto& adapter = story.adapters[adapterRef];
+    auto adaptedTuple = adapter.adapt(tuple);
+
+    const auto& parentNode = story.nodes[parentRef];
+    parentNode->decompile(story, stream, adaptedTuple, printTypes);
+
+    stream.write("AND\n");
+
+    if (leftValueIndex != -1) {
+        adaptedTuple.logical[leftValueIndex]->decompile(story, stream, adaptedTuple);
+    } else {
+        leftValue.decompile(story, stream, tuple);
+    }
+
+    switch (relOp) {
+    case ROT_LESS:
+        stream.write(" < ");
+        break;
+    case ROT_LESS_EQUAL:
+        stream.write(" <= ");
+        break;
+    case ROT_GREATER:
+        stream.write(" > ");
+        break;
+    case ROT_GREATER_EQUAL:
+        stream.write(" >= ");
+        break;
+    case ROT_EQUAL:
+        stream.write(" == ");
+        break;
+    case ROT_NOT_EQUAL:
+        stream.write(" != ");
+        break;
+    }
+
+    if (rightValueIndex != -1) {
+        adaptedTuple.logical[rightValueIndex]->decompile(story, stream, adaptedTuple);
+    } else {
+        rightValue.decompile(story, stream, tuple);
+    }
+
+    stream.write("\n");
+
+    return stream;
+}
+
 void OsiRelOpNode::read(OsiReader& reader)
 {
     OsiRelNode::read(reader);
@@ -662,7 +978,18 @@ void OsiInternalQueryNode::read(OsiReader& reader)
     OsiQueryNode::read(reader);
 }
 
-void Tuple::read(OsiReader& reader)
+StreamBase& OsiTuple::decompile(const OsiStory& story, StreamBase& stream, bool printTypes) const
+{
+    for (auto i = 0u; i < physical.size(); ++i) {
+        if (i > 0) {
+            stream.write(", ");
+        }
+        physical[i]->decompile(story, stream, {}, printTypes);
+    }
+    return stream;
+}
+
+void OsiTuple::read(OsiReader& reader)
 {
     physical.clear();
     logical.clear();
@@ -671,18 +998,57 @@ void Tuple::read(OsiReader& reader)
     physical.reserve(count);
 
     for (auto i = 0u; i < count; ++i) {
-        OsiValue val{};
+        auto val = std::make_shared<OsiValue>();
+
         int8_t index;
         if (reader.version() >= OsiVersion::VALUE_FLAGS) {
-            val.read(reader);
-            index = val.index;
+            val->read(reader);
+            index = val->index;
         } else {
             index = reader.read<int8_t>();
-            val.read(reader);
+            val->read(reader);
         }
         physical.emplace_back(val);
         logical[index] = val;
     }
+}
+
+OsiTuple OsiAdapter::adapt(const OsiTuple& columns) const
+{
+    OsiTuple result{};
+
+    for (auto i = 0u; i < logicalIndices.size(); ++i) {
+        auto logicalIndex = logicalIndices[i];
+        if (logicalIndex != -1) {
+            if (columns.logical.contains(logicalIndex)) {
+                const auto& value = columns.logical.at(logicalIndex);
+                result.physical.emplace_back(value);
+            } else if (logicalIndex == 0) {
+                // special case for savegames where adapaters are padded with 0 logical indices
+                auto value = std::make_shared<OsiValue>();
+                value->type = OVT_NONE;
+                value->setIsUnused(true);
+                result.physical.emplace_back(std::move(value));
+            } else {
+                throw Exception("Logical index {} not found in tuple.", static_cast<int>(logicalIndex));
+            }
+        } else if (constants.logical.contains(static_cast<int32_t>(i))) {
+            const auto& value = constants.logical.at(static_cast<int32_t>(i));
+            result.physical.emplace_back(value);
+        } else { // emit a null value
+            auto var = std::make_shared<OsiVariable>();
+            var->type = OVT_NONE;
+            var->setIsUnused(true);
+            result.physical.emplace_back(std::move(var));
+        }
+    }
+
+    // Generate logical -> physical map
+    for (const auto& map : logicalToPhysicalMap) {
+        result.logical[map.first] = result.physical[map.second];
+    }
+
+    return result;
 }
 
 void OsiAdapter::read(OsiReader& reader)
@@ -783,4 +1149,46 @@ void OsiGoal::read(OsiReader& reader)
         call.read(reader);
         exitCalls.emplace_back(std::move(call));
     }
+}
+
+StreamBase& OsiGoal::decompile(const OsiStory& story, StreamBase& stream) const
+{
+    stream.write("Version 1\n");
+    stream.write("SubGoalCombiner SGC_AND\n\n");
+    stream.write("INITSECTION\n");
+
+    OsiTuple nullTuple{};
+
+    for (const auto& call : initCalls) {
+        call.decompile(story, stream, nullTuple, false);
+        stream.write(";\n");
+    }
+
+    stream.write("\nKBSECTION\n");
+
+    for (const auto& node : story.nodes) {
+        if (node->type == NT_RULE) {
+            const auto& ruleNode = static_cast<const OsiRuleNode&>(*node);
+            if (ruleNode.derivedGoalRef == index) {
+                ruleNode.decompile(story, stream, nullTuple, false);
+                stream.write("\n");
+            }
+        }
+    }
+
+    stream.write("\nEXITSECTION\n");
+
+    for (const auto& call : exitCalls) {
+        call.decompile(story, stream, nullTuple, false);
+        stream.write(";\n");
+    }
+
+    stream.write("ENDEXITSECTION\n");
+
+    for (const auto& goalId : parentGoals) {
+        const auto& goal = story.goals[goalId];
+        stream.write(std::format("ParentTargetEdge \"{}\"\n", goal.name));
+    }
+
+    return stream;
 }

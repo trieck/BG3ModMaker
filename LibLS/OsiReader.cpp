@@ -293,7 +293,7 @@ void OsiReader::readDivObjects()
 void OsiReader::readFunctions()
 {
     m_story.functions.clear();
-    m_story.functionNames.clear();
+    m_story.functionSigs.clear();
 
     auto count = m_stream.read<uint32_t>();
     m_story.functions.reserve(count);
@@ -302,7 +302,8 @@ void OsiReader::readFunctions()
         OsiFunction func{};
         func.read(*this);
         auto& f = m_story.functions.emplace_back(std::move(func));
-        m_story.functionNames[f.name.name] = &f;
+        auto sigKey = std::format("{}/{}", f.name.name, f.name.parameters.types.size());
+        m_story.functionSigs[sigKey] = &f;
     }
 }
 

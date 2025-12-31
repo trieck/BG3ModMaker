@@ -1,9 +1,5 @@
 #include "stdafx.h"
 #include "DatabaseFormView.h"
-
-#include <format>
-#include <utility>
-
 #include "OsiData.h"
 #include "StringHelper.h"
 #include "Util.h"

@@ -13,7 +13,7 @@ public:
     GR2Stream& operator=(const GR2Stream&);
 
     template <typename T>
-    T read() requires (StreamReadable<T>);
+    T read() requires (StreamBinary<T>);
 
     uint8_t*& data();
 
@@ -31,7 +31,7 @@ public:
     GR2RefStream& operator=(const GR2RefStream&);
 
     template <typename T>
-    T read() requires (StreamReadable<T>);
+    T read() requires (StreamBinary<T>);
 
     bool isNull() const;
 
@@ -42,7 +42,7 @@ private:
 };
 
 template <typename T>
-T GR2Stream::read() requires (StreamReadable<T>)
+T GR2Stream::read() requires (StreamBinary<T>)
 {
     T value;
     std::memcpy(static_cast<void*>(&value), m_buf, sizeof(T));
@@ -53,7 +53,7 @@ T GR2Stream::read() requires (StreamReadable<T>)
 }
 
 template <typename T>
-T GR2RefStream::read() requires (StreamReadable<T>)
+T GR2RefStream::read() requires (StreamBinary<T>)
 {
     T value;
     std::memcpy(static_cast<void*>(&value), *m_buf, sizeof(T));

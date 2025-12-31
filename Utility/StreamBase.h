@@ -1,5 +1,7 @@
 #pragma once
 
+#include <format>
+
 enum class SeekMode : DWORD
 {
     Begin = FILE_BEGIN,
@@ -8,10 +10,16 @@ enum class SeekMode : DWORD
 };
 
 template <typename T>
-concept StreamReadable = std::is_trivially_copyable_v<T>;
+concept StreamBinary =
+    std::is_trivially_copyable_v<T> &&
+    std::is_standard_layout_v<T> &&
+    !std::is_pointer_v<T> &&
+    !std::is_reference_v<T> &&
+    !std::is_array_v<T>;
 
 template <typename T>
-concept StreamWritable = std::is_trivially_copyable_v<T>;
+concept TextNumber = std::is_arithmetic_v<T> &&
+    !std::is_same_v<T, bool>;
 
 class StreamBase
 {
@@ -24,23 +32,30 @@ public:
     virtual size_t size() const = 0;
 
     template <typename T>
-    T peek() requires (StreamReadable<T>);
+    T peek() requires (StreamBinary<T>);
 
     template <typename T>
-    T read() requires (StreamReadable<T>);
+    T read() requires (StreamBinary<T>);
 
     template <typename T>
-    size_t read(T* data, size_t count) requires (StreamReadable<T>);
+    size_t read(T* data, size_t count) requires (StreamBinary<T>);
 
     template <typename T>
-    size_t write(T value) requires (StreamWritable<T>);
+    size_t write(const T& value) requires (StreamBinary<T>);
+
+    size_t write(std::string_view value);
 
     template <typename T>
-    size_t write(const T* data, size_t count) requires (StreamWritable<T>);
+    size_t writeText(const T& value) requires (TextNumber<T>);
+
+    size_t writeText(bool b);
+
+    template <typename T>
+    size_t write(const T* data, size_t count) requires (StreamBinary<T>);
 };
 
 template <typename T>
-T StreamBase::peek() requires (StreamReadable<T>)
+T StreamBase::peek() requires (StreamBinary<T>)
 {
     T value;
     read(reinterpret_cast<char*>(&value), sizeof(T));
@@ -49,7 +64,7 @@ T StreamBase::peek() requires (StreamReadable<T>)
 }
 
 template <typename T>
-T StreamBase::read() requires (StreamReadable<T>)
+T StreamBase::read() requires (StreamBinary<T>)
 {
     T value;
     read(reinterpret_cast<char*>(&value), sizeof(T));
@@ -57,19 +72,37 @@ T StreamBase::read() requires (StreamReadable<T>)
 }
 
 template <typename T>
-size_t StreamBase::read(T* data, size_t count) requires (StreamReadable<T>)
+size_t StreamBase::read(T* data, size_t count) requires (StreamBinary<T>)
 {
     return read(reinterpret_cast<char*>(data), sizeof(T) * count);
 }
 
 template <typename T>
-size_t StreamBase::write(T value) requires (StreamWritable<T>)
+size_t StreamBase::write(const T& value) requires (StreamBinary<T>)
 {
     return write(reinterpret_cast<const char*>(&value), sizeof(T));
 }
 
+inline size_t StreamBase::write(std::string_view value)
+{
+    return write(value.data(), value.size());
+}
+
+inline size_t StreamBase::writeText(bool b)
+{
+    std::string str = b ? "true" : "false";
+    return write(str);
+}
+
 template <typename T>
-size_t StreamBase::write(const T* data, size_t count) requires (StreamWritable<T>)
+size_t StreamBase::writeText(const T& value) requires (TextNumber<T>)
+{
+    auto str = std::format("{}", value);
+    return write(str);
+}
+
+template <typename T>
+size_t StreamBase::write(const T* data, size_t count) requires (StreamBinary<T>)
 {
     return write(reinterpret_cast<const char*>(data), sizeof(T) * count);
 }
