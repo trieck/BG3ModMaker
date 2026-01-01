@@ -26,7 +26,7 @@ HWND GoalFormView::Create(HWND hWndParent, LPARAM dwInitParam)
     m_font.Attach(Util::CreateFixedWidthFont(110));
     m_decompiled.SetFont(m_font);
 
-    DlgResize_Init();
+    DlgResize_Init(FALSE);
 
     Decompile();
 
@@ -41,10 +41,16 @@ void GoalFormView::OnSize(UINT, const CSize& size)
 void GoalFormView::Decompile()
 {
     Stream stream;
-    m_pGoal->decompile(*m_pStory, stream);
+    try {
+        m_pGoal->decompile(*m_pStory, stream);
+    } catch (const std::exception& ex) {
+        auto str = std::format("Error decompiling goal '{}': {}\n", m_pGoal->name, ex.what());
+        auto wStr = StringHelper::fromUTF8(str.c_str());
+        AtlMessageBox(*this, wStr.GetString(), L"Decompilation Error", MB_ICONERROR);
+        return;
+    }
+
     auto decompiled = StringHelper::fromUTF8(stream.str().c_str());
     decompiled.Replace(L"\n", L"\r\n");
-
     m_decompiled.SetWindowText(decompiled);
 }
-

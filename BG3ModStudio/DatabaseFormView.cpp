@@ -38,7 +38,7 @@ HWND DatabaseFormView::Create(HWND hWndParent, LPARAM dwInitParam)
     InsertColumns();
     InsertFacts();
 
-    DlgResize_Init();
+    DlgResize_Init(FALSE);
 
     CRect rc;
     m_view.GetClientRect(&rc);

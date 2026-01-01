@@ -77,6 +77,17 @@ StreamBase& OsiStory::decompile(const OsiGoal& goal, StreamBase& stream)
     return goal.decompile(*this, stream);
 }
 
+bool OsiStory::getEnum(uint16_t type, OsiEnum& osiEnum) const
+{
+    auto it = enums.find(type);
+    if (it != enums.end()) {
+        osiEnum = it->second;
+        return true;
+    }
+
+    return false;
+}
+
 std::string OsiStory::nodeTypeName(OsiNodeType type) const
 {
     switch (type) {
@@ -369,6 +380,12 @@ std::string OsiValue::toString() const
 
 StreamBase& OsiValue::decompile(const OsiStory& story, StreamBase& stream, const OsiTuple& tuple, bool printTypes) const
 {
+    OsiEnum osiEnum;
+    if (story.getEnum(static_cast<uint16_t>(type), osiEnum)) {
+        stream.write(std::get<std::string>(value));
+        return stream;
+    }
+
     auto resolvedType = story.resolveAlias(type);
     switch (resolvedType) {
     case OVT_INT:
@@ -444,7 +461,7 @@ void OsiValue::read(OsiReader& reader)
             }
             break;
         }
-    } else if (unknown == 'e') {
+    } else if (unknown == 'e') { // enum
         type = static_cast<OsiValueType>(reader.read<uint16_t>());
 
         OsiEnum e;
@@ -679,7 +696,7 @@ OsiTuple OsiRuleNode::makeInitialTuple() const
     for (auto i = 0u; i < variables.size(); ++i) {
         auto var = std::make_shared<OsiVariable>(variables[i]);
         tuple.physical.emplace_back(var);
-        std::pair p{static_cast<int32_t>(i), var };
+        std::pair p{static_cast<int32_t>(i), var};
 
         tuple.logical.emplace(p);
     }

@@ -38,7 +38,7 @@ HWND TypeFormView::Create(HWND hWndParent, LPARAM dwInitParam)
         wndAlias.SetWindowText(L"(none)");
     }
 
-    DlgResize_Init();
+    DlgResize_Init(FALSE);
 
     return this->m_hWnd;
 }

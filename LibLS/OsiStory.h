@@ -641,6 +641,7 @@ struct OsiStory
     std::string typeName(OsiValueType typeId) const;
     std::string typeName(uint32_t typeId) const;
     StreamBase& decompile(const OsiGoal& goal, StreamBase& stream);
+    bool getEnum(uint16_t type, OsiEnum& osiEnum) const;
 
     SaveFileHeader header{};
     std::unordered_map<uint8_t, OsiType> types;

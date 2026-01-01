@@ -34,15 +34,9 @@ bool OsiReader::isOsiFile(const ByteBuffer& contents)
     return std::memcmp(contents.first.get(), "\0Osiris save file", 17) == 0;
 }
 
-bool OsiReader::getEnum(uint16_t type, OsiEnum& osiEnum)
+bool OsiReader::getEnum(uint16_t type, OsiEnum& osiEnum) const
 {
-    auto it = m_story.enums.find(static_cast<uint16_t>(type));
-    if (it != m_story.enums.end()) {
-        osiEnum = it->second;
-        return true;
-    }
-
-    return false;
+    return m_story.getEnum(type, osiEnum);
 }
 
 bool OsiReader::isAlias(uint32_t type) const

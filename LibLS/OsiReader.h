@@ -19,7 +19,7 @@ public:
     static bool isOsiFile(StreamBase& stream);
     static bool isOsiFile(const ByteBuffer& contents);
 
-    bool getEnum(uint16_t type, OsiEnum& osiEnum);
+    bool getEnum(uint16_t type, OsiEnum& osiEnum) const;
     bool isAlias(uint32_t type) const;
     bool shortTypeIds() const;
     const OsiStory& story() const;

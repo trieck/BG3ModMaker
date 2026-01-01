@@ -33,7 +33,7 @@ HWND FunctionFormView::Create(HWND hWndParent, LPARAM dwInitParam)
     m_boldFont = Util::CreateDialogFont(100, TRUE);
     functionType.SetFont(m_boldFont);
 
-    DlgResize_Init();
+    DlgResize_Init(FALSE);
 
     return this->m_hWnd;
 }

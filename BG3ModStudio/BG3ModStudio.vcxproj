@@ -370,7 +370,6 @@
     <Image Include="resources\call.ico" />
     <Image Include="resources\catalog.bmp" />
     <Image Include="resources\close.bmp" />
-    <Image Include="resources\database.ico" />
     <Image Include="resources\enum.ico" />
     <Image Include="resources\folder-small.ico" />
     <Image Include="resources\function.ico" />
@@ -434,7 +433,6 @@
     <Text Include="resources\treasure-template.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="LICENSE" />
     <None Include="resources\Version.rc2" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
