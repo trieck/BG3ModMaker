@@ -362,8 +362,8 @@ OsiNode::Ptr OsiReader::readNode()
     case NT_DIV_QUERY:
         node = std::make_unique<OsiDivQueryNode>();
         break;
-    case NT_NAND:
-        node = std::make_unique<OsiNandNode>();
+    case NT_AND_NOT:
+        node = std::make_unique<OsiAndNotNode>();
         break;
     case NT_USER_QUERY:
         node = std::make_unique<OsiUserQueryNode>();

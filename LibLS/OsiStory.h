@@ -145,7 +145,7 @@ enum OsiNodeType : uint8_t
     NT_PROC = 2,
     NT_DIV_QUERY = 3,
     NT_AND = 4,
-    NT_NAND = 5,
+    NT_AND_NOT = 5,
     NT_REL_OP = 6,
     NT_RULE = 7,
     NT_INTERNAL_QUERY = 8,
@@ -171,9 +171,9 @@ struct OsiNode : OsiReadable, OsiResolvable, OsiDecompileable
 
 enum OsiEntryPoint : uint32_t
 {
-    EP_NONE = 0, /* the next node is not an AND/NAND expression */
-    EP_LEFT = 1, /* the next node is the left child of an AND/NAND expression */
-    EP_RIGHT = 2, /* the next node is the right child of an AND/NAND expression */
+    EP_NONE = 0, /* the next node is not an AND/AND_NOT expression */
+    EP_LEFT = 1, /* the next node is the left child of an AND/AND_NOT expression */
+    EP_RIGHT = 2, /* the next node is the right child of an AND/AND_NOT expression */
 };
 
 struct OsiNodeEntry : OsiReadable
@@ -464,14 +464,14 @@ struct OsiAndNode : OsiJoinNode
     }
 };
 
-struct OsiNandNode : OsiJoinNode
+struct OsiAndNotNode : OsiJoinNode
 {
     StreamBase& decompile(const OsiStory& story, StreamBase& stream, const OsiTuple& tuple, bool printTypes = false) const override;
     void read(OsiReader& reader) override;
 
     std::string typeName() const override
     {
-        return "Not And";
+        return "And Not";
     }
 };
 

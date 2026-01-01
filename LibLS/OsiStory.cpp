@@ -101,8 +101,8 @@ std::string OsiStory::nodeTypeName(OsiNodeType type) const
         return "Div Query";
     case NT_AND:
         return "And";
-    case NT_NAND:
-        return "Nand";
+    case NT_AND_NOT:
+        return "And Not";
     case NT_REL_OP:
         return "Rel Op";
     case NT_RULE:
@@ -841,7 +841,7 @@ void OsiAndNode::read(OsiReader& reader)
     OsiJoinNode::read(reader);
 }
 
-StreamBase& OsiNandNode::decompile(const OsiStory& story, StreamBase& stream, const OsiTuple& tuple,
+StreamBase& OsiAndNotNode::decompile(const OsiStory& story, StreamBase& stream, const OsiTuple& tuple,
                                    bool printTypes) const
 {
     assert(leftAdapterRef != INVALID_REF);
@@ -865,7 +865,7 @@ StreamBase& OsiNandNode::decompile(const OsiStory& story, StreamBase& stream, co
     return stream;
 }
 
-void OsiNandNode::read(OsiReader& reader)
+void OsiAndNotNode::read(OsiReader& reader)
 {
     OsiJoinNode::read(reader);
 }
@@ -917,7 +917,7 @@ std::string relOpString(RelOpType type)
 
 bool isJoinNode(const OsiNode& node) noexcept
 {
-    return node.type == NT_AND || node.type == NT_NAND;
+    return node.type == NT_AND || node.type == NT_AND_NOT;
 }
 
 bool isRelNode(const OsiNode& node) noexcept
