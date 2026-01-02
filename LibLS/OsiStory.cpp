@@ -307,7 +307,7 @@ StreamBase& OsiProcNode::decompile(const OsiStory& story, StreamBase& stream, co
                                    bool printTypes) const
 {
     stream.write(std::format("{}(", name));
-    tuple.decompile(story, stream, true);
+    tuple.decompile(story, stream, printTypes);
     stream.write(")\n");
 
     return stream;
@@ -856,7 +856,7 @@ StreamBase& OsiAndNotNode::decompile(const OsiStory& story, StreamBase& stream, 
     const auto& leftParentNode = story.nodes[leftParentRef];
     leftParentNode->decompile(story, stream, leftTuple, printTypes);
 
-    stream.write("AND NOT\n");
+    stream.write("AND\nNOT\n");
 
     auto rightTuple = rightAdapter.adapt(tuple);
     const auto& rightParentNode = story.nodes[rightParentRef];
