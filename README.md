@@ -22,6 +22,7 @@ Built with modern C++20, WTL (Windows Template Library), and DirectX, it provide
 - **Game Object explorer** for inspecting and searching game data
 - **Icon explorer** for browsing and searching game icons
 - **PAK Generator** for building and packaging mods
+- **Osiris Viewer** for viewing Osiris goals, functions, types, enums and databases
 ---
 
 ## 🛠️ Building from Source
