@@ -678,6 +678,7 @@ void GameObjectDlg::OnSearch()
     auto utf8IndexPath = StringHelper::toUTF8(m_indexPath);
 
     Xapian::QueryParser parser;
+    parser.set_default_op(Xapian::Query::OP_AND);
     auto xQuery = parser.parse_query(utf8Query.GetString());
 
     Xapian::Query typeFilter("TYPE:GameObjects");

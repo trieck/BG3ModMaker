@@ -5,6 +5,8 @@
 Xapian::MSet Searcher::search(const char* dbName, const char* query, uint32_t offset, uint32_t pageSize)
 {
     Xapian::QueryParser parser;
+    parser.set_default_op(Xapian::Query::OP_AND);
+
     auto xquery = parser.parse_query(query);
 
     return search(dbName, xquery, offset, pageSize);
